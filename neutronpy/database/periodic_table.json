@@ -1,0 +1,656 @@
+{
+    "Ac": {
+        "density": 10.07,
+        "mass": 227,
+        "name": "Actinium",
+        "num": 89
+    },
+    "Ag": {
+        "density": 10.5,
+        "mass": 107.8682,
+        "name": "Silver",
+        "num": 47
+    },
+    "Al": {
+        "density": 2.7,
+        "mass": 26.9815,
+        "name": "Aluminum",
+        "num": 13
+    },
+    "Am": {
+        "density": 13.67,
+        "mass": 243,
+        "name": "Americium",
+        "num": 95
+    },
+    "Ar": {
+        "density": 1.78,
+        "mass": 39.948,
+        "name": "Argon",
+        "num": 18
+    },
+    "As": {
+        "density": 5.72,
+        "mass": 74.9216,
+        "name": "Arsenic",
+        "num": 33
+    },
+    "At": {
+        "density": null,
+        "mass": 210,
+        "name": "Astatine",
+        "num": 85
+    },
+    "Au": {
+        "density": 19.32,
+        "mass": 196.9665,
+        "name": "Gold",
+        "num": 79
+    },
+    "B": {
+        "density": 2.34,
+        "mass": 10.811,
+        "name": "Boron",
+        "num": 5
+    },
+    "Ba": {
+        "density": 3.59,
+        "mass": 137.327,
+        "name": "Barium",
+        "num": 56
+    },
+    "Be": {
+        "density": 1.85,
+        "mass": 9.0122,
+        "name": "Beryllium",
+        "num": 4
+    },
+    "Bh": {
+        "density": null,
+        "mass": 264,
+        "name": "Bohrium",
+        "num": 107
+    },
+    "Bi": {
+        "density": 9.75,
+        "mass": 208.9804,
+        "name": "Bismuth",
+        "num": 83
+    },
+    "Bk": {
+        "density": 14.78,
+        "mass": 247,
+        "name": "Berkelium",
+        "num": 97
+    },
+    "Br": {
+        "density": 3.12,
+        "mass": 79.904,
+        "name": "Bromine",
+        "num": 35
+    },
+    "C": {
+        "density": 2.26,
+        "mass": 12.0107,
+        "name": "Carbon",
+        "num": 6
+    },
+    "Ca": {
+        "density": 1.55,
+        "mass": 40.078,
+        "name": "Calcium",
+        "num": 20
+    },
+    "Cd": {
+        "density": 8.65,
+        "mass": 112.411,
+        "name": "Cadmium",
+        "num": 48
+    },
+    "Ce": {
+        "density": 6.77,
+        "mass": 140.116,
+        "name": "Cerium",
+        "num": 58
+    },
+    "Cf": {
+        "density": 15.1,
+        "mass": 251,
+        "name": "Californium",
+        "num": 98
+    },
+    "Cl": {
+        "density": 3.21,
+        "mass": 35.453,
+        "name": "Chlorine",
+        "num": 17
+    },
+    "Cm": {
+        "density": 13.5,
+        "mass": 247,
+        "name": "Curium",
+        "num": 96
+    },
+    "Co": {
+        "density": 8.9,
+        "mass": 58.9332,
+        "name": "Cobalt",
+        "num": 27
+    },
+    "Cr": {
+        "density": 7.19,
+        "mass": 51.9961,
+        "name": "Chromium",
+        "num": 24
+    },
+    "Cs": {
+        "density": 1.87,
+        "mass": 132.9055,
+        "name": "Cesium",
+        "num": 55
+    },
+    "Cu": {
+        "density": 8.96,
+        "mass": 63.546,
+        "name": "Copper",
+        "num": 29
+    },
+    "Db": {
+        "density": null,
+        "mass": 262,
+        "name": "Dubnium",
+        "num": 105
+    },
+    "Dy": {
+        "density": 8.55,
+        "mass": 162.5,
+        "name": "Dysprosium",
+        "num": 66
+    },
+    "Er": {
+        "density": 9.07,
+        "mass": 167.259,
+        "name": "Erbium",
+        "num": 68
+    },
+    "Es": {
+        "density": null,
+        "mass": 252,
+        "name": "Einsteinium",
+        "num": 99
+    },
+    "Eu": {
+        "density": 5.24,
+        "mass": 151.964,
+        "name": "Europium",
+        "num": 63
+    },
+    "F": {
+        "density": 1.7,
+        "mass": 18.9984,
+        "name": "Fluorine",
+        "num": 9
+    },
+    "Fe": {
+        "density": 7.87,
+        "mass": 55.845,
+        "name": "Iron",
+        "num": 26
+    },
+    "Fm": {
+        "density": null,
+        "mass": 257,
+        "name": "Fermium",
+        "num": 100
+    },
+    "Fr": {
+        "density": null,
+        "mass": 223,
+        "name": "Francium",
+        "num": 87
+    },
+    "Ga": {
+        "density": 5.91,
+        "mass": 69.723,
+        "name": "Gallium",
+        "num": 31
+    },
+    "Gd": {
+        "density": 7.9,
+        "mass": 157.25,
+        "name": "Gadolinium",
+        "num": 64
+    },
+    "Ge": {
+        "density": 5.32,
+        "mass": 72.64,
+        "name": "Germanium",
+        "num": 32
+    },
+    "H": {
+        "density": 0.09,
+        "mass": 1.0079,
+        "name": "Hydrogen",
+        "num": 1
+    },
+    "He": {
+        "density": 0.18,
+        "mass": 4.0026,
+        "name": "Helium",
+        "num": 2
+    },
+    "Hf": {
+        "density": 13.31,
+        "mass": 178.49,
+        "name": "Hafnium",
+        "num": 72
+    },
+    "Hg": {
+        "density": 13.55,
+        "mass": 200.59,
+        "name": "Mercury",
+        "num": 80
+    },
+    "Ho": {
+        "density": 8.8,
+        "mass": 164.9303,
+        "name": "Holmium",
+        "num": 67
+    },
+    "Hs": {
+        "density": null,
+        "mass": 277,
+        "name": "Hassium",
+        "num": 108
+    },
+    "I": {
+        "density": 4.93,
+        "mass": 126.9045,
+        "name": "Iodine",
+        "num": 53
+    },
+    "In": {
+        "density": 7.31,
+        "mass": 114.818,
+        "name": "Indium",
+        "num": 49
+    },
+    "Ir": {
+        "density": 22.4,
+        "mass": 192.217,
+        "name": "Iridium",
+        "num": 77
+    },
+    "K": {
+        "density": 0.86,
+        "mass": 39.0983,
+        "name": "Potassium",
+        "num": 19
+    },
+    "Kr": {
+        "density": 3.75,
+        "mass": 83.8,
+        "name": "Krypton",
+        "num": 36
+    },
+    "La": {
+        "density": 6.15,
+        "mass": 138.9055,
+        "name": "Lanthanum",
+        "num": 57
+    },
+    "Li": {
+        "density": 0.53,
+        "mass": 6.941,
+        "name": "Lithium",
+        "num": 3
+    },
+    "Lr": {
+        "density": null,
+        "mass": 262,
+        "name": "Lawrencium",
+        "num": 103
+    },
+    "Lu": {
+        "density": 9.84,
+        "mass": 174.967,
+        "name": "Lutetium",
+        "num": 71
+    },
+    "Md": {
+        "density": null,
+        "mass": 258,
+        "name": "Mendelevium",
+        "num": 101
+    },
+    "Mg": {
+        "density": 1.74,
+        "mass": 24.305,
+        "name": "Magnesium",
+        "num": 12
+    },
+    "Mn": {
+        "density": 7.43,
+        "mass": 54.938,
+        "name": "Manganese",
+        "num": 25
+    },
+    "Mo": {
+        "density": 10.22,
+        "mass": 95.94,
+        "name": "Molybdenum",
+        "num": 42
+    },
+    "Mt": {
+        "density": null,
+        "mass": 268,
+        "name": "Meitnerium",
+        "num": 109
+    },
+    "N": {
+        "density": 1.25,
+        "mass": 14.0067,
+        "name": "Nitrogen",
+        "num": 7
+    },
+    "Na": {
+        "density": 0.97,
+        "mass": 22.9897,
+        "name": "Sodium",
+        "num": 11
+    },
+    "Nb": {
+        "density": 8.57,
+        "mass": 92.9064,
+        "name": "Niobium",
+        "num": 41
+    },
+    "Nd": {
+        "density": 7.01,
+        "mass": 144.24,
+        "name": "Neodymium",
+        "num": 60
+    },
+    "Ne": {
+        "density": 0.9,
+        "mass": 20.1797,
+        "name": "Neon",
+        "num": 10
+    },
+    "Ni": {
+        "density": 8.9,
+        "mass": 58.6934,
+        "name": "Nickel",
+        "num": 28
+    },
+    "No": {
+        "density": null,
+        "mass": 259,
+        "name": "Nobelium",
+        "num": 102
+    },
+    "Np": {
+        "density": 20.2,
+        "mass": 237,
+        "name": "Neptunium",
+        "num": 93
+    },
+    "O": {
+        "density": 1.43,
+        "mass": 15.9994,
+        "name": "Oxygen",
+        "num": 8
+    },
+    "Os": {
+        "density": 22.6,
+        "mass": 190.23,
+        "name": "Osmium",
+        "num": 76
+    },
+    "P": {
+        "density": 1.82,
+        "mass": 30.9738,
+        "name": "Phosphorus",
+        "num": 15
+    },
+    "Pa": {
+        "density": 15.4,
+        "mass": 231.0359,
+        "name": "Protactinium",
+        "num": 91
+    },
+    "Pb": {
+        "density": 11.35,
+        "mass": 207.2,
+        "name": "Lead",
+        "num": 82
+    },
+    "Pd": {
+        "density": 12.02,
+        "mass": 106.42,
+        "name": "Palladium",
+        "num": 46
+    },
+    "Pm": {
+        "density": 7.3,
+        "mass": 145,
+        "name": "Promethium",
+        "num": 61
+    },
+    "Po": {
+        "density": 9.3,
+        "mass": 209,
+        "name": "Polonium",
+        "num": 84
+    },
+    "Pr": {
+        "density": 6.77,
+        "mass": 140.9077,
+        "name": "Praseodymium",
+        "num": 59
+    },
+    "Pt": {
+        "density": 21.45,
+        "mass": 195.078,
+        "name": "Platinum",
+        "num": 78
+    },
+    "Pu": {
+        "density": 19.84,
+        "mass": 244,
+        "name": "Plutonium",
+        "num": 94
+    },
+    "Ra": {
+        "density": 5.5,
+        "mass": 226,
+        "name": "Radium",
+        "num": 88
+    },
+    "Rb": {
+        "density": 1.63,
+        "mass": 85.4678,
+        "name": "Rubidium",
+        "num": 37
+    },
+    "Re": {
+        "density": 21.04,
+        "mass": 186.207,
+        "name": "Rhenium",
+        "num": 75
+    },
+    "Rf": {
+        "density": null,
+        "mass": 261,
+        "name": "Rutherfordium",
+        "num": 104
+    },
+    "Rh": {
+        "density": 12.41,
+        "mass": 102.9055,
+        "name": "Rhodium",
+        "num": 45
+    },
+    "Rn": {
+        "density": 9.73,
+        "mass": 222,
+        "name": "Radon",
+        "num": 86
+    },
+    "Ru": {
+        "density": 12.37,
+        "mass": 101.07,
+        "name": "Ruthenium",
+        "num": 44
+    },
+    "S": {
+        "density": 2.07,
+        "mass": 32.065,
+        "name": "Sulfur",
+        "num": 16
+    },
+    "Sb": {
+        "density": 6.68,
+        "mass": 121.76,
+        "name": "Antimony",
+        "num": 51
+    },
+    "Sc": {
+        "density": 2.99,
+        "mass": 44.9559,
+        "name": "Scandium",
+        "num": 21
+    },
+    "Se": {
+        "density": 4.79,
+        "mass": 78.96,
+        "name": "Selenium",
+        "num": 34
+    },
+    "Sg": {
+        "density": null,
+        "mass": 266,
+        "name": "Seaborgium",
+        "num": 106
+    },
+    "Si": {
+        "density": 2.33,
+        "mass": 28.0855,
+        "name": "Silicon",
+        "num": 14
+    },
+    "Sm": {
+        "density": 7.52,
+        "mass": 150.36,
+        "name": "Samarium",
+        "num": 62
+    },
+    "Sn": {
+        "density": 7.31,
+        "mass": 118.71,
+        "name": "Tin",
+        "num": 50
+    },
+    "Sr": {
+        "density": 2.54,
+        "mass": 87.62,
+        "name": "Strontium",
+        "num": 38
+    },
+    "Ta": {
+        "density": 16.65,
+        "mass": 180.9479,
+        "name": "Tantalum",
+        "num": 73
+    },
+    "Tb": {
+        "density": 8.23,
+        "mass": 158.9253,
+        "name": "Terbium",
+        "num": 65
+    },
+    "Tc": {
+        "density": 11.5,
+        "mass": 98,
+        "name": "Technetium",
+        "num": 43
+    },
+    "Te": {
+        "density": 6.24,
+        "mass": 127.6,
+        "name": "Tellurium",
+        "num": 52
+    },
+    "Th": {
+        "density": 11.72,
+        "mass": 232.0381,
+        "name": "Thorium",
+        "num": 90
+    },
+    "Ti": {
+        "density": 4.54,
+        "mass": 47.867,
+        "name": "Titanium",
+        "num": 22
+    },
+    "Tl": {
+        "density": 11.85,
+        "mass": 204.3833,
+        "name": "Thallium",
+        "num": 81
+    },
+    "Tm": {
+        "density": 9.32,
+        "mass": 168.9342,
+        "name": "Thulium",
+        "num": 69
+    },
+    "U": {
+        "density": 18.95,
+        "mass": 238.0289,
+        "name": "Uranium",
+        "num": 92
+    },
+    "V": {
+        "density": 6.11,
+        "mass": 50.9415,
+        "name": "Vanadium",
+        "num": 23
+    },
+    "W": {
+        "density": 19.35,
+        "mass": 183.84,
+        "name": "Tungsten",
+        "num": 74
+    },
+    "Xe": {
+        "density": 5.9,
+        "mass": 131.293,
+        "name": "Xenon",
+        "num": 54
+    },
+    "Y": {
+        "density": 4.47,
+        "mass": 88.9059,
+        "name": "Yttrium",
+        "num": 39
+    },
+    "Yb": {
+        "density": 6.9,
+        "mass": 173.04,
+        "name": "Ytterbium",
+        "num": 70
+    },
+    "Zn": {
+        "density": 7.13,
+        "mass": 65.39,
+        "name": "Zinc",
+        "num": 30
+    },
+    "Zr": {
+        "density": 6.51,
+        "mass": 91.224,
+        "name": "Zirconium",
+        "num": 40
+    }
+}
