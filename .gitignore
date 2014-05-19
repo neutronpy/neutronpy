@@ -1,0 +1,4 @@
+.project
+.pydevproject
+.DS_Store
+build/*
