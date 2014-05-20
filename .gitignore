@@ -2,3 +2,5 @@
 .pydevproject
 .DS_Store
 build/*
+__pycache__/
+main.py
