@@ -5,6 +5,17 @@ Created on May 20, 2014
 '''
 
 
+class Ion():
+    '''
+    
+    '''
+    def __init__(self, ion):
+        self.ion = ion
+        self.j0 = magIonJ[self.ion]['j0']
+        self.j2 = magIonJ[self.ion]['j2']
+        self.j4 = magIonJ[self.ion]['j4']
+
+
 class Atom():
     '''
         Class for adding atoms to the **Material class**, which requires:
