@@ -1,6 +1,8 @@
 import json
 import numpy as np
 import neutronpy.constants as const
+from neutronpy.form_fac.structureFactor import str_fac as StructureFactor
+from neutronpy.form_fac.magneticFormFactor import mag_fac as MagneticFormFactor
 
 
 def test_str_fac():
@@ -20,5 +22,5 @@ def test_str_fac():
                  'unitVectors': [3.81, 3.81, 6.25]
                 }
 
-    print(np.abs(str_fac(structure, h=1., k=1., l=0.)) ** 2)
+    print(np.abs(StructureFactor(structure, h=1., k=1., l=0.)) ** 2)
     # 223075.365633
