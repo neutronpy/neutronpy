@@ -50,5 +50,9 @@ def slice2D(data=None, datalim=None, infile=None, outfile=None, show=True,
     if show:
         plt.show()
 
+
+def cut1D(data=None):
+    pass
+
 if __name__ == '__main__':
     pass
