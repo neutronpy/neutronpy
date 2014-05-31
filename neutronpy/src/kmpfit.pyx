@@ -18,7 +18,7 @@ least-squares problem, which is a particular strategy for iteratively
 searching for the best fit.  In its typical use, MPFIT will be used to
 fit a user-supplied function (the "model") to user-supplied data points
 (the "data") by adjusting a set of parameters.  MPFIT is based upon the
-robust routine MINPACK-1 (LMDIF.F) by Mor\u00e9 and collaborators. 
+robust routine MINPACK-1 (LMDIF.F) by Mor\u00e9 and collaborators.
 
 For example, a researcher may think that a set of observed data
 points is best modelled with a Gaussian curve.  A Gaussian curve is
@@ -39,10 +39,10 @@ Class Fitter
 Testing derivatives
 ...................
 
-In principle, the process of computing explicit derivatives should be  
+In principle, the process of computing explicit derivatives should be
 straightforward.  In practice, the computation can be error prone,
 often being wrong by a sign or a scale factor.
-       
+
 In order to be sure that the explicit derivatives are correct,
 for debugging purposes the
 user can set the attribute parinfo['deriv_debug'] = True
@@ -52,7 +52,7 @@ console so that the user can compare the results.
 
 When debugging derivatives, it is important to set parinfo['side']
 to the kind of numerical derivative to compare with:
-it should be set to 0, 1, -1, or 2, and *not* set to 3. 
+it should be set to 0, 1, -1, or 2, and *not* set to 3.
 When parinfo['deriv_debug'] is set for a parameter, then
 :meth:`Fitter.fit` automatically understands to request user-computed derivatives.
 
@@ -68,7 +68,7 @@ appear as a block of ASCII text like this::
   ....  and so on ....
   FJAC DEBUG END
 
-which is to say, debugging data will be bracketed by pairs of "FJAC  
+which is to say, debugging data will be bracketed by pairs of "FJAC
 DEBUG" BEGIN/END phrases.  Derivative data for individual parameter i
 will be labeled by "FJAC PARM i".  The columns are, in order,
 
@@ -86,8 +86,8 @@ will be labeled by "FJAC PARM i".  The columns are, in order,
 
   DIFF_REL - relative difference: fabs(DERIV_U-DERIV_N)/DERIV_U
 
-Since individual numerical derivative values may contain significant 
-round-off errors, it is up to the user to critically compare DERIV_U 
+Since individual numerical derivative values may contain significant
+round-off errors, it is up to the user to critically compare DERIV_U
 and DERIV_N, using DIFF_ABS and DIFF_REL as a guide.
 
 
@@ -98,29 +98,29 @@ Example
 ::
 
    #!/usr/bin/env python
-   
+
    import numpy
    from kapteyn import kmpfit
-   
+
    def residuals(p, d):
       a, b, c = p
       x, y, w = d
       return (y - (a*x*x+b*x+c))/w
-   
+
    x = numpy.arange(-50,50,0.2)
    y = 2*x*x + 3*x - 3 + 2*numpy.random.standard_normal(x.shape)
    w = numpy.ones(x.shape)
-   
+
    a = [x, y, w]
    f = kmpfit.Fitter(residuals, params0=[1, 2, 0], data=a)
-   
+
    f.fit()                                     # call fit method
    print f.params
    print f.message
    # result:
    # [2.0001022845514451, 3.0014019147386, -3.0096629062273133]
    # mpfit (potential) success: Convergence in chi-square value (1)
-   
+
    a[1] = 3*x*x  - 2*x - 5 + 0.5*numpy.random.standard_normal(x.shape)
    print f(params0=[2, 0, -1])                 # call Fitter object
    # result:
@@ -154,60 +154,60 @@ MP_OK = {
 
 MP_ERR = {
      0: 'General input parameter error',
-   -16: 'User function produced non-finite values',
-   -17: 'No user function was supplied',
-   -18: 'No user data points were supplied',
-   -19: 'No free parameters',
-   -20: 'Memory allocation error',
-   -21: 'Initial values inconsistent w constraints',
-   -22: 'Initial constraints inconsistent',
-   -23: 'General input parameter error',
-   -24: 'Not enough degrees of freedom'
+   - 16: 'User function produced non-finite values',
+   - 17: 'No user function was supplied',
+   - 18: 'No user data points were supplied',
+   - 19: 'No free parameters',
+   - 20: 'Memory allocation error',
+   - 21: 'Initial values inconsistent w constraints',
+   - 22: 'Initial constraints inconsistent',
+   - 23: 'General input parameter error',
+   - 24: 'Not enough degrees of freedom'
 }
 
-cdef int xmpfunc(int *mp, int n, double *x, double **fvecp, double **dvec,
-                      void *private_data) except -1:
-   cdef double *e, *f, *y, *fvec, *d, *cjac
-   cdef int i, j, m
-   cdef npy_intp* shape=[n]
+cdef int xmpfunc(int * mp, int n, double * x, double ** fvecp, double ** dvec,
+                      void * private_data) except -1:
+    cdef double * e, *f, *y, *fvec, *d, *cjac
+    cdef int i, j, m
+    cdef npy_intp * shape = [n]
 
-   self = <Fitter>private_data
-   for i in range(n):
-      if x[i]!=x[i]:                                         # not finite?
-         self.message = 'Non-finite parameter from mpfit.c'
-         raise ValueError(self.message)
-   p = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE, x)
-   deviates = self.residuals(p, self.data)
+    self = < Fitter > private_data
+    for i in range(n):
+        if x[i] != x[i]:  # not finite?
+            self.message = 'Non-finite parameter from mpfit.c'
+            raise ValueError(self.message)
+    p = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE, x)
+    deviates = self.residuals(p, self.data)
 
-   f = <double*>PyArray_DATA(deviates)
-   if mp[0]:
-      m = mp[0]
-      fvec = fvecp[0]
-      for i in range(m):
-         fvec[i] = f[i]
-   else:
-      fvecp[0] = f
-      mp[0] = deviates.size
-      self.m = mp[0]
-      self.deviates = deviates       # keep a reference to protect from GC
+    f = < double *> PyArray_DATA(deviates)  # @IgnorePep8
+    if mp[0]:
+        m = mp[0]
+        fvec = fvecp[0]
+        for i in range(m):
+            fvec[i] = f[i]
+    else:
+        fvecp[0] = f
+        mp[0] = deviates.size
+        self.m = mp[0]
+        self.deviates = deviates  # keep a reference to protect from GC
 
-      self.allocres()
-   
-   if dvec!=NULL and self.deriv is not None:
-      for i in range(n):
-         self.dflags[i] = bool(<int>dvec[i])
-      jac = self.deriv(p, self.data, self.dflags)
-      cjac = <double*>PyArray_DATA(jac)
-      for j in range(n):
-         d = dvec[j]
-         if d!=NULL:
-            for i in range(m):
-               d[i] = cjac[j*m+i]
+        self.allocres()
 
-   return 0
+    if dvec != NULL and self.deriv is not None:
+        for i in range(n):
+            self.dflags[i] = bool(< int > dvec[i])  # @IgnorePep8
+        jac = self.deriv(p, self.data, self.dflags)
+        cjac = < double *> PyArray_DATA(jac)  # @IgnorePep8
+        for j in range(n):
+            d = dvec[j]
+            if d != NULL:
+                for i in range(m):
+                    d[i] = cjac[j * m + i]
+
+    return 0
 
 cdef class Fitter:
-   """
+    """
 :param residuals:
       the residuals function, see description below.
 :param deriv:
@@ -222,7 +222,8 @@ cdef class Fitter:
       :attr:`data` must be defined before the method :meth:`fit` is
       called.
 
-Objects of this class are callable and return the fitted parameters when called.
+Objects of this class are callable and return the fitted parameters when
+called.
 
 **Residuals function**
 
@@ -244,7 +245,7 @@ could be calculated as follows:
    deviates = (y - f(x)) / err
 
 where *f* is the analytical function representing the model.
-If *err* are the 1-sigma uncertainties in *y*, then  
+If *err* are the 1-sigma uncertainties in *y*, then
 
 .. math::
 
@@ -253,20 +254,20 @@ If *err* are the 1-sigma uncertainties in *y*, then
 will be the total chi-squared value.  Fitter will minimize this value.
 As described above, the values of *x*, *y* and *err* are
 passed through Fitter to the residuals function via the attribute
-:attr:`data`. 
+:attr:`data`.
 
 **Derivatives function**
 
 The optional derivates function can be used to compute weighted function
 derivatives, which are used in the minimization process.  This can be
 useful to save time, or when the derivative is tricky to evaluate
-numerically. 
+numerically.
 
 The function takes three arguments: a NumPy array containing the parameter
 values, a reference to the attribute :attr:`data` and a list with boolean
 values corresponding with the parameters.
 If a boolean in the list is True, the derivative with respect to the
-corresponding parameter should be computed, otherwise it may be ignored. 
+corresponding parameter should be computed, otherwise it may be ignored.
 Fitter determines these flags depending on how derivatives are
 specified in item ``side`` of the attribute :attr:`parinfo`, or whether
 the parameter is fixed.
@@ -305,11 +306,12 @@ Fitter object's behaviour.
      limits or  None, which indicates that the parameter is not bounded on
      this side. Default: no limits.
 
-     ``'step'``: the step size to be used in calculating the numerical derivatives.
+     ``'step'``: the step size to be used in calculating the numerical
+                 derivatives.
      Default: step size is computed automatically.
 
-     ``'side'``: the sidedness of the finite difference when computing numerical
-     derivatives.  This item can take four values:
+     ``'side'``: the sidedness of the finite difference when computing
+     numerical derivatives.  This item can take four values:
 
       0 - one-sided derivative computed automatically (default)
 
@@ -331,7 +333,7 @@ Fitter object's behaviour.
      function evaluations.  Default: 0.
 
      ``'deriv_debug'``: boolean to specify console debug logging of
-     user-computed derivatives. True: enable debugging. 
+     user-computed derivatives. True: enable debugging.
      If debugging is enabled,
      then ``'side'`` should be set to 0, 1, -1 or 2, depending on which
      numerical derivative you wish to compare to.
@@ -457,329 +459,348 @@ are available to the user:
 .. automethod:: confidence_band(x, dfdp, confprob, f, abswei=False)
 """
 
-   cdef public object parinfo               # parinfo
-   cdef mp_par *c_pars                      # parinfo: C-representation
-   cdef int m
-   cdef mp_config *config
-   cdef mp_result *result
-   cdef public object params0               # initial fitting parameters
-   cdef object params_t                     # parameter type
-   cdef double *xall                        # parameters: C-representation
-   cdef readonly int npar                   # number of parameters
+    cdef public object parinfo  # parinfo
+    cdef mp_par * c_pars  # parinfo: C-representation
+    cdef int m
+    cdef mp_config * config
+    cdef mp_result * result
+    cdef public object params0  # initial fitting parameters
+    cdef object params_t  # parameter type
+    cdef double * xall  # parameters: C-representation
+    cdef readonly int npar  # number of parameters
 
-   cdef public object residuals, data       # residuals function, private data
-   cdef object deriv, dflags                # derivatives function, flags
+    cdef public object residuals, data  # residuals function, private data
+    cdef object deriv, dflags  # derivatives function, flags
 
-   cdef object deviates                     # deviates
-   cdef readonly object message             # status message
+    cdef object deviates  # deviates
+    cdef readonly object message  # status message
 
-   def __cinit__(self):
-      self.config = <mp_config*>calloc(1, sizeof(mp_config))
-      self.result = <mp_result*>calloc(1, sizeof(mp_result))
-      
-   def __dealloc__(self):
-      free(self.config)
-      free(self.result.resid)
-      free(self.result.xerror)
-      free(self.result.covar)
-      free(self.result)
-      free(self.c_pars)
-      free(self.xall)
-      
-   def __init__(self, residuals, deriv=None, params0=None, parinfo=None,
+    def __cinit__(self):
+        self.config = < mp_config *> calloc(1, sizeof(mp_config))  # @IgnorePep8
+        self.result = < mp_result *> calloc(1, sizeof(mp_result))  # @IgnorePep8
+
+    def __dealloc__(self):
+        free(self.config)
+        free(self.result.resid)
+        free(self.result.xerror)
+        free(self.result.covar)
+        free(self.result)
+        free(self.c_pars)
+        free(self.xall)
+
+    def __init__(self, residuals, deriv=None, params0=None, parinfo=None,
                 ftol=None, xtol=None, gtol=None, epsfcn=None,
                 stepfactor=None, covtol=None, maxiter=None, maxfev=None,
                 nofinitecheck=None, data=None):
-      self.npar = 0
-      self.m = 0
-      self.residuals = residuals                # residuals function
-      self.deriv = deriv                        # derivatives function
-      self.params0 = params0                    # initial fitting parameters
-      self.parinfo = parinfo                    # parameter constraints
-      self.ftol = ftol
-      self.xtol = xtol
-      self.gtol = gtol
-      self.epsfcn = epsfcn
-      self.stepfactor = stepfactor
-      self.covtol = covtol
-      self.maxiter = maxiter
-      self.maxfev = maxfev
-      self.nofinitecheck = nofinitecheck
-      self.data = data                          # args to residuals function
+        self.npar = 0
+        self.m = 0
+        self.residuals = residuals  # residuals function
+        self.deriv = deriv  # derivatives function
+        self.params0 = params0  # initial fitting parameters
+        self.parinfo = parinfo  # parameter constraints
+        self.ftol = ftol
+        self.xtol = xtol
+        self.gtol = gtol
+        self.epsfcn = epsfcn
+        self.stepfactor = stepfactor
+        self.covtol = covtol
+        self.maxiter = maxiter
+        self.maxfev = maxfev
+        self.nofinitecheck = nofinitecheck
+        self.data = data  # args to residuals function
 
-   property params:
-      def __get__(self):
-         cdef npy_intp* shape = [self.npar]
-         value = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE, self.xall).copy()
-         if self.params_t is not None:
-            return self.params_t(value)
-         else:
-            return value
-      def __set__(self, value):
-         if value is None:
-            return
-         cdef int i, l
-         cdef double *xall
-         if not isinstance(value, numpy.ndarray):
-            self.params_t = type(value)
-            l = len(value)
-         else:
-            l = value.size
-         if self.npar==0:
-            self.npar = l
-         elif l!=self.npar:
-            self.message = 'inconsistent parameter array size'
-            raise ValueError(self.message)
-         xall = <double*>calloc(self.npar, sizeof(double))
-         for i in range(self.npar):
-            xall[i] = value[i]
-         free(self.xall)
-         self.xall = xall
-         if self.dflags is None:
-            self.dflags = [False]*self.npar              # flags for deriv()
-         if self.parinfo is None:
-            if self.deriv is not None:
-               self.parinfo = [{'side': 3}]*self.npar
+    property params:
+        def __get__(self):
+            cdef npy_intp * shape = [self.npar]
+            value = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE, self.xall).copy()  # @IgnorePep8
+            if self.params_t is not None:
+                return self.params_t(value)
             else:
-               self.parinfo = [None]*self.npar
+                return value
 
-   property ftol:
-      def __get__(self):
-         return self.config.ftol
-      def __set__(self, value):
-         if value is not None:
-            self.config.ftol = value
-      def __del__(self):
-         self.config.ftol = 0.0
+        def __set__(self, value):
+            if value is None:
+                return
+            cdef int i, l
+            cdef double * xall
+            if not isinstance(value, numpy.ndarray):
+                self.params_t = type(value)
+                l = len(value)
+            else:
+                l = value.size
+            if self.npar == 0:
+                self.npar = l
+            elif l != self.npar:
+                self.message = 'inconsistent parameter array size'
+                raise ValueError(self.message)
+            xall = < double *> calloc(self.npar, sizeof(double))  # @IgnorePep8
+            for i in range(self.npar):
+                xall[i] = value[i]
+            free(self.xall)
+            self.xall = xall
+            if self.dflags is None:
+                self.dflags = [False] * self.npar  # flags for deriv()
+            if self.parinfo is None:
+                if self.deriv is not None:
+                    self.parinfo = [{'side': 3}] * self.npar
+                else:
+                    self.parinfo = [None] * self.npar
 
-   property xtol:
-      def __get__(self):
-         return self.config.xtol
-      def __set__(self, value):
-         if value is not None:
-            self.config.xtol = value
-      def __del__(self):
-         self.config.xtol = 0.0
+    property ftol:
+        def __get__(self):  # @DuplicatedSignature
+            return self.config.ftol
 
-   property gtol:
-      def __get__(self):
-         return self.config.gtol
-      def __set__(self, value):
-         if value is not None:
-            self.config.gtol = value
-      def __del__(self):
-         self.config.gtol = 0.0
+        def __set__(self, value):  # @DuplicatedSignature
+            if value is not None:
+                self.config.ftol = value
 
-   property epsfcn:
-      def __get__(self):
-         return self.config.epsfcn
-      def __set__(self, value):
-         if value is not None:
-            self.config.epsfcn = value
-      def __del__(self):
-         self.config.epsfcn = 0.0
+        def __del__(self):
+            self.config.ftol = 0.0
 
-   property stepfactor:
-      def __get__(self):
-         return self.config.stepfactor
-      def __set__(self, value):
-         if value is not None:
-            self.config.stepfactor = value
-      def __del__(self):
-         self.config.stepfactor = 0.0
+    property xtol:
+        def __get__(self):  # @DuplicatedSignature
+            return self.config.xtol
 
-   property covtol:
-      def __get__(self):
-         return self.config.covtol
-      def __set__(self, value):
-         if value is not None:
-            self.config.covtol = value
-      def __del__(self):
-         self.config.covtol = 0.0
+        def __set__(self, value):  # @DuplicatedSignature
+            if value is not None:
+                self.config.xtol = value
 
-   property maxiter:
-      def __get__(self):
-         return self.config.maxiter
-      def __set__(self, value):
-         if value is not None:
-            self.config.maxiter = value
-      def __del__(self):
-         self.config.maxiter = 0
+        def __del__(self):  # @DuplicatedSignature
+            self.config.xtol = 0.0
 
-   property nofinitecheck:
-      def __get__(self):
-         return self.config.nofinitecheck
-      def __set__(self, value):
-         if value is not None:
-            self.config.nofinitecheck = value
+    property gtol:
+        def __get__(self):  # @DuplicatedSignature
+            return self.config.gtol
 
-   property maxfev:
-      def __get__(self):
-         return self.config.maxfev
-      def __set__(self, value):
-         if value is not None:
-            self.config.maxfev = value
-      def __del__(self):
-         self.config.maxfev = 0
+        def __set__(self, value):  # @DuplicatedSignature
+            if value is not None:
+                self.config.gtol = value
 
-   property chi2_min:
-      def __get__(self):
-         return self.result.bestnorm
+        def __del__(self):  # @DuplicatedSignature
+            self.config.gtol = 0.0
 
-   property orignorm:
-      def __get__(self):
-         return self.result.orignorm
-         
-   property niter:
-      def __get__(self):
-         return self.result.niter
+    property epsfcn:
+        def __get__(self):  # @DuplicatedSignature
+            return self.config.epsfcn
 
-   property nfev:
-      def __get__(self):
-         return self.result.nfev
+        def __set__(self, value):  # @DuplicatedSignature
+            if value is not None:
+                self.config.epsfcn = value
 
-   property status:
-      def __get__(self):
-         return self.result.status
+        def __del__(self):  # @DuplicatedSignature
+            self.config.epsfcn = 0.0
 
-   property nfree:
-      def __get__(self):
-         return self.result.nfree
+    property stepfactor:
+        def __get__(self):  # @DuplicatedSignature
+            return self.config.stepfactor
 
-   property npegged:
-      def __get__(self):
-         return self.result.npegged
-         
-   property version:
-      def __get__(self):
-         return self.result.version
+        def __set__(self, value):  # @DuplicatedSignature
+            if value is not None:
+                self.config.stepfactor = value
 
-   property covar:
-      def __get__(self):
-         cdef npy_intp* shape = [self.npar, self.npar]
-         value = PyArray_SimpleNewFromData(2, shape, NPY_DOUBLE,
+        def __del__(self):  # @DuplicatedSignature
+            self.config.stepfactor = 0.0
+
+    property covtol:
+        def __get__(self):  # @DuplicatedSignature
+            return self.config.covtol
+
+        def __set__(self, value):  # @DuplicatedSignature
+            if value is not None:
+                self.config.covtol = value
+
+        def __del__(self):  # @DuplicatedSignature
+            self.config.covtol = 0.0
+
+    property maxiter:
+        def __get__(self):  # @DuplicatedSignature
+            return self.config.maxiter
+
+        def __set__(self, value):  # @DuplicatedSignature
+            if value is not None:
+                self.config.maxiter = value
+
+        def __del__(self):  # @DuplicatedSignature
+            self.config.maxiter = 0
+
+    property nofinitecheck:
+        def __get__(self):  # @DuplicatedSignature
+            return self.config.nofinitecheck
+
+        def __set__(self, value):  # @DuplicatedSignature
+            if value is not None:
+                self.config.nofinitecheck = value
+
+    property maxfev:
+        def __get__(self):  # @DuplicatedSignature
+            return self.config.maxfev
+
+        def __set__(self, value):  # @DuplicatedSignature
+            if value is not None:
+                self.config.maxfev = value
+
+        def __del__(self):  # @DuplicatedSignature
+            self.config.maxfev = 0
+
+    property chi2_min:
+        def __get__(self):  # @DuplicatedSignature
+            return self.result.bestnorm
+
+    property orignorm:
+        def __get__(self):  # @DuplicatedSignature
+            return self.result.orignorm
+
+    property niter:
+        def __get__(self):  # @DuplicatedSignature
+            return self.result.niter
+
+    property nfev:
+        def __get__(self):  # @DuplicatedSignature
+            return self.result.nfev
+
+    property status:
+        def __get__(self):  # @DuplicatedSignature
+            return self.result.status
+
+    property nfree:
+        def __get__(self):  # @DuplicatedSignature
+            return self.result.nfree
+
+    property npegged:
+        def __get__(self):  # @DuplicatedSignature
+            return self.result.npegged
+
+    property version:
+        def __get__(self):  # @DuplicatedSignature
+            return self.result.version
+
+    property covar:
+        def __get__(self):  # @DuplicatedSignature
+            cdef npy_intp * shape = [self.npar, self.npar]
+            value = PyArray_SimpleNewFromData(2, shape, NPY_DOUBLE,
                                            self.result.covar).copy()
-         return numpy.matrix(value)
+            return numpy.matrix(value)
 
-   property resid:
-      def __get__(self):
-         cdef npy_intp* shape = [self.m]
-         value = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE,
+    property resid:
+        def __get__(self):  # @DuplicatedSignature
+            cdef npy_intp * shape = [self.m]
+            value = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE,
                                            self.result.resid).copy()
-         return value
- 
-   property xerror:
-      def __get__(self):
-         cdef npy_intp* shape = [self.npar]
-         value = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE,
+            return value
+
+    property xerror:
+        def __get__(self):  # @DuplicatedSignature
+            cdef npy_intp * shape = [self.npar]  # @DuplicatedSignature
+            value = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE,
                                            self.result.xerror).copy()
-         return value
+            return value
 
-   property dof:
-      def __get__(self):
-         return self.m - self.nfree
+    property dof:
+        def __get__(self):  # @DuplicatedSignature
+            return self.m - self.nfree
 
-   property rchi2_min:
-      def __get__(self):
-         return self.chi2_min/self.dof
-         
-   property stderr:
-      def __get__(self):
-         return numpy.sqrt(numpy.diagonal(self.covar)*self.rchi2_min) 
+    property rchi2_min:
+        def __get__(self):  # @DuplicatedSignature
+            return self.chi2_min / self.dof
 
-   cdef allocres(self):
-      # allocate arrays in mp_result_struct
-      free(self.result.resid)
-      self.result.resid = <double*>calloc(self.m, sizeof(double))
-      free(self.result.xerror)
-      self.result.xerror = <double*>calloc(self.npar, sizeof(double))
-      free(self.result.covar)
-      self.result.covar = <double*>calloc(self.npar*self.npar, sizeof(double))
+    property stderr:
+        def __get__(self):  # @DuplicatedSignature
+            return numpy.sqrt(numpy.diagonal(self.covar) * self.rchi2_min)
 
-   def fit(self, params0=None):
-      """
+    cdef allocres(self):
+        # allocate arrays in mp_result_struct
+        free(self.result.resid)
+        self.result.resid = < double *> calloc(self.m, sizeof(double))  # @IgnorePep8
+        free(self.result.xerror)
+        self.result.xerror = < double *> calloc(self.npar, sizeof(double))  # @IgnorePep8
+        free(self.result.covar)
+        self.result.covar = < double *> calloc(self.npar * self.npar, sizeof(double))  # @IgnorePep8
+
+    def fit(self, params0=None):
+        """
 Perform a fit with the current values of parameters and other attributes.
 
 Optional argument *params0*: initial fitting parameters.
 (Default: previous initial values are used.)
 """
-      cdef mp_par *c_par
+        cdef mp_par * c_par
 
-      if params0 is not None:
-         self.params0 = params0
-      if self.params0 is None:
-         self.message = 'no initial fitting parameters specified'
-         raise RuntimeError(self.message)
-      else:
-         self.params = self.params0
+        if params0 is not None:
+            self.params0 = params0
+        if self.params0 is None:
+            self.message = 'no initial fitting parameters specified'
+            raise RuntimeError(self.message)
+        else:
+            self.params = self.params0
 
-      if len(self.parinfo)!=self.npar:
-         self.message = 'inconsistent parinfo list length'
-         raise ValueError(self.message)
-      if self.c_pars==NULL:
-         self.c_pars = <mp_par*>calloc(self.npar, sizeof(mp_par))
-      for ipar, par in enumerate(self.parinfo):
-         c_par = &self.c_pars[ipar]
+        if len(self.parinfo) != self.npar:
+            self.message = 'inconsistent parinfo list length'
+            raise ValueError(self.message)
+        if self.c_pars == NULL:
+            self.c_pars = < mp_par *> calloc(self.npar, sizeof(mp_par))  # @IgnorePep8
+        for ipar, par in enumerate(self.parinfo):
+            c_par = & self.c_pars[ipar]
 
-         try:
-            c_par.fixed = par['fixed']
-         except:
-            c_par.fixed = 0
+            try:
+                c_par.fixed = par['fixed']
+            except:
+                c_par.fixed = 0
 
-         try:
-            limits = par['limits']
-            for limit in (0,1):
-               if limits[limit] is not None:
-                  c_par.limited[limit] = 1
-                  c_par.limits[limit] = limits[limit]
-         except:
-            for limit in (0,1):
-               c_par.limited[limit] = 0
-               c_par.limits[limit] = 0.0
-         
-         try:
-            c_par.step = par['step']
-         except:
-            c_par.step = 0
-         
-         try:
-            c_par.side = par['side']
-         except:
-            c_par.side = 0
+            try:
+                limits = par['limits']
+                for limit in (0, 1):
+                    if limits[limit] is not None:
+                        c_par.limited[limit] = 1
+                        c_par.limits[limit] = limits[limit]
+            except:
+                for limit in (0, 1):
+                    c_par.limited[limit] = 0
+                    c_par.limits[limit] = 0.0
 
-         try:
-            c_par.deriv_debug = par['deriv_debug']
-         except:
-            c_par.deriv_debug = 0
+            try:
+                c_par.step = par['step']
+            except:
+                c_par.step = 0
 
-      status = mpfit(<mp_func>xmpfunc, self.npar, self.xall,
-                     self.c_pars, self.config, <void*>self, self.result)
-      if status<=0:
-         if status in MP_ERR:
-            self.message = 'mpfit error: %s (%d)' % (MP_ERR[status], status)
-         else:
-            self.message = 'mpfit error, status=%d' % status
-         raise RuntimeError(self.message)
-      
-      if status in MP_OK:
-         self.message = 'mpfit (potential) success: %s (%d)' % \
+            try:
+                c_par.side = par['side']
+            except:
+                c_par.side = 0
+
+            try:
+                c_par.deriv_debug = par['deriv_debug']
+            except:
+                c_par.deriv_debug = 0
+
+            status = mpfit(< mp_func > xmpfunc, self.npar, self.xall,  # @IgnorePep8
+                     self.c_pars, self.config, < void *> self, self.result)
+            if status <= 0:
+                if status in MP_ERR:
+                    self.message = 'mpfit error: %s (%d)' % (MP_ERR[status], status)  # @IgnorePep8
+                else:
+                    self.message = 'mpfit error, status=%d' % status
+            raise RuntimeError(self.message)
+
+            if status in MP_OK:
+                self.message = 'mpfit (potential) success: %s (%d)' % \
                                                     (MP_OK[status], status)
-      else:
-         self.message = None
-      return status
+            else:
+                self.message = None
 
-   def __call__(self, params0=None):
-      self.fit(params0)
-      return self.params
+            return status
 
-   def confidence_band(self, x, dfdp, confprob, f, abswei=False):
-      """
+    def __call__(self, params0=None):
+        self.fit(params0)
+        return self.params
+
+    def confidence_band(self, x, dfdp, confprob, f, abswei=False):
+        """
 This method requires SciPy.
 After the method :meth:`fit` has been called, this method calculates
 the upper and lower value of the confidence interval for all elements
 of the NumPy array *x*. The model values and
 the arrays with confidence limits are returned and can be used to
-plot confidence bands. 
+plot confidence bands.
 
 :param x:
    NumPy array with the independent values for which the confidence interval
@@ -806,7 +827,7 @@ plot confidence bands.
 :param abswei:
    True if weights are absolute. For absolute weights the
    unscaled covariance matrix elements are used in the calculations.
-   For unit weighting (i.e. unweighted) and relative 
+   For unit weighting (i.e. unweighted) and relative
    weighting, the covariance matrix elements are scaled with
    the value of the reduced chi squared.
 
@@ -815,43 +836,44 @@ plot confidence bands.
 
    * *y*:          the model values at *x*: *y = f(p,x)*;
    * *upperband*:  the upper confidence limits;
-   * *lowerband*:  the lower confidence limits.  
+   * *lowerband*:  the lower confidence limits.
 
 .. note::
 
-   If parameters were fixed in the fit, the corresponding 
+   If parameters were fixed in the fit, the corresponding
    error is 0 and there is no contribution to the confidence
    interval."""
 
-      from scipy.stats import t
+        from scipy.stats import t
 
-      # Given the confidence probability
-      # we derive for alpha: alpha = 1 - confprob 
-      alpha = 1 - confprob
-      prb = 1.0 - alpha/2
-      tval = t.ppf(prb, self.dof)
+        # Given the confidence probability
+        # we derive for alpha: alpha = 1 - confprob
+        alpha = 1 - confprob
+        prb = 1.0 - alpha / 2
+        tval = t.ppf(prb, self.dof)
 
-      C = self.covar
-      n = len(self.params)      # Number of parameters from covariance matrix
-      p = self.params
-      N = len(x)
-      if abswei:
-         covscale = 1.0
-      else:
-         covscale = self.rchi2_min
-      df2 = numpy.zeros(N)
-      for j in range(n):
-         for k in range(n):
-           df2 += dfdp[j]*dfdp[k]*C[j,k]
-      df = numpy.sqrt(self.rchi2_min*df2)
-      y = f(p, x)
-      delta = tval * df   
-      upperband = y + delta
-      lowerband = y - delta 
-      return y, upperband, lowerband
+        C = self.covar
+        n = len(self.params)  # Number of parameters from covariance matrix
+        p = self.params
+        N = len(x)
+        if abswei:
+            covscale = 1.0
+        else:
+            covscale = self.rchi2_min
+        df2 = numpy.zeros(N)
+        for j in range(n):
+            for k in range(n):
+                df2 += dfdp[j] * dfdp[k] * C[j, k]
+        df = numpy.sqrt(self.rchi2_min * df2)
+        y = f(p, x)
+        delta = tval * df
+        upperband = y + delta
+        lowerband = y - delta
+        return y, upperband, lowerband
+
 
 def simplefit(model, p0, x, y, err=1.0, **kwargs):
-   """Simple interface to :class:`Fitter`.
+    """Simple interface to :class:`Fitter`.
 
 :param model:
    model function which must take two arguments: a sequence with initial
@@ -872,13 +894,13 @@ def simplefit(model, p0, x, y, err=1.0, **kwargs):
 :returns: a :class:`Fitter` object from which the fit results can
    be extracted.
 """
-   def res(p, data):
-      x, y, err = data
-      return (y - model(p,x))/err
-  
-   x = numpy.asarray(x)
-   y = numpy.asarray(y)
-   err = numpy.asarray(err)
-   fitobj = Fitter(residuals=res, data=(x,y,err), **kwargs)
-   fitobj.fit(p0)
-   return fitobj
+    def res(p, data):
+        x, y, err = data
+        return (y - model(p, x)) / err
+
+    x = numpy.asarray(x)
+    y = numpy.asarray(y)
+    err = numpy.asarray(err)
+    fitobj = Fitter(residuals=res, data=(x, y, err), **kwargs)
+    fitobj.fit(p0)
+    return fitobj
