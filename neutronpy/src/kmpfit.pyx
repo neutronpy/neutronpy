@@ -133,13 +133,12 @@ Function simplefit
 
 """
 
-from numpy cimport import_array, npy_intp
-from numpy cimport PyArray_SimpleNewFromData, NPY_DOUBLE, PyArray_DATA
-import numpy
+import numpy as np
+cimport numpy as np
 from libc.stdlib cimport calloc, free
 from kmpfit cimport *
 
-import_array()
+np.import_array()
 
 MP_OK = {
    1: 'Convergence in chi-square value',
@@ -165,21 +164,26 @@ MP_ERR = {
    - 24: 'Not enough degrees of freedom'
 }
 
-cdef int xmpfunc(int * mp, int n, double * x, double ** fvecp, double ** dvec,
-                      void * private_data) except -1:
-    cdef double * e, *f, *y, *fvec, *d, *cjac
+cdef int xmpfunc(int *mp, int n, double *x, double **fvecp, double **dvec,  # @IgnorePep8
+                      void *private_data) except -1:
+    cdef double *e  # @IgnorePep8
+    cdef double *f  # @IgnorePep8
+    cdef double *y  # @IgnorePep8
+    cdef double *fvec  # @IgnorePep8
+    cdef double *d  # @IgnorePep8
+    cdef double *cjac  # @IgnorePep8
     cdef int i, j, m
-    cdef npy_intp * shape = [n]
+    cdef np.npy_intp *shape = [n]  # @IgnorePep8
 
-    self = < Fitter > private_data
+    self = <Fitter>private_data  # @IgnorePep8
     for i in range(n):
         if x[i] != x[i]:  # not finite?
             self.message = 'Non-finite parameter from mpfit.c'
             raise ValueError(self.message)
-    p = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE, x)
+    p = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, x)
     deviates = self.residuals(p, self.data)
 
-    f = < double *> PyArray_DATA(deviates)  # @IgnorePep8
+    f = <double*>np.PyArray_DATA(deviates)  # @IgnorePep8
     if mp[0]:
         m = mp[0]
         fvec = fvecp[0]
@@ -195,9 +199,9 @@ cdef int xmpfunc(int * mp, int n, double * x, double ** fvecp, double ** dvec,
 
     if dvec != NULL and self.deriv is not None:
         for i in range(n):
-            self.dflags[i] = bool(< int > dvec[i])  # @IgnorePep8
+            self.dflags[i] = bool(<int>dvec[i])  # @IgnorePep8
         jac = self.deriv(p, self.data, self.dflags)
-        cjac = < double *> PyArray_DATA(jac)  # @IgnorePep8
+        cjac = <double*>np.PyArray_DATA(jac)  # @IgnorePep8
         for j in range(n):
             d = dvec[j]
             if d != NULL:
@@ -476,8 +480,8 @@ are available to the user:
     cdef readonly object message  # status message
 
     def __cinit__(self):
-        self.config = < mp_config *> calloc(1, sizeof(mp_config))  # @IgnorePep8
-        self.result = < mp_result *> calloc(1, sizeof(mp_result))  # @IgnorePep8
+        self.config = <mp_config*>calloc(1, sizeof(mp_config))  # @IgnorePep8
+        self.result = <mp_result*>calloc(1, sizeof(mp_result))  # @IgnorePep8
 
     def __dealloc__(self):
         free(self.config)
@@ -511,8 +515,8 @@ are available to the user:
 
     property params:
         def __get__(self):
-            cdef npy_intp * shape = [self.npar]
-            value = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE, self.xall).copy()  # @IgnorePep8
+            cdef np.npy_intp * shape = [self.npar]
+            value = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, self.xall).copy()  # @IgnorePep8
             if self.params_t is not None:
                 return self.params_t(value)
             else:
@@ -523,7 +527,7 @@ are available to the user:
                 return
             cdef int i, l
             cdef double * xall
-            if not isinstance(value, numpy.ndarray):
+            if not isinstance(value, np.ndarray):
                 self.params_t = type(value)
                 l = len(value)
             else:
@@ -533,7 +537,7 @@ are available to the user:
             elif l != self.npar:
                 self.message = 'inconsistent parameter array size'
                 raise ValueError(self.message)
-            xall = < double *> calloc(self.npar, sizeof(double))  # @IgnorePep8
+            xall = <double*>calloc(self.npar, sizeof(double))  # @IgnorePep8
             for i in range(self.npar):
                 xall[i] = value[i]
             free(self.xall)
@@ -676,22 +680,22 @@ are available to the user:
 
     property covar:
         def __get__(self):  # @DuplicatedSignature
-            cdef npy_intp * shape = [self.npar, self.npar]
-            value = PyArray_SimpleNewFromData(2, shape, NPY_DOUBLE,
+            cdef np.npy_intp * shape = [self.npar, self.npar]
+            value = np.PyArray_SimpleNewFromData(2, shape, np.NPY_DOUBLE,
                                            self.result.covar).copy()
-            return numpy.matrix(value)
+            return np.matrix(value)
 
     property resid:
         def __get__(self):  # @DuplicatedSignature
-            cdef npy_intp * shape = [self.m]
-            value = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE,
+            cdef np.npy_intp * shape = [self.m]
+            value = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE,
                                            self.result.resid).copy()
             return value
 
     property xerror:
         def __get__(self):  # @DuplicatedSignature
-            cdef npy_intp * shape = [self.npar]  # @DuplicatedSignature
-            value = PyArray_SimpleNewFromData(1, shape, NPY_DOUBLE,
+            cdef np.npy_intp * shape = [self.npar]  # @DuplicatedSignature
+            value = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE,
                                            self.result.xerror).copy()
             return value
 
@@ -705,16 +709,16 @@ are available to the user:
 
     property stderr:
         def __get__(self):  # @DuplicatedSignature
-            return numpy.sqrt(numpy.diagonal(self.covar) * self.rchi2_min)
+            return np.sqrt(np.diagonal(self.covar) * self.rchi2_min)
 
     cdef allocres(self):
         # allocate arrays in mp_result_struct
         free(self.result.resid)
-        self.result.resid = < double *> calloc(self.m, sizeof(double))  # @IgnorePep8
+        self.result.resid = <double*>calloc(self.m, sizeof(double))  # @IgnorePep8
         free(self.result.xerror)
-        self.result.xerror = < double *> calloc(self.npar, sizeof(double))  # @IgnorePep8
+        self.result.xerror = <double*>calloc(self.npar, sizeof(double))  # @IgnorePep8
         free(self.result.covar)
-        self.result.covar = < double *> calloc(self.npar * self.npar, sizeof(double))  # @IgnorePep8
+        self.result.covar = <double*>calloc(self.npar * self.npar, sizeof(double))  # @IgnorePep8
 
     def fit(self, params0=None):
         """
@@ -737,7 +741,7 @@ Optional argument *params0*: initial fitting parameters.
             self.message = 'inconsistent parinfo list length'
             raise ValueError(self.message)
         if self.c_pars == NULL:
-            self.c_pars = < mp_par *> calloc(self.npar, sizeof(mp_par))  # @IgnorePep8
+            self.c_pars = <mp_par*>calloc(self.npar, sizeof(mp_par))  # @IgnorePep8
         for ipar, par in enumerate(self.parinfo):
             c_par = & self.c_pars[ipar]
 
@@ -772,18 +776,20 @@ Optional argument *params0*: initial fitting parameters.
             except:
                 c_par.deriv_debug = 0
 
-            status = mpfit(< mp_func > xmpfunc, self.npar, self.xall,  # @IgnorePep8
-                     self.c_pars, self.config, < void *> self, self.result)
+            status = mpfit(<mp_func>xmpfunc, self.npar, self.xall,  # @IgnorePep8
+                     self.c_pars, self.config, <void*>self, self.result)
+
             if status <= 0:
                 if status in MP_ERR:
                     self.message = 'mpfit error: %s (%d)' % (MP_ERR[status], status)  # @IgnorePep8
                 else:
                     self.message = 'mpfit error, status=%d' % status
-            raise RuntimeError(self.message)
+
+                raise RuntimeError(self.message)
 
             if status in MP_OK:
                 self.message = 'mpfit (potential) success: %s (%d)' % \
-                                                    (MP_OK[status], status)
+                                    (MP_OK[status], status)
             else:
                 self.message = None
 
@@ -860,11 +866,11 @@ plot confidence bands.
             covscale = 1.0
         else:
             covscale = self.rchi2_min
-        df2 = numpy.zeros(N)
+        df2 = np.zeros(N)
         for j in range(n):
             for k in range(n):
                 df2 += dfdp[j] * dfdp[k] * C[j, k]
-        df = numpy.sqrt(self.rchi2_min * df2)
+        df = np.sqrt(self.rchi2_min * df2)
         y = f(p, x)
         delta = tval * df
         upperband = y + delta
@@ -898,9 +904,9 @@ def simplefit(model, p0, x, y, err=1.0, **kwargs):
         x, y, err = data
         return (y - model(p, x)) / err
 
-    x = numpy.asarray(x)
-    y = numpy.asarray(y)
-    err = numpy.asarray(err)
+    x = np.asarray(x)
+    y = np.asarray(y)
+    err = np.asarray(err)
     fitobj = Fitter(residuals=res, data=(x, y, err), **kwargs)
     fitobj.fit(p0)
     return fitobj

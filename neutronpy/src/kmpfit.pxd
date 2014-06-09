@@ -50,4 +50,3 @@ cdef extern from "mpfit.h":
                  double *xall, mp_par *pars, mp_config *config,  # @IgnorePep8
                  void *private_data,
                  mp_result *result)
-
