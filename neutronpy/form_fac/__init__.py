@@ -1,11 +1,9 @@
-import json
-import numpy as np
-import neutronpy.constants as const
 from neutronpy.form_fac.structureFactor import str_fac as StructureFactor
 from neutronpy.form_fac.magneticFormFactor import mag_fac as MagneticFormFactor
 
-
+'''
 def test_str_fac():
+    import numpy as np
     structure = {
                  'name': 'Fe1.1Te',
                  'composition': [
@@ -24,3 +22,4 @@ def test_str_fac():
 
     print(np.abs(StructureFactor(structure, h=1., k=1., l=0.)) ** 2)
     # 223075.365633
+'''
