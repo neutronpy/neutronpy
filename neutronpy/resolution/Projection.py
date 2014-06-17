@@ -6,32 +6,36 @@ Created on Jun 13, 2014
 import numpy as np
 
 
-def rc_int(index, r0, m):
+def project_into_plane(rm, index):
+    '''Projects out-of-plane resolution into a specified plane by performing
+    a gaussian integral over the third axis.
+
+    Parameters
+    ----------
+    rm : ndarray
+        Resolution array
+
+    index : int
+        Index of the axis that should be integrated out
+
+    Returns
+    -------
+    mp : ndarray
+        Resolution matrix in a specified plane
+
     '''
-    function [r,mp]=rc_int(index,r0,m)
-    %
-    % MATLAB function that takes a matrix and performs a Gaussian integral
-    % over the row and column specified by index and returns
-    % a new matrix. Tested against maple integration.
-    %
-    % ResCal5/A.T.
-    '''
-    r = np.sqrt(2 * np.pi / m[int(index), int(index)]) * r0
 
-    # remove columns and rows from m
-    # that contain the subscript "index".
+    out = rm
+    gauss = rm[:, index] + rm[index, :].T
+    gauss = np.delete(gauss, index)
+    out = np.delete(out, index, 0)
+    out = np.delete(out, index, 1)
+    out = out - (1. / (4. * rm[index, index]) * gauss * gauss.T)
 
-    mp = m
-    b = m[:, index] + m[index, :].T
-    b = np.delete(b, index)
-    mp = np.delete(mp, index, 0)
-    mp = np.delete(mp, index, 1)
-    mp = mp - 1 / (4 * m[index, index]) * b * b.T
-
-    return [r, mp]
+    return out
 
 
-def res_projs(R0, RMS, hkle=[0, 0, 0, 0], mode='QxQy', n=36):
+def projections(R0, RMS, hkle=[0, 0, 0, 0], mode='QxQy', npts=31):
     '''
     %
     % MATLAB function to plot the projections of the resolution ellipse
@@ -53,13 +57,10 @@ def res_projs(R0, RMS, hkle=[0, 0, 0, 0], mode='QxQy', n=36):
                    np.hstack((A[1, :2:1], A[1, 3])),
                    np.hstack((A[3, :2:1], A[3, 3]))))
 
-    #----- Work out projections for different cuts through the ellipse
-    #----- S is the rotation matrix that diagonalises the projected ellipse
-
-    #----- 1. Qx, Qy plane
+    # Projection into Qx, Qy plane
 
     if mode == 'QxQy':
-        [R0P, MP] = rc_int(2, R0, np.array(B))  # @UnusedVariable
+        MP = project_into_plane(B, 2)  # @UnusedVariable
 
         theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
         S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
@@ -69,9 +70,9 @@ def res_projs(R0, RMS, hkle=[0, 0, 0, 0], mode='QxQy', n=36):
         hwhm_xp = const / np.sqrt(MP[0, 0])
         hwhm_yp = const / np.sqrt(MP[1, 1])
 
-        return rc_ellip(hwhm_xp, hwhm_yp, theta, hkle[0], hkle[1], n)
+        return ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0], hkle[1]], npts)
 
-    #---------------- Add slice through Qx,Qy plane ----------------------
+    # Slice through Qx,Qy plane
 
     if mode == 'QxQySlice':
         MP = A[:2:1, :2:1]
@@ -84,12 +85,12 @@ def res_projs(R0, RMS, hkle=[0, 0, 0, 0], mode='QxQy', n=36):
         hwhm_xp = const / np.sqrt(MP[0, 0])
         hwhm_yp = const / np.sqrt(MP[1, 1])
 
-        return rc_ellip(hwhm_xp, hwhm_yp, theta, hkle[0], hkle[1], n)
+        return ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0], hkle[1]], npts)
 
-    #----- 2. Qx, W plane
+    # Projection into Qx, W plane
 
     if mode == 'QxW':
-        [R0P, MP] = rc_int(1, R0, B)  # @UnusedVariable
+        MP = project_into_plane(B, 1)  # @UnusedVariable
 
         theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
         S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
@@ -99,9 +100,9 @@ def res_projs(R0, RMS, hkle=[0, 0, 0, 0], mode='QxQy', n=36):
         hwhm_xp = const / np.sqrt(MP[0, 0])
         hwhm_yp = const / np.sqrt(MP[1, 1])
 
-        return rc_ellip(hwhm_xp, hwhm_yp, theta, hkle[0], hkle[3], n)
+        return ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0], hkle[3]], npts)
 
-    #---------------- Add slice through Qx,W plane ----------------------
+    # Slice through Qx,W plane
 
     if mode == 'QxWSlice':
         MP = [[A[0, 0], A[0, 3]], [A[3, 0], A[3, 3]]]
@@ -114,12 +115,12 @@ def res_projs(R0, RMS, hkle=[0, 0, 0, 0], mode='QxQy', n=36):
         hwhm_xp = const / np.sqrt(MP[0, 0])
         hwhm_yp = const / np.sqrt(MP[1, 1])
 
-        return rc_ellip(hwhm_xp, hwhm_yp, theta, hkle[0], hkle[3], n)
+        return ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0], hkle[3]], npts)
 
-    #----- 3. Qy, W plane
+    # Projections into Qy, W plane
 
     if slice == 'QyW':
-        [R0P, MP] = rc_int(0, R0, B)  # @UnusedVariable
+        MP = project_into_plane(B, 0)  # @UnusedVariable
 
         theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
         S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
@@ -129,9 +130,9 @@ def res_projs(R0, RMS, hkle=[0, 0, 0, 0], mode='QxQy', n=36):
         hwhm_xp = const / np.sqrt(MP[0, 0])
         hwhm_yp = const / np.sqrt(MP[1, 1])
 
-        return rc_ellip(hwhm_xp, hwhm_yp, theta, hkle[1], hkle[3], n)
+        return ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1], hkle[3]], npts)
 
-    #---------------- Add slice through Qy,W plane ----------------------
+    # Slice through Qy,W plane
 
     if slice == 'QyWSlice':
         MP = [[A[1, 1], A[1, 3]], [A[3, 1], A[3, 3]]]
@@ -144,33 +145,38 @@ def res_projs(R0, RMS, hkle=[0, 0, 0, 0], mode='QxQy', n=36):
         hwhm_xp = const / np.sqrt(MP[0, 0])
         hwhm_yp = const / np.sqrt(MP[1, 1])
 
-        return rc_ellip(hwhm_xp, hwhm_yp, theta, hkle[1], hkle[3], n)
+        return ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1], hkle[3]], npts)
 
 
-def rc_ellip(a, b, phi=0, x0=0, y0=0, n=36):
+def ellipse(saxis1, saxis2, phi=0, origin=[0, 0], npts=31):
+    '''Returns an ellipse.
+
+    Parameters
+    ----------
+    saxis1 : float
+        First semiaxis
+
+    saxis2 : float
+        Second semiaxis
+
+    phi : float, optional
+        Angle that semiaxes are rotated from +x
+
+    origin : list of floats, optional
+        Origin position [x0, y0]
+
+    npts: float, optional
+        Number of points in the output arrays.
+
+    Returns
+    -------
+    [x, y] : list of ndarray
+        Two one dimensional arrays representing an ellipse
     '''
-    function  [x,y] = rc_ellip(a,b,phi,x0,y0,n)
-    # ELLIPSE  Plotting ellipse.
-    #    ELLIPSE(A,B,PHI,X0,Y0,N)  Plots ellipse with
-    #    semiaxes A, B, rotated by the angle PHI,
-    #    with origin at X0, Y0 and consisting of N points
-    #    (default 100).
-    #    [X,Y] = ELLIPSE(...) Instead of plotting returns
-    #    coordinates of the ellipse.
 
-    #  Kirill K. Pankratov, kirill@plume.mit.edu
-    #  03/21/95
-    '''
+    theta = np.linspace(0., 2. * np.pi, npts + 1)
 
-    th = np.linspace(0, 2 * np.pi, n + 1)
-    x = a * np.cos(th)
-    y = b * np.sin(th)
-
-    c = np.cos(phi)
-    s = np.sin(phi)
-
-    th = x * c - y * s + x0
-    y = x * s + y * c + y0
-    x = th
+    x = saxis1 * np.cos(theta) * np.cos(phi) - saxis2 * np.sin(theta) * np.sin(phi) + origin[0]
+    y = saxis1 * np.cos(theta) * np.sin(phi) + saxis2 * np.sin(theta) * np.cos(phi) + origin[1]
 
     return [x, y]

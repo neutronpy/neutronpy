@@ -8,15 +8,8 @@ import numpy as np
 from scipy.linalg import block_diag as blkdiag
 
 
-class Lattice():
-    '''
-    classdocs
-    '''
-
+class _Lattice():
     def __init__(self, a, b, c, alpha, beta, gamma):
-        '''
-        Constructor
-        '''
         self.a = a
         self.b = b
         self.c = c
@@ -26,7 +19,7 @@ class Lattice():
 
 
 def scalar(x1, y1, z1, x2, y2, z2, lattice):
-    '''
+    r'''
     function s=scalar(x1,y1,z1,x2,y2,z2,lattice)
     #==========================================================================
     # function s=scalarx1,y1,z1,x2,y2,z2,lattice)
@@ -51,7 +44,7 @@ def scalar(x1, y1, z1, x2, y2, z2, lattice):
 
 
 def star(lattice):
-    '''
+    r'''
     function [V,Vstar,latticestar]=star(lattice)
     #==========================================================================
     #  function [V,Vst,latticestar]=star(lattice)
@@ -73,7 +66,7 @@ def star(lattice):
 
     Vstar = (2 * np.pi) ** 3 / V
 
-    latticestar = Lattice(0, 0, 0, 0, 0, 0)
+    latticestar = _Lattice(0, 0, 0, 0, 0, 0)
     latticestar.a = 2 * np.pi * lattice.b * lattice.c * np.sin(lattice.alpha) / V
     latticestar.b = 2 * np.pi * lattice.a * lattice.c * np.sin(lattice.beta) / V
     latticestar.c = 2 * np.pi * lattice.b * lattice.a * np.sin(lattice.gamma) / V
@@ -88,7 +81,7 @@ def star(lattice):
 
 
 def modvec(x, y, z, lattice):
-    '''
+    r'''
     function m=modvec(x,y,z,lattice)
     #==========================================================================
     # function m=modvec(x,y,z,lattice)
@@ -106,7 +99,7 @@ def modvec(x, y, z, lattice):
 
 
 def GetLattice(EXP):
-    '''
+    r'''
     function [lattice,rlattice]=GetLattice(EXP)
     #==========================================================================
     #  function [lattice,rlattice]=GetLattice(EXP)
@@ -119,7 +112,7 @@ def GetLattice(EXP):
     #==========================================================================
     '''
     s = np.array([item.sample for item in EXP])
-    lattice = Lattice(np.array([item.a for item in s]),
+    lattice = _Lattice(np.array([item.a for item in s]),
                       np.array([item.b for item in s]),
                       np.array([item.c for item in s]),
                       np.array([item.alpha for item in s]) * np.pi / 180,
@@ -131,7 +124,7 @@ def GetLattice(EXP):
 
 
 def GetTau(x, getlabel=False):
-    '''
+    r'''
     function tau = GetTau(x, getlabel)
     #==========================================================================
     #  function GetTau(tau)
@@ -181,7 +174,7 @@ def GetTau(x, getlabel=False):
 
 
 def CleanArgs(*varargin):
-    '''
+    r'''
     function [len,varargout]=CleanArgs(varargin)
     #==========================================================================
     #  function [N,X,Y,Z,..]=CleanArgs(X,Y,Z,..)
@@ -219,7 +212,7 @@ def CleanArgs(*varargin):
 
 
 def ResMat(Q, W, EXP):
-    '''
+    r'''
     function [R0,RM]=ResMat(Q,W,EXP)
     #==========================================================================
     #  function [R0,RM]=ResMat(Q,W,EXP)
@@ -677,7 +670,7 @@ def ResMat(Q, W, EXP):
 
 
 def StandardSystem(EXP):
-    '''
+    r'''
     function [x,y,z,lattice,rlattice]=StandardSystem(EXP)
     #==========================================================================
     #  function [x,y,z,lattice,rlattice]=StandardSystem(EXP)
@@ -746,7 +739,7 @@ def StandardSystem(EXP):
 
 
 def res_calc(H, K, L, W, EXP):
-    '''
+    r'''
     function [R0,RMS, RM]=ResMatS(H,K,L,W,EXP)
     #==========================================================================
     #  function [R0,RMS]=ResMatS(H,K,L,W,EXP)
