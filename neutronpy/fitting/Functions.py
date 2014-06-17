@@ -66,8 +66,8 @@ def gaussian(p, q):
     '''
     funct = p[0] + p[1] * q
     for i in range(int(len(p[2:]) / 3)):
-        # Normalization pre-factor
         sigma = p[3 * i + 4] / (2. * np.sqrt(2. * np.log(2.)))
+
         funct += p[3 * i + 2] / (sigma * np.sqrt(2. * np.pi)) * \
                  np.exp(-(q - p[3 * i + 3]) ** 2 / (2 * sigma ** 2))
 
@@ -138,7 +138,7 @@ def lorentzian(p, q):
 
 
 def voigt(p, q):
-    '''Returns an arbitrary number of Voigt profiles, a Lorentz profile convoluted by a Gaussian.
+    r'''Returns an arbitrary number of Voigt profiles, a Lorentz profile convoluted by a Gaussian.
 
     Parameters
     ----------
@@ -195,17 +195,17 @@ def voigt(p, q):
         sigma = p[4 * i + 5] / (2. * np.sqrt(2. * np.log(2.)))
         gamma = p[4 * i + 4] / 2.
 
-        z = ((q - p[4 * i + 3]) + 1j * gamma) / (sigma * np.sqrt(2))
-        V = p[4 * i + 2] * np.real(special.wofz(z))
+        # Normalization pre-factor
         N = (sigma * np.sqrt(2 * np.pi))
 
-        funct += V / N
+        funct += p[4 * i + 2] / N * np.real(special.wofz(((q - p[4 * i + 3]) + 1j * gamma) /
+                                                         (sigma * np.sqrt(2))))
 
     return funct
 
 
 def resolution(p, q, mode='gaussian'):
-    '''Returns a
+    r'''Returns a gaussian profile using a resolution matrix generated for a Triple Axis Spectrometer.
 
     Parameters
     ----------
@@ -250,6 +250,7 @@ def resolution(p, q, mode='gaussian'):
         for i in range(int(len(p[2:]) / 7)):
             # Normalization pre-factor
             N = (np.sqrt(p[7 * i + 6]) * np.sqrt(p[7 * i + 7] - p[7 * i + 8] ** 2 / p[7 * i + 6])) / (2. * np.pi)
+
             funct += p[7 * i + 2] * p[7 * i + 5] / N * np.exp(-1. / 2. * (p[7 * i + 6] * (x - p[7 * i + 3]) ** 2 +
                                                                           p[7 * i + 7] * (y - p[7 * i + 4]) ** 2 +
                                                                           2. * p[7 * i + 8] * (x - p[7 * i + 3]) * (y - p[7 * i + 4])))
@@ -258,19 +259,42 @@ def resolution(p, q, mode='gaussian'):
 
 
 def gaussian_ring(p, q):
-    '''Purpose: evaluate terms and derivatives of function
-    for non-linear least-squares search with form
-    of normalized Gaussian ellipse(s) in 2 dimensions
+    r'''Returns a two dimensional gaussian ellipse profile.
 
-        p[0]    : flat background term
-        p[1]    : sloping background
-        p[2]    : area under first gaussian ellipse
-        p[3]    : x position of first gaussian ellipse
-        p[4]    : y position of first gaussian ellipse
-        p[5]    : radius of the first gaussian ellipse
-        p[6]    : eccentricity of the first gaussian ellipse
-        p[7]    : full width half maximum of first gaussian ellipse
-        etc.
+    Parameters
+    ----------
+    p : ndarray
+        Parameters for the gaussian ellipse function, in the following format:
+
+        * p[0] : Constant background
+        * p[1] : Linear background slope
+        * p[2] : Area under first gaussian ellipse
+        * p[3] : x position of first gaussian ellipse
+        * p[4] : y position of first gaussian ellipse
+        * p[5] : Radius of the first gaussian ellipse
+        * p[6] : Eccentricity of the first gaussian ellipse
+        * p[7] : FWHM of first gaussian ellipse
+        * p[8] : Area under the second gaussian ellipse
+        * P[...] : etc.
+
+    q : tuple of ndarray
+        Two input arrays of equivalent size and shape, e.g. formed with np.meshgrid().
+
+    Returns
+    -------
+    out : ndarray
+        Two dimensional gaussian ellipse profile.
+
+    Notes
+    -----
+    A gaussian ellipse profile is defined as:
+
+    .. math::    f(x,y) = \frac{1}{N} e^{-\frac{1}{2}\frac{(\sqrt{(x-x_0)^2 + \alpha^2(y-y_0)^2}-r_0)^2}{2 \sigma},
+
+    where :math:`FWHM = 2\sqrt{2\log(2)}`, and N is the normalization pre-factor given by:
+
+    .. math::    N =
+
     '''
     x, y = q
 
