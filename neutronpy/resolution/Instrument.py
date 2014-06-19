@@ -507,7 +507,7 @@ def ResMat(Q, W, EXP):
         rot[1, 0] = -np.sin(psi)
         rot[2, 2] = 1.
         # sshape=rot'*sshape*rot
-        sshape = rot * np.matrix(sshape) * rot.T
+        sshape = rot * np.matrix(sshape) * rot.H
 
         #-------------------------------------------------------------------
         # Definition of matrix G
@@ -605,12 +605,12 @@ def ResMat(Q, W, EXP):
         #----------------------------------------------------------------------
         # Definition of resolution matrix M
         if method == 1 or method == 'Popovici':
-            K = S + T.T * F * T
-            H = np.linalg.inv(D * np.linalg.inv(K) * D.T)
-            Ninv = A * np.linalg.inv(H + G) * A.T  # Popovici Eq 20
+            K = S + T.H * F * T
+            H = np.linalg.inv(D * np.linalg.inv(K) * D.H)
+            Ninv = A * np.linalg.inv(H + G) * A.H  # Popovici Eq 20
         else:
-            H = G + C.T * F * C  # Popovici Eq 8
-            Ninv = A * np.linalg.inv(H) * A.T  # Cooper-Nathans (in Popovici Eq 10)
+            H = G + C.H * F * C  # Popovici Eq 8
+            Ninv = A * np.linalg.inv(H) * A.H  # Cooper-Nathans (in Popovici Eq 10)
             # Horizontally focusing analyzer if needed
             if horifoc > 0:
                 Ninv = np.linalg.inv(Ninv)
@@ -620,7 +620,7 @@ def ResMat(Q, W, EXP):
                 Ninv[3, 3] = (np.tan(thetaa) / (etaa * kf)) ** 2
                 Ninv = np.linalg.inv(Ninv)
 
-        Minv = B * Ninv * B.T  # Popovici Eq 3
+        Minv = B * Ninv * B.H  # Popovici Eq 3
 
         # TODO: FIX added factor 5.545 from ResCal5
         M = 8. * np.log(2.) * np.linalg.inv(Minv)
@@ -687,12 +687,12 @@ def ResMat(Q, W, EXP):
                 # Popovici
                 Rmon = Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * \
                         np.sqrt(np.linalg.det(f) / np.linalg.det((np.matrix(d) * \
-                        (np.matrix(s) + np.matrix(t).T * np.matrix(f) * np.matrix(t)).I * np.matrix(d).T).I + np.matrix(g)))
+                        (np.matrix(s) + np.matrix(t).H * np.matrix(f) * np.matrix(t)).I * np.matrix(d).H).I + np.matrix(g)))
             else:
                 # Cooper-Nathans
                 Rmon = Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * \
                         np.sqrt(np.linalg.det(f) / np.linalg.det(np.matrix(g) + \
-                        np.matrix(c).T * np.matrix(f) * np.matrix(c)))
+                        np.matrix(c).H * np.matrix(f) * np.matrix(c)))
 
             R0_ = R0_ / Rmon
             R0_ = R0_ * ki  # 1/ki monitor efficiency
@@ -738,8 +738,6 @@ def ResMat(Q, W, EXP):
             R0_ = R0_ * reflec
 
         #----------------------------------------------------------------------
-        print('R0_:{}'.format(R0_))
-        print('R0:{}'.format(R0))
         R0[ind] = R0_
         RM[:, :, ind] = M[:, :]
 
@@ -765,14 +763,17 @@ def project_into_plane(rm, index):
 
     '''
 
-    out = rm
-    gauss = rm[:, index] + rm[index, :].T
-    gauss = np.delete(gauss, index)
-    out = np.delete(out, index, 0)
-    out = np.delete(out, index, 1)
-    out = out - (1. / (4. * rm[index, index]) * gauss * gauss.T)
+    mp = rm
 
-    return out
+    b = rm[:, index] + rm[index, :].T
+    b = np.delete(b, index, 0)
+
+    mp = np.delete(mp, index, 0)
+    mp = np.delete(mp, index, 1)
+
+    mp -= 1 / (4. * rm[index, index]) * np.outer(b, b.T)
+
+    return mp
 
 
 def ellipse(saxis1, saxis2, phi=0, origin=[0, 0], npts=31):
@@ -787,7 +788,7 @@ def ellipse(saxis1, saxis2, phi=0, origin=[0, 0], npts=31):
         Second semiaxis
 
     phi : float, optional
-        Angle that semiaxes are rotated from +x
+        Angle that semiaxes are rotated
 
     origin : list of floats, optional
         Origin position [x0, y0]
@@ -801,12 +802,11 @@ def ellipse(saxis1, saxis2, phi=0, origin=[0, 0], npts=31):
         Two one dimensional arrays representing an ellipse
     '''
 
-    theta = np.linspace(0., 2. * np.pi, npts + 1)
+    theta = np.linspace(0., 2. * np.pi, npts)
 
-    x = saxis1 * np.cos(theta) * np.cos(phi) - saxis2 * np.sin(theta) * np.sin(phi) + origin[0]
-    y = saxis1 * np.cos(theta) * np.sin(phi) + saxis2 * np.sin(theta) * np.cos(phi) + origin[1]
-
-    return [x, y]
+    x = np.array(saxis1 * np.cos(theta) * np.cos(phi) - saxis2 * np.sin(theta) * np.sin(phi) + origin[0])
+    y = np.array(saxis1 * np.cos(theta) * np.sin(phi) + saxis2 * np.sin(theta) * np.cos(phi) + origin[1])
+    return np.vstack((x, y))
 
 
 class Instrument(object):
@@ -876,7 +876,7 @@ class Instrument(object):
         self.orient1 = np.array(orient1)
         self.orient2 = np.array(orient2)
 
-    def calc_resolution(self, H, K, L, W):
+    def calc_resolution(self, H, K, L, W, npts=36):
         r'''
         function [R0,RMS, RM]=ResMatS(H,K,L,W,EXP)
         #==========================================================================
@@ -898,6 +898,8 @@ class Instrument(object):
         EXP = self
 
         [length, H, K, L, W, EXP] = CleanArgs(H, K, L, W, EXP)
+        self.H, self.K, self.L, self.W = H, K, L, W
+
         [x, y, z, sample, rsample] = StandardSystem(EXP)  # @UnusedVariable
 
         Q = modvec(H, K, L, rsample)
@@ -936,7 +938,7 @@ class Instrument(object):
         [R0, RM] = ResMat(Q, W, EXProt)
 
         for i in range(length):
-            RMS[:, :, i] = (np.matrix(tmat[:, :, i])).T * np.matrix(RM[:, :, i]) * np.matrix(tmat[:, :, i])
+            RMS[:, :, i] = np.matrix(tmat[:, :, i]).T * np.matrix(RM[:, :, i]) * np.matrix(tmat[:, :, i])
 
         mul = np.zeros((4, 4))
         e = np.identity(4)
@@ -950,126 +952,189 @@ class Instrument(object):
                     R0[i] = R0[i] / np.sqrt(np.linalg.det(e / RMS[:, :, i])) * np.sqrt(np.linalg.det(e / mul + e / RMS[:, :, i]))
                     RMS[:, :, i] = e / (e / mul + e / RMS[:, :, i])
 
-        self.R0 = R0
-        self.RMS = RMS
-        self.RM = RM
+        self.R0, self.RMS, self.RM = R0, RMS, RM
+        self.calc_projections([H, K, L, W], npts=npts)
 
-#         return [R0, RMS, RM]
+    def calc_projections(self, hkle, npts=36):
+        '''Calculates the resolution ellipses for projections and slices from the resolution matrix.
 
-    def projections(self, hkle=[0, 0, 0, 0], mode='QxQy', npts=31):
-        '''
-        %
-        % MATLAB function to plot the projections of the resolution ellipse
-        % of a triple axis
-        %
-        % Input:
-        %  out:  EXP ResLib structure
-        %  mode: can be set to 'rlu' so that the plot is in lattice RLU frame
-        %
-        % DFM 10.11.95
+        Parameters
+        ----------
+        hkle : list
+            Positions at which projections should be calculated.
+
+        npts : int, optional
+            Number of points in the outputted ellipse curve
+
+        Returns
+        -------
+        projections : dictionary
+            A dictionary containing projections in the planes: QxQy, QxW, and QyW, both projections and slices
+
         '''
         try:
             A = np.array(self.RMS)
-        except ValueError:
-            raise ValueError('Resolution calculation has not been performed')
+        except Exception:
+            raise Exception('Resolution calculation has not been performed')
 
         const = 1.17741  # half width factor
 
-        self.projection_out = np.zeros((2, A.shape[-1]))
+        self.projections = {
+                            'QxQy': np.zeros((2, npts, A.shape[-1])),
+                            'QxQySlice': np.zeros((2, npts, A.shape[-1])),
+                            'QxW': np.zeros((2, npts, A.shape[-1])),
+                            'QxWSlice': np.zeros((2, npts, A.shape[-1])),
+                            'QyW': np.zeros((2, npts, A.shape[-1])),
+                            'QyWSlice': np.zeros((2, npts, A.shape[-1]))
+                            }
 
         for ind in range(A.shape[-1]):
-
             #----- Remove the vertical component from the matrix.
-            B = np.vstack((np.hstack((A[0, :2:1], A[0, 3])),
-                           np.hstack((A[1, :2:1], A[1, 3])),
-                           np.hstack((A[3, :2:1], A[3, 3]))))
+            B = np.vstack((np.hstack((A[0, :2:1, ind], A[0, 3, ind])),
+                           np.hstack((A[1, :2:1, ind], A[1, 3, ind])),
+                           np.hstack((A[3, :2:1, ind], A[3, 3, ind]))))
 
             # Projection into Qx, Qy plane
+            MP = project_into_plane(B, 2)
 
-            if mode == 'QxQy':
-                MP = project_into_plane(B, 2)  # @UnusedVariable
+            theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
+            S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
 
-                theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
-                S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
+            MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).H
 
-                MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).T
+            hwhm_xp = const / np.sqrt(MP[0, 0])
+            hwhm_yp = const / np.sqrt(MP[1, 1])
 
-                hwhm_xp = const / np.sqrt(MP[0, 0])
-                hwhm_yp = const / np.sqrt(MP[1, 1])
-
-                self.projection_out[:, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0], hkle[1]], npts)
+            self.projections['QxQy'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[1][ind]], npts)
 
             # Slice through Qx,Qy plane
+            MP = np.array(A[:2:1, :2:1, ind])
 
-            if mode == 'QxQySlice':
-                MP = A[:2:1, :2:1]
+            theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
+            S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
 
-                theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
-                S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
+            MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).H
 
-                MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).T
+            hwhm_xp = const / np.sqrt(MP[0, 0])
+            hwhm_yp = const / np.sqrt(MP[1, 1])
 
-                hwhm_xp = const / np.sqrt(MP[0, 0])
-                hwhm_yp = const / np.sqrt(MP[1, 1])
-
-                self.projection_out[:, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0], hkle[1]], npts)
+            self.projections['QxQySlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[1][ind]], npts)
 
             # Projection into Qx, W plane
 
-            if mode == 'QxW':
-                MP = project_into_plane(B, 1)  # @UnusedVariable
+            MP = project_into_plane(B, 1)
 
-                theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
-                S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
+            theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
+            S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
 
-                MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).T
+            MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).H
 
-                hwhm_xp = const / np.sqrt(MP[0, 0])
-                hwhm_yp = const / np.sqrt(MP[1, 1])
+            hwhm_xp = const / np.sqrt(MP[0, 0])
+            hwhm_yp = const / np.sqrt(MP[1, 1])
 
-                self.projection_out[:, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0], hkle[3]], npts)
+            self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[3][ind]], npts)
 
             # Slice through Qx,W plane
+            MP = np.array([[A[0, 0, ind], A[0, 3, ind]], [A[3, 0, ind], A[3, 3, ind]]])
 
-            if mode == 'QxWSlice':
-                MP = [[A[0, 0], A[0, 3]], [A[3, 0], A[3, 3]]]
+            theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
+            S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
 
-                theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
-                S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
+            MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).H
 
-                MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).T
+            hwhm_xp = const / np.sqrt(MP[0, 0])
+            hwhm_yp = const / np.sqrt(MP[1, 1])
 
-                hwhm_xp = const / np.sqrt(MP[0, 0])
-                hwhm_yp = const / np.sqrt(MP[1, 1])
-
-                self.projection_out[:, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0], hkle[3]], npts)
+            self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[3][ind]], npts)
 
             # Projections into Qy, W plane
+            MP = project_into_plane(B, 0)
 
-            if slice == 'QyW':
-                MP = project_into_plane(B, 0)  # @UnusedVariable
+            theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
+            S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
 
-                theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
-                S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
+            MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).H
 
-                MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).T
+            hwhm_xp = const / np.sqrt(MP[0, 0])
+            hwhm_yp = const / np.sqrt(MP[1, 1])
 
-                hwhm_xp = const / np.sqrt(MP[0, 0])
-                hwhm_yp = const / np.sqrt(MP[1, 1])
-
-                self.projection_out[:, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1], hkle[3]], npts)
+            self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1][ind], hkle[3][ind]], npts)
 
             # Slice through Qy,W plane
+            MP = np.array([[A[1, 1, ind], A[1, 3, ind]], [A[3, 1, ind], A[3, 3, ind]]])
 
-            if slice == 'QyWSlice':
-                MP = [[A[1, 1], A[1, 3]], [A[3, 1], A[3, 3]]]
+            theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
+            S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
 
-                theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
-                S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
+            MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).H
 
-                MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).T
+            hwhm_xp = const / np.sqrt(MP[0, 0])
+            hwhm_yp = const / np.sqrt(MP[1, 1])
 
-                hwhm_xp = const / np.sqrt(MP[0, 0])
-                hwhm_yp = const / np.sqrt(MP[1, 1])
+            self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1][ind], hkle[3][ind]], npts)
 
-                self.projection_out[:, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1], hkle[3]], npts)
+    def get_resolution_params(self, hkle, plane, mode='project'):
+        '''Returns parameters for the resolution gaussian.
+
+        Parameters
+        ----------
+        hkle : list of floats
+            Position and energy for which parameters should be returned
+
+        plane : 'QxQy' | 'QxQySlice' | 'QxW' | 'QxWSlice' | 'QyW' | 'QyWSlice'
+            Two dimensional plane for which parameters should be returned
+
+        mode : 'project' | 'slice'
+            Return the projection into or slice through the chosen plane
+
+        Returns
+        -------
+        tuple : R0, RMxx, RMyy, RMxy
+            Parameters for the resolution gaussian
+
+        '''
+        A = self.RMS
+
+        ind = np.where((self.H == hkle[0]) & (self.K == hkle[1]) & (self.L == hkle[2]) & (self.W == hkle[3]))
+        if len(ind[0]) == 0:
+            raise ValueError('Resolution at provided HKLE has not been calculated.')
+
+        ind = ind[0][0]
+
+        # Remove the vertical component from the matrix
+        B = np.vstack((np.hstack((A[0, :2:1, ind], A[0, 3, ind])),
+                       np.hstack((A[1, :2:1, ind], A[1, 3, ind])),
+                       np.hstack((A[3, :2:1, ind], A[3, 3, ind]))))
+
+        if plane == 'QxQy':
+            if mode == 'project':
+                # Projection into Qx, Qy plane
+                R0 = np.sqrt(2 * np.pi / B[2, 2]) * self.R0[ind]
+                MP = project_into_plane(B, 2)
+                return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
+            if mode == 'slice':
+                # Slice through Qx,Qy plane
+                MP = np.array(A[:2:1, :2:1, ind])
+                return (self.R0[ind], MP[0, 0], MP[1, 1], MP[0, 1])
+
+        if plane == 'QxW':
+            if mode == 'project':
+                # Projection into Qx, W plane
+                R0 = np.sqrt(2 * np.pi / B[1, 1]) * self.R0[ind]
+                MP = project_into_plane(B, 1)
+                return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
+            if mode == 'slice':
+                # Slice through Qx,W plane
+                MP = np.array([[A[0, 0, ind], A[0, 3, ind]], [A[3, 0, ind], A[3, 3, ind]]])
+                return (self.R0[ind][0], MP[0, 0], MP[1, 1], MP[0, 1])
+
+        if plane == 'QyW':
+            if mode == 'project':
+                # Projections into Qy, W plane
+                R0 = np.sqrt(2 * np.pi / B[0, 0]) * self.R0
+                MP = project_into_plane(B, 0)
+                return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
+            if mode == 'slice':
+                # Slice through Qy,W plane
+                MP = np.array([[A[1, 1, ind], A[1, 3, ind]], [A[3, 1, ind], A[3, 3, ind]]])
+                return (self.R0[ind][0], MP[0, 0], MP[1, 1], MP[0, 1])
