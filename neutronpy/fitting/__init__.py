@@ -1,1 +1,2 @@
-from neutronpy.fitting.Functions import *
+from .Functions import *
+from .Models import *

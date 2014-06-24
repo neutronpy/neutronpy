@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension, Command
 from setuptools import find_packages
 from distutils.sysconfig import get_python_inc, get_python_lib  # @UnusedImport
 from Cython.Distutils import build_ext
@@ -29,11 +29,7 @@ setup(name='neutronpy',
       packages=find_packages(),
       test_suite='neutronpy.tests.test_all',
       cmdclass={'build_ext': build_ext},
-      ext_modules=[
-      Extension(
-         "kmpfit",
-         ["src/kmpfit.pyx", "src/mpfit.c"],
-         include_dirs=include_dirs
-      )
-   ],
+      ext_package='neutronpy',
+      ext_modules=[Extension("fitting", ["src/kmpfit.pyx", "src/mpfit.c"], include_dirs=include_dirs)],
+      package_data={'neutronpy': ['database/*.json']}
 )

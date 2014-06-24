@@ -1,1 +1,1 @@
-from neutronpy.resolution.Instrument import Instrument
+from .Instrument import Instrument

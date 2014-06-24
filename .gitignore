@@ -5,6 +5,9 @@ build/*
 __pycache__/
 main.py
 /build/
+venv/*
+neutronpy.egg-info/*
+dist/*
 
 scan0010.dat
 scan0012.dat

@@ -1,1 +1,1 @@
-__all__ = ['tools', 'resolution', 'fitting', 'form_fac', 'constants']
+__all__ = ['constants', 'tools', 'form_facs', 'resolution', 'fitting']
