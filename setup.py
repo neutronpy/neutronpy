@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
 from distutils.core import setup, Extension
-from distutils.sysconfig import get_python_inc, get_python_lib
+from setuptools import find_packages
+from distutils.sysconfig import get_python_inc, get_python_lib  # @UnusedImport
 from Cython.Distutils import build_ext
-from glob import glob
-import sys, os
+from glob import glob  # @UnusedImport
+import sys
+import os
 
 try:
-   import numpy
+    import numpy
 except:
-   sys.exit(1)
+    sys.exit(1)
 
 include_dirs = []
 numdir = os.path.dirname(numpy.__file__)
@@ -26,7 +28,7 @@ setup(name='neutronpy',
       install_requires=['numpy>=1.8.1', 'six>=1.6.1'],
       packages=find_packages(),
       test_suite='neutronpy.tests.test_all',
-      cmdclass = {'build_ext': build_ext},
+      cmdclass={'build_ext': build_ext},
       ext_modules=[
       Extension(
          "kmpfit",
