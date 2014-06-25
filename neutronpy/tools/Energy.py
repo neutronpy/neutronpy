@@ -9,7 +9,7 @@ from scipy import constants
 
 
 class Neutron():
-    '''Class containing the most commonly used properties of a neutron beam
+    r'''Class containing the most commonly used properties of a neutron beam
     given some initial input, e.g. energy, wavelength, wavevector,
     temperature, or frequency'''
 
@@ -40,7 +40,7 @@ class Neutron():
         self.freq = self.e / joules2meV / constants.hbar / 2. / np.pi / 1.e12
 
     def printValues(self):
-        print('''
+        print(u'''
 Energy: {0:3.3f} meV
 Wavelength: {1:3.3f} A
 Wavevector: {2:3.3f} A^-1
