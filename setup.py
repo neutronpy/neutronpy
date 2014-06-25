@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-from setuptools import setup, Extension, Command
-from setuptools import find_packages
-from distutils.sysconfig import get_python_inc, get_python_lib  # @UnusedImport
+__version__ = '0.1alpha'
+
+from distutils.core import setup, Extension
 from Cython.Distutils import build_ext
-from glob import glob  # @UnusedImport
 import sys
 import os
 
@@ -20,16 +19,16 @@ include_dirs.append(ipath)
 include_dirs.append('src')
 
 setup(name='neutronpy',
-      version='0.1',
+      version=__version__,
       description='Neutron Scattering Tools Python Library',
       author='David M Fobes',
       author_email='pseudocubic@gmail.com',
       url='https://github.com/pseudocubic/neutronpy',
-      install_requires=['numpy>=1.8.1', 'six>=1.6.1'],
-      packages=find_packages(),
-      test_suite='neutronpy.tests.test_all',
+#       install_requires=['numpy>=1.8.1', 'matplotlib>=1.3.1', 'scipy>=0.13.0'],
+#       test_suite='neutronpy.tests.test_all',
       cmdclass={'build_ext': build_ext},
       ext_package='neutronpy',
-      ext_modules=[Extension("fitting", ["src/kmpfit.pyx", "src/mpfit.c"], include_dirs=include_dirs)],
-      package_data={'neutronpy': ['database/*.json']}
+      ext_modules=[Extension("fitting.kmpfit", ["src/kmpfit.pyx", "src/mpfit.c"], include_dirs=include_dirs)],
+      package_data={'neutronpy': ['database/*.json']},
+      packages=['neutronpy', 'neutronpy.fitting', 'neutronpy.resolution', 'neutronpy.tools', 'neutronpy.form_facs'],
 )
