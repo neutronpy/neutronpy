@@ -1,5 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt  # @UnusedImport
+import matplotlib.pyplot as plt
+from scipy.interpolate import griddata
 
 
 class Data(object):
@@ -13,28 +14,50 @@ class Data(object):
             self.length = args[0].shape[0]
 
         if mode == 'HFIR':
+            self.keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'temp'}
             with open(filename) as f:
                 for line in f:
                     if 'col_headers' in line:
                         *args, = next(f).split()  # @IgnorePep8
                         headers = [head.replace('.', '') for head in args[1:]]
 
-            * args, = np.loadtxt(filename, unpack=True, dtype=np.float64)  # @IgnorePep8
+            *args, = np.loadtxt(filename, unpack=True, dtype=np.float64)  # @IgnorePep8
             self.length = args[0].shape[0]
+
             for key, value in zip(headers, args):
                 setattr(self, key, value)
+                for k, v in self.keys.items():
+                    if v == key:
+                        setattr(self, k, value)
 
-        if mode == 'iexy':
-            (self.inten, self.err, self.x, self.y) = np.loadtxt(filename, unpack=True, dtype=np.float64)
+        if mode == 'NCNR':
+            self.keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'monitor': 'monitor', 'detector': 'Counts', 'temp': 'Tact'}
+            with open(filename) as f:
+                for i, line in enumerate(f):
+                    if i == 0:
+                        self.length = int(line.split()[-2])
+                        self.m0 = float(line.split()[-5])
+                    if 'Q(x)' in line:
+                        *args, = line.split()  # @IgnorePep8
+                        headers = [head.replace('(', '').replace(')', '').replace('-', '') for head in args]
+            *args, = np.loadtxt(filename, unpack=True, dtype=np.float64, skiprows=12)  # @IgnorePep8
+
+            for key, value in zip(headers, args):
+                setattr(self, key, value)
+                for k, v in self.keys.items():
+                    if v == key:
+                        print(k)
+                        setattr(self, k, value)
 
         try:
-            self.keys = kwargs.get('keys', None)
+            if not self.keys:
+                self.keys = kwargs.get('keys', None)
             self.build_data()
         except AttributeError:
             raise AttributeError('Keys are not defined.')
 
     def build_data(self):
-        '''{'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector'}
+        '''
         '''
         args = ()
         for i in ['h', 'k', 'l', 'e']:
@@ -56,11 +79,10 @@ class Data(object):
                 pass
 
         if not hasattr(self, 'err'):
-            for i in ['inten', 'detector']:
-                try:
-                    self.err = np.sqrt(getattr(self, i))
-                except (KeyError, AttributeError):
-                    pass
+            try:
+                self.err = np.sqrt(getattr(self, 'inten'))
+            except (KeyError, AttributeError):
+                pass
 
     def normalize_to_monitor(self, monitor):
         try:
