@@ -20,3 +20,4 @@ with open(os.path.join(os.path.dirname(__file__),
     scatLen = json.load(infile)
 
 joules2meV = 1. / constants.physical_constants['electron volt-joule relationship'][0] * 1.e3  # Joules to meV @IgnorePep8
+boltzmann_meV_K = constants.physical_constants['Boltzmann constant in eV/K'] * 1.e3  # Boltzmann constant in meV/K
