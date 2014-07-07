@@ -1,110 +1,135 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.interpolate import griddata
+import matplotlib.pyplot as plt  # @UnusedImport
+from scipy.interpolate import griddata  # @UnusedImport
 
 
 class Data(object):
+    '''Data class for handling multi-dimensional TAS data
+    '''
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-    def load_file(self, filename, mode='auto', **kwargs):
-        if mode == 'auto':
-            *args, = np.loadtxt('scan.dat', unpack=True, dtype=np.float64)  # @IgnorePep8
-            self.length = args[0].shape[0]
-
+    def load_file(self, *files, mode='', **kwargs):
+        '''Loads one or more files in either HFIR or NCNR formats
+        '''
         if mode == 'HFIR':
-            self.keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'temp'}
-            with open(filename) as f:
-                for line in f:
-                    if 'col_headers' in line:
-                        *args, = next(f).split()  # @IgnorePep8
-                        headers = [head.replace('.', '') for head in args[1:]]
+            keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'temp'}
+            for filename in files:
+                output = {}
+                with open(filename) as f:
+                    for line in f:
+                        if 'col_headers' in line:
+                            *args, = next(f).split()  # @IgnorePep8
+                            headers = [head.replace('.', '') for head in args[1:]]
 
-            *args, = np.loadtxt(filename, unpack=True, dtype=np.float64)  # @IgnorePep8
-            self.length = args[0].shape[0]
+                *args, = np.loadtxt(filename, unpack=True, dtype=np.float64)  # @IgnorePep8
 
-            for key, value in zip(headers, args):
-                setattr(self, key, value)
-                for k, v in self.keys.items():
-                    if v == key:
-                        setattr(self, k, value)
+                for key, value in keys.items():
+                    output[key] = args[headers.index(value)]
+
+                if not hasattr(self, 'Q'):
+                    for key, value in output.items():
+                        setattr(self, key, value)
+                    self.Q = self.build_Q(**kwargs)
+                else:
+                    output['Q'] = self.build_Q(output=output, **kwargs)
+                    self.combine_data(output)
 
         if mode == 'NCNR':
-            self.keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'monitor': 'monitor', 'detector': 'Counts', 'temp': 'Tact'}
-            with open(filename) as f:
-                for i, line in enumerate(f):
-                    if i == 0:
-                        self.length = int(line.split()[-2])
-                        self.m0 = float(line.split()[-5])
-                    if 'Q(x)' in line:
-                        *args, = line.split()  # @IgnorePep8
-                        headers = [head.replace('(', '').replace(')', '').replace('-', '') for head in args]
-            *args, = np.loadtxt(filename, unpack=True, dtype=np.float64, skiprows=12)  # @IgnorePep8
+            keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'monitor': 'monitor', 'detector': 'Counts', 'temp': 'Tact'}
+            for filename in files:
+                output = {}
+                with open(filename) as f:
+                    for i, line in enumerate(f):
+                        if i == 0:
+                            self.length = int(line.split()[-2])
+                            self.m0 = float(line.split()[-5])
+                        if 'Q(x)' in line:
+                            *args, = line.split()  # @IgnorePep8
+                            headers = [head.replace('(', '').replace(')', '').replace('-', '') for head in args]
+                *args, = np.loadtxt(filename, unpack=True, dtype=np.float64, skiprows=12)  # @IgnorePep8
 
-            for key, value in zip(headers, args):
-                setattr(self, key, value)
-                for k, v in self.keys.items():
-                    if v == key:
-                        print(k)
-                        setattr(self, k, value)
+                for key, value in keys.items():
+                    output[key] = args[headers.index(value)]
 
-        try:
-            if not self.keys:
-                self.keys = kwargs.get('keys', None)
-            self.build_data()
-        except AttributeError:
-            raise AttributeError('Keys are not defined.')
+                if not self.Q:
+                    for key, value in output.items():
+                        setattr(self, key, value)
+                    self.Q = self.build_Q(**kwargs)
+                else:
+                    output['Q'] = self.build_Q(output=output, **kwargs)
+                    self.combine_data(output)
 
-    def build_data(self):
-        '''
+    def build_Q(self, **kwargs):
+        '''Internal class for constructing Q[q, hw] from h, k, l, and energy
         '''
         args = ()
-        for i in ['h', 'k', 'l', 'e']:
-            if isinstance(self.keys[i], (int, float)):
-                args += (np.ones(self.length) * self.keys[i],)
-            elif type(self.keys[i]) is str:
-                args += (getattr(self, self.keys[i]),)
-            else:
-                raise ValueError('Provided key is not an understood value.')
+        if hasattr(kwargs, 'output'):
+            for i in ['h', 'k', 'l', 'e']:
+                args += (getattr(kwargs['output'], i),)
+        else:
+            for i in ['h', 'k', 'l', 'e']:
+                args += (getattr(self, i),)
 
-        self.Q = np.vstack((item.flatten() for item in args)).T
+        return np.vstack((item.flatten() for item in args)).T
 
-        invars = ['monitor', 'detector', 'flux', 'intensity', 'error', 'temperature']
-        outvars = ['mon', 'det', 'flux', 'inten', 'err', 'temp']
-        for varin, varout in zip(invars, outvars):
-            try:
-                setattr(self, varout, getattr(self, self.keys[varin]))
-            except (KeyError, AttributeError):
-                pass
-
-        if not hasattr(self, 'err'):
-            try:
-                self.err = np.sqrt(getattr(self, 'inten'))
-            except (KeyError, AttributeError):
-                pass
-
-    def normalize_to_monitor(self, monitor):
+    def intensity(self, **kwargs):
+        '''Returns monitor normalized intensity
+        '''
         try:
-            self.inten = self.detector / self.monitor * monitor
-            self.err = self.err / self.monitor * monitor
-        except AttributeError:
-            raise
+            m0 = kwargs['m0']
+        except:
+            try:
+                m0 = self.m0
+            except:
+                m0 = np.nanmax(self.monitor)
+                self.m0 = m0
 
-    def combine_data(self, inp, mode='TAS'):
-        if type == 'TAS':
-            pass
-        if type == 'TOF':
-            pass
+        return self.detector / self.monitor * m0
 
-    def bin(self, *args):
+    def error(self, **kwargs):
+        '''Returns square-root error of monitor normalized intensity
+        '''
+        return np.sqrt(self.intensity(**kwargs))
+
+    def combine_data(self, *args, **kwargs):
+        '''Combines multiple data sets
+        '''
+        for arg in args:
+            combine = []
+            for i in range(arg['Q'].shape[0]):
+                for j in range(self.Q.shape[0]):
+                    if np.all(self.Q[j, :] == arg['Q'][i, :]):
+                        combine.append((i, j))
+
+            for item in combine:
+                self.monitor[item[0]] += arg['monitor'][item[1]]
+                self.detector[item[0]] += arg['detector'][item[1]]
+
+            for item in combine:
+                for key in ['Q', 'monitor', 'detector', 'temp']:
+                    np.delete(arg[key], item[0], 0)
+
+            np.concatenate((self.Q, arg['Q']))
+            np.concatenate((self.detector, arg['detector']))
+            np.concatenate((self.monitor, arg['monitor']))
+            np.concatenate((self.temp, arg['temp']))
+
+            order = np.lexsort((self.Q[:, 0], self.Q[:, 1], self.Q[:, 2], self.Q[:, 3]))
+            self.Q = self.Q[order]
+            self.monitor = self.monitor[order]
+            self.detector = self.detector[order]
+            self.temp = self.temp[order]
+
+            self.h = self.Q[:, 0]
+            self.k = self.Q[:, 1]
+            self.l = self.Q[:, 2]
+            self.e = self.Q[:, 3]
+
+    def bin(self, *args, **kwargs):
         '''Rebin the data into the specified shape.
         '''
-        if not hasattr(self, 'Q'):
-            try:
-                self.build_Q(self.h, self.k, self.l, self.e)
-            except AttributeError:
-                raise AttributeError('Q has not been built, use build_Q(h, k, l, e) class method.')
 
         q, qstep = (), ()
         for arg in args:
@@ -115,19 +140,38 @@ class Data(object):
             q += _q
             qstep += _qstep
 
-        qxstep, qystep, qzstep, wstep = qstep
+        Q = np.meshgrid(*q)
+        Q = np.vstack((item.flatten() for item in Q)).T
 
-        q = np.meshgrid(*q)
-        Q = np.vstack((item.flatten() for item in q)).T
-
-        mon = np.zeros(Q.shape[0])
-        count = np.zeros(Q.shape[0])
+        monitor, detector, temp = [np.zeros(Q.shape[0])] * 3
 
         for i in range(Q.shape[0]):
-            to_bin = np.where(np.abs((self.Q[:, 0] - Q[i, 0]) ** 2 / (qxstep / 2.) ** 2 +
-                                     (self.Q[:, 1] - Q[i, 1]) ** 2 / (qystep / 2.) ** 2 +
-                                     (self.Q[:, 2] - Q[i, 2]) ** 2 / (qzstep / 2.) ** 2 +
-                                     (self.Q[:, 3] - Q[i, 3]) ** 2 / (wstep / 2.) ** 2) < 1.)
+            to_bin = np.where(np.abs((self.Q[:, 0] - Q[i, 0]) ** 2 / (qstep[0] / 2.) ** 2 +
+                                     (self.Q[:, 1] - Q[i, 1]) ** 2 / (qstep[1] / 2.) ** 2 +
+                                     (self.Q[:, 2] - Q[i, 2]) ** 2 / (qstep[2] / 2.) ** 2 +
+                                     (self.Q[:, 3] - Q[i, 3]) ** 2 / (qstep[3] / 2.) ** 2) < 1.)
             if to_bin[0]:
-                mon[i] = np.average(self.mon[to_bin])
-                count[i] = np.average(self.count[to_bin])
+                monitor[i] = np.average(self.monitor[to_bin])
+                detector[i] = np.average(self.detector[to_bin])
+                temp[i] = np.average(self.temp[to_bin])
+
+        return Q, monitor, detector, temp
+
+    def integrate(self, bounds=None, **kwargs):
+        '''Returns the integrated intensity within given bounds
+        '''
+        if hasattr(kwargs, 'bounds'):
+            tofit = np.where(kwargs['bounds'])
+            print(tofit)
+        else:
+            np.sum()
+
+    def mean_squared_position(self, bounds=None, **kwargs):
+        '''Returns the mean-squared position of a peak within the given bounds
+        '''
+        pass
+
+    def width(self, bounds=None, **kwargs):
+        '''Returns the width of a peak within the given bounds
+        '''
+        pass
