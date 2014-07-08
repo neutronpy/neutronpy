@@ -227,16 +227,14 @@ class Data(object):
             np.concatenate((self.monitor, arg['monitor']))
             np.concatenate((self.temp, arg['temp']))
 
-            order = np.lexsort((self.Q[:, 0], self.Q[:, 1], self.Q[:, 2], self.Q[:, 3]))
+            order = np.lexsort((self.Q[:, 3], self.Q[:, 2], self.Q[:, 1], self.Q[:, 0]))
             self.Q = self.Q[order]
             self.monitor = self.monitor[order]
             self.detector = self.detector[order]
             self.temp = self.temp[order]
 
-            self.h = self.Q[:, 0]
-            self.k = self.Q[:, 1]
-            self.l = self.Q[:, 2]
-            self.e = self.Q[:, 3]
+            for i, var in enumerate(['h', 'k', 'l', 'e']):
+                setattr(self, var, self.Q[:, i])
 
     def bin(self, *args, **kwargs):
         '''Rebin the data into the specified shape.
@@ -272,29 +270,51 @@ class Data(object):
     def integrate(self, **kwargs):
         '''Returns the integrated intensity within given bounds
         '''
+        result = 0
         if hasattr(kwargs, 'bounds'):
-            tofit = np.where(kwargs['bounds'])
-            print(tofit)
+            to_fit = np.where(kwargs['bounds'])
+            for i in range(4):
+                result += np.trapz(self.intensity()[to_fit], x=self.Q[to_fit, i])
         else:
-            np.sum()
+            for i in range(4):
+                result += np.trapz(self.intensity(), x=self.Q[:, i])
 
-    def mean_squared_position(self, **kwargs):
+        return result
+
+    def position(self, **kwargs):
         '''Returns the mean-squared position of a peak within the given bounds
         '''
+        result = ()
         if hasattr(kwargs, 'bounds'):
-            tofit = np.where(kwargs['bounds'])
-            print(tofit)
+            to_fit = np.where(kwargs['bounds'])
+            for i in range(4):
+                result += np.trapz(self.Q[to_fit, i] * self.intensity()[to_fit], x=self.Q[to_fit, i]) / self.integrate(**kwargs)
         else:
-            np.sum()
+            for j in range(4):
+                _result = 0
+                for i in range(4):
+                    _result += np.trapz(self.Q[:, j] * self.intensity(), x=self.Q[:, i]) / self.integrate(**kwargs)
+                result += (_result,)
+
+        return result
 
     def width(self, **kwargs):
         '''Returns the width of a peak within the given bounds
         '''
+        result = ()
         if hasattr(kwargs, 'bounds'):
-            tofit = np.where(kwargs['bounds'])
-            print(tofit)
+            to_fit = np.where(kwargs['bounds'])
+            for i in range(4):
+                result += np.trapz((self.Q[to_fit, i] - self.position(**kwargs)) ** 2 *
+                                   self.intensity()[to_fit], x=self.Q[to_fit, i]) / self.integrate(**kwargs)
         else:
-            np.sum()
+            for j in range(4):
+                _result = 0
+                for i in range(4):
+                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * self.intensity(), x=self.Q[:, i]) / self.integrate(**kwargs)
+                result += (_result,)
+
+        return result
 
     def plot(self, **kwargs):
         axes = ['x', 'y', 'z', 'w']
