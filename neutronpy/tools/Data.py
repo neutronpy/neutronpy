@@ -243,24 +243,25 @@ class Data(object):
         q, qstep = (), ()
         for arg in args:
             if arg[2] == 1:
-                _q, _qstep = (np.array([(arg[1] - arg[0]) / 2.]), 1)
+                _q, _qstep = (np.array([np.average(arg[:2])]), (arg[1] - arg[0]))
             else:
                 _q, _qstep = np.linspace(arg[0], arg[1], arg[2], retstep=True)
-            q += _q
-            qstep += _qstep
+            q += _q,
+            qstep += _qstep,
 
         Q = np.meshgrid(*q)
         Q = np.vstack((item.flatten() for item in Q)).T
 
-        monitor, detector, temps = [np.zeros(Q.shape[0])] * 3
+        monitor, detector, temps = np.zeros(Q.shape[0]), np.zeros(Q.shape[0]), np.zeros(Q.shape[0])
 
         for i in range(Q.shape[0]):
             to_bin = np.where(np.abs((self.Q[:, 0] - Q[i, 0]) ** 2 / (qstep[0] / 2.) ** 2 +
                                      (self.Q[:, 1] - Q[i, 1]) ** 2 / (qstep[1] / 2.) ** 2 +
                                      (self.Q[:, 2] - Q[i, 2]) ** 2 / (qstep[2] / 2.) ** 2 +
                                      (self.Q[:, 3] - Q[i, 3]) ** 2 / (qstep[3] / 2.) ** 2 +
-                                     (self.temps - Q[i, 4]) ** 2 / (qstep[4] / 2.)) < 1.)
-            if to_bin[0]:
+                                     (self.temp - Q[i, 4]) ** 2 / (qstep[4] / 2.) ** 2) < 1.)
+
+            if len(to_bin[0]) > 0:
                 monitor[i] = np.average(self.monitor[to_bin])
                 detector[i] = np.average(self.detector[to_bin])
                 temps[i] = np.average(self.temp[to_bin])
@@ -282,13 +283,27 @@ class Data(object):
         return result
 
     def position(self, **kwargs):
-        '''Returns the mean-squared position of a peak within the given bounds
+        '''Returns the position of a peak within the given bounds
+
+        Parameters
+        ----------
+        bounds : Boolean, optional
+            A boolean expression representing the bounds inside which the calculation will be performed
+
+        Returns
+        -------
+        result : tuple
+            The result is a tuple with position in each dimension of Q, (h, k, l, e)
+
         '''
         result = ()
         if hasattr(kwargs, 'bounds'):
             to_fit = np.where(kwargs['bounds'])
-            for i in range(4):
-                result += np.trapz(self.Q[to_fit, i] * self.intensity()[to_fit], x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+            for j in range(4):
+                _result = 0
+                for i in range(4):
+                    _result += np.trapz(self.Q[to_fit, j] * self.intensity()[to_fit], x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                result += (_result,)
         else:
             for j in range(4):
                 _result = 0
@@ -299,19 +314,34 @@ class Data(object):
         return result
 
     def width(self, **kwargs):
-        '''Returns the width of a peak within the given bounds
+        '''Returns the mean-squared width of a peak within the given bounds
+
+        Parameters
+        ----------
+        bounds : Boolean, optional
+            A boolean expression representing the bounds inside which the calculation will be performed
+
+        Returns
+        -------
+        result : tuple
+            The result is a tuple with the width in each dimension of Q, (h, k, l, e)
+
         '''
         result = ()
         if hasattr(kwargs, 'bounds'):
             to_fit = np.where(kwargs['bounds'])
-            for i in range(4):
-                result += np.trapz((self.Q[to_fit, i] - self.position(**kwargs)) ** 2 *
-                                   self.intensity()[to_fit], x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+            for j in range(4):
+                _result = 0
+                for i in range(4):
+                    _result += np.trapz((self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 *
+                                        self.intensity()[to_fit], x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * self.intensity(), x=self.Q[:, i]) / self.integrate(**kwargs)
+                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 *
+                                        self.intensity(), x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
@@ -319,11 +349,28 @@ class Data(object):
     def plot(self, **kwargs):
         axes = ['x', 'y', 'z', 'w']
         options = ['h', 'k', 'l', 'e', 'temp', 'intensity']
+        print(kwargs)
+#         to_bin = ()
+#         for opt in options[:4]:
+#             for axis in axes:
+#                 if getattr(kwargs, axis)[0] == opt:
+#                     to_bin += (getattr(kwargs, axis)[1:],)
 
-        to_bin = ()
-        for opt in options[:4]:
-            for axis in axes:
-                if getattr(kwargs, axis)[0] == opt:
-                    to_bin += (getattr(kwargs, axis)[1:],)
+        Q, monitor, detector, temps = self.bin(*kwargs['bounds'])
 
-        Q, monitor, detector, temps = self.bin(*to_bin)
+        dims = {'h': Q[:, 0], 'k': Q[:, 1], 'l': Q[:, 2], 'e': Q[:, 3], 'temp': temps, 'intensity': detector / monitor * self.m0}
+
+        x = dims[kwargs['x'][0]]
+        y = dims[kwargs['y'][0]]
+        try:
+            z = dims[kwargs['z'][0]]
+            w = dims[kwargs['w'][0]]
+        except KeyError:
+            pass
+
+        err = np.sqrt(detector / monitor * self.m0)
+
+        if kwargs['err']:
+            plt.errorbar(x, y, yerr=err, fmt='rs')
+
+        plt.show()
