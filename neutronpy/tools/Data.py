@@ -1,6 +1,7 @@
 from ..constants import boltzmann_meV_K
 import numpy as np
-import matplotlib.pyplot as plt  # @UnusedImport
+import matplotlib.pyplot as plt
+from matplotlib import colors  # @UnusedImport
 from scipy.interpolate import griddata  # @UnusedImport
 
 
@@ -39,6 +40,32 @@ class Data(object):
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+    def __add__(self, right):
+        try:
+            output = {'Q': right.Q, 'temp': right.temp, 'detector': right.detector, 'monitor': right.monitor}
+            return self.combine_data(output, ret=True)
+        except AttributeError:
+            raise AttributeError('Data types cannot be combined')
+
+    def __sub__(self, right):
+        try:
+            output = {'Q': right.Q, 'temp': right.temp, 'detector': np.negative(right.detector), 'monitor': right.monitor}
+            return self.combine_data(output, ret=True)
+        except AttributeError:
+            raise AttributeError('Data types cannot be combined')
+
+    def __mul__(self, right):
+        self.detector *= right
+        return self
+
+    def __div__(self, right):
+        self.detector /= right
+        return self
+
+    def __pow__(self, right):
+        self.detector **= right
+        return self
 
     def load_file(self, *files, mode, **kwargs):
         '''Loads one or more files in either HFIR or NCNR formats
@@ -128,6 +155,65 @@ class Data(object):
 
         return np.vstack((item.flatten() for item in args)).T
 
+    def combine_data(self, *args, ret=False, **kwargs):
+        '''Combines multiple data sets
+
+        Parameters
+        ----------
+        args : dictionary of ndarrays
+            A dictionary (or multiple) of the data that will be added to the current data, with keys:
+                * Q : ndarray : [h, k, l, e] with shape (N, 4,)
+                * monitor : ndarray : shape (N,)
+                * detector : ndarray : shape (N,)
+                * temps : ndarray : shape (N,)
+
+        Returns
+        -------
+        None
+            Adds the data to the class, provides no returns.
+
+        '''
+        for arg in args:
+            combine = []
+            for i in range(arg['Q'].shape[0]):
+                for j in range(self.Q.shape[0]):
+                    if np.all(self.Q[j, :] == arg['Q'][i, :]):
+                        combine.append([i, j])
+
+            monitor, detector, Q, temp = self.monitor, self.detector, self.Q, self.temp
+
+            for item in combine:
+                monitor[item[0]] += arg['monitor'][item[1]]
+                detector[item[0]] += arg['detector'][item[1]]
+
+            if len(combine) > 0:
+                for key in ['Q', 'monitor', 'detector', 'temp']:
+                    arg[key] = np.delete(arg[key], (np.array(combine)[:, 0],), 0)
+
+            Q = np.concatenate((Q, arg['Q']))
+            detector = np.concatenate((detector, arg['detector']))
+            monitor = np.concatenate((monitor, arg['monitor']))
+            temp = np.concatenate((temp, arg['temp']))
+
+            order = np.lexsort((Q[:, 3], Q[:, 2], Q[:, 1], Q[:, 0]))
+
+            if ret:
+                new = Data(Q=Q[order], temp=temp[order], monitor=monitor[order], detector=detector[order])
+
+                for i, var in enumerate(['h', 'k', 'l', 'e']):
+                    setattr(new, var, new.Q[:, i])
+
+                return new
+
+            else:
+                self.Q = Q[order]
+                self.monitor = monitor[order]
+                self.detector = detector[order]
+                self.temp = temp[order]
+
+                for i, var in enumerate(['h', 'k', 'l', 'e']):
+                    setattr(self, var, Q[:, i])
+
     def intensity(self, **kwargs):
         '''Returns the monitor normalized intensity
 
@@ -166,7 +252,7 @@ class Data(object):
             The square-root error of the monitor normalized intensity
 
         '''
-        return np.sqrt(self.intensity(**kwargs))
+        return np.sqrt(np.abs(self.intensity(**kwargs)))
 
     def detailed_balance_factor(self, **kwargs):
         '''Returns the detailed balance factor (sometimes called the Bose factor)
@@ -188,53 +274,6 @@ class Data(object):
             pass
 
         return np.exp(-self.Q[3] / boltzmann_meV_K / self.temps)
-
-    def combine_data(self, *args, **kwargs):
-        '''Combines multiple data sets
-
-        Parameters
-        ----------
-        args : dictionary of ndarrays
-            A dictionary (or multiple) of the data that will be added to the current data, with keys:
-                * Q : ndarray : [h, k, l, e] with shape (N, 4,)
-                * monitor : ndarray : shape (N,)
-                * detector : ndarray : shape (N,)
-                * temps : ndarray : shape (N,)
-
-        Returns
-        -------
-        None
-            Adds the data to the class, provides no returns.
-
-        '''
-        for arg in args:
-            combine = []
-            for i in range(arg['Q'].shape[0]):
-                for j in range(self.Q.shape[0]):
-                    if np.all(self.Q[j, :] == arg['Q'][i, :]):
-                        combine.append((i, j))
-
-            for item in combine:
-                self.monitor[item[0]] += arg['monitor'][item[1]]
-                self.detector[item[0]] += arg['detector'][item[1]]
-
-            for item in combine:
-                for key in ['Q', 'monitor', 'detector', 'temp']:
-                    np.delete(arg[key], item[0], 0)
-
-            np.concatenate((self.Q, arg['Q']))
-            np.concatenate((self.detector, arg['detector']))
-            np.concatenate((self.monitor, arg['monitor']))
-            np.concatenate((self.temp, arg['temp']))
-
-            order = np.lexsort((self.Q[:, 3], self.Q[:, 2], self.Q[:, 1], self.Q[:, 0]))
-            self.Q = self.Q[order]
-            self.monitor = self.monitor[order]
-            self.detector = self.detector[order]
-            self.temp = self.temp[order]
-
-            for i, var in enumerate(['h', 'k', 'l', 'e']):
-                setattr(self, var, self.Q[:, i])
 
     def bin(self, *args, **kwargs):
         '''Rebin the data into the specified shape.
@@ -349,28 +388,51 @@ class Data(object):
     def plot(self, **kwargs):
         axes = ['x', 'y', 'z', 'w']
         options = ['h', 'k', 'l', 'e', 'temp', 'intensity']
-        print(kwargs)
-#         to_bin = ()
-#         for opt in options[:4]:
-#             for axis in axes:
-#                 if getattr(kwargs, axis)[0] == opt:
-#                     to_bin += (getattr(kwargs, axis)[1:],)
 
-        Q, monitor, detector, temps = self.bin(*kwargs['bounds'])
+        in_axes = np.array([''] * len(options))
 
-        dims = {'h': Q[:, 0], 'k': Q[:, 1], 'l': Q[:, 2], 'e': Q[:, 3], 'temp': temps, 'intensity': detector / monitor * self.m0}
+        for key, value in kwargs.items():
+            if key in axes:
+                in_axes[np.where(np.array(options) == value[0])] = key
+
+        bounds = ()
+        for i, opt in enumerate(options[:5]):
+            if in_axes[i] != '':
+                bounds += (kwargs[in_axes[i]][1:],)
+            else:
+                bounds += ([min(getattr(self, opt)) - 1., max(getattr(self, opt)) + 1., 1],)
+
+        Q, monitor, detector, temps = self.bin(*bounds)
+
+        to_plot = np.where(monitor > 0)
+        dims = {'h': Q[to_plot, 0][0], 'k': Q[to_plot, 1][0], 'l': Q[to_plot, 2][0], 'e': Q[to_plot, 3][0],
+                'temp': temps[to_plot], 'intensity': detector[to_plot] / monitor[to_plot] * self.m0}
 
         x = dims[kwargs['x'][0]]
         y = dims[kwargs['y'][0]]
-        try:
-            z = dims[kwargs['z'][0]]
-            w = dims[kwargs['w'][0]]
-        except KeyError:
-            pass
 
-        err = np.sqrt(detector / monitor * self.m0)
+        if hasattr(kwargs['z']) and hasattr(kwargs['w']):
+            try:
+                z = dims[kwargs['z'][0]]
+                w = dims[kwargs['w'][0]]
 
-        if kwargs['err']:
-            plt.errorbar(x, y, yerr=err, fmt='rs')
+                from mpl_toolkits.mplot3d import Axes3D  # @UnusedImport
+
+                fig = plt.figure()
+                ax = fig.add_subplot(111, projection='3d')
+
+                ax.scatter(x, y, z, c=w, linewidths=0, alpha=0.5, vmin=1e-4, vmax=0.1)
+            except KeyError:
+                raise
+        elif hasattr(kwargs, 'z') and not hasattr(kwargs, 'w'):
+            try:
+                z = dims[kwargs['z'][0]]
+                plt.pcolormesh(x, y, z)
+            except KeyError:
+                pass
+        else:
+            if kwargs['err']:
+                err = np.sqrt(dims['intensity'])
+                plt.errorbar(x, y, yerr=err, fmt='rs')
 
         plt.show()
