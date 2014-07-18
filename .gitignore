@@ -5,3 +5,14 @@ build/*
 __pycache__/
 main.py
 /build/
+venv/*
+neutronpy.egg-info/
+dist/*
+
+scan0010.dat
+scan0012.dat
+
+scan013.ng5
+scan0018.dat
+test_volume2.dat
+test_volume2.dat.gz

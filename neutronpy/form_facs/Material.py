@@ -8,7 +8,7 @@ import numpy as np
 
 
 class Atom(object):
-    '''Class for adding atoms to the Material class.
+    r'''Class for adding atoms to the Material class.
 
     Parameters
     ----------
@@ -48,7 +48,7 @@ class Atom(object):
 
 
 class Material(object):
-    '''Class for the Material being supplied for the structure factor calculation
+    r'''Class for the Material being supplied for the structure factor calculation
 
     Parameters
     ----------
@@ -114,7 +114,7 @@ class Material(object):
                                    self.Mcell, crystal['massNorm']))
 
     def calc_str_fac(self, hkl):
-        '''Calculates the structural form factor of the material.
+        r'''Calculates the structural form factor of the material.
 
         Parameters
         ----------
@@ -159,7 +159,7 @@ class Material(object):
 
 
 class Ion(object):
-    '''Class defining a magnetic ion.
+    r'''Class defining a magnetic ion.
 
     Parameters
     ----------
@@ -183,7 +183,7 @@ class Ion(object):
             raise ValueError('No such ion was found in database.')
 
     def calc_mag_form_fac(self, q=None, g=None, qrange=None):
-        '''Calculate the magnetic form factor of an ion.
+        r'''Calculate the magnetic form factor of an ion.
 
         Parameters
         ----------

@@ -745,7 +745,7 @@ def ResMat(Q, W, EXP):
 
 
 def project_into_plane(rm, index):
-    '''Projects out-of-plane resolution into a specified plane by performing
+    r'''Projects out-of-plane resolution into a specified plane by performing
     a gaussian integral over the third axis.
 
     Parameters
@@ -777,7 +777,7 @@ def project_into_plane(rm, index):
 
 
 def ellipse(saxis1, saxis2, phi=0, origin=[0, 0], npts=31):
-    '''Returns an ellipse.
+    r'''Returns an ellipse.
 
     Parameters
     ----------
@@ -956,7 +956,7 @@ class Instrument(object):
         self.calc_projections([H, K, L, W], npts=npts)
 
     def calc_projections(self, hkle, npts=36):
-        '''Calculates the resolution ellipses for projections and slices from the resolution matrix.
+        r'''Calculates the resolution ellipses for projections and slices from the resolution matrix.
 
         Parameters
         ----------
@@ -1074,7 +1074,7 @@ class Instrument(object):
             self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1][ind], hkle[3][ind]], npts)
 
     def get_resolution_params(self, hkle, plane, mode='project'):
-        '''Returns parameters for the resolution gaussian.
+        r'''Returns parameters for the resolution gaussian.
 
         Parameters
         ----------
