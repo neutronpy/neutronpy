@@ -294,16 +294,30 @@ class Data(object):
         monitor, detector, temps = np.zeros(Q.shape[0]), np.zeros(Q.shape[0]), np.zeros(Q.shape[0])
 
         for i in range(Q.shape[0]):
-            to_bin = np.where(np.abs((self.Q[:, 0] - Q[i, 0]) ** 2 / (qstep[0] / 2.) ** 2 +
-                                     (self.Q[:, 1] - Q[i, 1]) ** 2 / (qstep[1] / 2.) ** 2 +
-                                     (self.Q[:, 2] - Q[i, 2]) ** 2 / (qstep[2] / 2.) ** 2 +
-                                     (self.Q[:, 3] - Q[i, 3]) ** 2 / (qstep[3] / 2.) ** 2 +
-                                     (self.temp - Q[i, 4]) ** 2 / (qstep[4] / 2.) ** 2) < 1.)
+            chunk0 = np.where((self.Q[:, 0] - Q[i, 0]) ** 2 / (qstep[0] / 2.) ** 2 < 1.)
 
-            if len(to_bin[0]) > 0:
-                monitor[i] = np.average(self.monitor[to_bin])
-                detector[i] = np.average(self.detector[to_bin])
-                temps[i] = np.average(self.temp[to_bin])
+            if len(chunk0[0]) > 0:
+                _Q, _mon, _det, _temp = self.Q[chunk0, :][0], self.monitor[chunk0], self.detector[chunk0], self.temp[chunk0]
+                chunk1 = np.where((_Q[:, 1] - Q[i, 1]) ** 2 / (qstep[1] / 2.) ** 2 < 1.)
+
+                if len(chunk1[0]) > 0:
+                    _Q, _mon, _det, _temp = _Q[chunk1, :][0], _mon[chunk1], _det[chunk1], _temp[chunk1]
+                    chunk2 = np.where((_Q[:, 2] - Q[i, 2]) ** 2 / (qstep[2] / 2.) ** 2 < 1.)
+
+                    if len(chunk2[0]) > 0:
+                        _Q, _mon, _det, _temp = _Q[chunk2, :][0], _mon[chunk2], _det[chunk2], _temp[chunk2]
+                        chunk3 = np.where((_Q[:, 1] - Q[i, 1]) ** 2 / (qstep[3] / 2.) ** 2 < 1.)
+
+                        if len(chunk3[0]) > 0:
+                            _Q, _mon, _det, _temp = _Q[chunk3, :][0], _mon[chunk3], _det[chunk3], _temp[chunk3]
+                            chunk4 = np.where((_temp - Q[i, 4]) ** 2 / (qstep[4] / 2.) ** 2 < 1.)
+
+                            if len(chunk4[0]) > 0:
+                                _Q, _mon, _det, _temp = _Q[chunk4, :][0], _mon[chunk4], _det[chunk4], _temp[chunk4]
+
+                                monitor[i] = np.average(_mon)
+                                detector[i] = np.average(_det)
+                                temps[i] = np.average(_temp)
 
         return Q, monitor, detector, temps
 
@@ -411,7 +425,8 @@ class Data(object):
         x = dims[kwargs['x'][0]]
         y = dims[kwargs['y'][0]]
 
-        if hasattr(kwargs['z']) and hasattr(kwargs['w']):
+        if 'z' in kwargs and 'w' in kwargs:
+            print('worked')
             try:
                 z = dims[kwargs['z'][0]]
                 w = dims[kwargs['w'][0]]
@@ -422,9 +437,11 @@ class Data(object):
                 ax = fig.add_subplot(111, projection='3d')
 
                 ax.scatter(x, y, z, c=w, linewidths=0, alpha=0.5, vmin=1e-4, vmax=0.1)
+
             except KeyError:
                 raise
-        elif hasattr(kwargs, 'z') and not hasattr(kwargs, 'w'):
+
+        elif 'z' in kwargs and not 'w' in kwargs:
             try:
                 z = dims[kwargs['z'][0]]
                 plt.pcolormesh(x, y, z)
