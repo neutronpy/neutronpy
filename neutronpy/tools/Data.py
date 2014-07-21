@@ -67,7 +67,7 @@ class Data(object):
         self.detector **= right
         return self
 
-    def load_file(self, *files, mode, **kwargs):
+    def load_file(self, *files, **kwargs):
         '''Loads one or more files in either HFIR or NCNR formats
 
         Parameters
@@ -83,17 +83,17 @@ class Data(object):
         None
 
         '''
-        if mode == 'HFIR':
+        if kwargs['mode'] == 'HFIR':
             keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'temp'}
             for filename in files:
                 output = {}
                 with open(filename) as f:
                     for line in f:
                         if 'col_headers' in line:
-                            *args, = next(f).split()  # @IgnorePep8
+                            args = next(f).split()  # @IgnorePep8
                             headers = [head.replace('.', '') for head in args[1:]]
 
-                * args, = np.loadtxt(filename, unpack=True, dtype=np.float64)  # @IgnorePep8
+                args = np.loadtxt(filename, unpack=True, dtype=np.float64)  # @IgnorePep8
 
                 for key, value in keys.items():
                     output[key] = args[headers.index(value)]
@@ -106,7 +106,7 @@ class Data(object):
                     output['Q'] = self.build_Q(output=output, **kwargs)
                     self.combine_data(output)
 
-        if mode == 'NCNR':
+        if kwargs['mode'] == 'NCNR':
             keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'monitor': 'monitor', 'detector': 'Counts', 'temp': 'Tact'}
             for filename in files:
                 output = {}
@@ -116,9 +116,9 @@ class Data(object):
                             self.length = int(line.split()[-2])
                             self.m0 = float(line.split()[-5])
                         if 'Q(x)' in line:
-                            *args, = line.split()  # @IgnorePep8
+                            args = line.split()  # @IgnorePep8
                             headers = [head.replace('(', '').replace(')', '').replace('-', '') for head in args]
-                * args, = np.loadtxt(filename, unpack=True, dtype=np.float64, skiprows=12)  # @IgnorePep8
+                args = np.loadtxt(filename, unpack=True, dtype=np.float64, skiprows=12)  # @IgnorePep8
 
                 for key, value in keys.items():
                     output[key] = args[headers.index(value)]
@@ -155,7 +155,7 @@ class Data(object):
 
         return np.vstack((item.flatten() for item in args)).T
 
-    def combine_data(self, *args, ret=False, **kwargs):
+    def combine_data(self, *args, **kwargs):
         '''Combines multiple data sets
 
         Parameters
@@ -197,7 +197,7 @@ class Data(object):
 
             order = np.lexsort((Q[:, 3], Q[:, 2], Q[:, 1], Q[:, 0]))
 
-            if ret:
+            if kwargs['ret']:
                 new = Data(Q=Q[order], temp=temp[order], monitor=monitor[order], detector=detector[order])
 
                 for i, var in enumerate(['h', 'k', 'l', 'e']):
