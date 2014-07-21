@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors  # @UnusedImport
 from scipy.interpolate import griddata  # @UnusedImport
+import multiprocessing as mp
 
 
 class Data(object):
@@ -275,6 +276,37 @@ class Data(object):
 
         return np.exp(-self.Q[3] / boltzmann_meV_K / self.temps)
 
+    def bin_parallel(self, Q_chunk):
+        monitor, detector, temps = np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0])
+
+        for i in range(Q_chunk.shape[0]):
+            chunk0 = np.where((self.Q[:, 0] - Q_chunk[i, 0]) ** 2 / (self._qstep[0] / 2.) ** 2 < 1.)
+
+            if len(chunk0[0]) > 0:
+                _Q, _mon, _det, _temp = self.Q[chunk0, :][0], self.monitor[chunk0], self.detector[chunk0], self.temp[chunk0]
+                chunk1 = np.where((_Q[:, 1] - Q_chunk[i, 1]) ** 2 / (self._qstep[1] / 2.) ** 2 < 1.)
+
+                if len(chunk1[0]) > 0:
+                    _Q, _mon, _det, _temp = _Q[chunk1, :][0], _mon[chunk1], _det[chunk1], _temp[chunk1]
+                    chunk2 = np.where((_Q[:, 2] - Q_chunk[i, 2]) ** 2 / (self._qstep[2] / 2.) ** 2 < 1.)
+
+                    if len(chunk2[0]) > 0:
+                        _Q, _mon, _det, _temp = _Q[chunk2, :][0], _mon[chunk2], _det[chunk2], _temp[chunk2]
+                        chunk3 = np.where((_Q[:, 1] - Q_chunk[i, 1]) ** 2 / (self._qstep[3] / 2.) ** 2 < 1.)
+
+                        if len(chunk3[0]) > 0:
+                            _Q, _mon, _det, _temp = _Q[chunk3, :][0], _mon[chunk3], _det[chunk3], _temp[chunk3]
+                            chunk4 = np.where((_temp - Q_chunk[i, 4]) ** 2 / (self._qstep[4] / 2.) ** 2 < 1.)
+
+                            if len(chunk4[0]) > 0:
+                                _Q, _mon, _det, _temp = _Q[chunk4, :][0], _mon[chunk4], _det[chunk4], _temp[chunk4]
+
+                                monitor[i] = np.average(_mon)
+                                detector[i] = np.average(_det)
+                                temps[i] = np.average(_temp)
+
+        return (monitor, detector, temps)
+
     def bin(self, *args, **kwargs):
         '''Rebin the data into the specified shape.
         '''
@@ -288,38 +320,19 @@ class Data(object):
             q += _q,
             qstep += _qstep,
 
+        self._qstep = qstep
+
         Q = np.meshgrid(*q)
         Q = np.vstack((item.flatten() for item in Q)).T
 
-        monitor, detector, temps = np.zeros(Q.shape[0]), np.zeros(Q.shape[0]), np.zeros(Q.shape[0])
+        nprocs = mp.cpu_count()  # @UndefinedVariable
+        Q_chunks = [Q[n * Q.shape[0] // nprocs:(n + 1) * Q.shape[0] // nprocs] for n in range(nprocs)]
+        pool = mp.Pool(processes=nprocs)  # @UndefinedVariable
+        outputs = pool.map(self.bin_parallel, Q_chunks)
 
-        for i in range(Q.shape[0]):
-            chunk0 = np.where((self.Q[:, 0] - Q[i, 0]) ** 2 / (qstep[0] / 2.) ** 2 < 1.)
+        monitor, detector, temp = (np.concatenate(arg) for arg in zip(*outputs))
 
-            if len(chunk0[0]) > 0:
-                _Q, _mon, _det, _temp = self.Q[chunk0, :][0], self.monitor[chunk0], self.detector[chunk0], self.temp[chunk0]
-                chunk1 = np.where((_Q[:, 1] - Q[i, 1]) ** 2 / (qstep[1] / 2.) ** 2 < 1.)
-
-                if len(chunk1[0]) > 0:
-                    _Q, _mon, _det, _temp = _Q[chunk1, :][0], _mon[chunk1], _det[chunk1], _temp[chunk1]
-                    chunk2 = np.where((_Q[:, 2] - Q[i, 2]) ** 2 / (qstep[2] / 2.) ** 2 < 1.)
-
-                    if len(chunk2[0]) > 0:
-                        _Q, _mon, _det, _temp = _Q[chunk2, :][0], _mon[chunk2], _det[chunk2], _temp[chunk2]
-                        chunk3 = np.where((_Q[:, 1] - Q[i, 1]) ** 2 / (qstep[3] / 2.) ** 2 < 1.)
-
-                        if len(chunk3[0]) > 0:
-                            _Q, _mon, _det, _temp = _Q[chunk3, :][0], _mon[chunk3], _det[chunk3], _temp[chunk3]
-                            chunk4 = np.where((_temp - Q[i, 4]) ** 2 / (qstep[4] / 2.) ** 2 < 1.)
-
-                            if len(chunk4[0]) > 0:
-                                _Q, _mon, _det, _temp = _Q[chunk4, :][0], _mon[chunk4], _det[chunk4], _temp[chunk4]
-
-                                monitor[i] = np.average(_mon)
-                                detector[i] = np.average(_det)
-                                temps[i] = np.average(_temp)
-
-        return Q, monitor, detector, temps
+        return Q, monitor, detector, temp
 
     def integrate(self, **kwargs):
         '''Returns the integrated intensity within given bounds
@@ -426,17 +439,21 @@ class Data(object):
         y = dims[kwargs['y'][0]]
 
         if 'z' in kwargs and 'w' in kwargs:
-            print('worked')
             try:
                 z = dims[kwargs['z'][0]]
                 w = dims[kwargs['w'][0]]
+
+                x, y, z, w = (np.ma.masked_where(w <= 0, x),
+                              np.ma.masked_where(w <= 0, y),
+                              np.ma.masked_where(w <= 0, z),
+                              np.ma.masked_where(w <= 0, w))
 
                 from mpl_toolkits.mplot3d import Axes3D  # @UnusedImport
 
                 fig = plt.figure()
                 ax = fig.add_subplot(111, projection='3d')
 
-                ax.scatter(x, y, z, c=w, linewidths=0, alpha=0.5, vmin=1e-4, vmax=0.1)
+                ax.scatter(x, y, z, c=w, linewidths=0, vmin=1.e-4, vmax=0.1, norm=colors.LogNorm())
 
             except KeyError:
                 raise
@@ -444,12 +461,17 @@ class Data(object):
         elif 'z' in kwargs and not 'w' in kwargs:
             try:
                 z = dims[kwargs['z'][0]]
-                plt.pcolormesh(x, y, z)
+
+                x, y, z = (np.ma.masked_where(z <= 0, x),
+                           np.ma.masked_where(z <= 0, y),
+                           np.ma.masked_where(z <= 0, z))
+
+                plt.pcolormesh(x, y, z, vmin=1.e-4, vmax=0.1, norm=colors.LogNorm())
             except KeyError:
                 pass
         else:
             if kwargs['err']:
                 err = np.sqrt(dims['intensity'])
-                plt.errorbar(x, y, yerr=err, fmt='rs')
+                plt.errorbar(x, y, yerr=err, fmt='rs', **kwargs)
 
         plt.show()
