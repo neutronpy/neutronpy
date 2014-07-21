@@ -30,10 +30,13 @@ class Atom(object):
         Atom object defining an individual atom in a unit cell of a single crystal
 
     '''
-    def __init__(self, ion, pos, dpos=[0., 0., 0.], occupancy=1., Mcell=None, massNorm=False):
+    def __init__(self, ion, pos, dpos=None, occupancy=1., Mcell=None, massNorm=False):
         self.ion = ion
         self.pos = pos
-        self.dpos = dpos
+        if dpos is None:
+            self.dpos = [0., 0., 0.]
+        else:
+            self.dpos = dpos
         self.occupancy = occupancy
         self.Mcell = Mcell
 

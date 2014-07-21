@@ -197,7 +197,7 @@ class Data(object):
 
             order = np.lexsort((Q[:, 3], Q[:, 2], Q[:, 1], Q[:, 0]))
 
-            if kwargs['ret']:
+            if 'ret' in kwargs and kwargs['ret']:
                 new = Data(Q=Q[order], temp=temp[order], monitor=monitor[order], detector=detector[order])
 
                 for i, var in enumerate(['h', 'k', 'l', 'e']):

@@ -776,7 +776,7 @@ def project_into_plane(rm, index):
     return mp
 
 
-def ellipse(saxis1, saxis2, phi=0, origin=[0, 0], npts=31):
+def ellipse(saxis1, saxis2, phi=0, origin=None, npts=31):
     r'''Returns an ellipse.
 
     Parameters
@@ -801,6 +801,9 @@ def ellipse(saxis1, saxis2, phi=0, origin=[0, 0], npts=31):
     [x, y] : list of ndarray
         Two one dimensional arrays representing an ellipse
     '''
+
+    if origin is None:
+        origin = [0., 0.]
 
     theta = np.linspace(0., 2. * np.pi, npts)
 
@@ -862,10 +865,17 @@ class Instrument(object):
     '''
 
     def __init__(self, efixed, samp_abc, samp_abg, samp_mosaic, orient1, orient2,
-                 hcol, vcol=[120, 120, 120, 120], arms=[150, 150, 150, 150],
-                 mono_tau='PG(002)', mono_mosaic=25, ana_tau='PG(002)', ana_mosaic=25):
+                 hcol, vcol=None, arms=None, mono_tau='PG(002)', mono_mosaic=25,
+                 ana_tau='PG(002)', ana_mosaic=25):
         [a, b, c] = samp_abc
         [alpha, beta, gamma] = samp_abg
+
+        if vcol is None:
+            vcol = [120, 120, 120, 120]
+
+        if arms is None:
+            arms = [150, 150, 150, 150]
+
         self.mono = _Monochromator(mono_tau, mono_mosaic)
         self.ana = _Monochromator(ana_tau, ana_mosaic)
         self.hcol = np.array(hcol)
