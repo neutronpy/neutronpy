@@ -1,8 +1,3 @@
-'''
-Created on Jun 10, 2014
-
-@author: davidfobes
-'''
 import numpy as np
 from scipy.linalg import block_diag as blkdiag
 
@@ -26,22 +21,35 @@ class _Monochromator():
         self.dir = -1
 
 
-def scalar(x1, y1, z1, x2, y2, z2, lattice):
-    r'''
-    function s=scalar(x1,y1,z1,x2,y2,z2,lattice)
-    #==========================================================================
-    # function s=scalarx1,y1,z1,x2,y2,z2,lattice)
-    #  ResLib v.3.4
-    #==========================================================================
-    #
-    #  Calculates the scalar product of two vectors, defined by their
-    #  fractional cell coordinates or Miller indexes.
-    #
-    #
-    # A. Zheludev, 1999-2007
-    # Oak Ridge National Laboratory
-    #==========================================================================
+def scalar(v1, v2, lattice):
+    r'''Calculates the scalar product of two vectors, defined by their
+    fractional cell coordinates or Miller indexes.
+
+    Parameters
+    ----------
+    v1 : array
+        First input vector
+
+    v2 : array
+        Second input vector
+
+    lattice : Sample class
+        Class containing unit cell parameters
+
+    Returns
+    -------
+    s : scalar
+        The scalar product of the two input vectors scaled by the lattice
+        parameters.
+
+    Notes
+    -----
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+
     '''
+
+    [x1, y1, z1] = v1
+    [x2, y2, z2] = v2
 
     s = x1 * x2 * lattice.a ** 2 + y1 * y2 * lattice.b ** 2 + z1 * z2 * lattice.c ** 2 + \
         (x1 * y2 + x2 * y1) * lattice.a * lattice.b * np.cos(lattice.gamma) + \
@@ -52,25 +60,30 @@ def scalar(x1, y1, z1, x2, y2, z2, lattice):
 
 
 def star(lattice):
-    r'''
-    function [V,Vstar,latticestar]=star(lattice)
-    #==========================================================================
-    #  function [V,Vst,latticestar]=star(lattice)
-    #  ResLib v.3.4
-    #==========================================================================
-    #
-    #  Given lattice parametrs, calculate unit cell volume V, reciprocal volume
-    #  Vstar, and reciprocal lattice parameters.
-    #
-    # A. Zheludev, 1999-2006
-    # Oak Ridge National Laboratory
-    #==========================================================================
+    r'''Given lattice parametrs, calculate unit cell volume V, reciprocal
+    volume Vstar, and reciprocal lattice parameters.
+
+    Parameters
+    ----------
+    lattice : Class
+        Sample class with the lattice parameters
+
+    Returns
+    -------
+    [V, Vstar, latticestar] : [float, float, class]
+        Returns the unit cell volume, reciprocal cell volume, and a Sample
+        Class with reciprocal lattice parameters
+
+    Notes
+    -----
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+
     '''
     V = 2 * lattice.a * lattice.b * lattice.c * \
-        np.sqrt(np.sin((lattice.alpha + lattice.beta + lattice.gamma) / 2) * \
-        np.sin((-lattice.alpha + lattice.beta + lattice.gamma) / 2) * \
-        np.sin((lattice.alpha - lattice.beta + lattice.gamma) / 2) * \
-        np.sin((lattice.alpha + lattice.beta - lattice.gamma) / 2))
+        np.sqrt(np.sin((lattice.alpha + lattice.beta + lattice.gamma) / 2) *
+                np.sin((-lattice.alpha + lattice.beta + lattice.gamma) / 2) *
+                np.sin((lattice.alpha - lattice.beta + lattice.gamma) / 2) *
+                np.sin((lattice.alpha + lattice.beta - lattice.gamma) / 2))
 
     Vstar = (2 * np.pi) ** 3 / V
 
@@ -88,36 +101,50 @@ def star(lattice):
     return [V, Vstar, latticestar]
 
 
-def modvec(x, y, z, lattice):
-    r'''
-    function m=modvec(x,y,z,lattice)
-    #==========================================================================
-    # function m=modvec(x,y,z,lattice)
-    #  ResLib v.3.4
-    #==========================================================================
-    #
-    #  Calculates the modulus of a vector, defined by its fractional cell
-    #  coordinates or Miller indexes.
-    #
-    # A. Zheludev, 1999-2006
-    # Oak Ridge National Laboratory
-    #==========================================================================
+def modvec(v, lattice):
+    r'''Calculates the modulus of a vector, defined by its fractional cell
+    coordinates or Miller indexes.
+
+    Parameters
+    ----------
+    v : array
+        Input vector
+
+    lattice : Sample class
+        Class containing unit cell parameters
+
+    Returns
+    -------
+    v : float
+        Modulus of the input vector scaled by the sample lattice
+
+    Notes
+    -----
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+
     '''
-    return np.sqrt(scalar(x, y, z, x, y, z, lattice))
+
+    return np.sqrt(scalar(v, v, lattice))
 
 
 def GetLattice(EXP):
-    r'''
-    function [lattice,rlattice]=GetLattice(EXP)
-    #==========================================================================
-    #  function [lattice,rlattice]=GetLattice(EXP)
-    #  Extracts lattice parameters from EXP and returns the direct and
-    #  reciprocal lattice parameters in the form used by scalar.m, star.m,etc.
-    #  This function is part of ResLib v.3.4
-    #
-    # A. Zheludev, 1999-2006
-    # Oak Ridge National Laboratory
-    #==========================================================================
+    r'''Extracts lattice parameters from EXP and returns the direct and
+    reciprocal lattice parameters in the form used by scalar.m, star.m, etc.
+
+    Parameters
+    ----------
+    EXP : Instrument Class
+        The Instrument information
+
+    Returns
+    -------
+    [lattice, rlattice] : [class, class]
+        Returns the direct and reciprocal lattice sample classes
+
+    Notes
+    -----
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+
     '''
     s = np.array([item.sample for item in EXP])
     lattice = _Sample(np.array([item.a for item in s]),
@@ -132,18 +159,27 @@ def GetLattice(EXP):
 
 
 def GetTau(x, getlabel=False):
-    r'''
-    function tau = GetTau(x, getlabel)
-    #==========================================================================
-    #  function GetTau(tau)
-    #  ResLib v.3.4
-    #==========================================================================
-    #
-    #  Tau-values for common monochromator crystals
-    #
-    # A. Zheludev, 1999-2006
-    # Oak Ridge National Laboratory
-    #==========================================================================
+    r'''Tau-values for common monochromator crystals
+
+    Parameters
+    ----------
+    x : float or string
+        Either the numerical Tau value, or a common monochromater type
+
+    getlabel : boolean
+        If True, return the name of the common monochromater that is a
+        match to the input Tau value
+
+    Returns
+    -------
+    tau : float or string
+        Returns either the numerical Tau value for a monochromater or the
+        name of a monochromator
+
+    Notes
+    -----
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+
     '''
     choices = {'pg(002)'.lower(): 1.87325,
                'pg(004)'.lower(): 3.74650,
@@ -182,21 +218,26 @@ def GetTau(x, getlabel=False):
 
 
 def CleanArgs(*varargin):
-    r'''
-    function [len,varargout]=CleanArgs(varargin)
-    #==========================================================================
-    #  function [N,X,Y,Z,..]=CleanArgs(X,Y,Z,..)
-    #  ResLib v.3.4
-    #==========================================================================
-    #
-    #  Reshapes input arguments to be row-vectors. N is the length of the
-    #  longest input argument. If any input arguments are shorter than N, their
-    #  first values are replicated to produce vectors of length N. In any case,
-    #  output arguments are row-vectors of length N.
-    #
-    # A. Zheludev, 1999-2006
-    # Oak Ridge National Laboratory
-    #==========================================================================
+    r'''Reshapes input arguments to be row-vectors. N is the length of the
+    longest input argument. If any input arguments are shorter than N, their
+    first values are replicated to produce vectors of length N. In any case,
+    output arguments are row-vectors of length N.
+
+    Parameters
+    ----------
+    varargin : tuple
+        Converts arrays into formats appropriate for the calculation and
+        extends arrays that are too short
+
+    Returns
+    -------
+    [length, varargout] : [int, tuple]
+        Returns the length of the input vectors and a tuple containing the cleaned vectors
+
+    Notes
+    -----
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+
     '''
     varargout = []
     lengths = np.array([], dtype=np.int32)
@@ -220,15 +261,23 @@ def CleanArgs(*varargin):
 
 
 def StandardSystem(EXP):
-    r'''
-    function [x,y,z,lattice,rlattice]=StandardSystem(EXP)
-    #==========================================================================
-    #  function [x,y,z,lattice,rlattice]=StandardSystem(EXP)
-    #  This function is part of ResLib v.3.4
-    #
-    # A. Zheludev, 1999-2006
-    # Oak Ridge National Laboratory
-    #==========================================================================
+    r'''Returns rotation matrices to calculate resolution in the sample view
+    instead of the instrument view
+
+    Parameters
+    ----------
+    EXP : class
+        Instrument class
+
+    Returns
+    -------
+    [x, y, z, lattice, rlattice] : [ndarray, ndarray, ndarray, class, class]
+        Returns the rotation matrices and real and reciprocal lattice sample classes
+
+    Notes
+    -----
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+
     '''
     [lattice, rlattice] = GetLattice(EXP)
     length = len(EXP)
@@ -239,21 +288,21 @@ def StandardSystem(EXP):
         orient1[:, i] = EXP[i].orient1
         orient2[:, i] = EXP[i].orient2
 
-    modx = modvec(orient1[0, :], orient1[1, :], orient1[2, :], rlattice)
+    modx = modvec([orient1[0, :], orient1[1, :], orient1[2, :]], rlattice)
 
     x = orient1
     x[0, :] = x[0, :] / modx  # First unit basis vector
     x[1, :] = x[1, :] / modx
     x[2, :] = x[2, :] / modx
 
-    proj = scalar(orient2[0, :], orient2[1, :], orient2[2, :], x[0, :], x[1, :], x[2, :], rlattice)
+    proj = scalar([orient2[0, :], orient2[1, :], orient2[2, :]], [x[0, :], x[1, :], x[2, :]], rlattice)
 
     y = orient2
     y[0, :] = y[0, :] - x[0, :] * proj
     y[1, :] = y[1, :] - x[1, :] * proj
     y[2, :] = y[2, :] - x[2, :] * proj
 
-    mody = modvec(y[0, :], y[1, :], y[2, :], rlattice)
+    mody = modvec([y[0, :], y[1, :], y[2, :]], rlattice)
 
     if len(np.where(mody <= 0)[0]) > 0:
         raise ValueError('??? Fatal error: Orienting vectors are colinear!')
@@ -267,19 +316,19 @@ def StandardSystem(EXP):
     z[1, :] = x[2, :] * y[0, :] - y[2, :] * x[0, :]
     z[2, :] = -x[1, :] * y[0, :] + y[1, :] * x[0, :]
 
-    proj = scalar(z[0, :], z[1, :], z[2, :], x[0, :], x[1, :], x[2, :], rlattice)
+    proj = scalar([z[0, :], z[1, :], z[2, :]], [x[0, :], x[1, :], x[2, :]], rlattice)
 
     z[0, :] = z[0, :] - x[0, :] * proj
     z[1, :] = z[1, :] - x[1, :] * proj
     z[2, :] = z[2, :] - x[2, :] * proj
 
-    proj = scalar(z[0, :], z[1, :], z[2, :], y[0, :], y[1, :], y[2, :], rlattice)
+    proj = scalar([z[0, :], z[1, :], z[2, :]], [y[0, :], y[1, :], y[2, :]], rlattice)
 
     z[0, :] = z[0, :] - y[0, :] * proj
     z[1, :] = z[1, :] - y[1, :] * proj
     z[2, :] = z[2, :] - y[2, :] * proj
 
-    modz = modvec(z[0, :], z[1, :], z[2, :], rlattice)
+    modz = modvec([z[0, :], z[1, :], z[2, :]], rlattice)
 
     z[0, :] = z[0, :] / modz  # Third unit basis vector
     z[1, :] = z[1, :] / modz
@@ -289,21 +338,31 @@ def StandardSystem(EXP):
 
 
 def ResMat(Q, W, EXP):
-    r'''
-    function [R0,RM]=ResMat(Q,W,EXP)
-    #==========================================================================
-    #  function [R0,RM]=ResMat(Q,W,EXP)
-    #  ResLib v.3.4
-    #==========================================================================
-    #
-    #  For a momentum transfer Q and energy transfers W,
-    #  given experimental conditions specified in EXP,
-    #  calculates the Cooper-Nathans resolution matrix RM and
-    #  Cooper-Nathans Resolution prefactor R0.
-    #
-    # A. Zheludev, 1999-2006
-    # Oak Ridge National Laboratory
-    #==========================================================================
+    r'''For a momentum transfer Q and energy transfers W, given experimental
+    conditions specified in EXP, calculates the Cooper-Nathans resolution
+    matrix RM and Cooper-Nathans Resolution prefactor R0.
+
+    Parameters
+    ----------
+    Q : ndarray or list of ndarray
+        The Q vectors in reciprocal space at which resolution should be calculated
+
+    W : float or list of floats
+        The energy transfers at which resolution should be calculated
+
+    EXP : Class
+        Instrument class containing the relevant information about the instrument
+
+    Returns
+    -------
+    [R0, RM] : list(float, ndarray)
+        Resolution pre-factor (R0) and resolution matrix (RM) at the given reciprocal
+        lattice vectors and energy transfers
+
+    Notes
+    -----
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+
     '''
     # 0.424660900144 = FWHM2RMS
     # CONVERT1=0.4246609*pi/60/180
@@ -323,7 +382,6 @@ def ResMat(Q, W, EXP):
     C = np.matrix(np.zeros((4, 8), dtype=np.float64))
     B = np.matrix(np.zeros((4, 6), dtype=np.float64))
     for ind in range(length):
-        #----------------------------------------------------------------------
         # the method to use
         method = 0
         if hasattr(EXP[ind], 'method'):
@@ -476,7 +534,7 @@ def ResMat(Q, W, EXP):
         sm = EXP[ind].mono.dir
         ss = EXP[ind].sample.dir
         sa = EXP[ind].ana.dir
-        #----------------------------------------------------------------------
+
         # Calculate angles and energies
         w = W[ind]
         q = Q[ind]
@@ -497,7 +555,7 @@ def ResMat(Q, W, EXP):
 
         thetas = s2theta / 2.
         phi = np.arctan2(-kf * np.sin(s2theta), ki - kf * np.cos(s2theta))
-        #------------------------------------------------------------------
+
         # Redefine sample geometry
         psi = thetas - phi  # Angle from sample geometry X axis to Q
         rot = np.matrix(np.zeros((3, 3), dtype=np.float64))
@@ -506,19 +564,18 @@ def ResMat(Q, W, EXP):
         rot[0, 1] = np.sin(psi)
         rot[1, 0] = -np.sin(psi)
         rot[2, 2] = 1.
+
         # sshape=rot'*sshape*rot
         sshape = rot * np.matrix(sshape) * rot.H
 
-        #-------------------------------------------------------------------
         # Definition of matrix G
         G = 1. / np.array([alpha[0], alpha[1], beta[0], beta[1], alpha[2], alpha[3], beta[2], beta[3]], dtype=np.float64) ** 2
         G = np.matrix(np.diag(G))
-        #----------------------------------------------------------------------
+
         # Definition of matrix F
         F = 1. / np.array([etam, etamv, etaa, etaav], dtype=np.float64) ** 2
         F = np.matrix(np.diag(F))
 
-        #-------------------------------------------------------------------
         # Definition of matrix A
         A[0, 0] = ki / 2. / np.tan(thetam)
         A[0, 1] = -A[0, 0]
@@ -529,7 +586,6 @@ def ResMat(Q, W, EXP):
         A[4, 4] = kf
         A[5, 6] = kf
 
-        #-------------------------------------------------------------------
         # Definition of matrix C
         C[0, 0] = 1. / 2.
         C[0, 1] = 1. / 2.
@@ -540,7 +596,6 @@ def ResMat(Q, W, EXP):
         C[3, 6] = 1. / (2. * np.sin(thetaa))
         C[3, 7] = -C[3, 6]
 
-        #-------------------------------------------------------------------
         # Definition of matrix B
         B[0, 0] = np.cos(phi)
         B[0, 1] = np.sin(phi)
@@ -554,11 +609,11 @@ def ResMat(Q, W, EXP):
         B[2, 5] = -1.
         B[3, 0] = 2. * CONVERT2 * ki
         B[3, 3] = -2. * CONVERT2 * kf
-        #----------------------------------------------------------------------
+
         # Definition of matrix S
         Sinv = np.matrix(blkdiag(np.array(bshape, dtype=np.float32), mshape, sshape, ashape, dshape))  # S-1 matrix
         S = Sinv.I
-        #----------------------------------------------------------------------
+
         # Definition of matrix T
         T[0, 0] = -1. / (2. * L0)  # mistake in paper
         T[0, 2] = np.cos(thetam) * (1. / L1 - 1. / L0) / 2.
@@ -576,7 +631,7 @@ def ResMat(Q, W, EXP):
         T[3, 7] = -1. / (2. * L2 * np.sin(thetaa))
         T[3, 10] = (1. / L2 + 1. / L3 - 2. * np.sin(thetaa) / anarv) / (2. * np.sin(thetaa))
         T[3, 12] = -1. / (2. * L3 * np.sin(thetaa))
-        #-------------------------------------------------------------------
+
         # Definition of matrix D
         # Lots of index mistakes in paper for matrix D
         D[0, 0] = -1. / L0
@@ -602,7 +657,6 @@ def ResMat(Q, W, EXP):
         D[7, 10] = -D[5, 11]
         D[7, 12] = D[5, 11]
 
-        #----------------------------------------------------------------------
         # Definition of resolution matrix M
         if method == 1 or method == 'Popovici':
             K = S + T.H * F * T
@@ -624,8 +678,7 @@ def ResMat(Q, W, EXP):
 
         # TODO: FIX added factor 5.545 from ResCal5
         M = 8. * np.log(2.) * np.linalg.inv(Minv)
-            # Correction factor 8*log(2) as input parameters
-            # are expressed as FWHM.
+        # Correction factor 8*log(2) as input parameters are expressed as FWHM.
 
         # TODO: rows-columns 3-4 swapped for ResPlot to work.
         # Inactivate as we want M=[x,y,z,E]
@@ -645,7 +698,7 @@ def ResMat(Q, W, EXP):
 #         RM_[3, 3] = M[2, 2]
 #         RM_[3, 1] = M[2, 1]
 #         RM_[1, 3] = M[1, 2]
-        #-------------------------------------------------------------------
+
         # Calculation of prefactor, normalized to source
         Rm = ki ** 3 / np.tan(thetam)
         Ra = kf ** 3 / np.tan(thetaa)
@@ -657,8 +710,6 @@ def ResMat(Q, W, EXP):
         else:
             # Cooper-Nathans (popovici Eq 5 and 9)
             R0_ = R0_ * np.sqrt(np.linalg.det(np.matrix(F)) / np.linalg.det(np.matrix(H)))
-
-        #-------------------------------------------------------------------
 
         # Normalization to flux on monitor
         if moncor == 1:
@@ -685,25 +736,24 @@ def ResMat(Q, W, EXP):
             d[3, 4] = -1. / L1mon
             if method == 1 or method == 'Popovici':
                 # Popovici
-                Rmon = Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * \
-                        np.sqrt(np.linalg.det(f) / np.linalg.det((np.matrix(d) * \
-                        (np.matrix(s) + np.matrix(t).H * np.matrix(f) * np.matrix(t)).I * np.matrix(d).H).I + np.matrix(g)))
+                Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) *
+                        np.sqrt(np.linalg.det(f) / np.linalg.det((np.matrix(d) *
+                                                                  (np.matrix(s) + np.matrix(t).H * np.matrix(f) * np.matrix(t)).I *
+                                                                  np.matrix(d).H).I + np.matrix(g))))
             else:
                 # Cooper-Nathans
-                Rmon = Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * \
-                        np.sqrt(np.linalg.det(f) / np.linalg.det(np.matrix(g) + \
-                        np.matrix(c).H * np.matrix(f) * np.matrix(c)))
+                Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) *
+                        np.sqrt(np.linalg.det(f) / np.linalg.det(np.matrix(g) + np.matrix(c).H * np.matrix(f) * np.matrix(c))))
 
             R0_ = R0_ / Rmon
             R0_ = R0_ * ki  # 1/ki monitor efficiency
 
-        #----------------------------------------------------------------------
         # Transform prefactor to Chesser-Axe normalization
         R0_ = R0_ / (2. * np.pi) ** 2 * np.sqrt(np.linalg.det(M))
-        #----------------------------------------------------------------------
+
         # Include kf/ki part of cross section
         R0_ = R0_ * kf / ki
-        #----------------------------------------------------------------------
+
         # Take care of sample mosaic if needed
         # [S. A. Werner & R. Pynn, J. Appl. Phys. 42, 4736, (1971), eq 19]
         if hasattr(sample, 'mosaic'):
@@ -720,7 +770,6 @@ def ResMat(Q, W, EXP):
             # TODO: FIX add 8*log(2) factor for mosaicities in FWHM
             M = 8 * np.log(2) * np.linalg.inv(Minv)
 
-        #----------------------------------------------------------------------
         # Take care of analyzer reflectivity if needed [I. Zaliznyak, BNL]
         if hasattr(ana, 'thickness') and hasattr(ana, 'Q'):
             KQ = ana.Q
@@ -737,7 +786,6 @@ def ResMat(Q, W, EXP):
             reflec = sum(rdth) / sum(wdth)
             R0_ = R0_ * reflec
 
-        #----------------------------------------------------------------------
         R0[ind] = R0_
         RM[:, :, ind] = M[:, :]
 
@@ -843,14 +891,14 @@ class Instrument(object):
         Vertical Soller collimations in minutes of arc starting from the neutron guide.
 
     mono_tau : string or float, optional
-        The monochromator reciprocal lattice vector in :math:`\AA^{-1}`,
+        The monochromator reciprocal lattice vector in :math:`\unicode{x212B}^{-1}`,
         given either as a float, or as a string for common monochromator types.
 
     mono_mosaic : float, optional
         The mosaic of the monochromator in minutes of arc.
 
     ana_tau : string or float, optional
-        The analyzer reciprocal lattice vector in :math:`\AA^{-1}`,
+        The analyzer reciprocal lattice vector in :math:`\unicode{x212B}^{-1}`,
         given either as a float, or as a string for common analyzer types.
 
     ana_mosaic : float, optional
@@ -886,25 +934,27 @@ class Instrument(object):
         self.orient1 = np.array(orient1)
         self.orient2 = np.array(orient2)
 
-    def calc_resolution(self, H, K, L, W, npts=36):
-        r'''
-        function [R0,RMS, RM]=ResMatS(H,K,L,W,EXP)
-        #==========================================================================
-        #  function [R0,RMS]=ResMatS(H,K,L,W,EXP)
-        #  ResLib v.3.4
-        #==========================================================================
-        #
-        #  For a scattering vector (H,K,L) and  energy transfers W,
-        #  given experimental conditions specified in EXP,
-        #  calculates the Cooper-Nathans resolution matrix RMS and
-        #  Cooper-Nathans Resolution prefactor R0 in a coordinate system
-        #  defined by the crystallographic axes of the sample.
-        #
-        # A. Zheludev, 1999-2006
-        # Oak Ridge National Laboratory
-        #==========================================================================
-        '''
+    def calc_resolution(self, hkle, npts=36):
+        r'''For a scattering vector (H,K,L) and  energy transfers W, given
+        experimental conditions specified in EXP, calculates the Cooper-Nathans
+        resolution matrix RMS and Cooper-Nathans Resolution prefactor R0 in a
+        coordinate system defined by the crystallographic axes of the sample.
 
+        Parameters
+        ----------
+        hkle : list
+            Array of the scattering vector and energy transfer at which the
+            calculation should be performed
+
+        npts : int, optional
+            Number of points in the ouput curves
+
+        Notes
+        -----
+            Translated from ResLib, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+
+        '''
+        [H, K, L, W] = hkle
         EXP = self
 
         [length, H, K, L, W, EXP] = CleanArgs(H, K, L, W, EXP)
@@ -912,14 +962,14 @@ class Instrument(object):
 
         [x, y, z, sample, rsample] = StandardSystem(EXP)  # @UnusedVariable
 
-        Q = modvec(H, K, L, rsample)
+        Q = modvec([H, K, L], rsample)
         uq = np.zeros((3, length), dtype=np.float64)
         uq[0, :] = H / Q  # Unit vector along Q
         uq[1, :] = K / Q
         uq[2, :] = L / Q
 
-        xq = scalar(x[0, :], x[1, :], x[2, :], uq[0, :], uq[1, :], uq[2, :], rsample)
-        yq = scalar(y[0, :], y[1, :], y[2, :], uq[0, :], uq[1, :], uq[2, :], rsample)
+        xq = scalar([x[0, :], x[1, :], x[2, :]], [uq[0, :], uq[1, :], uq[2, :]], rsample)
+        yq = scalar([y[0, :], y[1, :], y[2, :]], [uq[0, :], uq[1, :], uq[2, :]], rsample)
         zq = 0  # @UnusedVariable # scattering vector assumed to be in (orient1,orient2) plane
 
         tmat = np.zeros((4, 4, length), dtype=np.float64)  # Coordinate transformation matrix
@@ -989,17 +1039,15 @@ class Instrument(object):
 
         const = 1.17741  # half width factor
 
-        self.projections = {
-                            'QxQy': np.zeros((2, npts, A.shape[-1])),
+        self.projections = {'QxQy': np.zeros((2, npts, A.shape[-1])),
                             'QxQySlice': np.zeros((2, npts, A.shape[-1])),
                             'QxW': np.zeros((2, npts, A.shape[-1])),
                             'QxWSlice': np.zeros((2, npts, A.shape[-1])),
                             'QyW': np.zeros((2, npts, A.shape[-1])),
-                            'QyWSlice': np.zeros((2, npts, A.shape[-1]))
-                            }
+                            'QyWSlice': np.zeros((2, npts, A.shape[-1]))}
 
         for ind in range(A.shape[-1]):
-            #----- Remove the vertical component from the matrix.
+            # Remove the vertical component from the matrix.
             B = np.vstack((np.hstack((A[0, :2:1, ind], A[0, 3, ind])),
                            np.hstack((A[1, :2:1, ind], A[1, 3, ind])),
                            np.hstack((A[3, :2:1, ind], A[3, 3, ind]))))

@@ -51,7 +51,7 @@ class Atom(object):
 
 
 class Material(object):
-    r'''Class for the Material being supplied for the structure factor calculation
+    '''Class for the Material being supplied for the structure factor calculation
 
     Parameters
     ----------
@@ -62,20 +62,17 @@ class Material(object):
         used for Debye-Waller factor. This dictionary has
         the format:
 
-        {
-            'name': string,
-            'composition': [
-                {'ion': string,
-                'pos': [float, float, float],
-                'dpos: [float, float, float],
-                'occupancy': float
-                }
-            ],
-            'debye-waller': boolean,
-            'massNorm': boolean,
-            'formulaUnits': float,
-            'lattice': [float, float, float]
-        }
+        .. code-block:: python
+
+            {'name': string,
+             'composition': [{'ion': string,
+                              'pos': [float, float, float],
+                              'dpos: [float, float, float],
+                              'occupancy': float}],
+             'debye-waller': boolean,
+             'massNorm': boolean,
+             'formulaUnits': float,
+             'lattice': [float, float, float]}
 
     Returns
     -------

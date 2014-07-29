@@ -4,7 +4,7 @@
 build/*
 __pycache__/
 main.py
-/build/
+doc/_build
 venv/*
 neutronpy.egg-info/
 dist/*
