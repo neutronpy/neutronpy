@@ -1,27 +1,17 @@
 neutronpy package
 =================
 
-Subpackages
------------
-
-.. toctree::
-
-    neutronpy.fitting
-    neutronpy.form_facs
-    neutronpy.resolution
-    neutronpy.tools
-
 Submodules
 ----------
 
-neutronpy.constants module
---------------------------
+.. toctree::
 
-.. automodule:: neutronpy.constants
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   neutronpy.constants
+   neutronpy.form_facs
+   neutronpy.functions
+   neutronpy.models
+   neutronpy.resolution
+   neutronpy.tools
 
 Module contents
 ---------------

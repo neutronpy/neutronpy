@@ -1,20 +1,5 @@
-neutronpy.resolution package
-============================
-
-Submodules
-----------
-
-neutronpy.resolution.Instrument module
---------------------------------------
-
-.. automodule:: neutronpy.resolution.Instrument
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
+neutronpy.resolution module
+===========================
 
 .. automodule:: neutronpy.resolution
     :members:

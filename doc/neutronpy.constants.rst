@@ -1,7 +1,7 @@
-neutronpy.form_facs module
+neutronpy.constants module
 ==========================
 
-.. automodule:: neutronpy.form_facs
+.. automodule:: neutronpy.constants
     :members:
     :undoc-members:
     :show-inheritance:

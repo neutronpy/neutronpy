@@ -1,27 +1,25 @@
-from ..constants import boltzmann_meV_K
+from .constants import boltzmann_meV_K, joules2meV
+from scipy import constants
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import colors  # @UnusedImport
-from scipy.interpolate import griddata  # @UnusedImport
 import multiprocessing as mp
 
 
 class Data(object):
-    '''Data class for handling multi-dimensional TAS data. If input file type is not supported, data can be entered manually.
+    r'''Data class for handling multi-dimensional TAS data. If input file type is not supported, data can be entered manually.
 
     Parameters
     ----------
     h : ndarray, optional
-        Array of Q$_x$ in reciprocal lattice units.
+        Array of :math:`Q_x` in reciprocal lattice units.
 
     k : ndarray, optional
-        Array of Q$_y$ in reciprocal lattice units.
+        Array of :math:`Q_y` in reciprocal lattice units.
 
     l : ndarray, optional
-        Array of Q$_z$ in reciprocal lattice units.
+        Array of :math:`Q_z` in reciprocal lattice units.
 
     e : ndarray, optional
-        Array of $\hbar \omega$ in meV.
+        Array of :math:`\hbar \omega` in meV.
 
     detector : ndarray, optional
         Array of measured counts on detector.
@@ -69,7 +67,7 @@ class Data(object):
         return self
 
     def load_file(self, *files, **kwargs):
-        '''Loads one or more files in either HFIR or NCNR formats
+        r'''Loads one or more files in either HFIR or NCNR formats
 
         Parameters
         ----------
@@ -102,9 +100,9 @@ class Data(object):
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
                         setattr(self, key, value)
-                    self.Q = self.build_Q(**kwargs)
+                    self.Q = self._build_Q(**kwargs)
                 else:
-                    output['Q'] = self.build_Q(output=output, **kwargs)
+                    output['Q'] = self._build_Q(output=output, **kwargs)
                     self.combine_data(output)
 
         if kwargs['mode'] == 'NCNR':
@@ -127,13 +125,13 @@ class Data(object):
                 if not self.Q:
                     for key, value in output.items():
                         setattr(self, key, value)
-                    self.Q = self.build_Q(**kwargs)
+                    self.Q = self._build_Q(**kwargs)
                 else:
-                    output['Q'] = self.build_Q(output=output, **kwargs)
+                    output['Q'] = self._build_Q(output=output, **kwargs)
                     self.combine_data(output)
 
-    def build_Q(self, **kwargs):
-        '''Internal method for constructing Q[q, hw] from h, k, l, and energy
+    def _build_Q(self, **kwargs):
+        r'''Internal method for constructing :math:`Q(q, hw)` from h, k, l, and energy
 
         Parameters
         ----------
@@ -157,7 +155,7 @@ class Data(object):
         return np.vstack((item.flatten() for item in args)).T
 
     def combine_data(self, *args, **kwargs):
-        '''Combines multiple data sets
+        r'''Combines multiple data sets
 
         Parameters
         ----------
@@ -171,7 +169,6 @@ class Data(object):
         Returns
         -------
         None
-            Adds the data to the class, provides no returns.
 
         '''
         for arg in args:
@@ -216,12 +213,13 @@ class Data(object):
                     setattr(self, var, Q[:, i])
 
     def intensity(self, **kwargs):
-        '''Returns the monitor normalized intensity
+        r'''Returns the monitor normalized intensity
 
         Parameters
         ----------
         m0 : float, optional
-            Desired monitor to normalize the intensity
+            Desired monitor to normalize the intensity. If not specified, m0
+            is set to the max monitor.
 
         Returns
         -------
@@ -240,7 +238,7 @@ class Data(object):
         return self.detector / self.monitor * m0
 
     def error(self, **kwargs):
-        '''Returns square-root error of monitor normalized intensity
+        r'''Returns square-root error of monitor normalized intensity
 
         Parameters
         ----------
@@ -256,7 +254,7 @@ class Data(object):
         return np.sqrt(np.abs(self.intensity(**kwargs)))
 
     def detailed_balance_factor(self, **kwargs):
-        '''Returns the detailed balance factor (sometimes called the Bose factor)
+        r'''Returns the detailed balance factor (sometimes called the Bose factor)
 
         Parameters
         ----------
@@ -276,7 +274,22 @@ class Data(object):
 
         return np.exp(-self.Q[3] / boltzmann_meV_K / self.temps)
 
-    def bin_parallel(self, Q_chunk):
+    def _bin_parallel(self, Q_chunk):
+        r'''Performs binning by finding data chunks to bin together.
+        Private function for performing binning in parallel using
+        multiprocessing library
+
+        Parameters
+        ----------
+        Q_chunk : ndarray
+            Chunk of Q over which the binning will be performed
+
+        Returns
+        -------
+        (monitor, detector, temps) : tuple of ndarrays
+            New monitor, detector, and temps of the binned data
+
+        '''
         monitor, detector, temps = np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0])
 
         for i in range(Q_chunk.shape[0]):
@@ -308,7 +321,27 @@ class Data(object):
         return (monitor, detector, temps)
 
     def bin(self, *args, **kwargs):
-        '''Rebin the data into the specified shape.
+        r'''Rebin the data into the specified shape.
+
+        Parameters
+        ----------
+        h : list
+            :math:`Q_x`: [lower bound, upper bound, number of points]
+
+        k : list
+            :math:`Q_y`: [lower bound, upper bound, number of points]
+
+        l : list
+            :math:`Q_z`: [lower bound, upper bound, number of points]
+
+        e : list
+            :math:`\hbar \omega`: [lower bound, upper bound, number of points]
+
+        Returns
+        -------
+        (Q, monitor, detector, temp) : tuple of ndarray
+            The resulting values binned to the specified bounds
+
         '''
 
         q, qstep = (), ()
@@ -328,14 +361,25 @@ class Data(object):
         nprocs = mp.cpu_count()  # @UndefinedVariable
         Q_chunks = [Q[n * Q.shape[0] // nprocs:(n + 1) * Q.shape[0] // nprocs] for n in range(nprocs)]
         pool = mp.Pool(processes=nprocs)  # @UndefinedVariable
-        outputs = pool.map(self.bin_parallel, Q_chunks)
+        outputs = pool.map(self._bin_parallel, Q_chunks)
 
         monitor, detector, temp = (np.concatenate(arg) for arg in zip(*outputs))
 
         return Q, monitor, detector, temp
 
     def integrate(self, **kwargs):
-        '''Returns the integrated intensity within given bounds
+        r'''Returns the integrated intensity within given bounds
+
+        Parameters
+        ----------
+        bounds : Boolean, optional
+            A boolean expression representing the bounds inside which the calculation will be performed
+
+        Returns
+        -------
+        result : float
+            The integrated intensity either over all data, or within specified boundaries
+
         '''
         result = 0
         if hasattr(kwargs, 'bounds'):
@@ -349,7 +393,7 @@ class Data(object):
         return result
 
     def position(self, **kwargs):
-        '''Returns the position of a peak within the given bounds
+        r'''Returns the position of a peak within the given bounds
 
         Parameters
         ----------
@@ -413,6 +457,40 @@ class Data(object):
         return result
 
     def plot(self, **kwargs):
+        r'''Plots the data in the class. x and y must at least be specified,
+        and z and/or w being specified will produce higher dimensional plots
+        (contour and volume, respectively).
+
+        Parameters
+        ----------
+        x : list
+            List indicating the content of the dimension, lower bound, upper bound, and number of points
+
+        y : list
+            List indicating the content of the dimension, lower bound, upper bound, and number of points
+
+        z : list
+            List indicating the content of the dimension, lower bound, upper bound, and number of points
+
+        w : list
+            List indicating the content of the dimension, lower bound, upper bound, and number of points
+
+        err : bool
+            Plot error bars. Only applies to xy scatter plots.
+
+        Returns
+        -------
+        None
+
+        '''
+        from scipy.interpolate import griddata  # @UnusedImport
+
+        try:
+            import matplotlib.pyplot as plt
+            from matplotlib import colors  # @UnusedImport
+        except ImportError:
+            ImportError('Matplotlib >= 1.3.0 is necessary for plotting.')
+
         axes = ['x', 'y', 'z', 'w']
         options = ['h', 'k', 'l', 'e', 'temp', 'intensity']
 
@@ -458,7 +536,7 @@ class Data(object):
             except KeyError:
                 raise
 
-        elif 'z' in kwargs and not 'w' in kwargs:
+        elif 'z' in kwargs and 'w' not in kwargs:
             try:
                 z = dims[kwargs['z'][0]]
 
@@ -475,3 +553,40 @@ class Data(object):
                 plt.errorbar(x, y, yerr=err, fmt='rs', **kwargs)
 
         plt.show()
+
+
+class Neutron():
+    r'''Class containing the most commonly used properties of a neutron beam
+    given some initial input, e.g. energy, wavelength, wavevector,
+    temperature, or frequency'''
+
+    def __init__(self, e=None, l=None, v=None, k=None, temp=None, freq=None):
+        if e is None:
+            if l is not None:
+                self.e = constants.h ** 2 / (2. * constants.m_n * (l / 1.e10) ** 2) * joules2meV
+            elif v is not None:
+                self.e = 1. / 2. * constants.m_n * v ** 2 * joules2meV
+            elif k is not None:
+                self.e = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / k) / 1.e10) ** 2) * joules2meV)
+            elif temp is not None:
+                self.e = constants.k * temp * joules2meV
+            elif freq is not None:
+                self.e = constants.hbar * freq * 2. * np.pi * joules2meV * 1.e12
+        else:
+            self.e = e
+
+        self.l = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.e / joules2meV)) * 1.e10
+        self.v = np.sqrt(2. * self.e / joules2meV / constants.m_n)
+        self.k = 2. * np.pi / self.l
+        self.temp = self.e / constants.k / joules2meV
+        self.freq = self.e / joules2meV / constants.hbar / 2. / np.pi / 1.e12
+
+    def printValues(self):
+        print(u'''
+Energy: {0:3.3f} meV
+Wavelength: {1:3.3f} $\AA$
+Wavevector: {2:3.3f} $\AA^-1$
+Velocity: {3:3.3f} m/s
+Temperature: {4:3.3f} K
+Frequency: {5:3.3f} THz
+'''.format(self.e, self.l, self.k, self.v, self.temp, self.freq))

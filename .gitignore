@@ -1,17 +1,37 @@
+# Editor files #
+################
 .project
 .pydevproject
-.DS_Store
-build/*
-__pycache__/
-main.py
-doc/_build
-venv/*
-neutronpy.egg-info/
-dist/*
+.settings/
 
+# OS FILES #
+############
+.DS_Store
+
+# Compiled source #
+###################
+*.dll
+*.o
+*.so
+
+# Python files #
+################
+build/*
+dist/*
+__pycache__/
+_build
+*.egg-info/
+MANIFEST
+
+# Virtual Env #
+###############
+venv/*
+
+# Quick Tests #
+###############
+main.py
 scan0010.dat
 scan0012.dat
-
 scan013.ng5
 scan0018.dat
 test_volume2.dat

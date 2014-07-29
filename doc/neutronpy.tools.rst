@@ -1,28 +1,5 @@
-neutronpy.tools package
-=======================
-
-Submodules
-----------
-
-neutronpy.tools.Data module
----------------------------
-
-.. automodule:: neutronpy.tools.Data
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-neutronpy.tools.Energy module
------------------------------
-
-.. automodule:: neutronpy.tools.Energy
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
+neutronpy.tools module
+======================
 
 .. automodule:: neutronpy.tools
     :members:

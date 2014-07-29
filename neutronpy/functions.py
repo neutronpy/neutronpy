@@ -1,9 +1,3 @@
-'''
-Created on May 28, 2014
-
-@author: davidfobes
-'''
-
 import numpy as np
 from scipy import special
 from scipy.special import erf
@@ -68,8 +62,7 @@ def gaussian(p, q):
     for i in range(int(len(p[2:]) / 3)):
         sigma = p[3 * i + 4] / (2. * np.sqrt(2. * np.log(2.)))
 
-        funct += p[3 * i + 2] / (sigma * np.sqrt(2. * np.pi)) * \
-                 np.exp(-(q - p[3 * i + 3]) ** 2 / (2 * sigma ** 2))
+        funct += p[3 * i + 2] / (sigma * np.sqrt(2. * np.pi)) * np.exp(-(q - p[3 * i + 3]) ** 2 / (2 * sigma ** 2))
 
     return funct
 
@@ -131,8 +124,7 @@ def lorentzian(p, q):
     funct = p[0] + p[1] * q
 
     for i in range(int(len(p[2:]) / 3)):
-        funct += p[3 * i + 2] / np.pi * 0.5 * p[3 * i + 4] / \
-                 ((q - p[3 * i + 3]) ** 2 + (0.5 * p[3 * i + 4]) ** 2)
+        funct += p[3 * i + 2] / np.pi * 0.5 * p[3 * i + 4] / ((q - p[3 * i + 3]) ** 2 + (0.5 * p[3 * i + 4]) ** 2)
 
     return funct
 
@@ -289,7 +281,7 @@ def gaussian_ring(p, q):
     -----
     A gaussian ellipse profile is defined as:
 
-    .. math::    f(x,y) = \frac{1}{N} e^{-\frac{1}{2}\frac{(\sqrt{(x-x_0)^2 + \alpha^2(y-y_0)^2}-r_0)^2}{2 \sigma},
+    .. math::    f(x,y) = \frac{1}{N} e^{-\frac{1}{2}\frac{(\sqrt{(x-x_0)^2 + \alpha^2(y-y_0)^2}-r_0)^2}{2 \sigma}},
 
     where :math:`FWHM = 2\sqrt{2\log(2)}`, and N is the normalization pre-factor given by:
 

@@ -40,8 +40,11 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
+    'matplotlib.sphinxext.plot_directive',
 ]
 
+numpydoc_show_class_members = False
+autodoc_default_flags = ['members', 'undoc-members']
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -63,7 +66,7 @@ copyright = '2014, David M Fobes'
 # built documents.
 #
 # The short X.Y version.
-version = neutronpy.__version__
+version = neutronpy.__version__.split('-')[0]
 # The full version, including alpha/beta/rc tags.
 release = neutronpy.__version__
 
