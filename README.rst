@@ -1,5 +1,6 @@
 NeutronPy
 =========
+
 **NeutronPy** is a python library with commonly used tools for neutron scattering measurements, including
 
 * Basic data operations
@@ -29,6 +30,11 @@ The following packages are required to install this library:
 * ``scipy >= 0.13.0``
 * ``matplotlib >= 1.3.0`` (optional, plotting)
 * ``nose >= 1.3.0`` (optional, tests)
+
+Contributions
+-------------
+
+Contributions may be made by submitting a pull-request for review using the fork-and-pull method on GitHub. Feature requests and bug reports can be made using the GitHub issues interface.
 
 Copyright & Licensing
 ---------------------
