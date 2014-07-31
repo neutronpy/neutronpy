@@ -28,8 +28,7 @@ The following packages are required to install this library:
 * ``numpy >= 1.8.0``
 * ``scipy >= 0.13.0``
 * ``matplotlib >= 1.3.0`` (optional, plotting)
-* ``sphinx >= 1.2.0`` (optional, documentation)
-* ``numpydoc >= 0.5`` (optional, documentation)
+* ``nose >= 1.3.0`` (optional, tests)
 
 Copyright & Licensing
 ---------------------
