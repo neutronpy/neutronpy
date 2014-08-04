@@ -291,15 +291,15 @@ def gaussian_ring(p, q):
 
     funct = p[0] + p[1] * (x + y)
 
-    for i in range(int(len(p[2:] / 6))):
+    for i in range(int(len(p[2:]) / 6)):
         # Normalization pre-factor
-        N = 1. / ((2. * np.pi / p[6 * i + 6] ** 2) * (p[6 * i + 7] ** 2 / (8. * np.log(2.))) *
-                  np.exp(-4. * np.log(2.) * p[6 * i + 5] ** 2 / p[6 * i + 7] ** 2) +
-                  np.sqrt(np.pi / np.log(2.)) * p[6 * i + 5] *
-                  (1. + erf(4. * np.sqrt(np.log(2.)) * p[6 * i + 5] / p[6 * i + 7])))
+        sigma = p[6 * i + 7] / (2. * np.sqrt(2. * np.log(2.)))
+        N = 2. * np.pi * (np.exp(-p[6 * i + 5] ** 2 / (2. * sigma ** 2)) *
+                          sigma ** 2 + np.sqrt(np.pi / 2) * p[6 * i + 5] *
+                          sigma * (1. + erf(p[6 * i + 5] / (np.sqrt(2) * sigma)))) / p[6 * i + 6]
 
-        funct += p[6 * i + 2] * N * np.exp(-4. * np.log(2.) * (np.sqrt((x - p[6 * i + 3]) ** 2 +
+        funct += p[6 * i + 2] / N * np.exp(-4. * np.log(2.) * (np.sqrt((x - p[6 * i + 3]) ** 2 +
                                                                        p[6 * i + 6] ** 2 * (y - p[6 * i + 4]) ** 2) -
-                                                               p[6 * i + 5]) ** 2 / p[6 * i + 7])
+                                                               p[6 * i + 5]) ** 2 / p[6 * i + 7] ** 2)
 
     return funct
