@@ -39,14 +39,6 @@ cdef extern from "mpfit.h":
         double *covar  # @IgnorePep8
         char version[20]
 
-    ctypedef int (*mp_func)(int *m,  # @IgnorePep8
-                       int n,
-                       double *x,
-                       double **fvec,
-                       double **dvec,
-                       void *private_data)
+    ctypedef int (*mp_func)(int *m, int n, double *x, double **fvec, double **dvec, void *private_data)  # @IgnorePep8
 
-    cdef int mpfit(mp_func funct, int npar,
-                 double *xall, mp_par *pars, mp_config *config,  # @IgnorePep8
-                 void *private_data,
-                 mp_result *result)
+    cdef int mpfit(mp_func funct, int npar, double *xall, mp_par *pars, mp_config *config, void *private_data, mp_result *result)  # @IgnorePep8

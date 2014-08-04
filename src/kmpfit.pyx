@@ -140,32 +140,28 @@ from kmpfit cimport *
 
 np.import_array()
 
-MP_OK = {
-   1: 'Convergence in chi-square value',
-   2: 'Convergence in parameter value',
-   3: 'Convergence in chi-square and parameter value',
-   4: 'Convergence in orthogonality',
-   5: 'Maximum number of iterations reached',
-   6: 'ftol is too small; no further improvement',
-   7: 'xtol is too small; no further improvement',
-   8: 'gtol is too small; no further improvement'
-}
+MP_OK = {1: 'Convergence in chi-square value',
+         2: 'Convergence in parameter value',
+         3: 'Convergence in chi-square and parameter value',
+         4: 'Convergence in orthogonality',
+         5: 'Maximum number of iterations reached',
+         6: 'ftol is too small; no further improvement',
+         7: 'xtol is too small; no further improvement',
+         8: 'gtol is too small; no further improvement'}
 
-MP_ERR = {
-     0: 'General input parameter error',
-   - 16: 'User function produced non-finite values',
-   - 17: 'No user function was supplied',
-   - 18: 'No user data points were supplied',
-   - 19: 'No free parameters',
-   - 20: 'Memory allocation error',
-   - 21: 'Initial values inconsistent w constraints',
-   - 22: 'Initial constraints inconsistent',
-   - 23: 'General input parameter error',
-   - 24: 'Not enough degrees of freedom'
-}
+MP_ERR = {0: 'General input parameter error',
+          - 16: 'User function produced non-finite values',
+          - 17: 'No user function was supplied',
+          - 18: 'No user data points were supplied',
+          - 19: 'No free parameters',
+          - 20: 'Memory allocation error',
+          - 21: 'Initial values inconsistent w constraints',
+          - 22: 'Initial constraints inconsistent',
+          - 23: 'General input parameter error',
+          - 24: 'Not enough degrees of freedom'}
 
-cdef int xmpfunc(int *mp, int n, double *x, double **fvecp, double **dvec,  # @IgnorePep8
-                      void *private_data) except -1:
+
+cdef int xmpfunc(int *mp, int n, double *x, double **fvecp, double **dvec, void *private_data) except -1:  # @IgnorePep8
     cdef double *e  # @IgnorePep8
     cdef double *f  # @IgnorePep8
     cdef double *y  # @IgnorePep8
@@ -175,7 +171,7 @@ cdef int xmpfunc(int *mp, int n, double *x, double **fvecp, double **dvec,  # @I
     cdef int i, j, m
     cdef np.npy_intp *shape = [n]  # @IgnorePep8
 
-    self = <Fitter>private_data  # @IgnorePep8
+    self = < Fitter > private_data  # @IgnorePep8
     for i in range(n):
         if x[i] != x[i]:  # not finite?
             self.message = 'Non-finite parameter from mpfit.c'
@@ -183,7 +179,7 @@ cdef int xmpfunc(int *mp, int n, double *x, double **fvecp, double **dvec,  # @I
     p = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, x)
     deviates = self.residuals(p, self.data)
 
-    f = <double*>np.PyArray_DATA(deviates)  # @IgnorePep8
+    f = < double* > np.PyArray_DATA(deviates)  # @IgnorePep8
     if mp[0]:
         m = mp[0]
         fvec = fvecp[0]
@@ -199,9 +195,9 @@ cdef int xmpfunc(int *mp, int n, double *x, double **fvecp, double **dvec,  # @I
 
     if dvec != NULL and self.deriv is not None:
         for i in range(n):
-            self.dflags[i] = bool(<int>dvec[i])  # @IgnorePep8
+            self.dflags[i] = bool(< int > dvec[i])  # @IgnorePep8
         jac = self.deriv(p, self.data, self.dflags)
-        cjac = <double*>np.PyArray_DATA(jac)  # @IgnorePep8
+        cjac = < double* > np.PyArray_DATA(jac)  # @IgnorePep8
         for j in range(n):
             d = dvec[j]
             if d != NULL:
@@ -210,267 +206,268 @@ cdef int xmpfunc(int *mp, int n, double *x, double **fvecp, double **dvec,  # @I
 
     return 0
 
+
 cdef class Fitter:
     """
-:param residuals:
-      the residuals function, see description below.
-:param deriv:
-      optional derivatives function, see description below. If a derivatives
-      function is given, user-computed explicit derivatives are automatically
-      set for all parameters in the attribute :attr:`parinfo`, but this can
-      be changed by the user.
-:param ...:
-      other parameters, each corresponding with one of the configuration
-      attributes described below. They can be defined here, when the Fitter
-      object is created, or later. The attributes :attr:`params0` and
-      :attr:`data` must be defined before the method :meth:`fit` is
-      called.
+    :param residuals:
+          the residuals function, see description below.
+    :param deriv:
+          optional derivatives function, see description below. If a derivatives
+          function is given, user-computed explicit derivatives are automatically
+          set for all parameters in the attribute :attr:`parinfo`, but this can
+          be changed by the user.
+    :param ...:
+          other parameters, each corresponding with one of the configuration
+          attributes described below. They can be defined here, when the Fitter
+          object is created, or later. The attributes :attr:`params0` and
+          :attr:`data` must be defined before the method :meth:`fit` is
+          called.
 
-Objects of this class are callable and return the fitted parameters when
-called.
+    Objects of this class are callable and return the fitted parameters when
+    called.
 
-**Residuals function**
+    **Residuals function**
 
-The residuals function must return a NumPy (dtype='d') array with weighted
-deviations between the model and the data. It takes two arguments:
-a NumPy array containing the parameter values and a reference
-to the attribute :attr:`data` which can be any object containing information
-about the data to be fitted. E.g., a tuple like
-``(xvalues, yvalues, errors)``.
+    The residuals function must return a NumPy (dtype='d') array with weighted
+    deviations between the model and the data. It takes two arguments:
+    a NumPy array containing the parameter values and a reference
+    to the attribute :attr:`data` which can be any object containing information
+    about the data to be fitted. E.g., a tuple like
+    ``(xvalues, yvalues, errors)``.
 
-In a typical scientific problem the residuals should be weighted so that
-each deviate has a Gaussian sigma of 1.0.  If *x* represents values of the
-independent variable, *y* represents a measurement for each value of *x*,
-and *err* represents the error in the measurements, then the deviates
-could be calculated as follows:
+    In a typical scientific problem the residuals should be weighted so that
+    each deviate has a Gaussian sigma of 1.0.  If *x* represents values of the
+    independent variable, *y* represents a measurement for each value of *x*,
+    and *err* represents the error in the measurements, then the deviates
+    could be calculated as follows:
 
-.. math::
+    .. math::
 
-   deviates = (y - f(x)) / err
+       deviates = (y - f(x)) / err
 
-where *f* is the analytical function representing the model.
-If *err* are the 1-sigma uncertainties in *y*, then
+    where *f* is the analytical function representing the model.
+    If *err* are the 1-sigma uncertainties in *y*, then
 
-.. math::
+    .. math::
 
-   \sum deviates^2
+       \sum deviates^2
 
-will be the total chi-squared value.  Fitter will minimize this value.
-As described above, the values of *x*, *y* and *err* are
-passed through Fitter to the residuals function via the attribute
-:attr:`data`.
+    will be the total chi-squared value.  Fitter will minimize this value.
+    As described above, the values of *x*, *y* and *err* are
+    passed through Fitter to the residuals function via the attribute
+    :attr:`data`.
 
-**Derivatives function**
+    **Derivatives function**
 
-The optional derivates function can be used to compute weighted function
-derivatives, which are used in the minimization process.  This can be
-useful to save time, or when the derivative is tricky to evaluate
-numerically.
+    The optional derivates function can be used to compute weighted function
+    derivatives, which are used in the minimization process.  This can be
+    useful to save time, or when the derivative is tricky to evaluate
+    numerically.
 
-The function takes three arguments: a NumPy array containing the parameter
-values, a reference to the attribute :attr:`data` and a list with boolean
-values corresponding with the parameters.
-If a boolean in the list is True, the derivative with respect to the
-corresponding parameter should be computed, otherwise it may be ignored.
-Fitter determines these flags depending on how derivatives are
-specified in item ``side`` of the attribute :attr:`parinfo`, or whether
-the parameter is fixed.
+    The function takes three arguments: a NumPy array containing the parameter
+    values, a reference to the attribute :attr:`data` and a list with boolean
+    values corresponding with the parameters.
+    If a boolean in the list is True, the derivative with respect to the
+    corresponding parameter should be computed, otherwise it may be ignored.
+    Fitter determines these flags depending on how derivatives are
+    specified in item ``side`` of the attribute :attr:`parinfo`, or whether
+    the parameter is fixed.
 
-The function must return a NumPy array with partial derivatives with respect
-to each parameter. It must have shape *(n,m)*, where *n*
-is the number of parameters and *m* the number of data points.
+    The function must return a NumPy array with partial derivatives with respect
+    to each parameter. It must have shape *(n,m)*, where *n*
+    is the number of parameters and *m* the number of data points.
 
-**Configuration attributes**
+    **Configuration attributes**
 
-The following attributes can be set by the user to specify a
-Fitter object's behaviour.
+    The following attributes can be set by the user to specify a
+    Fitter object's behaviour.
 
-.. attribute:: params0
+    .. attribute:: params0
 
-   Required attribute.
-   A NumPy array, a tuple or a list with the initial parameters values.
+       Required attribute.
+       A NumPy array, a tuple or a list with the initial parameters values.
 
-.. attribute:: data
+    .. attribute:: data
 
-   Required attribute.
-   Python object with information for the residuals function and the
-   derivatives function. See above.
+       Required attribute.
+       Python object with information for the residuals function and the
+       derivatives function. See above.
 
-.. attribute:: parinfo
+    .. attribute:: parinfo
 
-   A list of directories with parameter contraints, one directory
-   per parameter, or None if not given.
-   Each directory can have zero or more items with the following keys
-   and values:
+       A list of directories with parameter contraints, one directory
+       per parameter, or None if not given.
+       Each directory can have zero or more items with the following keys
+       and values:
 
-     ``'fixed'``: a boolean value, whether the parameter is to be held fixed or
-     not. Default: not fixed.
+         ``'fixed'``: a boolean value, whether the parameter is to be held fixed or
+         not. Default: not fixed.
 
-     ``'limits'``: a two-element tuple or list with upper end lower parameter
-     limits or  None, which indicates that the parameter is not bounded on
-     this side. Default: no limits.
+         ``'limits'``: a two-element tuple or list with upper end lower parameter
+         limits or  None, which indicates that the parameter is not bounded on
+         this side. Default: no limits.
 
-     ``'step'``: the step size to be used in calculating the numerical
-                 derivatives.
-     Default: step size is computed automatically.
+         ``'step'``: the step size to be used in calculating the numerical
+                     derivatives.
+         Default: step size is computed automatically.
 
-     ``'side'``: the sidedness of the finite difference when computing
-     numerical derivatives.  This item can take four values:
+         ``'side'``: the sidedness of the finite difference when computing
+         numerical derivatives.  This item can take four values:
 
-      0 - one-sided derivative computed automatically (default)
+          0 - one-sided derivative computed automatically (default)
 
-      1 - one-sided derivative :math:`(f(x+h) - f(x)  )/h`
+          1 - one-sided derivative :math:`(f(x+h) - f(x)  )/h`
 
-      -1 - one-sided derivative :math:`(f(x)   - f(x-h))/h`
+          -1 - one-sided derivative :math:`(f(x)   - f(x-h))/h`
 
-      2 - two-sided derivative :math:`(f(x+h) - f(x-h))/2h`
+          2 - two-sided derivative :math:`(f(x+h) - f(x-h))/2h`
 
-      3 - user-computed explicit derivatives
+          3 - user-computed explicit derivatives
 
-     where :math:`h` is the value of the parameter ``'step'``
-     described above.
-     The "automatic" one-sided derivative method will chose a
-     direction for the finite difference which does not
-     violate any constraints.  The other methods do not
-     perform this check.  The two-sided method is in
-     principle more precise, but requires twice as many
-     function evaluations.  Default: 0.
+         where :math:`h` is the value of the parameter ``'step'``
+         described above.
+         The "automatic" one-sided derivative method will chose a
+         direction for the finite difference which does not
+         violate any constraints.  The other methods do not
+         perform this check.  The two-sided method is in
+         principle more precise, but requires twice as many
+         function evaluations.  Default: 0.
 
-     ``'deriv_debug'``: boolean to specify console debug logging of
-     user-computed derivatives. True: enable debugging.
-     If debugging is enabled,
-     then ``'side'`` should be set to 0, 1, -1 or 2, depending on which
-     numerical derivative you wish to compare to.
-     Default: False.
+         ``'deriv_debug'``: boolean to specify console debug logging of
+         user-computed derivatives. True: enable debugging.
+         If debugging is enabled,
+         then ``'side'`` should be set to 0, 1, -1 or 2, depending on which
+         numerical derivative you wish to compare to.
+         Default: False.
 
-   As an example, consider a function with four parameters of which the
-   first parameter should be fixed and for the third parameter explicit
-   derivatives should be used. In this case, ``parinfo`` should have the value
-   ``[{'fixed': True}, None, {'side': 3}, None]`` or
-   ``[{'fixed': True}, {}, {'side': 3}, {}]``.
+       As an example, consider a function with four parameters of which the
+       first parameter should be fixed and for the third parameter explicit
+       derivatives should be used. In this case, ``parinfo`` should have the value
+       ``[{'fixed': True}, None, {'side': 3}, None]`` or
+       ``[{'fixed': True}, {}, {'side': 3}, {}]``.
 
-.. attribute:: ftol
+    .. attribute:: ftol
 
-   Relative :math:`\chi^2` convergence criterium. Default: 1e-10
+       Relative :math:`\chi^2` convergence criterium. Default: 1e-10
 
-.. attribute:: xtol
+    .. attribute:: xtol
 
-   Relative parameter convergence criterium. Default: 1e-10
+       Relative parameter convergence criterium. Default: 1e-10
 
-.. attribute:: gtol
+    .. attribute:: gtol
 
-   Orthogonality convergence criterium. Default: 1e-10
+       Orthogonality convergence criterium. Default: 1e-10
 
-.. attribute:: epsfcn
+    .. attribute:: epsfcn
 
-   Finite derivative step size. Default: 2.2204460e-16 (MACHEP0)
+       Finite derivative step size. Default: 2.2204460e-16 (MACHEP0)
 
-.. attribute:: stepfactor
+    .. attribute:: stepfactor
 
-   Initial step bound. Default: 100.0
+       Initial step bound. Default: 100.0
 
-.. attribute:: covtol
+    .. attribute:: covtol
 
-   Range tolerance for covariance calculation. Default: 1e-14
+       Range tolerance for covariance calculation. Default: 1e-14
 
-.. attribute:: maxiter
+    .. attribute:: maxiter
 
-   Maximum number of iterations. Default: 200
+       Maximum number of iterations. Default: 200
 
-.. attribute:: maxfev
+    .. attribute:: maxfev
 
-   Maximum number of function evaluations. Default: 0 (no limit)
+       Maximum number of function evaluations. Default: 0 (no limit)
 
 
-**Result attributes**
+    **Result attributes**
 
-After calling the method :meth:`fit`, the following attributes
-are available to the user:
+    After calling the method :meth:`fit`, the following attributes
+    are available to the user:
 
-.. attribute:: params
+    .. attribute:: params
 
-   A NumPy array, list or tuple with the fitted parameters. This attribute
-   has the same type as :attr:`params0`.
+       A NumPy array, list or tuple with the fitted parameters. This attribute
+       has the same type as :attr:`params0`.
 
-.. attribute:: xerror
+    .. attribute:: xerror
 
-   Final parameter uncertainties (:math:`1 \sigma`)
+       Final parameter uncertainties (:math:`1 \sigma`)
 
-.. attribute:: covar
+    .. attribute:: covar
 
-   Final parameter covariance (NumPy-) matrix.
+       Final parameter covariance (NumPy-) matrix.
 
-.. attribute:: chi2_min
+    .. attribute:: chi2_min
 
-   Final :math:`\chi^2`.
+       Final :math:`\chi^2`.
 
-.. attribute:: orignorm
+    .. attribute:: orignorm
 
-   Starting value of :math:`\chi^2`.
+       Starting value of :math:`\chi^2`.
 
-.. attribute:: rchi2_min
+    .. attribute:: rchi2_min
 
-   Minimum reduced :math:`\chi^2`.
+       Minimum reduced :math:`\chi^2`.
 
-.. attribute:: stderr
+    .. attribute:: stderr
 
-   Standard errors.
+       Standard errors.
 
-.. attribute:: npar
+    .. attribute:: npar
 
-   Number of parameters.
+       Number of parameters.
 
-.. attribute:: nfree
+    .. attribute:: nfree
 
-   Number of free parameters.
+       Number of free parameters.
 
-.. attribute:: npegged
+    .. attribute:: npegged
 
-   Number of pegged parameters.
+       Number of pegged parameters.
 
-.. attribute:: dof
+    .. attribute:: dof
 
-   Number of degrees of freedom.
+       Number of degrees of freedom.
 
-.. attribute:: resid
+    .. attribute:: resid
 
-   Final residuals.
+       Final residuals.
 
-.. attribute:: niter
+    .. attribute:: niter
 
-   Number of iterations.
+       Number of iterations.
 
-.. attribute:: nfev
+    .. attribute:: nfev
 
-   Number of function evaluations.
+       Number of function evaluations.
 
-.. attribute:: version
+    .. attribute:: version
 
-   mpfit.c's version string.
+       mpfit.c's version string.
 
-.. attribute:: status
+    .. attribute:: status
 
-   Fitting status code.
+       Fitting status code.
 
-.. attribute:: message
+    .. attribute:: message
 
-   Message string.
+       Message string.
 
 
-**Methods:**
+    **Methods:**
 
-.. automethod:: fit(params0=None)
-.. automethod:: confidence_band(x, dfdp, confprob, f, abswei=False)
-"""
+    .. automethod:: fit(params0=None)
+    .. automethod:: confidence_band(x, dfdp, confprob, f, abswei=False)
+    """
 
     cdef public object parinfo  # parinfo
-    cdef mp_par * c_pars  # parinfo: C-representation
+    cdef mp_par *c_pars  # parinfo: C-representation @IgnorePep8
     cdef int m
-    cdef mp_config * config
-    cdef mp_result * result
+    cdef mp_config *config  # @IgnorePep8
+    cdef mp_result *result  # @IgnorePep8
     cdef public object params0  # initial fitting parameters
     cdef object params_t  # parameter type
-    cdef double * xall  # parameters: C-representation
+    cdef double *xall  # parameters: C-representation @IgnorePep8
     cdef readonly int npar  # number of parameters
 
     cdef public object residuals, data  # residuals function, private data
@@ -480,8 +477,8 @@ are available to the user:
     cdef readonly object message  # status message
 
     def __cinit__(self):
-        self.config = <mp_config*>calloc(1, sizeof(mp_config))  # @IgnorePep8
-        self.result = <mp_result*>calloc(1, sizeof(mp_result))  # @IgnorePep8
+        self.config = < mp_config* > calloc(1, sizeof(mp_config))  # @IgnorePep8
+        self.result = < mp_result* > calloc(1, sizeof(mp_result))  # @IgnorePep8
 
     def __dealloc__(self):
         free(self.config)
@@ -492,10 +489,9 @@ are available to the user:
         free(self.c_pars)
         free(self.xall)
 
-    def __init__(self, residuals, deriv=None, params0=None, parinfo=None,
-                ftol=None, xtol=None, gtol=None, epsfcn=None,
-                stepfactor=None, covtol=None, maxiter=None, maxfev=None,
-                nofinitecheck=None, data=None):
+    def __init__(self, residuals, deriv=None, params0=None, parinfo=None, ftol=None, xtol=None,
+                 gtol=None, epsfcn=None, stepfactor=None, covtol=None, maxiter=None, maxfev=None,
+                 nofinitecheck=None, data=None):
         self.npar = 0
         self.m = 0
         self.residuals = residuals  # residuals function
@@ -515,7 +511,7 @@ are available to the user:
 
     property params:
         def __get__(self):
-            cdef np.npy_intp * shape = [self.npar]
+            cdef np.npy_intp *shape = [self.npar]  # @IgnorePep8
             value = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, self.xall).copy()  # @IgnorePep8
             if self.params_t is not None:
                 return self.params_t(value)
@@ -526,7 +522,7 @@ are available to the user:
             if value is None:
                 return
             cdef int i, l
-            cdef double * xall
+            cdef double *xall  # @IgnorePep8
             if not isinstance(value, np.ndarray):
                 self.params_t = type(value)
                 l = len(value)
@@ -537,7 +533,7 @@ are available to the user:
             elif l != self.npar:
                 self.message = 'inconsistent parameter array size'
                 raise ValueError(self.message)
-            xall = <double*>calloc(self.npar, sizeof(double))  # @IgnorePep8
+            xall = < double* > calloc(self.npar, sizeof(double))  # @IgnorePep8
             for i in range(self.npar):
                 xall[i] = value[i]
             free(self.xall)
@@ -680,23 +676,20 @@ are available to the user:
 
     property covar:
         def __get__(self):  # @DuplicatedSignature
-            cdef np.npy_intp * shape = [self.npar, self.npar]
-            value = np.PyArray_SimpleNewFromData(2, shape, np.NPY_DOUBLE,
-                                           self.result.covar).copy()
+            cdef np.npy_intp *shape = [self.npar, self.npar]  # @IgnorePep8
+            value = np.PyArray_SimpleNewFromData(2, shape, np.NPY_DOUBLE, self.result.covar).copy()
             return np.matrix(value)
 
     property resid:
         def __get__(self):  # @DuplicatedSignature
-            cdef np.npy_intp * shape = [self.m]
-            value = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE,
-                                           self.result.resid).copy()
+            cdef np.npy_intp *shape = [self.m]  # @IgnorePep8
+            value = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, self.result.resid).copy()
             return value
 
     property xerror:
         def __get__(self):  # @DuplicatedSignature
-            cdef np.npy_intp * shape = [self.npar]  # @DuplicatedSignature
-            value = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE,
-                                           self.result.xerror).copy()
+            cdef np.npy_intp *shape = [self.npar]  # @DuplicatedSignature @IgnorePep8
+            value = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, self.result.xerror).copy()
             return value
 
     property dof:
@@ -714,20 +707,19 @@ are available to the user:
     cdef allocres(self):
         # allocate arrays in mp_result_struct
         free(self.result.resid)
-        self.result.resid = <double*>calloc(self.m, sizeof(double))  # @IgnorePep8
+        self.result.resid = < double* > calloc(self.m, sizeof(double))  # @IgnorePep8
         free(self.result.xerror)
-        self.result.xerror = <double*>calloc(self.npar, sizeof(double))  # @IgnorePep8
+        self.result.xerror = < double* > calloc(self.npar, sizeof(double))  # @IgnorePep8
         free(self.result.covar)
-        self.result.covar = <double*>calloc(self.npar * self.npar, sizeof(double))  # @IgnorePep8
+        self.result.covar = < double* > calloc(self.npar * self.npar, sizeof(double))  # @IgnorePep8
 
     def fit(self, params0=None):
-        """
-Perform a fit with the current values of parameters and other attributes.
+        """Perform a fit with the current values of parameters and other attributes.
 
-Optional argument *params0*: initial fitting parameters.
-(Default: previous initial values are used.)
-"""
-        cdef mp_par * c_par
+        Optional argument *params0*: initial fitting parameters.
+        (Default: previous initial values are used.)
+        """
+        cdef mp_par *c_par  # @IgnorePep8
 
         if params0 is not None:
             self.params0 = params0
@@ -741,7 +733,7 @@ Optional argument *params0*: initial fitting parameters.
             self.message = 'inconsistent parinfo list length'
             raise ValueError(self.message)
         if self.c_pars == NULL:
-            self.c_pars = <mp_par*>calloc(self.npar, sizeof(mp_par))  # @IgnorePep8
+            self.c_pars = < mp_par* > calloc(self.npar, sizeof(mp_par))  # @IgnorePep8
         for ipar, par in enumerate(self.parinfo):
             c_par = & self.c_pars[ipar]
 
@@ -776,20 +768,18 @@ Optional argument *params0*: initial fitting parameters.
             except:
                 c_par.deriv_debug = 0
 
-            status = mpfit(<mp_func>xmpfunc, self.npar, self.xall,  # @IgnorePep8
-                     self.c_pars, self.config, <void*>self, self.result)
+            status = mpfit(< mp_func > xmpfunc, self.npar, self.xall, self.c_pars, self.config, < void* > self, self.result)  # @IgnorePep8
 
             if status <= 0:
                 if status in MP_ERR:
-                    self.message = 'mpfit error: %s (%d)' % (MP_ERR[status], status)  # @IgnorePep8
+                    self.message = 'mpfit error: {:s} ({:d})'.format(MP_ERR[status], status)  # @IgnorePep8
                 else:
-                    self.message = 'mpfit error, status=%d' % status
+                    self.message = 'mpfit error, status={:d}'.format(status)
 
                 raise RuntimeError(self.message)
 
             if status in MP_OK:
-                self.message = 'mpfit (potential) success: %s (%d)' % \
-                                    (MP_OK[status], status)
+                self.message = 'mpfit (potential) success: {:s} ({:d})'.format(MP_OK[status], status)
             else:
                 self.message = None
 
@@ -800,55 +790,54 @@ Optional argument *params0*: initial fitting parameters.
         return self.params
 
     def confidence_band(self, x, dfdp, confprob, f, abswei=False):
-        """
-This method requires SciPy.
-After the method :meth:`fit` has been called, this method calculates
-the upper and lower value of the confidence interval for all elements
-of the NumPy array *x*. The model values and
-the arrays with confidence limits are returned and can be used to
-plot confidence bands.
+        """This method requires SciPy.
+        After the method :meth:`fit` has been called, this method calculates
+        the upper and lower value of the confidence interval for all elements
+        of the NumPy array *x*. The model values and
+        the arrays with confidence limits are returned and can be used to
+        plot confidence bands.
 
-:param x:
-   NumPy array with the independent values for which the confidence interval
-   is to be found.
+        :param x:
+           NumPy array with the independent values for which the confidence interval
+           is to be found.
 
-:param dfdp:
-   a list with derivatives. There must be as many elements in
-   this list as there are parameters in the model. Each element
-   must be a NumPy array with the same length as *x*.
+        :param dfdp:
+           a list with derivatives. There must be as many elements in
+           this list as there are parameters in the model. Each element
+           must be a NumPy array with the same length as *x*.
 
-:param confprob:
-   confidence probability, e.g. 0.95 (=95%).
-   From this number the confidence level is derived, e.g. 0.05.
-   The Confidence Band is a (1-alpha)*100% band. This implies
-   that for a given value of *x* the probability that
-   the 'true' value of *f* falls within these limits is
-   (1-alpha)*100%.
+        :param confprob:
+           confidence probability, e.g. 0.95 (=95%).
+           From this number the confidence level is derived, e.g. 0.05.
+           The Confidence Band is a (1-alpha)*100% band. This implies
+           that for a given value of *x* the probability that
+           the 'true' value of *f* falls within these limits is
+           (1-alpha)*100%.
 
-:param f:
-   the model function returning the value *y = f(p,x)*.
-   *p* are the best-fit parameters as found by the method :meth:`fit` and
-   *x* is the given NumPy array with independent values.
+        :param f:
+           the model function returning the value *y = f(p,x)*.
+           *p* are the best-fit parameters as found by the method :meth:`fit` and
+           *x* is the given NumPy array with independent values.
 
-:param abswei:
-   True if weights are absolute. For absolute weights the
-   unscaled covariance matrix elements are used in the calculations.
-   For unit weighting (i.e. unweighted) and relative
-   weighting, the covariance matrix elements are scaled with
-   the value of the reduced chi squared.
+        :param abswei:
+           True if weights are absolute. For absolute weights the
+           unscaled covariance matrix elements are used in the calculations.
+           For unit weighting (i.e. unweighted) and relative
+           weighting, the covariance matrix elements are scaled with
+           the value of the reduced chi squared.
 
-:returns:
-   A tuple with the following elements, each one is a Numpy array:
+        :returns:
+           A tuple with the following elements, each one is a Numpy array:
 
-   * *y*:          the model values at *x*: *y = f(p,x)*;
-   * *upperband*:  the upper confidence limits;
-   * *lowerband*:  the lower confidence limits.
+           * *y*:          the model values at *x*: *y = f(p,x)*;
+           * *upperband*:  the upper confidence limits;
+           * *lowerband*:  the lower confidence limits.
 
-.. note::
+        .. note::
 
-   If parameters were fixed in the fit, the corresponding
-   error is 0 and there is no contribution to the confidence
-   interval."""
+           If parameters were fixed in the fit, the corresponding
+           error is 0 and there is no contribution to the confidence
+           interval."""
 
         from scipy.stats import t
 
@@ -876,37 +865,3 @@ plot confidence bands.
         upperband = y + delta
         lowerband = y - delta
         return y, upperband, lowerband
-
-
-def simplefit(model, p0, x, y, err=1.0, **kwargs):
-    """Simple interface to :class:`Fitter`.
-
-:param model:
-   model function which must take two arguments: a sequence with initial
-   values and a sequence with x-values. It must return a NumPy array with
-   function results.
-:param p0:
-   a sequence with the initial parameter values.
-:param x:
-   a sequence with independent variable values.
-:param y:
-   a sequence with dependent variable values.
-:param err:
-   a sequence with :math:`1 \sigma` errors.
-:param ...:
-   other arguments, each corresponding with one of the configuration
-   attributes for an object of class :class:`Fitter`.
-
-:returns: a :class:`Fitter` object from which the fit results can
-   be extracted.
-"""
-    def res(p, data):
-        x, y, err = data
-        return (y - model(p, x)) / err
-
-    x = np.asarray(x)
-    y = np.asarray(y)
-    err = np.asarray(err)
-    fitobj = Fitter(residuals=res, data=(x, y, err), **kwargs)
-    fitobj.fit(p0)
-    return fitobj
