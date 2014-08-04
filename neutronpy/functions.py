@@ -278,13 +278,13 @@ def gaussian_ring(p, q):
 
     Notes
     -----
-    A gaussian ellipse profile is defined as:
+    A gaussian ellipse profile is defined as
 
     .. math::    f(x,y) = \frac{1}{N} e^{-\frac{1}{2}\frac{(\sqrt{(x-x_0)^2 + \alpha^2(y-y_0)^2}-r_0)^2}{2 \sigma}},
 
-    where :math:`FWHM = 2\sqrt{2\log(2)}`, and N is the normalization pre-factor given by:
+    where :math:`FWHM = 2\sqrt{2\ln(2)}\sigma`, and N is the normalization pre-factor given by
 
-    .. math::    N =
+    .. math::    N = \frac{2\pi}{\alpha} \left(\sigma^2 e^{-\frac{r_0^2}{2\sigma^2}} + \sqrt{\frac{\pi}{2}} r_0 \sigma \left(1 + \mathrm{Erf}\left(\frac{r_0}{\sqrt{2}\sigma}\right)\right)\right).
 
     '''
     x, y = q
