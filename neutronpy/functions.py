@@ -234,18 +234,17 @@ def resolution(p, q, mode='gaussian'):
     where RM is the resolution matrix.
 
     '''
-    x, y = q
 
-    funct = p[0] + p[1] * (x + y)
+    funct = p[0] + p[1] * (q[0] + q[1])
 
     if mode == 'gaussian':
         for i in range(int(len(p[2:]) / 7)):
             # Normalization pre-factor
-            N = (np.sqrt(p[7 * i + 6]) * np.sqrt(p[7 * i + 7] - p[7 * i + 8] ** 2 / p[7 * i + 6])) / (2. * np.pi)
+            N = (np.sqrt(p[7 * i + 6]) * np.sqrt(p[7 * i + 7] - p[7 * i + 8] ** 2 / p[7 * i + 6])) / (2. * np.pi * p[7 * i + 5])
 
-            funct += p[7 * i + 2] * p[7 * i + 5] / N * np.exp(-1. / 2. * (p[7 * i + 6] * (x - p[7 * i + 3]) ** 2 +
-                                                                          p[7 * i + 7] * (y - p[7 * i + 4]) ** 2 +
-                                                                          2. * p[7 * i + 8] * (x - p[7 * i + 3]) * (y - p[7 * i + 4])))
+            funct += p[7 * i + 2] * p[7 * i + 5] * N * np.exp(-1. / 2. * (p[7 * i + 6] * (q[0] - p[7 * i + 3]) ** 2 +
+                                                                          p[7 * i + 7] * (q[1] - p[7 * i + 4]) ** 2 +
+                                                                          2. * p[7 * i + 8] * (q[0] - p[7 * i + 3]) * (q[1] - p[7 * i + 4])))
 
     return funct
 
