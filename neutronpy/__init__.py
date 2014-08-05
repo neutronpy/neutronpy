@@ -1,5 +1,5 @@
 
-__version__ = '0.1-alpha'
+__version__ = '0.1-beta'
 
 from . import constants
 from . import tools
