@@ -3,7 +3,40 @@ from scipy.linalg import block_diag as blkdiag
 
 
 class _Sample():
-    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=60):
+    r'''Private class containing sample information.
+
+    Parameters
+    ----------
+    a : float
+        Unit cell length in angstroms
+
+    b : float
+        Unit cell length in angstroms
+
+    c : float
+        Unit cell length in angstroms
+
+    alpha : float
+        Angle between b and c in degrees
+
+    beta : float
+        Angle between a and c in degrees
+
+    gamma : float
+        Angle between a and b in degrees
+
+    mosaic : float, optional
+        Sample mosaic (FWHM) in arc minutes
+
+    direct : +-1, optional
+        Direction of the crystal (left or right, -1 or +1, respectively)
+
+    Returns
+    -------
+    Sample : Class
+
+    '''
+    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=60, direct=1):
         self.a = a
         self.b = b
         self.c = c
@@ -11,18 +44,36 @@ class _Sample():
         self.beta = beta
         self.gamma = gamma
         self.mosaic = mosaic
-        self.dir = 1
+        self.dir = direct
 
 
 class _Monochromator():
-    def __init__(self, tau, mosaic):
+    r'''Private class containing monochromator information.
+
+    Parameters
+    ----------
+    tau : float or string
+        Tau value for the monochromator (or analyzer)
+
+    mosaic : int
+        Mosaic of the crystal in arc minutes
+
+    dir : +-1, optional
+        Direction of the crystal (left or right, -1 or +1, respectively)
+
+    Returns
+    -------
+    Monochromator : class
+
+    '''
+    def __init__(self, tau, mosaic, direct=-1):
         self.tau = tau
         self.mosaic = mosaic
-        self.dir = -1
+        self.dir = direct
 
 
-def scalar(v1, v2, lattice):
-    r'''Calculates the scalar product of two vectors, defined by their
+def _scalar(v1, v2, lattice):
+    r'''Calculates the _scalar product of two vectors, defined by their
     fractional cell coordinates or Miller indexes.
 
     Parameters
@@ -38,8 +89,8 @@ def scalar(v1, v2, lattice):
 
     Returns
     -------
-    s : scalar
-        The scalar product of the two input vectors scaled by the lattice
+    s : _scalar
+        The _scalar product of the two input vectors scaled by the lattice
         parameters.
 
     Notes
@@ -59,7 +110,7 @@ def scalar(v1, v2, lattice):
     return s
 
 
-def star(lattice):
+def _star(lattice):
     r'''Given lattice parametrs, calculate unit cell volume V, reciprocal
     volume Vstar, and reciprocal lattice parameters.
 
@@ -101,7 +152,7 @@ def star(lattice):
     return [V, Vstar, latticestar]
 
 
-def modvec(v, lattice):
+def _modvec(v, lattice):
     r'''Calculates the modulus of a vector, defined by its fractional cell
     coordinates or Miller indexes.
 
@@ -124,12 +175,12 @@ def modvec(v, lattice):
 
     '''
 
-    return np.sqrt(scalar(v, v, lattice))
+    return np.sqrt(_scalar(v, v, lattice))
 
 
-def GetLattice(EXP):
+def _GetLattice(EXP):
     r'''Extracts lattice parameters from EXP and returns the direct and
-    reciprocal lattice parameters in the form used by scalar.m, star.m, etc.
+    reciprocal lattice parameters in the form used by _scalar.m, _star.m, etc.
 
     Parameters
     ----------
@@ -153,12 +204,12 @@ def GetLattice(EXP):
                       np.array([item.alpha for item in s]) * np.pi / 180,
                       np.array([item.beta for item in s]) * np.pi / 180,
                       np.array([item.gamma for item in s]) * np.pi / 180)
-    V, Vstar, rlattice = star(lattice)  # @UnusedVariable
+    V, Vstar, rlattice = _star(lattice)  # @UnusedVariable
 
     return [lattice, rlattice]
 
 
-def GetTau(x, getlabel=False):
+def _GetTau(x, getlabel=False):
     r'''Tau-values for common monochromator crystals
 
     Parameters
@@ -217,7 +268,7 @@ def GetTau(x, getlabel=False):
     return tau
 
 
-def CleanArgs(*varargin):
+def _CleanArgs(*varargin):
     r'''Reshapes input arguments to be row-vectors. N is the length of the
     longest input argument. If any input arguments are shorter than N, their
     first values are replicated to produce vectors of length N. In any case,
@@ -260,7 +311,7 @@ def CleanArgs(*varargin):
     return [length] + varargout
 
 
-def StandardSystem(EXP):
+def _StandardSystem(EXP):
     r'''Returns rotation matrices to calculate resolution in the sample view
     instead of the instrument view
 
@@ -279,7 +330,7 @@ def StandardSystem(EXP):
     Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
 
     '''
-    [lattice, rlattice] = GetLattice(EXP)
+    [lattice, rlattice] = _GetLattice(EXP)
     length = len(EXP)
 
     orient1 = np.zeros((3, length), dtype=np.float64)
@@ -288,21 +339,21 @@ def StandardSystem(EXP):
         orient1[:, i] = EXP[i].orient1
         orient2[:, i] = EXP[i].orient2
 
-    modx = modvec([orient1[0, :], orient1[1, :], orient1[2, :]], rlattice)
+    modx = _modvec([orient1[0, :], orient1[1, :], orient1[2, :]], rlattice)
 
     x = orient1
     x[0, :] = x[0, :] / modx  # First unit basis vector
     x[1, :] = x[1, :] / modx
     x[2, :] = x[2, :] / modx
 
-    proj = scalar([orient2[0, :], orient2[1, :], orient2[2, :]], [x[0, :], x[1, :], x[2, :]], rlattice)
+    proj = _scalar([orient2[0, :], orient2[1, :], orient2[2, :]], [x[0, :], x[1, :], x[2, :]], rlattice)
 
     y = orient2
     y[0, :] = y[0, :] - x[0, :] * proj
     y[1, :] = y[1, :] - x[1, :] * proj
     y[2, :] = y[2, :] - x[2, :] * proj
 
-    mody = modvec([y[0, :], y[1, :], y[2, :]], rlattice)
+    mody = _modvec([y[0, :], y[1, :], y[2, :]], rlattice)
 
     if len(np.where(mody <= 0)[0]) > 0:
         raise ValueError('??? Fatal error: Orienting vectors are colinear!')
@@ -316,19 +367,19 @@ def StandardSystem(EXP):
     z[1, :] = x[2, :] * y[0, :] - y[2, :] * x[0, :]
     z[2, :] = -x[1, :] * y[0, :] + y[1, :] * x[0, :]
 
-    proj = scalar([z[0, :], z[1, :], z[2, :]], [x[0, :], x[1, :], x[2, :]], rlattice)
+    proj = _scalar([z[0, :], z[1, :], z[2, :]], [x[0, :], x[1, :], x[2, :]], rlattice)
 
     z[0, :] = z[0, :] - x[0, :] * proj
     z[1, :] = z[1, :] - x[1, :] * proj
     z[2, :] = z[2, :] - x[2, :] * proj
 
-    proj = scalar([z[0, :], z[1, :], z[2, :]], [y[0, :], y[1, :], y[2, :]], rlattice)
+    proj = _scalar([z[0, :], z[1, :], z[2, :]], [y[0, :], y[1, :], y[2, :]], rlattice)
 
     z[0, :] = z[0, :] - y[0, :] * proj
     z[1, :] = z[1, :] - y[1, :] * proj
     z[2, :] = z[2, :] - y[2, :] * proj
 
-    modz = modvec([z[0, :], z[1, :], z[2, :]], rlattice)
+    modz = _modvec([z[0, :], z[1, :], z[2, :]], rlattice)
 
     z[0, :] = z[0, :] / modz  # Third unit basis vector
     z[1, :] = z[1, :] / modz
@@ -369,7 +420,7 @@ def ResMat(Q, W, EXP):
     CONVERT1 = np.pi / 60. / 180.  # TODO: FIX constant from CN. 0.4246
     CONVERT2 = 2.072
 
-    [length, Q, W, EXP] = CleanArgs(Q, W, EXP)
+    [length, Q, W, EXP] = _CleanArgs(Q, W, EXP)
 
     RM = np.zeros((4, 4, length), dtype=np.float64)
     R0 = np.zeros(length, dtype=np.float64)
@@ -517,8 +568,8 @@ def ResMat(Q, W, EXP):
         if hasattr(ana, 'rh'):
             anarh = ana.rh
 
-        taum = GetTau(mono.tau)
-        taua = GetTau(ana.tau)
+        taum = _GetTau(mono.tau)
+        taua = _GetTau(ana.tau)
 
         horifoc = -1
         if hasattr(EXP[ind], 'horifoc'):
@@ -957,19 +1008,19 @@ class Instrument(object):
         [H, K, L, W] = hkle
         EXP = self
 
-        [length, H, K, L, W, EXP] = CleanArgs(H, K, L, W, EXP)
+        [length, H, K, L, W, EXP] = _CleanArgs(H, K, L, W, EXP)
         self.H, self.K, self.L, self.W = H, K, L, W
 
-        [x, y, z, sample, rsample] = StandardSystem(EXP)  # @UnusedVariable
+        [x, y, z, sample, rsample] = _StandardSystem(EXP)  # @UnusedVariable
 
-        Q = modvec([H, K, L], rsample)
+        Q = _modvec([H, K, L], rsample)
         uq = np.zeros((3, length), dtype=np.float64)
         uq[0, :] = H / Q  # Unit vector along Q
         uq[1, :] = K / Q
         uq[2, :] = L / Q
 
-        xq = scalar([x[0, :], x[1, :], x[2, :]], [uq[0, :], uq[1, :], uq[2, :]], rsample)
-        yq = scalar([y[0, :], y[1, :], y[2, :]], [uq[0, :], uq[1, :], uq[2, :]], rsample)
+        xq = _scalar([x[0, :], x[1, :], x[2, :]], [uq[0, :], uq[1, :], uq[2, :]], rsample)
+        yq = _scalar([y[0, :], y[1, :], y[2, :]], [uq[0, :], uq[1, :], uq[2, :]], rsample)
         zq = 0  # @UnusedVariable # scattering vector assumed to be in (orient1,orient2) plane
 
         tmat = np.zeros((4, 4, length), dtype=np.float64)  # Coordinate transformation matrix
