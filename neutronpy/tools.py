@@ -2,6 +2,7 @@ from .constants import boltzmann_meV_K, joules2meV
 from scipy import constants
 import numpy as np
 import multiprocessing as mp
+import re
 
 
 class Data(object):
@@ -89,10 +90,10 @@ class Data(object):
                 with open(filename) as f:
                     for line in f:
                         if 'col_headers' in line:
-                            args = next(f).split()  # @IgnorePep8
+                            args = next(f).split()
                             headers = [head.replace('.', '') for head in args[1:]]
 
-                args = np.loadtxt(filename, unpack=True, dtype=np.float64)  # @IgnorePep8
+                args = np.loadtxt(filename, unpack=True, dtype=np.float64)
 
                 for key, value in keys.items():
                     output[key] = args[headers.index(value)]
@@ -106,23 +107,25 @@ class Data(object):
                     self.combine_data(output)
 
         if kwargs['mode'] == 'NCNR':
-            keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'monitor': 'monitor', 'detector': 'Counts', 'temp': 'Tact'}
+            keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'detector': 'Counts', 'temp': 'Tact'}
             for filename in files:
                 output = {}
                 with open(filename) as f:
                     for i, line in enumerate(f):
                         if i == 0:
-                            self.length = int(line.split()[-2])
-                            self.m0 = float(line.split()[-5])
+                            self.length = int(re.findall(r"(?='(.*?)')", line)[-2])
+                            self.m0 = float(re.findall(r"(?='(.*?)')", line)[-4].split()[0])
                         if 'Q(x)' in line:
-                            args = line.split()  # @IgnorePep8
+                            args = line.split()
                             headers = [head.replace('(', '').replace(')', '').replace('-', '') for head in args]
-                args = np.loadtxt(filename, unpack=True, dtype=np.float64, skiprows=12)  # @IgnorePep8
+                args = np.loadtxt(filename, unpack=True, dtype=np.float64, skiprows=12)
 
                 for key, value in keys.items():
                     output[key] = args[headers.index(value)]
 
-                if not self.Q:
+                output['monitor'] = np.ones(output['detector'].shape) * self.m0
+
+                if not hasattr(self, 'Q'):
                     for key, value in output.items():
                         setattr(self, key, value)
                     self.Q = self._build_Q(**kwargs)
@@ -178,7 +181,7 @@ class Data(object):
                     if np.all(self.Q[j, :] == arg['Q'][i, :]):
                         combine.append([i, j])
 
-            monitor, detector, Q, temp = self.monitor, self.detector, self.Q, self.temp
+            monitor, detector, Q, temp = self.monitor.copy(), self.detector.copy(), self.Q.copy(), self.temp.copy()
 
             for item in combine:
                 monitor[item[0]] += arg['monitor'][item[1]]
