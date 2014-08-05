@@ -1,6 +1,7 @@
 from neutronpy import tools, functions
 import numpy as np
 from scipy.integrate import simps
+import os
 import unittest
 
 
@@ -37,10 +38,10 @@ class DataTest(unittest.TestCase):
 
     def test_load_files(self):
         data1 = tools.Data()
-        data1.load_file('scan0001.dat', 'scan0002.dat', mode='HFIR')
+        data1.load_file(os.path.join(os.path.dirname(__file__), 'scan0001.dat'), os.path.join(os.path.dirname(__file__), 'scan0002.dat'), mode='HFIR')
 
         data2 = tools.Data()
-        data2.load_file('scan0003.ng5', mode='NCNR')
+        data2.load_file(os.path.join(os.path.dirname(__file__), 'scan0003.ng5'), mode='NCNR')
 
     def test_combine_data(self):
         data1 = self.build_data(clean=True)
