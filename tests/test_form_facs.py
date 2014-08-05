@@ -25,7 +25,8 @@ class MagneticFormFactor(unittest.TestCase):
     def test_mag_form_fac(self):
         ion = form_facs.Ion('Fe')
 
-        formfac, *_temp = ion.calc_mag_form_fac(q=1.)
+        formfac, _temp = ion.calc_mag_form_fac(q=1.)[0], ion.calc_mag_form_fac(q=1.)[1:]
+
         self.assertAlmostEqual(formfac, 0.932565, 6)
 
 

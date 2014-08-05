@@ -5,6 +5,12 @@ import multiprocessing as mp
 import re
 
 
+def _call_bin_parallel(arg, **kwarg):
+    r'''Wrapper function to work around pickling problem in Python 2.7
+    '''
+    return Data._bin_parallel(*arg, **kwarg)
+
+
 class Data(object):
     r'''Data class for handling multi-dimensional TAS data. If input file type is not supported, data can be entered manually.
 
@@ -364,7 +370,7 @@ class Data(object):
         nprocs = mp.cpu_count()  # @UndefinedVariable
         Q_chunks = [Q[n * Q.shape[0] // nprocs:(n + 1) * Q.shape[0] // nprocs] for n in range(nprocs)]
         pool = mp.Pool(processes=nprocs)  # @UndefinedVariable
-        outputs = pool.map(self._bin_parallel, Q_chunks)
+        outputs = pool.map(_call_bin_parallel, zip([self] * len(Q_chunks), Q_chunks))
 
         monitor, detector, temp = (np.concatenate(arg) for arg in zip(*outputs))
 
