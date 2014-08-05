@@ -1,0 +1,1 @@
+There obviously is no guarantee that the above routines work right. 3-axis resolution calculations are a tricky business and have on many occasions led to incorrect interpretation of experimental data, outright wrong publications, and destruction of glorious careers of young neutron scatterers. Use these m-files freely... at your own risk.

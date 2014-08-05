@@ -1,13 +1,8 @@
-'''
-Created on May 20, 2014
-
-@author: davidfobes
-'''
 import neutronpy.constants as const
 import numpy as np
 
 
-class Atom(object):
+class _Atom(object):
     r'''Class for adding atoms to the Material class.
 
     Parameters
@@ -19,7 +14,7 @@ class Atom(object):
     dpos : list(3), optional
         Deviations from the position pos
     occupancy: float, optional
-        Occupancy of the Atom (e.g. if there is partial occupancy from doping)
+        Occupancy of the _Atom (e.g. if there is partial occupancy from doping)
     Mcell : float, optional
         The mass of the unit cell. If assigned, normalize scattering lengths to the
         square-root of the mass of the atom
@@ -30,25 +25,28 @@ class Atom(object):
         Atom object defining an individual atom in a unit cell of a single crystal
 
     '''
-    def __init__(self, ion, pos, dpos=[0., 0., 0.], occupancy=1., Mcell=None, massNorm=False):
+    def __init__(self, ion, pos, dpos=None, occupancy=1., Mcell=None, massNorm=False):
         self.ion = ion
         self.pos = pos
-        self.dpos = dpos
+        if dpos is None:
+            self.dpos = [0., 0., 0.]
+        else:
+            self.dpos = dpos
         self.occupancy = occupancy
         self.Mcell = Mcell
 
         if massNorm is True:
-            self.mass = const.periodicTable[ion]['mass']
-            self.b = (const.scatLen[ion]['Coh b']
+            self.mass = const.periodicTable()[ion]['mass']
+            self.b = (const.scatLen()[ion]['Coh b']
                       * self.occupancy
                       * self.Mcell
                       / np.sqrt(self.mass))
         else:
-            self.b = const.scatLen[ion]['Coh b'] * self.occupancy
+            self.b = const.scatLen()[ion]['Coh b'] * self.occupancy
 
 
 class Material(object):
-    r'''Class for the Material being supplied for the structure factor calculation
+    '''Class for the Material being supplied for the structure factor calculation
 
     Parameters
     ----------
@@ -59,20 +57,17 @@ class Material(object):
         used for Debye-Waller factor. This dictionary has
         the format:
 
-        {
-            'name': string,
-            'composition': [
-                {'ion': string,
-                'pos': [float, float, float],
-                'dpos: [float, float, float],
-                'occupancy': float
-                }
-            ],
-            'debye-waller': boolean,
-            'massNorm': boolean,
-            'formulaUnits': float,
-            'lattice': [float, float, float]
-        }
+        .. code-block:: python
+
+            {'name': string,
+             'composition': [{'ion': string,
+                              'pos': [float, float, float],
+                              'dpos: [float, float, float],
+                              'occupancy': float}],
+             'debye-waller': boolean,
+             'massNorm': boolean,
+             'formulaUnits': float,
+             'lattice': [float, float, float]}
 
     Returns
     -------
@@ -89,7 +84,7 @@ class Material(object):
         for value in crystal['composition']:
             if 'occupancy' not in value:
                 value['occupancy'] = 1.
-            self.muCell += const.periodicTable[value['ion']]['mass'] * value['occupancy']
+            self.muCell += const.periodicTable()[value['ion']]['mass'] * value['occupancy']
 
         self.Mcell = crystal['formulaUnits'] * self.muCell
 
@@ -107,11 +102,12 @@ class Material(object):
                 value['dpos'] = np.array([1 / 17.38] * 3) / self.abc
             if 'occupancy' not in value:
                 value['occupancy'] = 1.
-            self.atoms.append(Atom(value['ion'],
-                                   value['pos'],
-                                   value['dpos'],
-                                   value['occupancy'],
-                                   self.Mcell, crystal['massNorm']))
+            self.atoms.append(_Atom(value['ion'],
+                                    value['pos'],
+                                    value['dpos'],
+                                    value['occupancy'],
+                                    self.Mcell,
+                                    crystal['massNorm']))
 
     def calc_str_fac(self, hkl):
         r'''Calculates the structural form factor of the material.
@@ -147,13 +143,8 @@ class Material(object):
 
         # construct structure factor
         for atom in self.atoms:
-            FQ += atom.b * np.exp(1j * 2. * np.pi *
-                                  (h * atom.pos[0] +
-                                   k * atom.pos[1] +
-                                   l * atom.pos[2])) * \
-                           np.exp(-(2. * np.pi * (h * atom.dpos[0] +
-                                                  k * atom.dpos[1] +
-                                                  l * atom.dpos[2])) ** 2)
+            FQ += atom.b * np.exp(1j * 2. * np.pi * (h * atom.pos[0] + k * atom.pos[1] + l * atom.pos[2])) * \
+                np.exp(-(2. * np.pi * (h * atom.dpos[0] + k * atom.dpos[1] + l * atom.dpos[2])) ** 2)
 
         return FQ
 
@@ -176,9 +167,9 @@ class Ion(object):
     def __init__(self, ion):
         self.ion = ion
         try:
-            self.j0 = const.magIonJ[self.ion]['j0']
-            self.j2 = const.magIonJ[self.ion]['j2']
-            self.j4 = const.magIonJ[self.ion]['j4']
+            self.j0 = const.magIonJ()[self.ion]['j0']
+            self.j2 = const.magIonJ()[self.ion]['j2']
+            self.j4 = const.magIonJ()[self.ion]['j4']
         except ValueError:
             raise ValueError('No such ion was found in database.')
 

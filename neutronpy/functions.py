@@ -1,9 +1,3 @@
-'''
-Created on May 28, 2014
-
-@author: davidfobes
-'''
-
 import numpy as np
 from scipy import special
 from scipy.special import erf
@@ -68,8 +62,7 @@ def gaussian(p, q):
     for i in range(int(len(p[2:]) / 3)):
         sigma = p[3 * i + 4] / (2. * np.sqrt(2. * np.log(2.)))
 
-        funct += p[3 * i + 2] / (sigma * np.sqrt(2. * np.pi)) * \
-                 np.exp(-(q - p[3 * i + 3]) ** 2 / (2 * sigma ** 2))
+        funct += p[3 * i + 2] / (sigma * np.sqrt(2. * np.pi)) * np.exp(-(q - p[3 * i + 3]) ** 2 / (2 * sigma ** 2))
 
     return funct
 
@@ -131,8 +124,7 @@ def lorentzian(p, q):
     funct = p[0] + p[1] * q
 
     for i in range(int(len(p[2:]) / 3)):
-        funct += p[3 * i + 2] / np.pi * 0.5 * p[3 * i + 4] / \
-                 ((q - p[3 * i + 3]) ** 2 + (0.5 * p[3 * i + 4]) ** 2)
+        funct += p[3 * i + 2] / np.pi * 0.5 * p[3 * i + 4] / ((q - p[3 * i + 3]) ** 2 + (0.5 * p[3 * i + 4]) ** 2)
 
     return funct
 
@@ -242,18 +234,17 @@ def resolution(p, q, mode='gaussian'):
     where RM is the resolution matrix.
 
     '''
-    x, y = q
 
-    funct = p[0] + p[1] * (x + y)
+    funct = p[0] + p[1] * (q[0] + q[1])
 
     if mode == 'gaussian':
         for i in range(int(len(p[2:]) / 7)):
             # Normalization pre-factor
-            N = (np.sqrt(p[7 * i + 6]) * np.sqrt(p[7 * i + 7] - p[7 * i + 8] ** 2 / p[7 * i + 6])) / (2. * np.pi)
+            N = (np.sqrt(p[7 * i + 6]) * np.sqrt(p[7 * i + 7] - p[7 * i + 8] ** 2 / p[7 * i + 6])) / (2. * np.pi * p[7 * i + 5])
 
-            funct += p[7 * i + 2] * p[7 * i + 5] / N * np.exp(-1. / 2. * (p[7 * i + 6] * (x - p[7 * i + 3]) ** 2 +
-                                                                          p[7 * i + 7] * (y - p[7 * i + 4]) ** 2 +
-                                                                          2. * p[7 * i + 8] * (x - p[7 * i + 3]) * (y - p[7 * i + 4])))
+            funct += p[7 * i + 2] * p[7 * i + 5] * N * np.exp(-1. / 2. * (p[7 * i + 6] * (q[0] - p[7 * i + 3]) ** 2 +
+                                                                          p[7 * i + 7] * (q[1] - p[7 * i + 4]) ** 2 +
+                                                                          2. * p[7 * i + 8] * (q[0] - p[7 * i + 3]) * (q[1] - p[7 * i + 4])))
 
     return funct
 
@@ -287,28 +278,28 @@ def gaussian_ring(p, q):
 
     Notes
     -----
-    A gaussian ellipse profile is defined as:
+    A gaussian ellipse profile is defined as
 
-    .. math::    f(x,y) = \frac{1}{N} e^{-\frac{1}{2}\frac{(\sqrt{(x-x_0)^2 + \alpha^2(y-y_0)^2}-r_0)^2}{2 \sigma},
+    .. math::    f(x,y) = \frac{1}{N} e^{-\frac{1}{2}\frac{(\sqrt{(x-x_0)^2 + \alpha^2(y-y_0)^2}-r_0)^2}{2 \sigma}},
 
-    where :math:`FWHM = 2\sqrt{2\log(2)}`, and N is the normalization pre-factor given by:
+    where :math:`FWHM = 2\sqrt{2\ln(2)}\sigma`, and N is the normalization pre-factor given by
 
-    .. math::    N =
+    .. math::    N = \frac{2\pi}{\alpha} \left(\sigma^2 e^{-\frac{r_0^2}{2\sigma^2}} + \sqrt{\frac{\pi}{2}} r_0 \sigma \left(1 + \mathrm{Erf}\left(\frac{r_0}{\sqrt{2}\sigma}\right)\right)\right).
 
     '''
     x, y = q
 
     funct = p[0] + p[1] * (x + y)
 
-    for i in range(int(len(p[2:] / 6))):
+    for i in range(int(len(p[2:]) / 6)):
         # Normalization pre-factor
-        N = 1. / ((2. * np.pi / p[6 * i + 6] ** 2) * (p[6 * i + 7] ** 2 / (8. * np.log(2.))) *
-                  np.exp(-4. * np.log(2.) * p[6 * i + 5] ** 2 / p[6 * i + 7] ** 2) +
-                  np.sqrt(np.pi / np.log(2.)) * p[6 * i + 5] *
-                  (1. + erf(4. * np.sqrt(np.log(2.)) * p[6 * i + 5] / p[6 * i + 7])))
+        sigma = p[6 * i + 7] / (2. * np.sqrt(2. * np.log(2.)))
+        N = 2. * np.pi * (np.exp(-p[6 * i + 5] ** 2 / (2. * sigma ** 2)) *
+                          sigma ** 2 + np.sqrt(np.pi / 2) * p[6 * i + 5] *
+                          sigma * (1. + erf(p[6 * i + 5] / (np.sqrt(2) * sigma)))) / p[6 * i + 6]
 
-        funct += p[6 * i + 2] * N * np.exp(-4. * np.log(2.) * (np.sqrt((x - p[6 * i + 3]) ** 2 +
+        funct += p[6 * i + 2] / N * np.exp(-4. * np.log(2.) * (np.sqrt((x - p[6 * i + 3]) ** 2 +
                                                                        p[6 * i + 6] ** 2 * (y - p[6 * i + 4]) ** 2) -
-                                                               p[6 * i + 5]) ** 2 / p[6 * i + 7])
+                                                               p[6 * i + 5]) ** 2 / p[6 * i + 7] ** 2)
 
     return funct

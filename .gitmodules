@@ -1,0 +1,6 @@
+[submodule "doc/doc/scipy-sphinx-theme"]
+	path = doc/doc/scipy-sphinx-theme
+	url = https://github.com/scipy/scipy-sphinx-theme.git
+[submodule "doc/scipy-sphinx-theme"]
+	path = doc/scipy-sphinx-theme
+	url = https://github.com/scipy/scipy-sphinx-theme.git
