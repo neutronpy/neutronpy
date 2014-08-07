@@ -67,6 +67,76 @@ def gaussian(p, q):
     return funct
 
 
+def gaussian2d(p, q):
+    r'''Returns an arbitrary number of two-dimensional Gaussian profiles.
+
+    Parameters
+    ----------
+    p : ndarray
+        Parameters for the Gaussian, in the following format:
+
+        * p[0] : Constant background
+        * p[1] : Linear background slope
+        * p[2] : Volume under the first peak
+        * p[3] : X position of the first peak
+        * p[4] : Y position of the first peak
+        * p[5] : FWHM_x of the first peak
+        * p[6] : FWHM_y of the first peak
+        * p[7] : Area under the second peak
+        * p[...] : etc.
+
+    q : ndarray
+        One dimensional input array.
+
+    Returns
+    -------
+    out : ndarray
+        One dimensional Gaussian profile.
+
+    Notes
+    -----
+    A Gaussian profile is defined as:
+
+    .. math::    f(q) = \frac{a}{\sigma \sqrt{2\pi}} e^{-\left(\frac{(q_x-q_x0)^2}{2\sigma_x^2} + \frac{(q_y-q_y0)^2}{2\sigma_y^2}\right)},
+
+    where the integral over the whole function is :math:`a`, and
+
+    .. math::    fwhm = 2 \sqrt{2 \ln{2}} \sigma.
+
+    Examples
+    --------
+    Plot a single gaussian with an integrated intensity of 1, centered at zero, and fwhm of 0.3:
+
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> p = np.array([0., 0., 1., 0., 0.3])
+    >>> x = np.linspace(-1, 1, 101)
+    >>> y = gaussian(p, x)
+    >>> plt.plot(x, y)
+    >>> plt.show()
+
+    Plot two gaussians, equidistant from the origin with the same intensity and fwhm as above:
+
+    >>> p = np.array([0., 0., 1., -0.3, 0.3, 1., 0.3, 0.3])
+    >>> x = np.linspace(-1, 1, 101)
+    >>> y = gaussian(p, x)
+    >>> plt.plot(x, y)
+    >>> plt.show()
+
+    '''
+    x, y = q
+
+    funct = p[0] + p[1] * (x + y)
+
+    for i in range(int(len(p[2:]) // 5)):
+        sigma_x = p[5 * i + 5] / (2. * np.sqrt(2. * np.log(2.)))
+        sigma_y = p[5 * i + 6] / (2. * np.sqrt(2. * np.log(2.)))
+
+        funct += p[5 * i + 2] / (sigma_x * sigma_y * 2. * np.pi) * np.exp(-((x - p[5 * i + 3]) ** 2 / (2 * sigma_x ** 2) + (y - p[5 * i + 4]) ** 2 / (2 * sigma_y ** 2)))
+
+    return funct
+
+
 def lorentzian(p, q):
     r'''Returns an arbitrary number of Lorentz profiles.
 

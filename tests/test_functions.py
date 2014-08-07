@@ -12,6 +12,14 @@ class FunctionTests(unittest.TestCase):
         integ = simps(y, x)
         self.assertAlmostEqual(integ, 2., 5)
 
+    def test_gauss2d_norm(self):
+        p = np.array([0., 0., 1., -3., 0., 0.3, 0.3, 1., 3., 0., 0.3, 0.3])
+        a, b = np.linspace(-10, 10, 1001), np.linspace(-10, 10, 1001)
+        q = np.meshgrid(a, b, sparse=True)
+        y = functions.gaussian2d(p, q)
+        integ = simps(simps(y, b), a)
+        self.assertAlmostEqual(integ, 2., 5)
+
     def test_lorent_norm(self):
         p = np.array([0., 0., 1., -30., 3., 1., 30., 3.])
         x = np.linspace(-1e6, 1e6, 8e6 + 1)
