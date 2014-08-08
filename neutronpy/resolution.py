@@ -209,26 +209,65 @@ def _GetLattice(EXP):
     return [lattice, rlattice]
 
 
-def _GetTau(x, getlabel=False):
-    r'''Tau-values for common monochromator crystals
+def GetTau(x, getlabel=False):
+    r''':math:`\tau`-values for common monochromator and analyzer crystals.
 
     Parameters
     ----------
     x : float or string
-        Either the numerical Tau value, or a common monochromater type
+        Either the numerical Tau value, in :math:`\unicode{x212B}^{-1}`, or a
+        common monochromater / analyzer type. Currently included crystals and their
+        corresponding :math:`\tau` values are
+
+            +------------------+--------------+-----------+
+            | String           | :math:`\tau` |           |
+            +==================+==============+===========+
+            | Be(002)          | 3.50702      |           |
+            +------------------+--------------+-----------+
+            | Co0.92Fe0.08(200)| 3.54782      | (Heusler) |
+            +------------------+--------------+-----------+
+            | Cu(002)          | 3.47714      |           |
+            +------------------+--------------+-----------+
+            | Cu(111)          | 2.99913      |           |
+            +------------------+--------------+-----------+
+            | Cu(220)          | 4.91642      |           |
+            +------------------+--------------+-----------+
+            | Cu2MnAl(111)     | 1.82810      | (Heusler) |
+            +------------------+--------------+-----------+
+            | Ge(111)          | 1.92366      |           |
+            +------------------+--------------+-----------+
+            | Ge(220)          | 3.14131      |           |
+            +------------------+--------------+-----------+
+            | Ge(311)          | 3.68351      |           |
+            +------------------+--------------+-----------+
+            | Ge(511)          | 5.76968      |           |
+            +------------------+--------------+-----------+
+            | Ge(533)          | 7.28063      |           |
+            +------------------+--------------+-----------+
+            | PG(002)          | 1.87325      |           |
+            +------------------+--------------+-----------+
+            | PG(004)          | 3.74650      |           |
+            +------------------+--------------+-----------+
+            | PG(110)          | 5.49806      |           |
+            +------------------+--------------+-----------+
+            | Si(111)          | 2.00421      |           |
+            +------------------+--------------+-----------+
+
 
     getlabel : boolean
-        If True, return the name of the common monochromater that is a
-        match to the input Tau value
+        If True, return the name of the common crystal type that is a
+        match to the input :math:`\tau`.
 
     Returns
     -------
     tau : float or string
-        Returns either the numerical Tau value for a monochromater or the
-        name of a monochromator
+        Returns either the numerical :math:`\tau` for a given crystal type or the
+        name of a crystal type
 
     Notes
     -----
+    Tau is defined as :math:`\tau = 2\pi/d`, where d is the d-spacing of the crystal in Angstroms.
+
     Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
 
     '''
@@ -240,7 +279,7 @@ def _GetTau(x, getlabel=False):
                'be(002)'.lower(): 3.50702,
                'pg(110)'.lower(): 5.49806,
                'Cu2MnAl(111)'.lower(): 2 * np.pi / 3.437,
-               'Co0.92Fe0.08'.lower(): 2 * np.pi / 1.771,
+               'Co0.92Fe0.08(200)'.lower(): 2 * np.pi / 1.771,
                'Ge(511)'.lower(): 2 * np.pi / 1.089,
                'Ge(533)'.lower(): 2 * np.pi / 0.863,
                'Si(111)'.lower(): 2 * np.pi / 3.135,
@@ -568,8 +607,8 @@ def ResMat(Q, W, EXP):
         if hasattr(ana, 'rh'):
             anarh = ana.rh
 
-        taum = _GetTau(mono.tau)
-        taua = _GetTau(ana.tau)
+        taum = GetTau(mono.tau)
+        taua = GetTau(ana.tau)
 
         horifoc = -1
         if hasattr(EXP[ind], 'horifoc'):
@@ -965,7 +1004,7 @@ class Instrument(object):
 
     def __init__(self, efixed, samp_abc, samp_abg, samp_mosaic, orient1, orient2,
                  hcol, vcol=None, arms=None, mono_tau='PG(002)', mono_mosaic=25,
-                 ana_tau='PG(002)', ana_mosaic=25):
+                 ana_tau='PG(002)', ana_mosaic=25, **kwargs):
         [a, b, c] = samp_abc
         [alpha, beta, gamma] = samp_abg
 
@@ -984,6 +1023,9 @@ class Instrument(object):
         self.sample = _Sample(a, b, c, alpha, beta, gamma, samp_mosaic)
         self.orient1 = np.array(orient1)
         self.orient2 = np.array(orient2)
+
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def calc_resolution(self, hkle, npts=36):
         r'''For a scattering vector (H,K,L) and  energy transfers W, given

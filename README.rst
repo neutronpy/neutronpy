@@ -22,7 +22,7 @@ NeutronPy
 * Least-Squares fitting (KMPFIT, based on the C-implementation of MPFIT, from the Kapteyn package)
 * And More...
 
-NeutronPy is developed by David M Fobes in the [Neutron Scattering Group](http://neutrons.phy.bnl.gov/), part of the Condensed Matter Physics & Materials Science Department (CMPMSD) at [Brookhaven National Laboratory](http://www.bnl.gov/), a [US Department of Energy, Office of Basic Energy Sciences](http://science.energy.gov/bes/) funded laboratory.
+NeutronPy is developed by David M Fobes in the `Neutron Scattering Group <http://neutrons.phy.bnl.gov/>`_, part of the Condensed Matter Physics & Materials Science Department (CMPMSD) at `Brookhaven National Laboratory <http://www.bnl.gov/>`_, a `US Department of Energy, Office of Basic Energy Sciences <http://science.energy.gov/bes/>`_ funded laboratory.
 
 NeutronPy is a work-in-progress (see the roadmap in the wiki for indications of new upcoming features) and as such, still has many bugs, so use at your own risk. See the Disclaimer below. To report bugs or suggest features see the Contributions section below.
 
@@ -49,9 +49,9 @@ Copyright & Licensing
 ---------------------
 Copyright (c) 2014, David M. Fobes, Released under terms in LICENSE.
 
-KMPFIT and MPFIT are currently used in part from the [Kapteyn](https://www.astro.rug.nl/software/kapteyn/) package and a custom implementation of the [MINPACK-1](http://www.physics.wisc.edu/~craigm/idl/cmpfit.html) Least Squares Fitting Library in C, released under the terms in LICENSE.KAPTEYN and LICENSE.MPFIT, respectively.
+KMPFIT and MPFIT are currently used in part from the `Kapteyn <https://www.astro.rug.nl/software/kapteyn/>`_ package and a custom implementation of the `MINPACK-1 <http://www.physics.wisc.edu/~craigm/idl/cmpfit.html>`_ Least Squares Fitting Library in C, released under the terms in LICENSE.KAPTEYN and LICENSE.MPFIT, respectively.
 
-The source for the Triple Axis Spectrometer resolution calculations was translated in part from the [ResLib](http://www.neutron.ethz.ch/research/resources/reslib) 3.4c (2009) library released under the terms in LICENSE.RESLIB, originally developed by Andrey Zheludev at Brookhaven National Laboratory, Oak Ridge National Laboratory and ETH Zuerich. email: zhelud@ethz.ch.
+The source for the Triple Axis Spectrometer resolution calculations was translated in part from the `ResLib <http://www.neutron.ethz.ch/research/resources/reslib>`_ 3.4c (2009) library released under the terms in LICENSE.RESLIB, originally developed by Andrey Zheludev at Brookhaven National Laboratory, Oak Ridge National Laboratory and ETH Zuerich. email: zhelud@ethz.ch.
 
 Disclaimer
 ----------

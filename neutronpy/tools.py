@@ -1,4 +1,4 @@
-from .constants import boltzmann_meV_K, joules2meV
+from .constants import boltzmann_in_meV_K, joules_to_meV
 from scipy import constants
 import numpy as np
 import multiprocessing as mp
@@ -281,7 +281,7 @@ class Data(object):
         except:
             pass
 
-        return np.exp(-self.Q[3] / boltzmann_meV_K / self.temps)
+        return np.exp(-self.Q[3] / boltzmann_in_meV_K / self.temps)
 
     def _bin_parallel(self, Q_chunk):
         r'''Performs binning by finding data chunks to bin together.
@@ -433,7 +433,7 @@ class Data(object):
         return result
 
     def width(self, **kwargs):
-        '''Returns the mean-squared width of a peak within the given bounds
+        r'''Returns the mean-squared width of a peak within the given bounds
 
         Parameters
         ----------
@@ -572,23 +572,23 @@ class Neutron():
     def __init__(self, e=None, l=None, v=None, k=None, temp=None, freq=None):
         if e is None:
             if l is not None:
-                self.e = constants.h ** 2 / (2. * constants.m_n * (l / 1.e10) ** 2) * joules2meV
+                self.e = constants.h ** 2 / (2. * constants.m_n * (l / 1.e10) ** 2) * joules_to_meV
             elif v is not None:
-                self.e = 1. / 2. * constants.m_n * v ** 2 * joules2meV
+                self.e = 1. / 2. * constants.m_n * v ** 2 * joules_to_meV
             elif k is not None:
-                self.e = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / k) / 1.e10) ** 2) * joules2meV)
+                self.e = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / k) / 1.e10) ** 2) * joules_to_meV)
             elif temp is not None:
-                self.e = constants.k * temp * joules2meV
+                self.e = constants.k * temp * joules_to_meV
             elif freq is not None:
-                self.e = constants.hbar * freq * 2. * np.pi * joules2meV * 1.e12
+                self.e = constants.hbar * freq * 2. * np.pi * joules_to_meV * 1.e12
         else:
             self.e = e
 
-        self.l = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.e / joules2meV)) * 1.e10
-        self.v = np.sqrt(2. * self.e / joules2meV / constants.m_n)
+        self.l = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.e / joules_to_meV)) * 1.e10
+        self.v = np.sqrt(2. * self.e / joules_to_meV / constants.m_n)
         self.k = 2. * np.pi / self.l
-        self.temp = self.e / constants.k / joules2meV
-        self.freq = self.e / joules2meV / constants.hbar / 2. / np.pi / 1.e12
+        self.temp = self.e / constants.k / joules_to_meV
+        self.freq = self.e / joules_to_meV / constants.hbar / 2. / np.pi / 1.e12
 
     def printValues(self):
         print(u'''
