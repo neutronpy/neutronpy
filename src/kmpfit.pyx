@@ -1,4 +1,4 @@
-u"""
+r"""
 =============
 Module kmpfit
 =============
@@ -150,15 +150,15 @@ MP_OK = {1: 'Convergence in chi-square value',
          8: 'gtol is too small; no further improvement'}
 
 MP_ERR = {0: 'General input parameter error',
-          - 16: 'User function produced non-finite values',
-          - 17: 'No user function was supplied',
-          - 18: 'No user data points were supplied',
-          - 19: 'No free parameters',
-          - 20: 'Memory allocation error',
-          - 21: 'Initial values inconsistent w constraints',
-          - 22: 'Initial constraints inconsistent',
-          - 23: 'General input parameter error',
-          - 24: 'Not enough degrees of freedom'}
+          -16: 'User function produced non-finite values',
+          -17: 'No user function was supplied',
+          -18: 'No user data points were supplied',
+          -19: 'No free parameters',
+          -20: 'Memory allocation error',
+          -21: 'Initial values inconsistent w constraints',
+          -22: 'Initial constraints inconsistent',
+          -23: 'General input parameter error',
+          -24: 'Not enough degrees of freedom'}
 
 
 cdef int xmpfunc(int *mp, int n, double *x, double **fvecp, double **dvec, void *private_data) except -1:  # @IgnorePep8
@@ -768,22 +768,22 @@ cdef class Fitter:
             except:
                 c_par.deriv_debug = 0
 
-            status = mpfit(< mp_func > xmpfunc, self.npar, self.xall, self.c_pars, self.config, < void* > self, self.result)  # @IgnorePep8
+        status = mpfit(< mp_func > xmpfunc, self.npar, self.xall, self.c_pars, self.config, < void* > self, self.result)  # @IgnorePep8
 
-            if status <= 0:
-                if status in MP_ERR:
-                    self.message = 'mpfit error: {:s} ({:d})'.format(MP_ERR[status], status)  # @IgnorePep8
-                else:
-                    self.message = 'mpfit error, status={:d}'.format(status)
-
-                raise RuntimeError(self.message)
-
-            if status in MP_OK:
-                self.message = 'mpfit (potential) success: {:s} ({:d})'.format(MP_OK[status], status)
+        if status <= 0:
+            if status in MP_ERR:
+                self.message = 'mpfit error: {:s} ({:d})'.format(MP_ERR[status], status)  # @IgnorePep8
             else:
-                self.message = None
+                self.message = 'mpfit error, status={:d}'.format(status)
 
-            return status
+            raise RuntimeError(self.message)
+
+        if status in MP_OK:
+            self.message = 'mpfit (potential) success: {:s} ({:d})'.format(MP_OK[status], status)
+        else:
+            self.message = None
+
+        return status
 
     def __call__(self, params0=None):
         self.fit(params0)
