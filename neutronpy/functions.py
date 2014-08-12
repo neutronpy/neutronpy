@@ -1,3 +1,16 @@
+r'''A collection of commonly used one- and two-dimensional functions in neutron scattering,
+
+=============== ==========================================================
+gaussian        Vector or matrix norm
+gaussian2d      Inverse of a square matrix
+lorentzian      Solve a linear system of equations
+voigt           Determinant of a square matrix
+resolution      Logarithm of the determinant of a square matrix
+gaussian_ring   Solve linear least-squares problem
+=============== ==========================================================
+
+
+'''
 import numpy as np
 from scipy import special
 from scipy.special import erf
@@ -11,13 +24,21 @@ def gaussian(p, q):
     p : ndarray
         Parameters for the Gaussian, in the following format:
 
-        * p[0] : Constant background
-        * p[1] : Linear background slope
-        * p[2] : Area under the first peak
-        * p[3] : Position of the first peak
-        * p[4] : FWHM of the first peak
-        * p[5] : Area under the second peak
-        * p[...] : etc.
+            +-------+----------------------------+
+            | p[0]  | Constant background        |
+            +-------+----------------------------+
+            | p[1]  | Linear background slope    |
+            +-------+----------------------------+
+            | p[2]  | Area under the first peak  |
+            +-------+----------------------------+
+            | p[3]  | Position of the first peak |
+            +-------+----------------------------+
+            | p[4]  | FWHM of the first peak     |
+            +-------+----------------------------+
+            | p[5]  | Area under the second peak |
+            +-------+----------------------------+
+            | p[...]| etc.                       |
+            +-------+----------------------------+
 
     q : ndarray
         One dimensional input array.
@@ -67,6 +88,86 @@ def gaussian(p, q):
     return funct
 
 
+def gaussian2d(p, q):
+    r'''Returns an arbitrary number of two-dimensional Gaussian profiles.
+
+    Parameters
+    ----------
+    p : ndarray
+        Parameters for the Gaussian, in the following format:
+
+            +-------+------------------------------+
+            | p[0]  | Constant background          |
+            +-------+------------------------------+
+            | p[1]  | Linear background slope      |
+            +-------+------------------------------+
+            | p[2]  | Volume under the first peak  |
+            +-------+------------------------------+
+            | p[3]  | X position of the first peak |
+            +-------+------------------------------+
+            | p[4]  | Y position of the first peak |
+            +-------+------------------------------+
+            | p[5]  | FWHM_x of the first peak     |
+            +-------+------------------------------+
+            | p[6]  | FWHM_y of the first peak     |
+            +-------+------------------------------+
+            | p[7]  | Area under the second peak   |
+            +-------+------------------------------+
+            | p[...]| etc.                         |
+            +-------+------------------------------+
+
+    q : ndarray
+        One dimensional input array.
+
+    Returns
+    -------
+    out : ndarray
+        One dimensional Gaussian profile.
+
+    Notes
+    -----
+    A Gaussian profile is defined as:
+
+    .. math::    f(q) = \frac{a}{\sigma \sqrt{2\pi}} e^{-\left(\frac{(q_x-q_x0)^2}{2\sigma_x^2} + \frac{(q_y-q_y0)^2}{2\sigma_y^2}\right)},
+
+    where the integral over the whole function is :math:`a`, and
+
+    .. math::    fwhm = 2 \sqrt{2 \ln{2}} \sigma.
+
+    Examples
+    --------
+    Plot a single gaussian with an integrated intensity of 1, centered at zero, and fwhm of 0.3:
+
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> p = np.array([0., 0., 1., 0., 0.3])
+    >>> x = np.linspace(-1, 1, 101)
+    >>> y = gaussian(p, x)
+    >>> plt.plot(x, y)
+    >>> plt.show()
+
+    Plot two gaussians, equidistant from the origin with the same intensity and fwhm as above:
+
+    >>> p = np.array([0., 0., 1., -0.3, 0.3, 1., 0.3, 0.3])
+    >>> x = np.linspace(-1, 1, 101)
+    >>> y = gaussian(p, x)
+    >>> plt.plot(x, y)
+    >>> plt.show()
+
+    '''
+    x, y = q
+
+    funct = p[0] + p[1] * (x + y)
+
+    for i in range(int(len(p[2:]) // 5)):
+        sigma_x = p[5 * i + 5] / (2. * np.sqrt(2. * np.log(2.)))
+        sigma_y = p[5 * i + 6] / (2. * np.sqrt(2. * np.log(2.)))
+
+        funct += p[5 * i + 2] / (sigma_x * sigma_y * 2. * np.pi) * np.exp(-((x - p[5 * i + 3]) ** 2 / (2 * sigma_x ** 2) + (y - p[5 * i + 4]) ** 2 / (2 * sigma_y ** 2)))
+
+    return funct
+
+
 def lorentzian(p, q):
     r'''Returns an arbitrary number of Lorentz profiles.
 
@@ -75,13 +176,21 @@ def lorentzian(p, q):
     p : ndarray
         Parameters for the Lorentzian, in the following format:
 
-        * p[0] : Constant background
-        * p[1] : Linear background slope
-        * p[2] : Integrated intensity of the first peak
-        * p[3] : Position of the first peak
-        * p[4] : FWHM of the first peak
-        * p[5] : Integrated intensity of the second peak
-        * p[...] : etc.
+            +-------+----------------------------+
+            | p[0]  | Constant background        |
+            +-------+----------------------------+
+            | p[1]  | Linear background slope    |
+            +-------+----------------------------+
+            | p[2]  | Area under the first peak  |
+            +-------+----------------------------+
+            | p[3]  | Position of the first peak |
+            +-------+----------------------------+
+            | p[4]  | FWHM of the first peak     |
+            +-------+----------------------------+
+            | p[5]  | Area under the second peak |
+            +-------+----------------------------+
+            | p[...]| etc.                       |
+            +-------+----------------------------+
 
     q : ndarray
         One dimensional input array.
@@ -137,14 +246,23 @@ def voigt(p, q):
     p : ndarray
         Parameters for the Lorentzian, in the following format:
 
-        * p[0] : flat background term
-        * p[1] : sloping background
-        * p[2] : Area under the first Lorentzian
-        * p[3] : Position of first Lorentzian
-        * p[4] : FWHM of first Lorentzian
-        * p[5] : FWHM of first Gaussian resolution
-        * p[6] : Area under the second Lorentzian
-        * p[...] : etc.
+            +-------+------------------------------+
+            | p[0]  | Constant background          |
+            +-------+------------------------------+
+            | p[1]  | Linear background slope      |
+            +-------+------------------------------+
+            | p[2]  | Area under the first peak    |
+            +-------+------------------------------+
+            | p[3]  | Position of the first peak   |
+            +-------+------------------------------+
+            | p[4]  | FWHM of the first Lorentzian |
+            +-------+------------------------------+
+            | p[5]  | FWHM of the first Gaussian   |
+            +-------+------------------------------+
+            | p[6]  | Area under the second peak   |
+            +-------+------------------------------+
+            | p[...]| etc.                         |
+            +-------+------------------------------+
 
     q : ndarray
         One dimensional input array.
@@ -204,17 +322,29 @@ def resolution(p, q, mode='gaussian'):
     p : ndarray
         Parameters for the resolution function, in the following format:
 
-        * p[0] : Constant background
-        * p[1] : Linear background slope
-        * p[2] : Area under first gaussian
-        * p[3] : x position of first gaussian
-        * p[4] : y position of first gaussian
-        * p[5] : R0
-        * p[6] : RM_xx (Resolution matrix 1st dimension diagonal element)
-        * p[7] : RM_yy (Resolution matrix 2nd dimension diagonal element)
-        * p[8] : RM_xy (Resolution matrix off diagonal element)
-        * p[9] : Area under the second Gaussian/Voigt profile
-        * p[...] : etc.
+            +-------+------------------------------+
+            | p[0]  | Constant background          |
+            +-------+------------------------------+
+            | p[1]  | Linear background slope      |
+            +-------+------------------------------+
+            | p[2]  | Volume under the first peak  |
+            +-------+------------------------------+
+            | p[3]  | X position of the first peak |
+            +-------+------------------------------+
+            | p[4]  | Y position of the first peak |
+            +-------+------------------------------+
+            | p[5]  | :math:`R_0`                  |
+            +-------+------------------------------+
+            | p[6]  | :math:`RM_{xx}`              |
+            +-------+------------------------------+
+            | p[7]  | :math:`RM_{yy}`              |
+            +-------+------------------------------+
+            | p[8]  | :math:`RM_{xy}`              |
+            +-------+------------------------------+
+            | p[9]  | Area under the second peak   |
+            +-------+------------------------------+
+            | p[...]| etc.                         |
+            +-------+------------------------------+
 
     q : tuple of ndarray
         Two input arrays of equivalent size and shape.
@@ -257,16 +387,27 @@ def gaussian_ring(p, q):
     p : ndarray
         Parameters for the gaussian ellipse function, in the following format:
 
-        * p[0] : Constant background
-        * p[1] : Linear background slope
-        * p[2] : Area under first gaussian ellipse
-        * p[3] : x position of first gaussian ellipse
-        * p[4] : y position of first gaussian ellipse
-        * p[5] : Radius of the first gaussian ellipse
-        * p[6] : Eccentricity of the first gaussian ellipse
-        * p[7] : FWHM of first gaussian ellipse
-        * p[8] : Area under the second gaussian ellipse
-        * P[...] : etc.
+            +-------+------------------------------+
+            | p[0]  | Constant background          |
+            +-------+------------------------------+
+            | p[1]  | Linear background slope      |
+            +-------+------------------------------+
+            | p[2]  | Volume under first ellipse   |
+            +-------+------------------------------+
+            | p[3]  | X position of first ellipse  |
+            +-------+------------------------------+
+            | p[4]  | Y position of first ellipse  |
+            +-------+------------------------------+
+            | p[5]  | Radius of first ellipse      |
+            +-------+------------------------------+
+            | p[6]  | Eccentricity of first ellipse|
+            +-------+------------------------------+
+            | p[7]  | FWHM of first ellipse        |
+            +-------+------------------------------+
+            | p[8]  | Volume under second ellipse  |
+            +-------+------------------------------+
+            | p[...]| etc.                         |
+            +-------+------------------------------+
 
     q : tuple of ndarray
         Two input arrays of equivalent size and shape, e.g. formed with np.meshgrid().

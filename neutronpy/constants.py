@@ -1,10 +1,10 @@
 r'''Useful constants for neutron scattering calculations, including:
 
-* ``magIonJ()`` : Magnetic Ion j-values
-* ``periodicTable()`` : Periodic table values
-* ``scatLen()`` : Neutron scattering lengths
-* ``joules2meV`` : Joules-to-meV conversion factor
-* ``boltzmann_meV_K`` : Boltzmann constant in meV/K
+* ``magnetic_ion_j()`` : Magnetic Ion j-values
+* ``periodic_table()`` : Periodic table values
+* ``scattering_lengths()`` : Neutron scattering lengths
+* ``joules_to_meV`` : Joules-to-meV conversion factor
+* ``boltzmann_in_meV_K`` : Boltzmann constant in meV/K
 
 Additional constants are available through scipy.constants.
 
@@ -15,7 +15,7 @@ import json
 from scipy import constants
 
 
-def magIonJ():
+def magnetic_ion_j():
     r'''Loads j values for Magnetic ions.
 
     Parameters
@@ -24,7 +24,7 @@ def magIonJ():
 
     Returns
     -------
-    magIonJ : dict
+    magnetic_ion_j : dict
         Database of j-values for magnetic ions
 
     '''
@@ -32,7 +32,7 @@ def magIonJ():
         return json.load(infile)
 
 
-def periodicTable():
+def periodic_table():
     r'''Loads periodic table database.
     mass, and long-form name.
 
@@ -42,7 +42,7 @@ def periodicTable():
 
     Returns
     -------
-    periodicTable : dict
+    periodic_table : dict
         Database of mass, atomic number, density, mass, and name for all elements in the Periodic table
 
     '''
@@ -50,7 +50,7 @@ def periodicTable():
         return json.load(infile)
 
 
-def scatLen():
+def scattering_lengths():
     r'''Loads neutron scattering lengths.
 
     Parameters
@@ -59,7 +59,7 @@ def scatLen():
 
     Returns
     -------
-    scatLen : dict
+    scattering_lengths : dict
         Database of elements containing the absolute, coherent, incoheret, and
         scattering cross-sections and scattering lengths
 
@@ -67,5 +67,5 @@ def scatLen():
     with open(os.path.join(os.path.dirname(__file__), "database/scat_len.json"), 'r') as infile:
         return json.load(infile)
 
-joules2meV = 1. / constants.physical_constants['electron volt-joule relationship'][0] * 1.e3  # Joules to meV
-boltzmann_meV_K = constants.physical_constants['Boltzmann constant in eV/K'][0] * 1.e3  # Boltzmann constant in meV/K
+joules_to_meV = 1. / constants.physical_constants['electron volt-joule relationship'][0] * 1.e3  # Joules to meV
+boltzmann_in_meV_K = constants.physical_constants['Boltzmann constant in eV/K'][0] * 1.e3  # Boltzmann constant in meV/K

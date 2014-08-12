@@ -9,6 +9,7 @@ Submodules
    neutronpy.constants
    neutronpy.form_facs
    neutronpy.functions
+   neutronpy.kmpfit
    neutronpy.models
    neutronpy.resolution
    neutronpy.tools

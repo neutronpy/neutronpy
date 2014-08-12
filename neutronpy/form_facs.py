@@ -14,14 +14,14 @@ class _Atom(object):
     dpos : list(3), optional
         Deviations from the position pos
     occupancy: float, optional
-        Occupancy of the _Atom (e.g. if there is partial occupancy from doping)
+        Occupancy of the _Atom (*e.g.* if there is partial occupancy from doping)
     Mcell : float, optional
         The mass of the unit cell. If assigned, normalize scattering lengths to the
         square-root of the mass of the atom
 
     Returns
     -------
-    output : Object
+    output : object
         Atom object defining an individual atom in a unit cell of a single crystal
 
     '''
@@ -36,17 +36,17 @@ class _Atom(object):
         self.Mcell = Mcell
 
         if massNorm is True:
-            self.mass = const.periodicTable()[ion]['mass']
-            self.b = (const.scatLen()[ion]['Coh b']
+            self.mass = const.periodic_table()[ion]['mass']
+            self.b = (const.scattering_lengths()[ion]['Coh b']
                       * self.occupancy
                       * self.Mcell
                       / np.sqrt(self.mass))
         else:
-            self.b = const.scatLen()[ion]['Coh b'] * self.occupancy
+            self.b = const.scattering_lengths()[ion]['Coh b'] * self.occupancy
 
 
 class Material(object):
-    '''Class for the Material being supplied for the structure factor calculation
+    r'''Class for the Material being supplied for the structure factor calculation
 
     Parameters
     ----------
@@ -59,13 +59,13 @@ class Material(object):
 
         .. code-block:: python
 
-            {'name': string,
-             'composition': [{'ion': string,
+            {'name': str,
+             'composition': [{'ion': str,
                               'pos': [float, float, float],
-                              'dpos: [float, float, float],
+                              'dpos': [float, float, float],
                               'occupancy': float}],
-             'debye-waller': boolean,
-             'massNorm': boolean,
+             'debye-waller': bool,
+             'massNorm': bool,
              'formulaUnits': float,
              'lattice': [float, float, float]}
 
@@ -84,7 +84,7 @@ class Material(object):
         for value in crystal['composition']:
             if 'occupancy' not in value:
                 value['occupancy'] = 1.
-            self.muCell += const.periodicTable()[value['ion']]['mass'] * value['occupancy']
+            self.muCell += const.periodic_table()[value['ion']]['mass'] * value['occupancy']
 
         self.Mcell = crystal['formulaUnits'] * self.muCell
 
@@ -154,8 +154,8 @@ class Ion(object):
 
     Parameters
     ----------
-    ion : string
-        Name of the atom, ion or anion, e.g. Fe2+.
+    ion : str
+        Name of the atom, ion or anion, *e.g.* 'Fe2+'.
 
     Returns
     -------
@@ -167,9 +167,9 @@ class Ion(object):
     def __init__(self, ion):
         self.ion = ion
         try:
-            self.j0 = const.magIonJ()[self.ion]['j0']
-            self.j2 = const.magIonJ()[self.ion]['j2']
-            self.j4 = const.magIonJ()[self.ion]['j4']
+            self.j0 = const.magnetic_ion_j()[self.ion]['j0']
+            self.j2 = const.magnetic_ion_j()[self.ion]['j2']
+            self.j4 = const.magnetic_ion_j()[self.ion]['j4']
         except ValueError:
             raise ValueError('No such ion was found in database.')
 
@@ -192,15 +192,15 @@ class Ion(object):
         Returns
         -------
         output : tuple
-            (form factor, q, j0, j2, j4)
+            (form factor, q, j\ :sub:`0`, j\ :sub:`2`, j\ :sub:`4`)
 
         Notes
         -----
         The magnetic form factor of an ion is given by:
 
-        .. math:: f(q) = <j0(q)> + (1-2/g)<j2(q)> \mathrm{(Lovesey,1984)}
+        .. math:: f(q) = <j_0(q)> + (1-\frac{2}{g})<j_2(q)> \mathrm{(Lovesey,1984)}
 
-        using the 3-gaussian approximation to :math:`fl(q)` from the
+        using the 3-gaussian approximation to :math:`f(q)` from the
         International Tables of Crystallography (by J. Brown)
 
 
