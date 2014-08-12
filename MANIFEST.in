@@ -6,7 +6,6 @@ recursive-include neutronpy *.py
 recursive-include src *.pyx *.pxd *.c *.h
 recursive-include neutronpy/database *.json
 
-recursive-include doc/_build/html *
 recursive-include doc/_build/latex *.pdf
 
 global-exclude *.pyc *.pyo *.pyd

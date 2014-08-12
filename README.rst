@@ -41,6 +41,10 @@ Installation
 ------------
 To install this package, download the zip of the source (or ``git clone``) from the master branch and run ``python setup.py install`` from within the source folder.
 
+Documentation
+-------------
+Documentation is available at `neutronpy.github.io <https://neutronpy.github.io/>`_, or can be built using sphinx by navigating to the doc/ folder and executing ``make``; results will be in the ``doc/_build/`` folder.
+
 Contributions
 -------------
 Contributions may be made by submitting a pull-request for review using the fork-and-pull method on GitHub. Feature requests and bug reports can be made using the GitHub issues interface.
