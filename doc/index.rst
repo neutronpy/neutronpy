@@ -10,7 +10,7 @@ Welcome to neutronpy's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 6
+   :maxdepth: 5
 
    modules
 
