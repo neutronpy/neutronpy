@@ -772,14 +772,14 @@ cdef class Fitter:
 
         if status <= 0:
             if status in MP_ERR:
-                self.message = 'mpfit error: {:s} ({:d})'.format(MP_ERR[status], status)  # @IgnorePep8
+                self.message = 'mpfit error: {0:s} ({1:d})'.format(MP_ERR[status], status)  # @IgnorePep8
             else:
-                self.message = 'mpfit error, status={:d}'.format(status)
+                self.message = 'mpfit error, status={0:d}'.format(status)
 
             raise RuntimeError(self.message)
 
         if status in MP_OK:
-            self.message = 'mpfit (potential) success: {:s} ({:d})'.format(MP_OK[status], status)
+            self.message = 'mpfit (potential) success: {0:s} ({1:d})'.format(MP_OK[status], status)
         else:
             self.message = None
 
