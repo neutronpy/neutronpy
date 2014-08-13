@@ -12,7 +12,7 @@ Additional constants are available through scipy.constants.
 
 import os
 import json
-from scipy import constants
+from scipy import constants as consts
 
 
 def magnetic_ion_j():
@@ -67,5 +67,5 @@ def scattering_lengths():
     with open(os.path.join(os.path.dirname(__file__), "database/scat_len.json"), 'r') as infile:
         return json.load(infile)
 
-joules_to_meV = 1. / constants.physical_constants['electron volt-joule relationship'][0] * 1.e3  # Joules to meV
-boltzmann_in_meV_K = constants.physical_constants['Boltzmann constant in eV/K'][0] * 1.e3  # Boltzmann constant in meV/K
+joules_to_meV = 1. / consts.physical_constants['electron volt-joule relationship'][0] * 1.e3  # Joules to meV
+boltzmann_in_meV_K = consts.physical_constants['Boltzmann constant in eV/K'][0] * 1.e3  # Boltzmann constant in meV/K

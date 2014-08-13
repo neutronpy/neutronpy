@@ -19,7 +19,7 @@ class LeastSquaresTest(unittest.TestCase):
         fitobj.parinfo = [{'fixed': fix} for fix in np.asarray([0, 0, 0, 0, 0]).astype(bool)]
         fitobj.fit(params0=p)
 
-        self.assertLess(fitobj.chi2_min, 5.)
+        self.assertTrue((fitobj.chi2_min < 5.))
 
     def test_voigt_fit_of_gauss_rand(self):
         p = np.array([0., 0., 3., 0., 0.3])
@@ -31,7 +31,7 @@ class LeastSquaresTest(unittest.TestCase):
         fitobj.parinfo = [{'fixed': fix} for fix in np.asarray([0, 0, 0, 0, 0, 0]).astype(bool)]
         fitobj.fit(params0=np.concatenate((p, np.array([0.2]))))
 
-        self.assertLess(fitobj.chi2_min, 5.)
+        self.assertTrue((fitobj.chi2_min < 5.))
 
     def test_voigt_fit_of_voigt_rand(self):
         p = np.array([0., 0., 3., 0., 0.3, 0.2])
@@ -43,7 +43,7 @@ class LeastSquaresTest(unittest.TestCase):
         fitobj.parinfo = [{'fixed': fix} for fix in np.asarray([0, 0, 0, 0, 0, 0]).astype(bool)]
         fitobj.fit(params0=p)
 
-        self.assertLess(fitobj.chi2_min, 5.)
+        self.assertTrue((fitobj.chi2_min < 5.))
 
 
 if __name__ == '__main__':

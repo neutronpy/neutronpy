@@ -70,7 +70,7 @@ class DataTest(unittest.TestCase):
         data = self.build_data(clean=True)
 
         self.assertAlmostEqual(data.integrate(), 45.8424794006, 6)
-        self.assertLess(data.position()[0], 1e-15)
+        self.assertTrue((data.position()[0] < 1e-15))
         self.assertAlmostEqual(data.width()[0], 0.3, 2)
 
 

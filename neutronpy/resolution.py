@@ -290,7 +290,7 @@ def GetTau(x, getlabel=False):
 
     if getlabel:
         # return the index/label of the closest monochromator
-        choices_ = {key: np.abs(value - x) for key, value in choices.items}
+        choices_ = dict((key, np.abs(value - x)) for (key, value) in choices.items)
         index = min(choices_, key=choices_.get)
         if choices[index] < 5e-4:
             tau = choices[index]  # the label
