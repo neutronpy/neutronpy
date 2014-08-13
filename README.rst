@@ -1,6 +1,17 @@
 NeutronPy
 =========
 
+
+**master** |master| :: **develop** |develop|
+
+.. |master| image:: https://travis-ci.org/neutronpy/neutronpy.svg?branch=master
+		:target: https://travis-ci.org/neutronpy/neutronpy
+		:alt: master
+
+.. |develop| image:: https://travis-ci.org/neutronpy/neutronpy.svg?branch=develop
+		:target: https://travis-ci.org/neutronpy/neutronpy
+		:alt: develop
+
 **NeutronPy** is a python library with commonly used tools for neutron scattering measurements, primarily for Triple Axis Spectrometer data, but easily applied to other types of data, including Time of Flight.
 
 * Triple Axis Spectrometer resolution function calculation (Translated from ResLib), including:
