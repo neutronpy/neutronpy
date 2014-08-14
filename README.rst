@@ -41,8 +41,8 @@ Requirements
 ------------
 The following packages are required to install this library:
 
-* ``Python >= 2.7.0 (incl. python 3)``
-* ``numpy >= 1.8.0``
+* ``Python >= 2.6 (incl. python 3)``
+* ``numpy >= 1.7.0``
 * ``scipy >= 0.13.0``
 * ``Cython >= 0.20``
 * ``matplotlib >= 1.3.0`` (optional, plotting)

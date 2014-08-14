@@ -2,7 +2,7 @@ import numpy as np
 from scipy.linalg import block_diag as blkdiag
 
 
-class _Sample():
+class Sample():
     r'''Private class containing sample information.
 
     Parameters
@@ -138,7 +138,7 @@ def _star(lattice):
 
     Vstar = (2 * np.pi) ** 3 / V
 
-    latticestar = _Sample(0, 0, 0, 0, 0, 0)
+    latticestar = Sample(0, 0, 0, 0, 0, 0)
     latticestar.a = 2 * np.pi * lattice.b * lattice.c * np.sin(lattice.alpha) / V
     latticestar.b = 2 * np.pi * lattice.a * lattice.c * np.sin(lattice.beta) / V
     latticestar.c = 2 * np.pi * lattice.b * lattice.a * np.sin(lattice.gamma) / V
@@ -198,7 +198,7 @@ def _GetLattice(EXP):
 
     '''
     s = np.array([item.sample for item in EXP])
-    lattice = _Sample(np.array([item.a for item in s]),
+    lattice = Sample(np.array([item.a for item in s]),
                       np.array([item.b for item in s]),
                       np.array([item.c for item in s]),
                       np.array([item.alpha for item in s]) * np.pi / 180,
@@ -1020,7 +1020,7 @@ class Instrument(object):
         self.vcol = np.array(vcol)
         self.arms = np.array(arms)
         self.efixed = efixed
-        self.sample = _Sample(a, b, c, alpha, beta, gamma, samp_mosaic)
+        self.sample = Sample(a, b, c, alpha, beta, gamma, samp_mosaic)
         self.orient1 = np.array(orient1)
         self.orient2 = np.array(orient2)
 

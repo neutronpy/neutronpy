@@ -10,9 +10,16 @@ Welcome to neutronpy's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 5
+    :glob:
+    :maxdepth: 2
 
-   modules
+    examples/*
+
+.. toctree::
+    :maxdepth: 5
+
+    examples
+    modules
 
 Indices and tables
 ==================
