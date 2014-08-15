@@ -54,6 +54,12 @@ html:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+io:
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) ../../neutronpy.github.io
+	@echo
+	@echo "Build finished. The HTML pages are in ../../neutronpy.github.io."
+
+
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo
