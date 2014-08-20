@@ -112,6 +112,29 @@ class Data(object):
                     output['Q'] = self._build_Q(output=output, **kwargs)
                     self.combine_data(output)
 
+        if kwargs['mode'] == 'ICE':
+            keys = {'h': 'QX', 'k': 'QY', 'l': 'QZ', 'e': 'E', 'detector': 'Detector', 'monitor': 'Monitor', 'temp': 'Temp'}
+            for filename in files:
+                output = {}
+                with open(filename) as f:
+                    for line in f:
+                        if 'Columns' in line:
+                            args = line.split()
+                            headers = [head.replace('(', '').replace(')', '').replace('-', '') for head in args[1:]]
+
+                args = np.genfromtxt(filename, comments="#", dtype=np.float64, unpack=True, usecols=(0, 1, 2, 3, 4, 5, 6, 7, 8))
+
+                for key, value in keys.items():
+                    output[key] = args[headers.index(value)]
+
+                if not hasattr(self, 'Q'):
+                    for key, value in output.items():
+                        setattr(self, key, value)
+                    self.Q = self._build_Q(**kwargs)
+                else:
+                    output['Q'] = self._build_Q(output=output, **kwargs)
+                    self.combine_data(output)
+
         if kwargs['mode'] == 'NCNR':
             keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'detector': 'Counts', 'temp': 'Tact'}
             for filename in files:
@@ -154,9 +177,9 @@ class Data(object):
 
         '''
         args = ()
-        if hasattr(kwargs, 'output'):
+        if 'output' in kwargs:
             for i in ['h', 'k', 'l', 'e']:
-                args += (getattr(kwargs['output'], i),)
+                args += (kwargs['output'][i],)
         else:
             for i in ['h', 'k', 'l', 'e']:
                 args += (getattr(self, i),)
@@ -190,8 +213,8 @@ class Data(object):
             monitor, detector, Q, temp = self.monitor.copy(), self.detector.copy(), self.Q.copy(), self.temp.copy()
 
             for item in combine:
-                monitor[item[0]] += arg['monitor'][item[1]]
-                detector[item[0]] += arg['detector'][item[1]]
+                monitor[item[1]] += arg['monitor'][item[0]]
+                detector[item[1]] += arg['detector'][item[0]]
 
             if len(combine) > 0:
                 for key in ['Q', 'monitor', 'detector', 'temp']:
@@ -219,7 +242,7 @@ class Data(object):
                 self.temp = temp[order]
 
                 for i, var in enumerate(['h', 'k', 'l', 'e']):
-                    setattr(self, var, Q[:, i])
+                    setattr(self, var, self.Q[:, i])
 
     def intensity(self, **kwargs):
         r'''Returns the monitor normalized intensity
@@ -282,6 +305,17 @@ class Data(object):
             pass
 
         return np.exp(-self.Q[3] / boltzmann_in_meV_K / self.temps)
+
+    def bg_estimate(self, perc):
+        r'''
+        estimate the background by averaging the
+        bottom perc % of points that are >= 0
+        '''
+        inten = self.intensity()[self.intensity() >= 0.]  # use intensities only >= 0
+        Npts = inten.size * (perc / 100.)  # how many points is perc %
+        min_vals = inten[np.argsort(inten)[:Npts]]  # sort inten and take lowest np
+        bg = np.average(min_vals)  # average lowest npts
+        return bg
 
     def _bin_parallel(self, Q_chunk):
         r'''Performs binning by finding data chunks to bin together.
@@ -390,14 +424,22 @@ class Data(object):
             The integrated intensity either over all data, or within specified boundaries
 
         '''
+        if 'bg' in kwargs:
+            if 'c' in kwargs['bg']:
+                bg = np.float(kwargs['bg'][1:])
+            else:
+                bg = self.bg_estimate(kwargs['bg'][1:])
+        else:
+            bg = 0
+
         result = 0
-        if hasattr(kwargs, 'bounds'):
+        if 'bounds' in kwargs:
             to_fit = np.where(kwargs['bounds'])
             for i in range(4):
-                result += np.trapz(self.intensity()[to_fit], x=self.Q[to_fit, i])
+                result += np.trapz(self.intensity()[to_fit] - bg, x=self.Q[to_fit, i])
         else:
             for i in range(4):
-                result += np.trapz(self.intensity(), x=self.Q[:, i])
+                result += np.trapz(self.intensity() - bg, x=self.Q[:, i])
 
         return result
 
@@ -416,7 +458,7 @@ class Data(object):
 
         '''
         result = ()
-        if hasattr(kwargs, 'bounds'):
+        if 'bounds' in kwargs:
             to_fit = np.where(kwargs['bounds'])
             for j in range(4):
                 _result = 0
@@ -447,7 +489,7 @@ class Data(object):
 
         '''
         result = ()
-        if hasattr(kwargs, 'bounds'):
+        if 'bounds' in kwargs:
             to_fit = np.where(kwargs['bounds'])
             for j in range(4):
                 _result = 0

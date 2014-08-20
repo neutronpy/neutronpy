@@ -31,17 +31,20 @@ class DataTest(unittest.TestCase):
         output = tools.Data()
         output.Q = np.vstack((item.ravel() for item in np.meshgrid(x, 0., 0., 0.))).T
         output.detector = y
-        output.monitor = np.ones(x.shape) * mon
-        output.temp = np.ones(x.shape) * 300.
+        output.monitor = np.zeros(x.shape) + mon
+        output.temp = np.zeros(x.shape) + 300.
 
         return output
 
     def test_load_files(self):
         data1 = tools.Data()
-        data1.load_file(os.path.join(os.path.dirname(__file__), 'scan0001.dat'), os.path.join(os.path.dirname(__file__), 'scan0002.dat'), mode='HFIR')
+        data1.load_file(os.path.join(os.path.dirname(__file__), 'scan0001.dat'), os.path.join(os.path.dirname(__file__), 'scan0002.dat'), mode='SPICE')
 
         data2 = tools.Data()
-        data2.load_file(os.path.join(os.path.dirname(__file__), 'scan0003.ng5'), mode='NCNR')
+        data2.load_file(os.path.join(os.path.dirname(__file__), 'scan0003.ng5'), mode='ICP')
+        
+        data3 = tools.Data()
+        data3.load_file(os.path.join(os.path.dirname(__file__), 'scan0004.bt7'), mode='ICE')
 
     def test_combine_data(self):
         data1 = self.build_data(clean=True)
