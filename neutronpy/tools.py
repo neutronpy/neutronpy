@@ -1,10 +1,10 @@
 r'''Tools Module
 '''
 from .constants import BOLTZMANN_IN_MEV_K, JOULES_TO_MEV
-from scipy import constants
+from multiprocessing import cpu_count, Pool  # pylint: disable=no-name-in-module
 import numpy as np
-import multiprocessing as mp
 import re
+from scipy import constants
 
 
 def _call_bin_parallel(arg, **kwarg):
@@ -210,14 +210,14 @@ class Data(object):
         None
 
         '''
+        monitor, detector, Q, temp = self.monitor.copy(), self.detector.copy(), self.Q.copy(), self.temp.copy()  # pylint: disable=access-member-before-definition
+
         for arg in args:
             combine = []
             for i in range(arg['Q'].shape[0]):
                 for j in range(self.Q.shape[0]):
                     if np.all(self.Q[j, :] == arg['Q'][i, :]):
                         combine.append([i, j])
-
-            monitor, detector, Q, temp = self.monitor.copy(), self.detector.copy(), self.Q.copy(), self.temp.copy()
 
             for item in combine:
                 monitor[item[1]] += arg['monitor'][item[0]]
@@ -234,22 +234,22 @@ class Data(object):
 
             order = np.lexsort((Q[:, 3], Q[:, 2], Q[:, 1], Q[:, 0]))
 
-            if 'ret' in kwargs and kwargs['ret']:
-                new = Data(Q=Q[order], temp=temp[order], monitor=monitor[order], detector=detector[order])
+        if 'ret' in kwargs and kwargs['ret']:
+            new = Data(Q=Q[order], temp=temp[order], monitor=monitor[order], detector=detector[order])
 
-                for i, var in enumerate(['h', 'k', 'l', 'e']):
-                    setattr(new, var, new.Q[:, i])
+            for i, var in enumerate(['h', 'k', 'l', 'e']):
+                setattr(new, var, new.Q[:, i])
 
-                return new
+            return new
 
-            else:
-                self.Q = Q[order]
-                self.monitor = monitor[order]
-                self.detector = detector[order]
-                self.temp = temp[order]
+        else:
+            self.Q = Q[order]
+            self.monitor = monitor[order]
+            self.detector = detector[order]
+            self.temp = temp[order]
 
-                for i, var in enumerate(['h', 'k', 'l', 'e']):
-                    setattr(self, var, self.Q[:, i])
+            for i, var in enumerate(['h', 'k', 'l', 'e']):
+                setattr(self, var, self.Q[:, i])
 
     def intensity(self, **kwargs):
         r'''Returns the monitor normalized intensity
@@ -309,8 +309,8 @@ class Data(object):
 
         '''
         try:
-            self.temps = np.ones(self.Q.shape[0]) * kwargs['temp']
-        except:
+            self.temps = np.zeros(self.Q.shape[0]) + kwargs['temp']
+        except KeyError:
             pass
 
         return np.exp(-self.Q[3] / BOLTZMANN_IN_MEV_K / self.temps)
@@ -371,7 +371,7 @@ class Data(object):
 
         return (monitor, detector, temps)
 
-    def bin(self, *args, **kwargs):
+    def bin(self, *args, **kwargs):  # pylint: disable=unused-argument
         r'''Rebin the data into the specified shape.
 
         Parameters
@@ -409,9 +409,9 @@ class Data(object):
         Q = np.meshgrid(*q)
         Q = np.vstack((item.flatten() for item in Q)).T
 
-        nprocs = mp.cpu_count()  # @UndefinedVariable
+        nprocs = cpu_count()  # @UndefinedVariable
         Q_chunks = [Q[n * Q.shape[0] // nprocs:(n + 1) * Q.shape[0] // nprocs] for n in range(nprocs)]
-        pool = mp.Pool(processes=nprocs)  # @UndefinedVariable
+        pool = Pool(processes=nprocs)  # pylint: disable=not-callable
         outputs = pool.map(_call_bin_parallel, zip([self] * len(Q_chunks), Q_chunks))
 
         monitor, detector, temp = (np.concatenate(arg) for arg in zip(*outputs))
@@ -608,7 +608,7 @@ class Data(object):
                               np.ma.masked_where(w <= 0, z),
                               np.ma.masked_where(w <= 0, w))
 
-                from mpl_toolkits.mplot3d import Axes3D  # @UnusedImport
+                from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-variable
 
                 fig = plt.figure()
                 axis = fig.add_subplot(111, projection='3d')
