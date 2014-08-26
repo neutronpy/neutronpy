@@ -1,4 +1,4 @@
-from neutronpy.kmpfit import Fitter
+from neutronpy import Fitter
 from neutronpy import functions
 import numpy as np
 import unittest

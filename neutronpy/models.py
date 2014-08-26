@@ -1,5 +1,5 @@
-import numpy as np
-
+r'''Physical Models
+'''
 
 def harmonic_oscillator():
     pass

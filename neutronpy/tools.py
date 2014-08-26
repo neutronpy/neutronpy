@@ -1,4 +1,6 @@
-from .constants import boltzmann_in_meV_K, joules_to_meV
+r'''Tools Module
+'''
+from .constants import BOLTZMANN_IN_MEV_K, JOULES_TO_MEV
 from scipy import constants
 import numpy as np
 import multiprocessing as mp
@@ -8,11 +10,12 @@ import re
 def _call_bin_parallel(arg, **kwarg):
     r'''Wrapper function to work around pickling problem in Python 2.7
     '''
-    return Data._bin_parallel(*arg, **kwarg)
+    return Data.bin_parallel(*arg, **kwarg)
 
 
 class Data(object):
-    r'''Data class for handling multi-dimensional TAS data. If input file type is not supported, data can be entered manually.
+    r'''Data class for handling multi-dimensional TAS data. If input file type
+    is not supported, data can be entered manually.
 
     Parameters
     ----------
@@ -74,7 +77,7 @@ class Data(object):
         return self
 
     def load_file(self, *files, **kwargs):
-        r'''Loads one or more files in either HFIR or NCNR formats
+        r'''Loads one or more files in either SPICE, ICE or ICP formats
 
         Parameters
         ----------
@@ -82,14 +85,15 @@ class Data(object):
             A file or non-keyworded list of files containing data for input.
 
         mode : string
-            Specify file type (HFIR | NCNR). Currently only file types supported.
+            Specify file type (SPICE | ICE | ICP). Currently only file types
+            supported.
 
         Returns
         -------
         None
 
         '''
-        if kwargs['mode'] == 'HFIR':
+        if kwargs['mode'] == 'SPICE':
             keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'temp'}
             for filename in files:
                 output = {}
@@ -135,7 +139,7 @@ class Data(object):
                     output['Q'] = self._build_Q(output=output, **kwargs)
                     self.combine_data(output)
 
-        if kwargs['mode'] == 'NCNR':
+        if kwargs['mode'] == 'ICP':
             keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'detector': 'Counts', 'temp': 'Tact'}
             for filename in files:
                 output = {}
@@ -152,7 +156,7 @@ class Data(object):
                 for key, value in keys.items():
                     output[key] = args[headers.index(value)]
 
-                output['monitor'] = np.ones(output['detector'].shape) * self.m0
+                output['monitor'] = np.zeros(output['detector'].shape) + self.m0
 
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
@@ -163,12 +167,14 @@ class Data(object):
                     self.combine_data(output)
 
     def _build_Q(self, **kwargs):
-        r'''Internal method for constructing :math:`Q(q, hw)` from h, k, l, and energy
+        r'''Internal method for constructing :math:`Q(q, hw)` from h, k, l,
+        and energy
 
         Parameters
         ----------
         output : dictionary, optional
-            A dictionary of the h, k, l, and e arrays to form into a column oriented array
+            A dictionary of the h, k, l, and e arrays to form into a column
+            oriented array
 
         Returns
         -------
@@ -192,7 +198,8 @@ class Data(object):
         Parameters
         ----------
         args : dictionary of ndarrays
-            A dictionary (or multiple) of the data that will be added to the current data, with keys:
+            A dictionary (or multiple) of the data that will be added to the
+            current data, with keys:
                 * Q : ndarray : [h, k, l, e] with shape (N, 4,)
                 * monitor : ndarray : shape (N,)
                 * detector : ndarray : shape (N,)
@@ -261,10 +268,10 @@ class Data(object):
         '''
         try:
             m0 = kwargs['m0']
-        except:
+        except KeyError:
             try:
                 m0 = self.m0
-            except:
+            except AttributeError:
                 self.m0 = m0 = np.nanmax(self.monitor)
 
         return self.detector / self.monitor * m0
@@ -286,12 +293,14 @@ class Data(object):
         return np.sqrt(np.abs(self.intensity(**kwargs)))
 
     def detailed_balance_factor(self, **kwargs):
-        r'''Returns the detailed balance factor (sometimes called the Bose factor)
+        r'''Returns the detailed balance factor (sometimes called the Bose
+        factor)
 
         Parameters
         ----------
         temp : float, optional
-            If not already a property of the class, the sample temperature can be specified as a float.
+            If not already a property of the class, the sample temperature
+            can be specified as a float.
 
         Returns
         -------
@@ -304,20 +313,19 @@ class Data(object):
         except:
             pass
 
-        return np.exp(-self.Q[3] / boltzmann_in_meV_K / self.temps)
+        return np.exp(-self.Q[3] / BOLTZMANN_IN_MEV_K / self.temps)
 
     def bg_estimate(self, perc):
-        r'''
-        estimate the background by averaging the
+        r'''Estimate the background by averaging the
         bottom perc % of points that are >= 0
         '''
-        inten = self.intensity()[self.intensity() >= 0.]  # use intensities only >= 0
-        Npts = inten.size * (perc / 100.)  # how many points is perc %
-        min_vals = inten[np.argsort(inten)[:Npts]]  # sort inten and take lowest np
-        bg = np.average(min_vals)  # average lowest npts
+        inten = self.intensity()[self.intensity() >= 0.]
+        Npts = inten.size * (perc / 100.)
+        min_vals = inten[np.argsort(inten)[:Npts]]
+        bg = np.average(min_vals)
         return bg
 
-    def _bin_parallel(self, Q_chunk):
+    def bin_parallel(self, Q_chunk):
         r'''Performs binning by finding data chunks to bin together.
         Private function for performing binning in parallel using
         multiprocessing library
@@ -416,18 +424,20 @@ class Data(object):
         Parameters
         ----------
         bounds : Boolean, optional
-            A boolean expression representing the bounds inside which the calculation will be performed
+            A boolean expression representing the bounds inside which the
+            calculation will be performed
 
         Returns
         -------
         result : float
-            The integrated intensity either over all data, or within specified boundaries
+            The integrated intensity either over all data, or within
+            specified boundaries
 
         '''
         if 'bg' in kwargs:
-            if 'c' in kwargs['bg']:
+            if kwargs['bg'][0] == 'c':
                 bg = np.float(kwargs['bg'][1:])
-            else:
+            elif kwargs['bg'][0] == 'p':
                 bg = self.bg_estimate(kwargs['bg'][1:])
         else:
             bg = 0
@@ -449,27 +459,38 @@ class Data(object):
         Parameters
         ----------
         bounds : Boolean, optional
-            A boolean expression representing the bounds inside which the calculation will be performed
+            A boolean expression representing the bounds inside which the
+            calculation will be performed
 
         Returns
         -------
         result : tuple
-            The result is a tuple with position in each dimension of Q, (h, k, l, e)
+            The result is a tuple with position in each dimension of Q,
+            (h, k, l, e)
 
         '''
+
+        if 'bg' in kwargs:
+            if kwargs['bg'][0] == 'c':
+                bg = np.float(kwargs['bg'][1:])
+            elif kwargs['bg'][0] == 'p':
+                bg = self.bg_estimate(kwargs['bg'][1:])
+        else:
+            bg = 0
+
         result = ()
         if 'bounds' in kwargs:
             to_fit = np.where(kwargs['bounds'])
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz(self.Q[to_fit, j] * self.intensity()[to_fit], x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                    _result += np.trapz(self.Q[to_fit, j] * (self.intensity()[to_fit] - bg), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
                 result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz(self.Q[:, j] * self.intensity(), x=self.Q[:, i]) / self.integrate(**kwargs)
+                    _result += np.trapz(self.Q[:, j] * (self.intensity() - bg), x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
@@ -480,29 +501,37 @@ class Data(object):
         Parameters
         ----------
         bounds : Boolean, optional
-            A boolean expression representing the bounds inside which the calculation will be performed
+            A boolean expression representing the bounds inside which the
+            calculation will be performed
 
         Returns
         -------
         result : tuple
-            The result is a tuple with the width in each dimension of Q, (h, k, l, e)
+            The result is a tuple with the width in each dimension of Q,
+            (h, k, l, e)
 
         '''
+        if 'bg' in kwargs:
+            if kwargs['bg'][0] == 'c':
+                bg = np.float(kwargs['bg'][1:])
+            elif kwargs['bg'][0] == 'p':
+                bg = self.bg_estimate(kwargs['bg'][1:])
+        else:
+            bg = 0
+
         result = ()
         if 'bounds' in kwargs:
             to_fit = np.where(kwargs['bounds'])
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz((self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 *
-                                        self.intensity()[to_fit], x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                    _result += np.trapz((self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity()[to_fit] - bg), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
                 result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 *
-                                        self.intensity(), x=self.Q[:, i]) / self.integrate(**kwargs)
+                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity() - bg), x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
@@ -515,16 +544,20 @@ class Data(object):
         Parameters
         ----------
         x : list
-            List indicating the content of the dimension, lower bound, upper bound, and number of points
+            List indicating the content of the dimension, lower bound,
+            upper bound, and number of points
 
         y : list
-            List indicating the content of the dimension, lower bound, upper bound, and number of points
+            List indicating the content of the dimension, lower bound,
+            upper bound, and number of points
 
         z : list
-            List indicating the content of the dimension, lower bound, upper bound, and number of points
+            List indicating the content of the dimension, lower bound,
+            upper bound, and number of points
 
         w : list
-            List indicating the content of the dimension, lower bound, upper bound, and number of points
+            List indicating the content of the dimension, lower bound,
+            upper bound, and number of points
 
         err : bool
             Plot error bars. Only applies to xy scatter plots.
@@ -534,8 +567,6 @@ class Data(object):
         None
 
         '''
-        from scipy.interpolate import griddata  # @UnusedImport
-
         try:
             import matplotlib.pyplot as plt
             from matplotlib import colors  # @UnusedImport
@@ -580,9 +611,10 @@ class Data(object):
                 from mpl_toolkits.mplot3d import Axes3D  # @UnusedImport
 
                 fig = plt.figure()
-                ax = fig.add_subplot(111, projection='3d')
+                axis = fig.add_subplot(111, projection='3d')
 
-                ax.scatter(x, y, z, c=w, linewidths=0, vmin=1.e-4, vmax=0.1, norm=colors.LogNorm())
+                axis.scatter(x, y, z, c=w, linewidths=0, vmin=1.e-4,
+                             vmax=0.1, norm=colors.LogNorm())
 
             except KeyError:
                 raise
@@ -595,7 +627,8 @@ class Data(object):
                            np.ma.masked_where(z <= 0, y),
                            np.ma.masked_where(z <= 0, z))
 
-                plt.pcolormesh(x, y, z, vmin=1.e-4, vmax=0.1, norm=colors.LogNorm())
+                plt.pcolormesh(x, y, z, vmin=1.e-4, vmax=0.1,
+                               norm=colors.LogNorm())
             except KeyError:
                 pass
         else:
@@ -614,29 +647,29 @@ class Neutron():
     def __init__(self, e=None, l=None, v=None, k=None, temp=None, freq=None):
         if e is None:
             if l is not None:
-                self.e = constants.h ** 2 / (2. * constants.m_n * (l / 1.e10) ** 2) * joules_to_meV
+                self.e = constants.h ** 2 / (2. * constants.m_n * (l / 1.e10) ** 2) * JOULES_TO_MEV
             elif v is not None:
-                self.e = 1. / 2. * constants.m_n * v ** 2 * joules_to_meV
+                self.e = 1. / 2. * constants.m_n * v ** 2 * JOULES_TO_MEV
             elif k is not None:
-                self.e = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / k) / 1.e10) ** 2) * joules_to_meV)
+                self.e = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / k) / 1.e10) ** 2) * JOULES_TO_MEV)
             elif temp is not None:
-                self.e = constants.k * temp * joules_to_meV
+                self.e = constants.k * temp * JOULES_TO_MEV
             elif freq is not None:
-                self.e = constants.hbar * freq * 2. * np.pi * joules_to_meV * 1.e12
+                self.e = (constants.hbar * freq * 2. * np.pi * JOULES_TO_MEV * 1.e12)
         else:
             self.e = e
 
-        self.l = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.e / joules_to_meV)) * 1.e10
-        self.v = np.sqrt(2. * self.e / joules_to_meV / constants.m_n)
+        self.l = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.e / JOULES_TO_MEV)) * 1.e10
+        self.v = np.sqrt(2. * self.e / JOULES_TO_MEV / constants.m_n)
         self.k = 2. * np.pi / self.l
-        self.temp = self.e / constants.k / joules_to_meV
-        self.freq = self.e / joules_to_meV / constants.hbar / 2. / np.pi / 1.e12
+        self.temp = self.e / constants.k / JOULES_TO_MEV
+        self.freq = (self.e / JOULES_TO_MEV / constants.hbar / 2. / np.pi / 1.e12)
 
-    def printValues(self):
-        print(u'''
+    def print_values(self):
+        print(r'''
 Energy: {0:3.3f} meV
-Wavelength: {1:3.3f} $\AA$
-Wavevector: {2:3.3f} $\AA^-1$
+Wavelength: {1:3.3f} \unicode(u00c5)
+Wavevector: {2:3.3f} \unicode(u00c5)$^-1$
 Velocity: {3:3.3f} m/s
 Temperature: {4:3.3f} K
 Frequency: {5:3.3f} THz

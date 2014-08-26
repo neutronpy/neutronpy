@@ -13,4 +13,3 @@ try:
     from .kmpfit import Fitter
 except ImportError:
     print(ImportError(u'Fitter module is not loaded.'))
-    pass
