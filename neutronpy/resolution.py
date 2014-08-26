@@ -817,8 +817,8 @@ def ResMat(Q, W, EXP):
             d[0, 0] = -1. / L0
             d[0, 2] = -np.cos(thetam) / L0
             d[0, 3] = np.sin(thetam) / L0
-            d[2, 1] = D(1, 1)
-            d[2, 4] = -D(1, 1)
+            d[2, 1] = D[1, 1]
+            d[2, 4] = -D[1, 1]
             d[1, 2] = np.cos(thetam) / L1mon
             d[1, 3] = np.sin(thetam) / L1mon
             d[1, 5] = 0.
