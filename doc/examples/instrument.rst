@@ -9,9 +9,52 @@ Instrument Configuration
 ------------------------
 First, we will begin by defining an generic triple-axis spectrometer instrument configuration that we will use for this example.
 
-.. plot:: examples/plots/neutronpy_instrument.py
+.. plot::
     :height: 200px
     :width: 800px
+
+    from matplotlib import pyplot as plt
+    from numpy import rad2deg, arctan
+
+    fig = plt.figure(facecolor='w', edgecolor='k', figsize=(8, 2))
+    axis = plt.Axes(fig, [0., 0., 1., 1.])
+    axis.set_axis_off()
+    fig.add_axes(axis)
+    plt.subplots_adjust(0, 0, 1, 1, 0, 0)
+
+    guide = plt.Rectangle((-4, 1), 0.5, 0.25, fc='g', zorder=2)
+    guide_mono = plt.Line2D((-4, -2), (1.125, 1.125), lw=1, ls='-.', zorder=1)
+    axis.text(-4, 0.75, 'Guide')
+    axis.text(-3, 1.25, 'Col$_{1}$', size=10)
+
+    mono = plt.Rectangle((-2, 1 - 0.125), 0.05, 0.5, fc='b', zorder=2)
+    mono_samp = plt.Line2D((-2, 0), (1.125, 0), lw=1, ls='-.', zorder=1)
+    axis.text(-2.75, 0.5, 'Monochromator')
+    axis.text(-1, 0.75, 'Col$_{2}$', size=10)
+
+    sample = plt.Circle((0, 0), radius=0.125, fc='y', zorder=2)
+    samp_ana = plt.Line2D((0, 2), (0, 1.125), lw=1, ls='-.', zorder=1)
+    axis.text(-0.35, 0.35, 'Sample')
+    axis.text(0.8, 0.75, 'Col$_{3}$', size=10)
+
+    analyzer = plt.Rectangle((2 - 0.2, 1 + 0.2), 0.5, 0.05, fc='b', zorder=2, angle=-10)
+    ana_det = plt.Line2D((2, 4), (1.125, 0), lw=1, ls='-.', zorder=1)
+    axis.text(1.6, 0.55, 'Analyzer')
+    axis.text(3., 0.75, 'Col$_{4}$', size=10)
+
+    detector = plt.Rectangle((4, 0 - 0.125), 0.5, 0.25, fc='r', angle=rad2deg(arctan(-1.125 / 2.)), zorder=2)
+    axis.text(3.8, 0.325, 'Detector')
+
+    for item in [guide_mono, mono_samp, samp_ana, ana_det]:
+        fig.gca().add_line(item)
+
+    for item in [guide, mono, sample, analyzer, detector]:
+        fig.gca().add_patch(item)
+
+    axis.axis('scaled')
+    axis.axis('off')
+
+    plt.show()
 
 For the Cooper-Nathans calculation only a rudimentary set of information is required to estimate the resolution at a given :math:`q`. Namely, the fixed energy (incident or final), the relevant (horizontal) collimations (Col\ :math:`_n`), and the monochromator and analyzer crystal types (or :math:`\tau`, if the crystal type is not included in this software). In this case we will use the following values:
 
@@ -85,7 +128,42 @@ The resolution ellipses are calculated at the same time :py:meth:`.calc_resoluti
 
 The following is an example of a resolution calculation using the Cooper-Nathans method (for a slice in the :math:`Q_x Q_y` plane), with resolution ellipses (projection (filled) and slice (dashed)) overlaid, using the settings we have used in this example.
 
-.. plot:: examples/plots/neutronpy_resolution.py
+.. plot::
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib import cm
+    from neutronpy.resolution import Instrument, Sample
+    from neutronpy.functions import resolution
+
+    FeTe = Sample(3.81, 3.81, 6.25, 90, 90, 90, 70)
+    FeTe.u = [1, 0, 0]
+    FeTe.v = [0, 1, 0]
+
+    EXP = Instrument(5., FeTe, [32, 80, 120, 120], ana='PG(002)', mono='PG(002)', infin=1)
+
+    hkle = [1., 1., 0., 0.]
+    EXP.calc_resolution(hkle)
+
+    x, y = np.meshgrid(np.linspace(hkle[0] - 0.05, hkle[0] + 0.05, 501), np.linspace(hkle[1] - 0.05, hkle[1] + 0.05, 501), sparse=True)
+
+    R0, RMxx, RMyy, RMxy = EXP.get_resolution_params(hkle, 'QxQy', mode='slice')
+    p = np.array([0., 0., 1., hkle[0], hkle[1], R0, RMxx, RMyy, RMxy])
+    z = resolution(p, (x, y))
+
+    fig = plt.figure(facecolor='w', edgecolor='k')
+
+    plt.pcolormesh(x, y, z, cmap=cm.jet)
+
+    [x1, y1] = EXP.projections['QxQy'][:, :, 0]
+    plt.fill(x1, y1, 'r', alpha=0.25)
+    [x1, y1] = EXP.projections['QxQySlice'][:, :, 0]
+    plt.plot(x1, y1, 'w--')
+
+    plt.xlim(hkle[0] - 0.05, hkle[0] + 0.05)
+    plt.ylim(hkle[1] - 0.05, hkle[1] + 0.05)
+
+    plt.show()
 
 Popovici calculation
 --------------------
@@ -102,4 +180,41 @@ Once this variable is set we can enable the Popovici method and recalculate the 
 
 The following is an example of a resolution calculation using the Popovici method (for a slice in the :math:`Q_x Q_y` plane), with resolution ellipses (projection (filled) and slice (dashed)) overlaid, using the settings used in this example.
 
-.. plot:: examples/plots/neutronpy_resolution_popovici.py
+.. plot::
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib import cm
+    from neutronpy.resolution import Instrument, Sample
+    from neutronpy.functions import resolution
+
+    FeTe = Sample(3.81, 3.81, 6.25, 90, 90, 90, 70)
+    FeTe.u = [1, 0, 0]
+    FeTe.v = [0, 1, 0]
+
+    EXP = Instrument(5., FeTe, [32, 80, 120, 120], ana='PG(002)', mono='PG(002)', infin=1)
+    EXP.arms = [1560, 600, 260, 300]
+    EXP.method = 1
+
+    hkle = [1., 1., 0., 0.]
+    EXP.calc_resolution(hkle)
+
+    x, y = np.meshgrid(np.linspace(hkle[0] - 0.05, hkle[0] + 0.05, 501), np.linspace(hkle[1] - 0.05, hkle[1] + 0.05, 501), sparse=True)
+
+    R0, RMxx, RMyy, RMxy = EXP.get_resolution_params(hkle, 'QxQy', mode='slice')
+    p = np.array([0., 0., 1., hkle[0], hkle[1], R0, RMxx, RMyy, RMxy])
+    z = resolution(p, (x, y))
+
+    fig = plt.figure(facecolor='w', edgecolor='k')
+
+    plt.pcolormesh(x, y, z, cmap=cm.jet)
+
+    [x1, y1] = EXP.projections['QxQy'][:, :, 0]
+    plt.fill(x1, y1, 'r', alpha=0.25)
+    [x1, y1] = EXP.projections['QxQySlice'][:, :, 0]
+    plt.plot(x1, y1, 'w--')
+
+    plt.xlim(hkle[0] - 0.05, hkle[0] + 0.05)
+    plt.ylim(hkle[1] - 0.05, hkle[1] + 0.05)
+
+    plt.show()
