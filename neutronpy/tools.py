@@ -371,7 +371,7 @@ class Data(object):
 
         return (monitor, detector, temps)
 
-    def bin(self, *args, **kwargs):  # pylint: disable=unused-argument
+    def bin(self, h, k, l, e, temp):  # pylint: disable=unused-argument
         r'''Rebin the data into the specified shape.
 
         Parameters
@@ -388,13 +388,16 @@ class Data(object):
         e : list
             :math:`\hbar \omega`: [lower bound, upper bound, number of points]
 
+        temp : list
+            :math:`T`: [lower bound, upper bound, number of points]
+
         Returns
         -------
         (Q, monitor, detector, temp) : tuple of ndarray
             The resulting values binned to the specified bounds
 
         '''
-
+        args = (h, k, l, e, temp)
         q, qstep = (), ()
         for arg in args:
             if arg[2] == 1:
@@ -536,31 +539,55 @@ class Data(object):
 
         return result
 
-    def plot(self, **kwargs):
+    def plot(self, x, y, z=None, w=None, show_err=False, bounds=None, plot_options=None, fit_options=None,
+             smooth_options=None, output_file='', show_plot=True, **kwargs):
         r'''Plots the data in the class. x and y must at least be specified,
         and z and/or w being specified will produce higher dimensional plots
         (contour and volume, respectively).
 
         Parameters
         ----------
-        x : list
-            List indicating the content of the dimension, lower bound,
-            upper bound, and number of points
+        x : str
+            String indicating the content of the dimension: 'h', 'k', 'l',
+            'e', 'temp', or 'intensity'
 
-        y : list
-            List indicating the content of the dimension, lower bound,
-            upper bound, and number of points
+        y : str
+            String indicating the content of the dimension: 'h', 'k', 'l',
+            'e', 'temp', or 'intensity'
 
-        z : list
-            List indicating the content of the dimension, lower bound,
-            upper bound, and number of points
+        z : str, optional
+            String indicating the content of the dimension: 'h', 'k', 'l',
+            'e', 'temp', or 'intensity'
 
-        w : list
-            List indicating the content of the dimension, lower bound,
-            upper bound, and number of points
+        w : str, optional
+            String indicating the content of the dimension: 'h', 'k', 'l',
+            'e', 'temp', or 'intensity'
 
-        err : bool
-            Plot error bars. Only applies to xy scatter plots.
+        bounds : dict, optional
+            If set, data will be rebinned to the specified parameters, in the
+            format `[min, max, num points]` for each 'h', 'k', 'l', 'e',
+            and 'temp'
+
+        show_err : bool, optional
+            Plot error bars. Only applies to xy scatter plots. Default: False
+
+        show_plot : bool, optional
+            Execute `plt.show()` to show the plot. Incompatible with
+            `output_file` param. Default: True
+
+        output_file : str, optional
+            If set, the plot will be saved to the location given, in the format
+            specified, provided that the format is supported.
+
+        plot_options : dict, optional
+            Plot options to be passed to the the matplotlib plotting routine
+
+        fit_options : dict, optional
+            Fitting options to be passed to the Fitter routine
+
+        smooth_otions : dict, optional
+            Smoothing options for Gaussian smoothing from
+            `scipy.ndimage.filters.gaussian_filter`
 
         Returns
         -------
@@ -573,35 +600,44 @@ class Data(object):
         except ImportError:
             ImportError('Matplotlib >= 1.3.0 is necessary for plotting.')
 
-        axes = ['x', 'y', 'z', 'w']
+        if bounds is None:
+            bounds = {}
+        if plot_options is None:
+            plot_options = {'fmt': 'rs'}
+        if fit_options is None:
+            fit_options = {}
+        if smooth_options is None:
+            smooth_options = {'sigma': 0}
+
+        args = {'x': x, 'y': y, 'z': z, 'w': w}
         options = ['h', 'k', 'l', 'e', 'temp', 'intensity']
 
         in_axes = np.array([''] * len(options))
-
-        for key, value in kwargs.items():
-            if key in axes:
+        for key, value in args.items():
+            if value is not None:
                 in_axes[np.where(np.array(options) == value[0])] = key
 
-        bounds = ()
-        for i, opt in enumerate(options[:5]):
-            if in_axes[i] != '':
-                bounds += (kwargs[in_axes[i]][1:],)
-            else:
-                bounds += ([min(getattr(self, opt)) - 1., max(getattr(self, opt)) + 1., 1],)
+        if bounds:
+            Q, monitor, detector, temp = self.bin(*(bounds[opt] for opt in options[:-1]))
+            to_plot = np.where(monitor > 0)
+            dims = {'h': Q[to_plot, 0][0], 'k': Q[to_plot, 1][0], 'l': Q[to_plot, 2][0], 'e': Q[to_plot, 3][0],
+                'temp': temp[to_plot], 'intensity': detector[to_plot] / monitor[to_plot] * self.m0}
+        else:
+            to_plot = np.where(self.monitor > 0)
+            dims = {'h': self.Q[to_plot, 0][0], 'k': self.Q[to_plot, 1][0], 'l': self.Q[to_plot, 2][0], 'e': self.Q[to_plot, 3][0],
+                'temp': self.temp[to_plot], 'intensity': self.detector[to_plot] / self.monitor[to_plot] * self.m0}
 
-        Q, monitor, detector, temps = self.bin(*bounds)
+        if smooth_options['sigma'] > 0:
+            from scipy.ndimage.filters import gaussian_filter
+            dims['intensity'] = gaussian_filter(dims['intensity'], **smooth_options)
 
-        to_plot = np.where(monitor > 0)
-        dims = {'h': Q[to_plot, 0][0], 'k': Q[to_plot, 1][0], 'l': Q[to_plot, 2][0], 'e': Q[to_plot, 3][0],
-                'temp': temps[to_plot], 'intensity': detector[to_plot] / monitor[to_plot] * self.m0}
+        x = dims[args['x']]
+        y = dims[args['y']]
 
-        x = dims[kwargs['x'][0]]
-        y = dims[kwargs['y'][0]]
-
-        if 'z' in kwargs and 'w' in kwargs:
+        if z is not None and w is not None:
             try:
-                z = dims[kwargs['z'][0]]
-                w = dims[kwargs['w'][0]]
+                z = dims[args['z']]
+                w = dims[args['w']]
 
                 x, y, z, w = (np.ma.masked_where(w <= 0, x),
                               np.ma.masked_where(w <= 0, y),
@@ -619,9 +655,9 @@ class Data(object):
             except KeyError:
                 raise
 
-        elif 'z' in kwargs and 'w' not in kwargs:
+        elif z is not None and w is None:
             try:
-                z = dims[kwargs['z'][0]]
+                z = dims[kwargs['z']]
 
                 x, y, z = (np.ma.masked_where(z <= 0, x),
                            np.ma.masked_where(z <= 0, y),
@@ -632,11 +668,49 @@ class Data(object):
             except KeyError:
                 pass
         else:
-            if kwargs['err']:
+            if show_err:
                 err = np.sqrt(dims['intensity'])
-                plt.errorbar(x, y, yerr=err, fmt='rs', **kwargs)
+                plt.errorbar(x, y, yerr=err, **plot_options)
+            else:
+                plt.errorbar(x, y, **plot_options)
 
-        plt.show()
+            if fit_options:
+                try:
+                    from .kmpfit import Fitter
+                except ImportError:
+                    raise
+
+                def residuals(params, data):
+                    funct, x, y, err = data
+
+                    return (y - funct(params, x)) / err
+
+                fitobj = Fitter(residuals, data=(fit_options['function'], x, y, np.sqrt(dims['intensity'])))
+                if 'fixp' in fit_options:
+                    fitobj.parinfo = [{'fixed': fix} for fix in fit_options['fixp']]
+
+                try:
+                    fitobj.fit(params0=fit_options['p'])
+                    fit_x = np.linspace(min(x), max(x), len(x) * 10)
+                    fit_y = fit_options['function'](fitobj.params, fit_x)
+                    plt.plot(fit_x, fit_y, '{0}-'.format(plot_options['fmt'][0]))
+
+                    param_string = '\n'.join(['p$_{0}$: {1:.3f}'.format(i, p) for i, p in enumerate(fitobj.params)])
+                    chi2_params = '$\chi^2$: {0:.3f}\n'.format(fitobj.chi2_min) + param_string
+
+                    plt.annotate(chi2_params, xy=(0.05, 0.95), xycoords='axes fraction',
+                                 horizontalalignment='left', verticalalignment='top',
+                                 bbox=dict(alpha=0.75, facecolor='white', edgecolor='none'))
+
+                except Exception as mes:
+                    print("Something wrong with fit: {0}".format(mes))
+
+        if output_file:
+            plt.savefig(output_file)
+        elif show_plot:
+            plt.show()
+        else:
+            pass
 
 
 class Neutron():
@@ -666,10 +740,10 @@ class Neutron():
         self.freq = (self.e / JOULES_TO_MEV / constants.hbar / 2. / np.pi / 1.e12)
 
     def print_values(self):
-        print(r'''
+        print(u'''
 Energy: {0:3.3f} meV
-Wavelength: {1:3.3f} \unicode(u00c5)
-Wavevector: {2:3.3f} \unicode(u00c5)$^-1$
+Wavelength: {1:3.3f} Å
+Wavevector: {2:3.3f} 1/Å
 Velocity: {3:3.3f} m/s
 Temperature: {4:3.3f} K
 Frequency: {5:3.3f} THz
