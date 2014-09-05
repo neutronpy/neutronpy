@@ -5,25 +5,16 @@ NeutronPy
 **master** |master| :: **develop** |develop|
 
 .. |master| image:: https://travis-ci.org/neutronpy/neutronpy.svg?branch=master
-		:target: https://travis-ci.org/neutronpy/neutronpy
-		:alt: master
+      :target: https://travis-ci.org/neutronpy/neutronpy
 
 .. |develop| image:: https://travis-ci.org/neutronpy/neutronpy.svg?branch=develop
-		:target: https://travis-ci.org/neutronpy/neutronpy
-		:alt: develop
+      :target: https://travis-ci.org/neutronpy/neutronpy
 
 **NeutronPy** is a python library with commonly used tools for neutron scattering measurements, primarily for Triple Axis Spectrometer data, but easily applied to other types of data, including Time of Flight.
 
 * Triple Axis Spectrometer resolution function calculation (Translated from ResLib), including:
 	* Resolution ellipses
 	* Instrument visualization (planned)
-* Basic data operations
-	* Binning
-	* Monitor Normalization
-	* Calculated peak integrated intensity, position, and width
-	* Loading from known filetypes (in progress)
-	* Plotting (incomplete)
-	* Slicing (future)
 * Form factor calculation, including:
 	* Structure factors with support for
 		* Mass Normalization
@@ -31,6 +22,13 @@ NeutronPy
 		* Unit cell visualization (future)
 	* Single-ion magnetic form factor calculation
 * Least-Squares fitting (KMPFIT, based on the C-implementation of MPFIT, from the Kapteyn package)
+* Basic data operations
+   * Binning
+   * Monitor Normalization
+   * Calculated peak integrated intensity, position, and width
+   * Loading from known filetypes (SPICE, ICE, and ICP supported. More planned)
+   * Plotting (incomplete)
+   * Slicing (future)
 * And More...
 
 NeutronPy is developed by David M Fobes in the `Neutron Scattering Group <http://neutrons.phy.bnl.gov/>`_, part of the Condensed Matter Physics & Materials Science Department (CMPMSD) at `Brookhaven National Laboratory <http://www.bnl.gov/>`_, a `US Department of Energy, Office of Basic Energy Sciences <http://science.energy.gov/bes/>`_ funded laboratory.
