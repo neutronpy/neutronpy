@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 r'''Tools Module
 '''
 from .constants import BOLTZMANN_IN_MEV_K, JOULES_TO_MEV
