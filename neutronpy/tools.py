@@ -696,8 +696,8 @@ class Data(object):
                     fit_y = fit_options['function'](fitobj.params, fit_x)
                     plt.plot(fit_x, fit_y, '{0}-'.format(plot_options['fmt'][0]))
 
-                    param_string = '\n'.join(['p$_{0}$: {1:.3f}'.format(i, p) for i, p in enumerate(fitobj.params)])
-                    chi2_params = '$\chi^2$: {0:.3f}\n'.format(fitobj.chi2_min) + param_string
+                    param_string = u'\n'.join(['p$_{{{0:d}}}$: {1:.3f}'.format(i, p) for i, p in enumerate(fitobj.params)])
+                    chi2_params = u'$\chi^2$: {0:.3f}\n\n'.format(fitobj.chi2_min) + param_string
 
                     plt.annotate(chi2_params, xy=(0.05, 0.95), xycoords='axes fraction',
                                  horizontalalignment='left', verticalalignment='top',
