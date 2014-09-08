@@ -29,10 +29,9 @@ class DataTest(unittest.TestCase):
             mon = 1e3
 
         output = tools.Data()
-        output.Q = np.vstack((item.ravel() for item in np.meshgrid(x, 0., 0., 0.))).T
+        output.Q = np.vstack((item.ravel() for item in np.meshgrid(x, 0., 0., 0., 300.))).T
         output.detector = y
         output.monitor = np.zeros(x.shape) + mon
-        output.temp = np.zeros(x.shape) + 300.
 
         return output
 
@@ -54,17 +53,15 @@ class DataTest(unittest.TestCase):
 
         self.assertTrue((data.monitor == data1.monitor + data2.monitor).all())
         self.assertTrue((data.detector == data1.detector + data2.detector).all())
-        self.assertTrue((data.temp == data1.temp).all() & (data.temp == data2.temp).all())
         self.assertTrue((data.Q == data1.Q).all() & (data.Q == data2.Q).all())
 
     def test_rebin(self):
         data = self.build_data(clean=True)
-        Q, monitor, detector, temps = data.bin([-1, 1., 41], [-0.1, 0.1, 1], [-0.1, 0.1, 1], [3.5, 4.5, 1], [-300, 900, 1])
+        Q, monitor, detector = data.bin([-1, 1., 41], [-0.1, 0.1, 1], [-0.1, 0.1, 1], [3.5, 4.5, 1], [-300, 900, 1])
 
         self.assertEqual(Q.shape[0], 41)
         self.assertEqual(monitor.shape[0], 41)
         self.assertEqual(detector.shape[0], 41)
-        self.assertEqual(temps.shape[0], 41)
 
         self.assertEqual(np.average(monitor), np.average(data.monitor))
         self.assertTrue(abs(simps(detector, Q[:, 0]) - simps(data.detector, data.Q[:, 0])) <= 0.1)

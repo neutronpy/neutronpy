@@ -53,14 +53,14 @@ class Data(object):
 
     def __add__(self, right):
         try:
-            output = {'Q': right.Q, 'temp': right.temp, 'detector': right.detector, 'monitor': right.monitor}
+            output = {'Q': right.Q, 'detector': right.detector, 'monitor': right.monitor}
             return self.combine_data(output, ret=True)
         except AttributeError:
             raise AttributeError('Data types cannot be combined')
 
     def __sub__(self, right):
         try:
-            output = {'Q': right.Q, 'temp': right.temp, 'detector': np.negative(right.detector), 'monitor': right.monitor}
+            output = {'Q': right.Q, 'detector': np.negative(right.detector), 'monitor': right.monitor}
             return self.combine_data(output, ret=True)
         except AttributeError:
             raise AttributeError('Data types cannot be combined')
@@ -185,13 +185,16 @@ class Data(object):
         '''
         args = ()
         if 'output' in kwargs:
-            for i in ['h', 'k', 'l', 'e']:
+            for i in ['h', 'k', 'l', 'e', 'temp']:
                 args += (kwargs['output'][i],)
         else:
-            for i in ['h', 'k', 'l', 'e']:
+            for i in ['h', 'k', 'l', 'e', 'temp']:
                 args += (getattr(self, i),)
 
-        return np.vstack((item.flatten() for item in args)).T
+        _Q = np.vstack((item.flatten() for item in args)).T
+        order = np.lexsort([_Q[:, i] for i in reversed(range(_Q.shape[1]))])
+
+        return _Q[order]
 
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
@@ -211,7 +214,7 @@ class Data(object):
         None
 
         '''
-        monitor, detector, Q, temp = self.monitor.copy(), self.detector.copy(), self.Q.copy(), self.temp.copy()  # pylint: disable=access-member-before-definition
+        monitor, detector, Q = self.monitor.copy(), self.detector.copy(), self.Q.copy()  # pylint: disable=access-member-before-definition
 
         for arg in args:
             combine = []
@@ -225,20 +228,19 @@ class Data(object):
                 detector[item[1]] += arg['detector'][item[0]]
 
             if len(combine) > 0:
-                for key in ['Q', 'monitor', 'detector', 'temp']:
+                for key in ['Q', 'monitor', 'detector']:
                     arg[key] = np.delete(arg[key], (np.array(combine)[:, 0],), 0)
 
             Q = np.concatenate((Q, arg['Q']))
             detector = np.concatenate((detector, arg['detector']))
             monitor = np.concatenate((monitor, arg['monitor']))
-            temp = np.concatenate((temp, arg['temp']))
 
             order = np.lexsort((Q[:, 3], Q[:, 2], Q[:, 1], Q[:, 0]))
 
         if 'ret' in kwargs and kwargs['ret']:
-            new = Data(Q=Q[order], temp=temp[order], monitor=monitor[order], detector=detector[order])
+            new = Data(Q=Q[order], monitor=monitor[order], detector=detector[order])
 
-            for i, var in enumerate(['h', 'k', 'l', 'e']):
+            for i, var in enumerate(['h', 'k', 'l', 'e', 'temp']):
                 setattr(new, var, new.Q[:, i])
 
             return new
@@ -247,9 +249,8 @@ class Data(object):
             self.Q = Q[order]
             self.monitor = monitor[order]
             self.detector = detector[order]
-            self.temp = temp[order]
 
-            for i, var in enumerate(['h', 'k', 'l', 'e']):
+            for i, var in enumerate(['h', 'k', 'l', 'e', 'temp']):
                 setattr(self, var, self.Q[:, i])
 
     def intensity(self, **kwargs):
@@ -342,35 +343,23 @@ class Data(object):
             New monitor, detector, and temps of the binned data
 
         '''
-        monitor, detector, temps = np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0])
+        monitor, detector, temp = np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0])
 
-        for i in range(Q_chunk.shape[0]):
-            chunk0 = np.where((self.Q[:, 0] - Q_chunk[i, 0]) ** 2 / (self._qstep[0] / 2.) ** 2 < 1.)
+        for i, _Q_chunk in enumerate(Q_chunk):
+            chunk0 = np.searchsorted(self.Q[:, 0], _Q_chunk[0] - self._qstep[0] / 2., side='left')
+            chunk1 = np.searchsorted(self.Q[:, 0], _Q_chunk[0] + self._qstep[0] / 2., side='right')
+            if chunk0 < chunk1:
+                _Q, _mon, _det = self.Q[chunk0:chunk1, :], self.monitor[chunk0:chunk1], self.detector[chunk0:chunk1]
+                for j in range(len(_Q_chunk) - 1):
+                    chunk0 = np.searchsorted(_Q[:, j + 1], _Q_chunk[j + 1] - self._qstep[j + 1] / 2., side='left')
+                    chunk1 = np.searchsorted(_Q[:, j + 1], _Q_chunk[j + 1] + self._qstep[j + 1] / 2., side='right')
+                    if chunk0 < chunk1:
+                        _Q, _mon, _det = _Q[chunk0:chunk1, :], _mon[chunk0:chunk1], _det[chunk0:chunk1]
 
-            if len(chunk0[0]) > 0:
-                _Q, _mon, _det, _temp = self.Q[chunk0, :][0], self.monitor[chunk0], self.detector[chunk0], self.temp[chunk0]
-                chunk1 = np.where((_Q[:, 1] - Q_chunk[i, 1]) ** 2 / (self._qstep[1] / 2.) ** 2 < 1.)
+                monitor[i] = np.average(_mon[chunk0:chunk1])
+                detector[i] = np.average(_det[chunk0:chunk1])
 
-                if len(chunk1[0]) > 0:
-                    _Q, _mon, _det, _temp = _Q[chunk1, :][0], _mon[chunk1], _det[chunk1], _temp[chunk1]
-                    chunk2 = np.where((_Q[:, 2] - Q_chunk[i, 2]) ** 2 / (self._qstep[2] / 2.) ** 2 < 1.)
-
-                    if len(chunk2[0]) > 0:
-                        _Q, _mon, _det, _temp = _Q[chunk2, :][0], _mon[chunk2], _det[chunk2], _temp[chunk2]
-                        chunk3 = np.where((_Q[:, 1] - Q_chunk[i, 1]) ** 2 / (self._qstep[3] / 2.) ** 2 < 1.)
-
-                        if len(chunk3[0]) > 0:
-                            _Q, _mon, _det, _temp = _Q[chunk3, :][0], _mon[chunk3], _det[chunk3], _temp[chunk3]
-                            chunk4 = np.where((_temp - Q_chunk[i, 4]) ** 2 / (self._qstep[4] / 2.) ** 2 < 1.)
-
-                            if len(chunk4[0]) > 0:
-                                _Q, _mon, _det, _temp = _Q[chunk4, :][0], _mon[chunk4], _det[chunk4], _temp[chunk4]
-
-                                monitor[i] = np.average(_mon)
-                                detector[i] = np.average(_det)
-                                temps[i] = np.average(_temp)
-
-        return (monitor, detector, temps)
+        return (monitor, detector)
 
     def bin(self, h, k, l, e, temp):  # pylint: disable=unused-argument
         r'''Rebin the data into the specified shape.
@@ -418,9 +407,9 @@ class Data(object):
         pool = Pool(processes=nprocs)  # pylint: disable=not-callable
         outputs = pool.map(_call_bin_parallel, zip([self] * len(Q_chunks), Q_chunks))
 
-        monitor, detector, temp = (np.concatenate(arg) for arg in zip(*outputs))
+        monitor, detector = (np.concatenate(arg) for arg in zip(*outputs))
 
-        return Q, monitor, detector, temp
+        return Q, monitor, detector
 
     def integrate(self, **kwargs):
         r'''Returns the integrated intensity within given bounds
@@ -619,14 +608,14 @@ class Data(object):
                 in_axes[np.where(np.array(options) == value[0])] = key
 
         if bounds:
-            Q, monitor, detector, temp = self.bin(*(bounds[opt] for opt in options[:-1]))
+            Q, monitor, detector = self.bin(*(bounds[opt] for opt in options[:-1]))
             to_plot = np.where(monitor > 0)
             dims = {'h': Q[to_plot, 0][0], 'k': Q[to_plot, 1][0], 'l': Q[to_plot, 2][0], 'e': Q[to_plot, 3][0],
-                'temp': temp[to_plot], 'intensity': detector[to_plot] / monitor[to_plot] * self.m0}
+                'temp': Q[to_plot, 4][0], 'intensity': detector[to_plot] / monitor[to_plot] * self.m0}
         else:
             to_plot = np.where(self.monitor > 0)
             dims = {'h': self.Q[to_plot, 0][0], 'k': self.Q[to_plot, 1][0], 'l': self.Q[to_plot, 2][0], 'e': self.Q[to_plot, 3][0],
-                'temp': self.temp[to_plot], 'intensity': self.detector[to_plot] / self.monitor[to_plot] * self.m0}
+                'temp': self.Q[to_plot, 4][0], 'intensity': self.detector[to_plot] / self.monitor[to_plot] * self.m0}
 
         if smooth_options['sigma'] > 0:
             from scipy.ndimage.filters import gaussian_filter
