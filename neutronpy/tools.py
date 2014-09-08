@@ -343,7 +343,7 @@ class Data(object):
             New monitor, detector, and temps of the binned data
 
         '''
-        monitor, detector, temp = np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0])
+        monitor, detector = np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0])
 
         for i, _Q_chunk in enumerate(Q_chunk):
             chunk0 = np.searchsorted(self.Q[:, 0], _Q_chunk[0] - self._qstep[0] / 2., side='left')
