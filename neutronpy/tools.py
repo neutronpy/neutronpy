@@ -11,7 +11,7 @@ from scipy import constants
 def _call_bin_parallel(arg, **kwarg):
     r'''Wrapper function to work around pickling problem in Python 2.7
     '''
-    return Data.bin_parallel(*arg, **kwarg)
+    return Data._bin_parallel(*arg, **kwarg)
 
 
 class Data(object):
@@ -112,9 +112,9 @@ class Data(object):
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
                         setattr(self, key, value)
-                    self.Q = self._build_Q(**kwargs)
+                    self.Q = self.build_Q(**kwargs)
                 else:
-                    output['Q'] = self._build_Q(output=output, **kwargs)
+                    output['Q'] = self.build_Q(output=output, **kwargs)
                     self.combine_data(output)
 
         if kwargs['mode'] == 'ICE':
@@ -135,9 +135,9 @@ class Data(object):
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
                         setattr(self, key, value)
-                    self.Q = self._build_Q(**kwargs)
+                    self.Q = self.build_Q(**kwargs)
                 else:
-                    output['Q'] = self._build_Q(output=output, **kwargs)
+                    output['Q'] = self.build_Q(output=output, **kwargs)
                     self.combine_data(output)
 
         if kwargs['mode'] == 'ICP':
@@ -162,12 +162,12 @@ class Data(object):
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
                         setattr(self, key, value)
-                    self.Q = self._build_Q(**kwargs)
+                    self.Q = self.build_Q(**kwargs)
                 else:
-                    output['Q'] = self._build_Q(output=output, **kwargs)
+                    output['Q'] = self.build_Q(output=output, **kwargs)
                     self.combine_data(output)
 
-    def _build_Q(self, **kwargs):
+    def build_Q(self, **kwargs):
         r'''Internal method for constructing :math:`Q(q, hw)` from h, k, l,
         and energy
 
@@ -327,7 +327,7 @@ class Data(object):
         bg = np.average(min_vals)
         return bg
 
-    def bin_parallel(self, Q_chunk):
+    def _bin_parallel(self, Q_chunk):
         r'''Performs binning by finding data chunks to bin together.
         Private function for performing binning in parallel using
         multiprocessing library
@@ -361,33 +361,29 @@ class Data(object):
 
         return (monitor, detector)
 
-    def bin(self, h, k, l, e, temp):  # pylint: disable=unused-argument
+    def bin(self, bin):  # pylint: disable=unused-argument
         r'''Rebin the data into the specified shape.
 
         Parameters
         ----------
-        h : list
-            :math:`Q_x`: [lower bound, upper bound, number of points]
-
-        k : list
-            :math:`Q_y`: [lower bound, upper bound, number of points]
-
-        l : list
-            :math:`Q_z`: [lower bound, upper bound, number of points]
-
-        e : list
-            :math:`\hbar \omega`: [lower bound, upper bound, number of points]
-
-        temp : list
-            :math:`T`: [lower bound, upper bound, number of points]
+        bin : dict
+            h : list :math:`Q_x`: [lower bound, upper bound, number of points]
+            
+            k : list :math:`Q_y`: [lower bound, upper bound, number of points]
+            
+            l : list :math:`Q_z`: [lower bound, upper bound, number of points]
+            
+            e : list :math:`\hbar \omega`: [lower bound, upper bound, number of points]
+            
+            temp : list :math:`T`: [lower bound, upper bound, number of points]
 
         Returns
         -------
-        (Q, monitor, detector, temp) : tuple of ndarray
-            The resulting values binned to the specified bounds
+        binned_data : :py:class:`.Data` object
+            The resulting data object with values binned to the specified bounds
 
         '''
-        args = (h, k, l, e, temp)
+        args = (bin[item] for item in ['h', 'k', 'l', 'e', 'temp'])
         q, qstep = (), ()
         for arg in args:
             if arg[2] == 1:
@@ -409,7 +405,7 @@ class Data(object):
 
         monitor, detector = (np.concatenate(arg) for arg in zip(*outputs))
 
-        return Q, monitor, detector
+        return Data(Q=Q, monitor=monitor, detector=detector)
 
     def integrate(self, **kwargs):
         r'''Returns the integrated intensity within given bounds
@@ -529,7 +525,7 @@ class Data(object):
 
         return result
 
-    def plot(self, x, y, z=None, w=None, show_err=False, bounds=None, plot_options=None, fit_options=None,
+    def plot(self, x, y, z=None, w=None, show_err=True, bin=None, plot_options=None, fit_options=None,
              smooth_options=None, output_file='', show_plot=True, **kwargs):
         r'''Plots the data in the class. x and y must at least be specified,
         and z and/or w being specified will produce higher dimensional plots
@@ -590,8 +586,8 @@ class Data(object):
         except ImportError:
             ImportError('Matplotlib >= 1.3.0 is necessary for plotting.')
 
-        if bounds is None:
-            bounds = {}
+        if bin is None:
+            bin = {}
         if plot_options is None:
             plot_options = {'fmt': 'rs'}
         if fit_options is None:
@@ -607,11 +603,11 @@ class Data(object):
             if value is not None:
                 in_axes[np.where(np.array(options) == value[0])] = key
 
-        if bounds:
-            Q, monitor, detector = self.bin(*(bounds[opt] for opt in options[:-1]))
-            to_plot = np.where(monitor > 0)
-            dims = {'h': Q[to_plot, 0][0], 'k': Q[to_plot, 1][0], 'l': Q[to_plot, 2][0], 'e': Q[to_plot, 3][0],
-                'temp': Q[to_plot, 4][0], 'intensity': detector[to_plot] / monitor[to_plot] * self.m0}
+        if bin:
+            binned_data = self.bin(bin)
+            to_plot = np.where(binned_data.monitor > 0)
+            dims = {'h': binned_data.Q[to_plot, 0][0], 'k': binned_data.Q[to_plot, 1][0], 'l': binned_data.Q[to_plot, 2][0], 'e': binned_data.Q[to_plot, 3][0],
+                'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.detector[to_plot] / binned_data.monitor[to_plot] * self.m0}
         else:
             to_plot = np.where(self.monitor > 0)
             dims = {'h': self.Q[to_plot, 0][0], 'k': self.Q[to_plot, 1][0], 'l': self.Q[to_plot, 2][0], 'e': self.Q[to_plot, 3][0],
