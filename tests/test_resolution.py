@@ -12,9 +12,12 @@ class ResolutionTest(unittest.TestCase):
                        [0., 0., 1049.13250378, 0.],
                        [1427.28556717, 746.61192804, 0., 187.09685691]])
 
-        EXP = resolution.Instrument(5., [3.81, 3.81, 6.25], [90, 90, 90], 70., [1, 0, 0], [0, 1, 0], hcol=[32, 80, 120, 120])
-        EXP.ana.tau = 'pg(002)'
-        EXP.mono.tau = 'pg(002)'
+        sample = resolution.Sample(3.81, 3.81, 6.25, 90, 90, 90, 70.)
+        sample.u = [1, 0, 0]
+        sample.v = [0, 1, 0]
+
+        EXP = resolution.Instrument(5., sample, hcol=[32, 80, 120, 120], mono='pg(002)', ana='pg(002)')
+
         EXP.arms = np.array([150, 150, 150, 150, 105])
         EXP.infin = 1
         EXP.horifoc = -1

@@ -5,14 +5,27 @@
 
 Welcome to neutronpy's documentation!
 =====================================
-.. include:: ../README.rst
 
-Contents:
+For an easy introduction to some of the primary features of this package, see the following tutorials.
+
+Examples
+---------
 
 .. toctree::
-   :maxdepth: 5
+    :glob:
+    :maxdepth: 1
 
-   modules
+    examples/*
+
+.. include:: ../README.rst
+
+Module Table of Contents
+========================
+
+.. toctree::
+    :maxdepth: 5
+
+    neutronpy
 
 Indices and tables
 ==================

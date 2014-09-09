@@ -2,7 +2,7 @@ import numpy as np
 from scipy.linalg import block_diag as blkdiag
 
 
-class _Sample():
+class Sample():
     r'''Private class containing sample information.
 
     Parameters
@@ -28,7 +28,7 @@ class _Sample():
     mosaic : float, optional
         Sample mosaic (FWHM) in arc minutes
 
-    direct : +-1, optional
+    direct : :math:`\pm`\ 1, optional
         Direction of the crystal (left or right, -1 or +1, respectively)
 
     Returns
@@ -58,7 +58,7 @@ class _Monochromator():
     mosaic : int
         Mosaic of the crystal in arc minutes
 
-    dir : +-1, optional
+    dir : :math:`\pm`\ 1, optional
         Direction of the crystal (left or right, -1 or +1, respectively)
 
     Returns
@@ -138,7 +138,7 @@ def _star(lattice):
 
     Vstar = (2 * np.pi) ** 3 / V
 
-    latticestar = _Sample(0, 0, 0, 0, 0, 0)
+    latticestar = Sample(0, 0, 0, 0, 0, 0)
     latticestar.a = 2 * np.pi * lattice.b * lattice.c * np.sin(lattice.alpha) / V
     latticestar.b = 2 * np.pi * lattice.a * lattice.c * np.sin(lattice.beta) / V
     latticestar.c = 2 * np.pi * lattice.b * lattice.a * np.sin(lattice.gamma) / V
@@ -198,7 +198,7 @@ def _GetLattice(EXP):
 
     '''
     s = np.array([item.sample for item in EXP])
-    lattice = _Sample(np.array([item.a for item in s]),
+    lattice = Sample(np.array([item.a for item in s]),
                       np.array([item.b for item in s]),
                       np.array([item.c for item in s]),
                       np.array([item.alpha for item in s]) * np.pi / 180,
@@ -817,8 +817,8 @@ def ResMat(Q, W, EXP):
             d[0, 0] = -1. / L0
             d[0, 2] = -np.cos(thetam) / L0
             d[0, 3] = np.sin(thetam) / L0
-            d[2, 1] = D(1, 1)
-            d[2, 4] = -D(1, 1)
+            d[2, 1] = D[1, 1]
+            d[2, 4] = -D[1, 1]
             d[1, 2] = np.cos(thetam) / L1mon
             d[1, 3] = np.sin(thetam) / L1mon
             d[1, 5] = 0.
@@ -959,20 +959,8 @@ class Instrument(object):
     efixed : float
         Fixed energy, either ei or ef, depending on the instrument configuration.
 
-    samp_abc : list(3)
-        Sample lattice constants, [a, b, c], in Angstroms.
-
-    samp_abg : list(3)
-        Sample lattice parameters, [alpha, beta, gamma], in degrees.
-
-    samp_mosaic : float
-        Sample mosaic, in degrees.
-
-    orient1 : list(3)
-        Miller indexes of the first reciprocal-space orienting vector for the sample coordinate system.
-
-    orient2 : list(3)
-        Miller indexes of the second reciprocal-space orienting vector for the sample coordinate system.
+    sample : class
+        Sample lattice constants, parameters, mosaic, and orientation (reciprocal-space orienting vectors).
 
     hcol : list(4)
         Horizontal Soller collimations in minutes of arc starting from the neutron guide.
@@ -1002,11 +990,9 @@ class Instrument(object):
 
     '''
 
-    def __init__(self, efixed, samp_abc, samp_abg, samp_mosaic, orient1, orient2,
-                 hcol, vcol=None, arms=None, mono_tau='PG(002)', mono_mosaic=25,
-                 ana_tau='PG(002)', ana_mosaic=25, **kwargs):
-        [a, b, c] = samp_abc
-        [alpha, beta, gamma] = samp_abg
+    def __init__(self, efixed, sample, hcol, vcol=None, arms=None,
+                 mono='PG(002)', mono_mosaic=25, ana='PG(002)', ana_mosaic=25,
+                 **kwargs):
 
         if vcol is None:
             vcol = [120, 120, 120, 120]
@@ -1014,15 +1000,15 @@ class Instrument(object):
         if arms is None:
             arms = [150, 150, 150, 150]
 
-        self.mono = _Monochromator(mono_tau, mono_mosaic)
-        self.ana = _Monochromator(ana_tau, ana_mosaic)
+        self.mono = _Monochromator(mono, mono_mosaic)
+        self.ana = _Monochromator(ana, ana_mosaic)
         self.hcol = np.array(hcol)
         self.vcol = np.array(vcol)
         self.arms = np.array(arms)
         self.efixed = efixed
-        self.sample = _Sample(a, b, c, alpha, beta, gamma, samp_mosaic)
-        self.orient1 = np.array(orient1)
-        self.orient2 = np.array(orient2)
+        self.sample = sample
+        self.orient1 = np.array(sample.u)
+        self.orient2 = np.array(sample.v)
 
         for key, value in kwargs.items():
             setattr(self, key, value)

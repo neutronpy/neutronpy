@@ -29,19 +29,21 @@ class DataTest(unittest.TestCase):
             mon = 1e3
 
         output = tools.Data()
-        output.Q = np.vstack((item.ravel() for item in np.meshgrid(x, 0., 0., 0.))).T
+        output.Q = np.vstack((item.ravel() for item in np.meshgrid(x, 0., 0., 0., 300.))).T
         output.detector = y
-        output.monitor = np.ones(x.shape) * mon
-        output.temp = np.ones(x.shape) * 300.
+        output.monitor = np.zeros(x.shape) + mon
 
         return output
 
     def test_load_files(self):
         data1 = tools.Data()
-        data1.load_file(os.path.join(os.path.dirname(__file__), 'scan0001.dat'), os.path.join(os.path.dirname(__file__), 'scan0002.dat'), mode='HFIR')
+        data1.load_file(os.path.join(os.path.dirname(__file__), 'scan0001.dat'), os.path.join(os.path.dirname(__file__), 'scan0002.dat'), mode='SPICE')
 
         data2 = tools.Data()
-        data2.load_file(os.path.join(os.path.dirname(__file__), 'scan0003.ng5'), mode='NCNR')
+        data2.load_file(os.path.join(os.path.dirname(__file__), 'scan0003.ng5'), mode='ICP')
+        
+        data3 = tools.Data()
+        data3.load_file(os.path.join(os.path.dirname(__file__), 'scan0004.bt7'), mode='ICE')
 
     def test_combine_data(self):
         data1 = self.build_data(clean=True)
@@ -51,20 +53,18 @@ class DataTest(unittest.TestCase):
 
         self.assertTrue((data.monitor == data1.monitor + data2.monitor).all())
         self.assertTrue((data.detector == data1.detector + data2.detector).all())
-        self.assertTrue((data.temp == data1.temp).all() & (data.temp == data2.temp).all())
         self.assertTrue((data.Q == data1.Q).all() & (data.Q == data2.Q).all())
 
     def test_rebin(self):
         data = self.build_data(clean=True)
-        Q, monitor, detector, temps = data.bin([-1, 1., 41], [-0.1, 0.1, 1], [-0.1, 0.1, 1], [3.5, 4.5, 1], [-300, 900, 1])
+        data_bin = data.bin(dict(h=[-1, 1., 41], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[3.5, 4.5, 1], temp=[-300, 900, 1]))
 
-        self.assertEqual(Q.shape[0], 41)
-        self.assertEqual(monitor.shape[0], 41)
-        self.assertEqual(detector.shape[0], 41)
-        self.assertEqual(temps.shape[0], 41)
+        self.assertEqual(data_bin.Q.shape[0], 41)
+        self.assertEqual(data_bin.monitor.shape[0], 41)
+        self.assertEqual(data_bin.detector.shape[0], 41)
 
-        self.assertEqual(np.average(monitor), np.average(data.monitor))
-        self.assertTrue(abs(simps(detector, Q[:, 0]) - simps(data.detector, data.Q[:, 0])) <= 0.1)
+        self.assertEqual(np.average(data_bin.monitor), np.average(data.monitor))
+        self.assertTrue(abs(simps(data_bin.detector, data_bin.Q[:, 0]) - simps(data.detector, data.Q[:, 0])) <= 0.1)
 
     def test_analysis(self):
         data = self.build_data(clean=True)

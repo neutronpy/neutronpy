@@ -50,8 +50,7 @@ def setup_package():
     with open('neutronpy/__init__.py') as f:
         __version__ = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", f.read(), re.M).group(1)
 
-    include_dirs = []
-    include_dirs.append('src')
+    include_dirs = ['src']
 
     try:
         import numpy
