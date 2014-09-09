@@ -57,14 +57,14 @@ class DataTest(unittest.TestCase):
 
     def test_rebin(self):
         data = self.build_data(clean=True)
-        Q, monitor, detector = data.bin([-1, 1., 41], [-0.1, 0.1, 1], [-0.1, 0.1, 1], [3.5, 4.5, 1], [-300, 900, 1])
+        data_bin = data.bin(dict(h=[-1, 1., 41], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[3.5, 4.5, 1], temp=[-300, 900, 1]))
 
-        self.assertEqual(Q.shape[0], 41)
-        self.assertEqual(monitor.shape[0], 41)
-        self.assertEqual(detector.shape[0], 41)
+        self.assertEqual(data_bin.Q.shape[0], 41)
+        self.assertEqual(data_bin.monitor.shape[0], 41)
+        self.assertEqual(data_bin.detector.shape[0], 41)
 
-        self.assertEqual(np.average(monitor), np.average(data.monitor))
-        self.assertTrue(abs(simps(detector, Q[:, 0]) - simps(data.detector, data.Q[:, 0])) <= 0.1)
+        self.assertEqual(np.average(data_bin.monitor), np.average(data.monitor))
+        self.assertTrue(abs(simps(data_bin.detector, data_bin.Q[:, 0]) - simps(data.detector, data.Q[:, 0])) <= 0.1)
 
     def test_analysis(self):
         data = self.build_data(clean=True)
