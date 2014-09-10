@@ -98,7 +98,7 @@ class Data(object):
 
         '''
         if kwargs['mode'] == 'SPICE':
-            keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'temp', 'time': 'time'}
+            keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'tvti', 'time': 'time'}
             for filename in files:
                 output = {}
                 with open(filename) as f:
