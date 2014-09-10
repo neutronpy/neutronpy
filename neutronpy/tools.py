@@ -319,7 +319,27 @@ class Data(object):
             The square-root error of the monitor normalized intensity
 
         '''
-        return np.sqrt(np.abs(self.intensity(time=time, **kwargs)))
+        if time:
+            try:
+                t0 = kwargs['m0']
+            except KeyError:
+                try:
+                    t0 = self.t0
+                except AttributeError:
+                    self.t0 = t0 = np.nanmax(self.time)
+
+            return np.sqrt(self.detector) / self.time * t0
+        else:
+            try:
+                m0 = kwargs['m0']
+            except KeyError:
+                try:
+                    m0 = self.m0
+                except AttributeError:
+                    self.m0 = m0 = np.nanmax(self.monitor)
+
+            return np.sqrt(self.detector) / self.monitor * m0
+#         return np.sqrt(np.abs(self.intensity(time=time, **kwargs)))
 
     def detailed_balance_factor(self, **kwargs):
         r'''Returns the detailed balance factor (sometimes called the Bose
@@ -342,7 +362,7 @@ class Data(object):
         except KeyError:
             pass
 
-        return np.exp(-self.Q[3] / BOLTZMANN_IN_MEV_K / self.temps)
+        return (1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temps))
 
     def bg_estimate(self, perc):
         r'''Estimate the background by averaging the
