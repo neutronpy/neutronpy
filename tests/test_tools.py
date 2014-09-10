@@ -24,14 +24,17 @@ class DataTest(unittest.TestCase):
         if clean:
             y = functions.voigt(p, x)
             mon = 1e5
+            tim = 15
         else:
             y = functions.voigt(p, x) + np.random.normal(loc=0., scale=5, size=len(x))
             mon = 1e3
+            tim = 5
 
         output = tools.Data()
         output.Q = np.vstack((item.ravel() for item in np.meshgrid(x, 0., 0., 0., 300.))).T
         output.detector = y
         output.monitor = np.zeros(x.shape) + mon
+        output.time = np.zeros(x.shape) + tim
 
         return output
 
