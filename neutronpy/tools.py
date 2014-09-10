@@ -95,7 +95,7 @@ class Data(object):
 
         '''
         if kwargs['mode'] == 'SPICE':
-            keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'temp'}
+            keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'temp', 'time': 'time'}
             for filename in files:
                 output = {}
                 with open(filename) as f:
@@ -108,7 +108,9 @@ class Data(object):
 
                 for key, value in keys.items():
                     output[key] = args[headers.index(value)]
-
+                
+                output['time'] /= 60.
+                                
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
                         setattr(self, key, value)
@@ -118,7 +120,7 @@ class Data(object):
                     self.combine_data(output)
 
         if kwargs['mode'] == 'ICE':
-            keys = {'h': 'QX', 'k': 'QY', 'l': 'QZ', 'e': 'E', 'detector': 'Detector', 'monitor': 'Monitor', 'temp': 'Temp'}
+            keys = {'h': 'QX', 'k': 'QY', 'l': 'QZ', 'e': 'E', 'detector': 'Detector', 'monitor': 'Monitor', 'temp': 'Temp', 'time': 'Time'}
             for filename in files:
                 output = {}
                 with open(filename) as f:
@@ -131,7 +133,9 @@ class Data(object):
 
                 for key, value in keys.items():
                     output[key] = args[headers.index(value)]
-
+                
+                output['time'] /= 60.
+                
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
                         setattr(self, key, value)
@@ -141,7 +145,7 @@ class Data(object):
                     self.combine_data(output)
 
         if kwargs['mode'] == 'ICP':
-            keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'detector': 'Counts', 'temp': 'Tact'}
+            keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'detector': 'Counts', 'temp': 'Tact', 'time': 'min'}
             for filename in files:
                 output = {}
                 with open(filename) as f:
@@ -253,7 +257,7 @@ class Data(object):
             for i, var in enumerate(['h', 'k', 'l', 'e', 'temp']):
                 setattr(self, var, self.Q[:, i])
 
-    def intensity(self, **kwargs):
+    def intensity(self, time=False, **kwargs):
         r'''Returns the monitor normalized intensity
 
         Parameters
@@ -268,17 +272,28 @@ class Data(object):
             The monitor normalized intensity scaled by m0
 
         '''
-        try:
-            m0 = kwargs['m0']
-        except KeyError:
+        if time:
             try:
-                m0 = self.m0
-            except AttributeError:
-                self.m0 = m0 = np.nanmax(self.monitor)
+                t0 = kwargs['m0']
+            except KeyError:
+                try:
+                    t0 = self.t0
+                except AttributeError:
+                    self.t0 = t0 = np.nanmax(self.time)
+            
+            return self.detector / self.time * t0
+        else:
+            try:
+                m0 = kwargs['m0']
+            except KeyError:
+                try:
+                    m0 = self.m0
+                except AttributeError:
+                    self.m0 = m0 = np.nanmax(self.monitor)
+    
+            return self.detector / self.monitor * m0
 
-        return self.detector / self.monitor * m0
-
-    def error(self, **kwargs):
+    def error(self, time=False, **kwargs):
         r'''Returns square-root error of monitor normalized intensity
 
         Parameters
@@ -292,7 +307,7 @@ class Data(object):
             The square-root error of the monitor normalized intensity
 
         '''
-        return np.sqrt(np.abs(self.intensity(**kwargs)))
+        return np.sqrt(np.abs(self.intensity(time=time, **kwargs)))
 
     def detailed_balance_factor(self, **kwargs):
         r'''Returns the detailed balance factor (sometimes called the Bose
