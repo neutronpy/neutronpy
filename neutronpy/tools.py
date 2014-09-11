@@ -393,19 +393,21 @@ class Data(object):
         monitor, detector, time = np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0])
 
         for i, _Q_chunk in enumerate(Q_chunk):
-            chunk0 = np.searchsorted(self.Q[:, 0], _Q_chunk[0] - self._qstep[0] / 2., side='left')
-            chunk1 = np.searchsorted(self.Q[:, 0], _Q_chunk[0] + self._qstep[0] / 2., side='right')
-            if chunk0 < chunk1:
-                _Q, _mon, _det, _tim = self.Q[chunk0:chunk1, :], self.monitor[chunk0:chunk1], self.detector[chunk0:chunk1], self.time[chunk0:chunk1]
-                for j in range(len(_Q_chunk) - 1):
-                    chunk0 = np.searchsorted(_Q[:, j + 1], _Q_chunk[j + 1] - self._qstep[j + 1] / 2., side='left')
-                    chunk1 = np.searchsorted(_Q[:, j + 1], _Q_chunk[j + 1] + self._qstep[j + 1] / 2., side='right')
-                    if chunk0 < chunk1:
-                        _Q, _mon, _det, _tim = _Q[chunk0:chunk1, :], _mon[chunk0:chunk1], _det[chunk0:chunk1], _tim[chunk0:chunk1]
+            _Q, _mon, _det, _tim = self.Q, self.monitor, self.detector, self.time
+            
+            for j in range(_Q.shape[1]):
+                _order = np.lexsort([_Q[:, j-n] for n in reversed(range(_Q.shape[1]))])
+                _Q, _mon, _det, _tim = _Q[_order], _mon[_order], _det[_order], _tim[_order]
 
-                monitor[i] = np.average(_mon[chunk0:chunk1])
-                detector[i] = np.average(_det[chunk0:chunk1])
-                time[i] = np.average(_tim[chunk0:chunk1])
+                chunk0 = np.searchsorted(_Q[:, j], _Q_chunk[j] - self._qstep[j] / 2., side='left')
+                chunk1 = np.searchsorted(_Q[:, j], _Q_chunk[j] + self._qstep[j] / 2., side='right')
+
+                if chunk0 < chunk1:
+                    _Q, _mon, _det, _tim = _Q[chunk0:chunk1, :], _mon[chunk0:chunk1], _det[chunk0:chunk1], _tim[chunk0:chunk1]
+
+            monitor[i] = np.average(_mon[chunk0:chunk1])
+            detector[i] = np.average(_det[chunk0:chunk1])
+            time[i] = np.average(_tim[chunk0:chunk1])
 
         return (monitor, detector, time)
 
