@@ -657,11 +657,11 @@ class Data(object):
             binned_data = self.bin(to_bin)
             to_plot = np.where(binned_data.monitor > 0)
             dims = {'h': binned_data.Q[to_plot, 0][0], 'k': binned_data.Q[to_plot, 1][0], 'l': binned_data.Q[to_plot, 2][0], 'e': binned_data.Q[to_plot, 3][0],
-                'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.detector[to_plot] / binned_data.monitor[to_plot] * self.m0}
+                'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.intensity()[to_plot]}
         else:
             to_plot = np.where(self.monitor > 0)
             dims = {'h': self.Q[to_plot, 0][0], 'k': self.Q[to_plot, 1][0], 'l': self.Q[to_plot, 2][0], 'e': self.Q[to_plot, 3][0],
-                'temp': self.Q[to_plot, 4][0], 'intensity': self.detector[to_plot] / self.monitor[to_plot] * self.m0}
+                'temp': self.Q[to_plot, 4][0], 'intensity': self.intensity()[to_plot]}
 
         if smooth_options['sigma'] > 0:
             from scipy.ndimage.filters import gaussian_filter
