@@ -11,7 +11,7 @@ from scipy import constants
 def _call_bin_parallel(arg, **kwarg):
     r'''Wrapper function to work around pickling problem in Python 2.7
     '''
-    return Data._bin_parallel(*arg, **kwarg)
+    return Data._bin_parallel(*arg, **kwarg)  # pylint: disable=protected-access
 
 
 class Data(object):
@@ -20,6 +20,9 @@ class Data(object):
 
     Parameters
     ----------
+    Q : ndarray, optional
+        Array of columns of h, k, l, e, and temp with shape (N, 5)
+
     h : ndarray, optional
         Array of :math:`Q_x` in reciprocal lattice units.
 
@@ -41,6 +44,9 @@ class Data(object):
     temp : ndarray, optional
         Array of sample temperatures in K.
 
+    time : ndarray, optional
+        Array of time per point in minutes.
+
     Returns
     -------
     Data Class
@@ -53,14 +59,14 @@ class Data(object):
 
     def __add__(self, right):
         try:
-            output = {'Q': right.Q, 'detector': right.detector, 'monitor': right.monitor}
+            output = {'Q': right.Q, 'detector': right.detector, 'monitor': right.monitor, 'time': right.time}
             return self.combine_data(output, ret=True)
         except AttributeError:
             raise AttributeError('Data types cannot be combined')
 
     def __sub__(self, right):
         try:
-            output = {'Q': right.Q, 'detector': np.negative(right.detector), 'monitor': right.monitor}
+            output = {'Q': right.Q, 'detector': np.negative(right.detector), 'monitor': right.monitor, 'time': right.time}
             return self.combine_data(output, ret=True)
         except AttributeError:
             raise AttributeError('Data types cannot be combined')
@@ -94,8 +100,18 @@ class Data(object):
         None
 
         '''
-        if kwargs['mode'] == 'SPICE':
-            keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'temp'}
+        try:
+            tols = kwargs['tols']
+        except KeyError:
+            tols = None
+
+        try:
+            mode = kwargs['mode']
+        except KeyError:
+            raise ValueError('Input file type "mode" is not specified.')
+
+        if mode == 'SPICE':
+            keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'tvti', 'time': 'time'}
             for filename in files:
                 output = {}
                 with open(filename) as f:
@@ -109,16 +125,18 @@ class Data(object):
                 for key, value in keys.items():
                     output[key] = args[headers.index(value)]
 
+                output['time'] /= 60.
+
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
                         setattr(self, key, value)
                     self.Q = self.build_Q(**kwargs)
                 else:
                     output['Q'] = self.build_Q(output=output, **kwargs)
-                    self.combine_data(output)
+                    self.combine_data(output, tols=tols)
 
-        if kwargs['mode'] == 'ICE':
-            keys = {'h': 'QX', 'k': 'QY', 'l': 'QZ', 'e': 'E', 'detector': 'Detector', 'monitor': 'Monitor', 'temp': 'Temp'}
+        elif mode == 'ICE':
+            keys = {'h': 'QX', 'k': 'QY', 'l': 'QZ', 'e': 'E', 'detector': 'Detector', 'monitor': 'Monitor', 'temp': 'Temp', 'time': 'Time'}
             for filename in files:
                 output = {}
                 with open(filename) as f:
@@ -132,16 +150,18 @@ class Data(object):
                 for key, value in keys.items():
                     output[key] = args[headers.index(value)]
 
+                output['time'] /= 60.
+
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
                         setattr(self, key, value)
                     self.Q = self.build_Q(**kwargs)
                 else:
                     output['Q'] = self.build_Q(output=output, **kwargs)
-                    self.combine_data(output)
+                    self.combine_data(output, tols=tols)
 
-        if kwargs['mode'] == 'ICP':
-            keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'detector': 'Counts', 'temp': 'Tact'}
+        elif mode == 'ICP':
+            keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'detector': 'Counts', 'temp': 'Tact', 'time': 'min'}
             for filename in files:
                 output = {}
                 with open(filename) as f:
@@ -165,7 +185,7 @@ class Data(object):
                     self.Q = self.build_Q(**kwargs)
                 else:
                     output['Q'] = self.build_Q(output=output, **kwargs)
-                    self.combine_data(output)
+                    self.combine_data(output, tols=tols)
 
     def build_Q(self, **kwargs):
         r'''Internal method for constructing :math:`Q(q, hw)` from h, k, l,
@@ -194,7 +214,8 @@ class Data(object):
         _Q = np.vstack((item.flatten() for item in args)).T
         order = np.lexsort([_Q[:, i] for i in reversed(range(_Q.shape[1]))])
 
-        return _Q[order]
+#         return _Q[order]
+        return _Q
 
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
@@ -214,31 +235,43 @@ class Data(object):
         None
 
         '''
-        monitor, detector, Q = self.monitor.copy(), self.detector.copy(), self.Q.copy()  # pylint: disable=access-member-before-definition
+        time, monitor, detector, Q = self.time.copy(), self.monitor.copy(), self.detector.copy(), self.Q.copy()  # pylint: disable=access-member-before-definition
+
+        try:
+            tols = kwargs['tols']
+        except KeyError:
+            tols = None
+
+        if tols is None:
+            tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
+        elif type(tols) is not np.ndarray:
+            tols = np.array(tols)
 
         for arg in args:
             combine = []
             for i in range(arg['Q'].shape[0]):
                 for j in range(self.Q.shape[0]):
-                    if np.all(self.Q[j, :] == arg['Q'][i, :]):
+                    if np.all(np.abs(self.Q[j, :-1] - arg['Q'][i, :-1]) <= tols[:-1]):
                         combine.append([i, j])
 
             for item in combine:
                 monitor[item[1]] += arg['monitor'][item[0]]
                 detector[item[1]] += arg['detector'][item[0]]
+                time[item[1]] += arg['time'][item[0]]
 
             if len(combine) > 0:
-                for key in ['Q', 'monitor', 'detector']:
+                for key in ['Q', 'monitor', 'detector', 'time']:
                     arg[key] = np.delete(arg[key], (np.array(combine)[:, 0],), 0)
 
             Q = np.concatenate((Q, arg['Q']))
             detector = np.concatenate((detector, arg['detector']))
             monitor = np.concatenate((monitor, arg['monitor']))
+            time = np.concatenate((time, arg['time']))
 
-            order = np.lexsort((Q[:, 3], Q[:, 2], Q[:, 1], Q[:, 0]))
+        order = np.lexsort([Q[:, i] for i in reversed(range(Q.shape[1]))])
 
         if 'ret' in kwargs and kwargs['ret']:
-            new = Data(Q=Q[order], monitor=monitor[order], detector=detector[order])
+            new = Data(Q=Q[order], monitor=monitor[order], detector=detector[order], time=time[order])
 
             for i, var in enumerate(['h', 'k', 'l', 'e', 'temp']):
                 setattr(new, var, new.Q[:, i])
@@ -246,14 +279,15 @@ class Data(object):
             return new
 
         else:
-            self.Q = Q[order]
-            self.monitor = monitor[order]
-            self.detector = detector[order]
+            self.Q = Q[order].copy()
+            self.monitor = monitor[order].copy()
+            self.detector = detector[order].copy()
+            self.time = time[order].copy()
 
             for i, var in enumerate(['h', 'k', 'l', 'e', 'temp']):
                 setattr(self, var, self.Q[:, i])
 
-    def intensity(self, **kwargs):
+    def intensity(self, time=False, **kwargs):
         r'''Returns the monitor normalized intensity
 
         Parameters
@@ -268,17 +302,28 @@ class Data(object):
             The monitor normalized intensity scaled by m0
 
         '''
-        try:
-            m0 = kwargs['m0']
-        except KeyError:
+        if time:
             try:
-                m0 = self.m0
-            except AttributeError:
-                self.m0 = m0 = np.nanmax(self.monitor)
+                t0 = kwargs['m0']
+            except KeyError:
+                try:
+                    t0 = self.t0
+                except AttributeError:
+                    self.t0 = t0 = np.nanmax(self.time)
 
-        return self.detector / self.monitor * m0
+            return self.detector / self.time * t0
+        else:
+            try:
+                m0 = kwargs['m0']
+            except KeyError:
+                try:
+                    m0 = self.m0
+                except AttributeError:
+                    self.m0 = m0 = np.nanmax(self.monitor)
 
-    def error(self, **kwargs):
+            return self.detector / self.monitor * m0
+
+    def error(self, time=False, **kwargs):
         r'''Returns square-root error of monitor normalized intensity
 
         Parameters
@@ -292,7 +337,27 @@ class Data(object):
             The square-root error of the monitor normalized intensity
 
         '''
-        return np.sqrt(np.abs(self.intensity(**kwargs)))
+        if time:
+            try:
+                t0 = kwargs['m0']
+            except KeyError:
+                try:
+                    t0 = self.t0
+                except AttributeError:
+                    self.t0 = t0 = np.nanmax(self.time)
+
+            return np.sqrt(self.detector) / self.time * t0
+        else:
+            try:
+                m0 = kwargs['m0']
+            except KeyError:
+                try:
+                    m0 = self.m0
+                except AttributeError:
+                    self.m0 = m0 = np.nanmax(self.monitor)
+
+            return np.sqrt(self.detector) / self.monitor * m0
+#         return np.sqrt(np.abs(self.intensity(time=time, **kwargs)))
 
     def detailed_balance_factor(self, **kwargs):
         r'''Returns the detailed balance factor (sometimes called the Bose
@@ -315,7 +380,7 @@ class Data(object):
         except KeyError:
             pass
 
-        return np.exp(-self.Q[3] / BOLTZMANN_IN_MEV_K / self.temps)
+        return (1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temps))
 
     def bg_estimate(self, perc):
         r'''Estimate the background by averaging the
@@ -343,38 +408,41 @@ class Data(object):
             New monitor, detector, and temps of the binned data
 
         '''
-        monitor, detector = np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0])
+        monitor, detector, time = np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0])
 
         for i, _Q_chunk in enumerate(Q_chunk):
-            chunk0 = np.searchsorted(self.Q[:, 0], _Q_chunk[0] - self._qstep[0] / 2., side='left')
-            chunk1 = np.searchsorted(self.Q[:, 0], _Q_chunk[0] + self._qstep[0] / 2., side='right')
-            if chunk0 < chunk1:
-                _Q, _mon, _det = self.Q[chunk0:chunk1, :], self.monitor[chunk0:chunk1], self.detector[chunk0:chunk1]
-                for j in range(len(_Q_chunk) - 1):
-                    chunk0 = np.searchsorted(_Q[:, j + 1], _Q_chunk[j + 1] - self._qstep[j + 1] / 2., side='left')
-                    chunk1 = np.searchsorted(_Q[:, j + 1], _Q_chunk[j + 1] + self._qstep[j + 1] / 2., side='right')
-                    if chunk0 < chunk1:
-                        _Q, _mon, _det = _Q[chunk0:chunk1, :], _mon[chunk0:chunk1], _det[chunk0:chunk1]
+            _Q, _mon, _det, _tim = self.Q, self.monitor, self.detector, self.time
 
-                monitor[i] = np.average(_mon[chunk0:chunk1])
-                detector[i] = np.average(_det[chunk0:chunk1])
+            for j in range(_Q.shape[1]):
+                _order = np.lexsort([_Q[:, j - n] for n in reversed(range(_Q.shape[1]))])
+                _Q, _mon, _det, _tim = _Q[_order], _mon[_order], _det[_order], _tim[_order]
 
-        return (monitor, detector)
+                chunk0 = np.searchsorted(_Q[:, j], _Q_chunk[j] - self._qstep[j] / 2., side='left')
+                chunk1 = np.searchsorted(_Q[:, j], _Q_chunk[j] + self._qstep[j] / 2., side='right')
 
-    def bin(self, bin):  # pylint: disable=unused-argument
+                if chunk0 < chunk1:
+                    _Q, _mon, _det, _tim = _Q[chunk0:chunk1, :], _mon[chunk0:chunk1], _det[chunk0:chunk1], _tim[chunk0:chunk1]
+
+            monitor[i] = np.average(_mon[chunk0:chunk1])
+            detector[i] = np.average(_det[chunk0:chunk1])
+            time[i] = np.average(_tim[chunk0:chunk1])
+
+        return (monitor, detector, time)
+
+    def bin(self, to_bin):  # pylint: disable=unused-argument
         r'''Rebin the data into the specified shape.
 
         Parameters
         ----------
-        bin : dict
+        to_bin : dict
             h : list :math:`Q_x`: [lower bound, upper bound, number of points]
-            
+
             k : list :math:`Q_y`: [lower bound, upper bound, number of points]
-            
+
             l : list :math:`Q_z`: [lower bound, upper bound, number of points]
-            
+
             e : list :math:`\hbar \omega`: [lower bound, upper bound, number of points]
-            
+
             temp : list :math:`T`: [lower bound, upper bound, number of points]
 
         Returns
@@ -383,7 +451,7 @@ class Data(object):
             The resulting data object with values binned to the specified bounds
 
         '''
-        args = (bin[item] for item in ['h', 'k', 'l', 'e', 'temp'])
+        args = (to_bin[item] for item in ['h', 'k', 'l', 'e', 'temp'])
         q, qstep = (), ()
         for arg in args:
             if arg[2] == 1:
@@ -403,9 +471,9 @@ class Data(object):
         pool = Pool(processes=nprocs)  # pylint: disable=not-callable
         outputs = pool.map(_call_bin_parallel, zip([self] * len(Q_chunks), Q_chunks))
 
-        monitor, detector = (np.concatenate(arg) for arg in zip(*outputs))
+        monitor, detector, time = (np.concatenate(arg) for arg in zip(*outputs))
 
-        return Data(Q=Q, monitor=monitor, detector=detector)
+        return Data(Q=Q, monitor=monitor, detector=detector, time=time)
 
     def integrate(self, **kwargs):
         r'''Returns the integrated intensity within given bounds
@@ -525,7 +593,7 @@ class Data(object):
 
         return result
 
-    def plot(self, x, y, z=None, w=None, show_err=True, bin=None, plot_options=None, fit_options=None,
+    def plot(self, x, y, z=None, w=None, show_err=True, to_bin=None, plot_options=None, fit_options=None,
              smooth_options=None, output_file='', show_plot=True, **kwargs):
         r'''Plots the data in the class. x and y must at least be specified,
         and z and/or w being specified will produce higher dimensional plots
@@ -586,8 +654,8 @@ class Data(object):
         except ImportError:
             ImportError('Matplotlib >= 1.3.0 is necessary for plotting.')
 
-        if bin is None:
-            bin = {}
+        if to_bin is None:
+            to_bin = {}
         if plot_options is None:
             plot_options = {'fmt': 'rs'}
         if fit_options is None:
@@ -603,15 +671,15 @@ class Data(object):
             if value is not None:
                 in_axes[np.where(np.array(options) == value[0])] = key
 
-        if bin:
-            binned_data = self.bin(bin)
+        if to_bin:
+            binned_data = self.bin(to_bin)
             to_plot = np.where(binned_data.monitor > 0)
             dims = {'h': binned_data.Q[to_plot, 0][0], 'k': binned_data.Q[to_plot, 1][0], 'l': binned_data.Q[to_plot, 2][0], 'e': binned_data.Q[to_plot, 3][0],
-                'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.detector[to_plot] / binned_data.monitor[to_plot] * self.m0}
+                'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.intensity()[to_plot]}
         else:
             to_plot = np.where(self.monitor > 0)
             dims = {'h': self.Q[to_plot, 0][0], 'k': self.Q[to_plot, 1][0], 'l': self.Q[to_plot, 2][0], 'e': self.Q[to_plot, 3][0],
-                'temp': self.Q[to_plot, 4][0], 'intensity': self.detector[to_plot] / self.monitor[to_plot] * self.m0}
+                'temp': self.Q[to_plot, 4][0], 'intensity': self.intensity()[to_plot]}
 
         if smooth_options['sigma'] > 0:
             from scipy.ndimage.filters import gaussian_filter
@@ -682,13 +750,13 @@ class Data(object):
                     plt.plot(fit_x, fit_y, '{0}-'.format(plot_options['fmt'][0]))
 
                     param_string = u'\n'.join(['p$_{{{0:d}}}$: {1:.3f}'.format(i, p) for i, p in enumerate(fitobj.params)])
-                    chi2_params = u'$\chi^2$: {0:.3f}\n\n'.format(fitobj.chi2_min) + param_string
+                    chi2_params = u'$\chi^2$: {0:.3f}\n\n'.format(fitobj.chi2_min) + param_string  # pylint: disable=anomalous-backslash-in-string
 
                     plt.annotate(chi2_params, xy=(0.05, 0.95), xycoords='axes fraction',
                                  horizontalalignment='left', verticalalignment='top',
                                  bbox=dict(alpha=0.75, facecolor='white', edgecolor='none'))
 
-                except Exception as mes:
+                except Exception as mes:  # pylint: disable=broad-except
                     print("Something wrong with fit: {0}".format(mes))
 
         if output_file:

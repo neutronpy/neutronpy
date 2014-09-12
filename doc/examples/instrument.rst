@@ -145,7 +145,7 @@ The following is an example of a resolution calculation using the Cooper-Nathans
     hkle = [1., 1., 0., 0.]
     EXP.calc_resolution(hkle)
 
-    x, y = np.meshgrid(np.linspace(hkle[0] - 0.05, hkle[0] + 0.05, 501), np.linspace(hkle[1] - 0.05, hkle[1] + 0.05, 501), sparse=True)
+    x, y = np.meshgrid(np.linspace(hkle[0] - 0.05, hkle[0] + 0.05, 101), np.linspace(hkle[1] - 0.05, hkle[1] + 0.05, 101), sparse=True)
 
     R0, RMxx, RMyy, RMxy = EXP.get_resolution_params(hkle, 'QxQy', mode='slice')
     p = np.array([0., 0., 1., hkle[0], hkle[1], R0, RMxx, RMyy, RMxy])
@@ -199,7 +199,7 @@ The following is an example of a resolution calculation using the Popovici metho
     hkle = [1., 1., 0., 0.]
     EXP.calc_resolution(hkle)
 
-    x, y = np.meshgrid(np.linspace(hkle[0] - 0.05, hkle[0] + 0.05, 501), np.linspace(hkle[1] - 0.05, hkle[1] + 0.05, 501), sparse=True)
+    x, y = np.meshgrid(np.linspace(hkle[0] - 0.05, hkle[0] + 0.05, 101), np.linspace(hkle[1] - 0.05, hkle[1] + 0.05, 101), sparse=True)
 
     R0, RMxx, RMyy, RMxy = EXP.get_resolution_params(hkle, 'QxQy', mode='slice')
     p = np.array([0., 0., 1., hkle[0], hkle[1], R0, RMxx, RMyy, RMxy])
