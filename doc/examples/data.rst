@@ -39,8 +39,8 @@ Pass pre-loaded data
 ^^^^^^^^^^^^^^^^^^^^
 Assuming that your data is in a format that is not supported by :py:meth:`.Data.load_file` you will need to load the data yourself and pass it to the :py:class:`.Data` class and build ``Data.Q`` using :py:meth:`.Data.build_Q`. To build ``Data.Q`` you must have defined ``h``, ``k``, ``l``, ``e``, and ``temp``.
 
->>> data = Data(h=h, k=k, l=l, e=e, temp=temp, detector=detector, monitor=monitor)
->>> data.build_Q()
+>>> data = Data(h=h, k=k, l=l, e=e, temp=temp, detector=detector, monitor=monitor, time=time)
+>>> data.Q = data.build_Q()
 
 ``Data`` properties
 ---------------
