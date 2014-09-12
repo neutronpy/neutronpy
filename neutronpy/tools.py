@@ -20,6 +20,9 @@ class Data(object):
 
     Parameters
     ----------
+    Q : ndarray, optional
+        Array of columns of h, k, l, e, and temp with shape (N, 5)
+
     h : ndarray, optional
         Array of :math:`Q_x` in reciprocal lattice units.
 
@@ -80,7 +83,7 @@ class Data(object):
         self.detector **= right
         return self
 
-    def load_file(self, *files, **kwargs):
+    def load_file(self, *files, tols=None, mode=None, **kwargs):
         r'''Loads one or more files in either SPICE, ICE or ICP formats
 
         Parameters
@@ -97,7 +100,10 @@ class Data(object):
         None
 
         '''
-        if kwargs['mode'] == 'SPICE':
+        if mode is None:
+            raise ValueError('Input file type "mode" is not specified.')
+
+        elif mode == 'SPICE':
             keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'tvti', 'time': 'time'}
             for filename in files:
                 output = {}
@@ -120,9 +126,9 @@ class Data(object):
                     self.Q = self.build_Q(**kwargs)
                 else:
                     output['Q'] = self.build_Q(output=output, **kwargs)
-                    self.combine_data(output)
+                    self.combine_data(output, tols=tols)
 
-        if kwargs['mode'] == 'ICE':
+        elif mode == 'ICE':
             keys = {'h': 'QX', 'k': 'QY', 'l': 'QZ', 'e': 'E', 'detector': 'Detector', 'monitor': 'Monitor', 'temp': 'Temp', 'time': 'Time'}
             for filename in files:
                 output = {}
@@ -145,9 +151,9 @@ class Data(object):
                     self.Q = self.build_Q(**kwargs)
                 else:
                     output['Q'] = self.build_Q(output=output, **kwargs)
-                    self.combine_data(output)
+                    self.combine_data(output, tols=tols)
 
-        if kwargs['mode'] == 'ICP':
+        elif mode == 'ICP':
             keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'detector': 'Counts', 'temp': 'Tact', 'time': 'min'}
             for filename in files:
                 output = {}
@@ -172,7 +178,7 @@ class Data(object):
                     self.Q = self.build_Q(**kwargs)
                 else:
                     output['Q'] = self.build_Q(output=output, **kwargs)
-                    self.combine_data(output)
+                    self.combine_data(output, tols=tols)
 
     def build_Q(self, **kwargs):
         r'''Internal method for constructing :math:`Q(q, hw)` from h, k, l,
@@ -204,7 +210,7 @@ class Data(object):
 #         return _Q[order]
         return _Q
 
-    def combine_data(self, *args, **kwargs):
+    def combine_data(self, *args, tols=None, **kwargs):
         r'''Combines multiple data sets
 
         Parameters
@@ -224,10 +230,10 @@ class Data(object):
         '''
         time, monitor, detector, Q = self.time.copy(), self.monitor.copy(), self.detector.copy(), self.Q.copy()  # pylint: disable=access-member-before-definition
 
-        if 'tols' not in kwargs:
-            tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 1.e-4])
-        else:
-            tols = np.array(kwargs['tols'])
+        if tols is None:
+            tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
+        elif type(tols) is not np.ndarray:
+            tols = np.array(tols)
 
         for arg in args:
             combine = []
@@ -394,9 +400,9 @@ class Data(object):
 
         for i, _Q_chunk in enumerate(Q_chunk):
             _Q, _mon, _det, _tim = self.Q, self.monitor, self.detector, self.time
-            
+
             for j in range(_Q.shape[1]):
-                _order = np.lexsort([_Q[:, j-n] for n in reversed(range(_Q.shape[1]))])
+                _order = np.lexsort([_Q[:, j - n] for n in reversed(range(_Q.shape[1]))])
                 _Q, _mon, _det, _tim = _Q[_order], _mon[_order], _det[_order], _tim[_order]
 
                 chunk0 = np.searchsorted(_Q[:, j], _Q_chunk[j] - self._qstep[j] / 2., side='left')
