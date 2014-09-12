@@ -83,7 +83,7 @@ class Data(object):
         self.detector **= right
         return self
 
-    def load_file(self, *files, tols=None, mode=None, **kwargs):
+    def load_file(self, *files, **kwargs):
         r'''Loads one or more files in either SPICE, ICE or ICP formats
 
         Parameters
@@ -100,10 +100,17 @@ class Data(object):
         None
 
         '''
-        if mode is None:
+        try:
+            tols = kwargs['tols']
+        except KeyError:
+            tols = None
+
+        try:
+            mode = kwargs['mode']
+        except KeyError:
             raise ValueError('Input file type "mode" is not specified.')
 
-        elif mode == 'SPICE':
+        if mode == 'SPICE':
             keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'tvti', 'time': 'time'}
             for filename in files:
                 output = {}
@@ -210,7 +217,7 @@ class Data(object):
 #         return _Q[order]
         return _Q
 
-    def combine_data(self, *args, tols=None, **kwargs):
+    def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
 
         Parameters
@@ -229,6 +236,11 @@ class Data(object):
 
         '''
         time, monitor, detector, Q = self.time.copy(), self.monitor.copy(), self.detector.copy(), self.Q.copy()  # pylint: disable=access-member-before-definition
+
+        try:
+            tols = kwargs['tols']
+        except KeyError:
+            tols = None
 
         if tols is None:
             tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
