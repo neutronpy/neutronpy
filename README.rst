@@ -1,6 +1,6 @@
 NeutronPy
 =========
-
+**WARNING: 0.X RELEASES MAY NOT BE BACKWARDS COMPATIBILE. THIS SOFTWARE IS IN A FLUID STATE AND UNDERGOING RAPID CHANGES. THE 1.0 RELEASE WILL INDICATE THE START OF BACKWARDS COMPATIBILE UPDATES. MAJOR NUMBER RELEASES (X.0) MAY BREAK BACKWARDS COMPATIBILITY, BUT USERS WILL BE NOTIFIED IN THE CHANGELOG.**
 
 **master** |master| :: **develop** |develop|
 
@@ -40,19 +40,21 @@ Requirements
 The following packages are required to install this library:
 
 * ``Python >= 2.6 (incl. python 3)``
-* ``numpy >= 1.7.0``
+* ``numpy >= 1.8.0``
 * ``scipy >= 0.13.0``
 * ``Cython >= 0.20``
-* ``matplotlib >= 1.3.0`` (optional, plotting)
+* ``matplotlib >= 1.3.0``
 * ``nose >= 1.3.0`` (optional, tests)
 
 Installation
 ------------
-To install this package, download the zip of the source (or ``git clone``) from the master branch and run ``python setup.py install`` from within the source folder.
+It is recommended that you use ``pip`` to install NeutronPy:
+
+    pip install neutronpy
 
 Documentation
 -------------
-Documentation is available at `neutronpy.github.io <https://neutronpy.github.io/>`_, or can be built using sphinx by navigating to the doc/ folder and executing ``make``; results will be in the ``doc/_build/`` folder.
+Documentation is available at `neutronpy.github.io <https://neutronpy.github.io/>`_, or can be built using sphinx by navigating to the doc/ folder and executing ``make html``; results will be in the ``doc/_build/`` folder.
 
 Contributions
 -------------
