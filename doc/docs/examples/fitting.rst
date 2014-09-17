@@ -3,7 +3,7 @@ Example: Least-squares fitting with the Fitter Class
 
 *Note: This module is still a work-in-progress and the usage of these classes and/or functions may change in the future.*
 
-The follow is an example of how to use the :py:class`.Fitter` class, which is a non-linear least-squares minimization routine based on the `C implementation of MPFIT <http://www.physics.wisc.edu/~craigm/idl/cmpfit.html>`_. :py:class:`.Fitter` in its current form is identical to the Fitter class in the `kmpfit <https://www.astro.rug.nl/software/kapteyn/kmpfit.html>`_ module of the `Kapteyn Package <https://www.astro.rug.nl/software/kapteyn/index.html>`_.
+The follow is an example of how to use the :py:class:`.Fitter` class, which is a non-linear least-squares minimization routine based on the `C implementation of MPFIT <http://www.physics.wisc.edu/~craigm/idl/cmpfit.html>`_. :py:class:`.Fitter` in its current form is identical to the Fitter class in the `kmpfit <https://www.astro.rug.nl/software/kapteyn/kmpfit.html>`_ module of the `Kapteyn Package <https://www.astro.rug.nl/software/kapteyn/index.html>`_.
 
 Defining the problem
 --------------------

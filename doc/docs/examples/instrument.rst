@@ -91,7 +91,7 @@ There are a great deal more settings available than are used here; see :py:class
 
 Calculating the resolution
 --------------------------
-To calculate the resolution we need to define at which :math:`q=[h,k,l,\hbar\omega]` we want the resolution to be calculated. There are several ways that we can go about doing this. The simplest situation is if the resolution is desired at only one point in reciprocal space, *e.g.* [1, 0, 0, 0], *i.e.* (1, 0, 0) at zero energy transfer:
+To calculate the resolution we need to define at which :math:`q=[h,k,l,\hbar\omega]` we want the resolution to be calculated. There are several ways that we can go about doing this. The simplest situation is if the resolution is desired at only one point in reciprocal space, *e.g.* ``[1, 0, 0, 0]``, *i.e.* (1, 0, 0) at zero energy transfer:
 
 >>> q = np.array([1, 0, 0, 0])
 
@@ -116,7 +116,7 @@ The resulting resolution parameters, :math:`R_0` and :math:`\mathbf{R}_M`, are s
 
 The resolution matrix here is the full matrix, over four dimensional space N (4 :math:`\times` 4) matrices, with shape (4, 4, N) (N=3 in our case). Alternatively, it is possible to extract more immediately useful parameters, i.e. projections or slices in the plane of interest using :py:meth:`.get_resolution_params`.
 
-We can get projections or slices in the *x-y*, *x-e* or *y-e* planes (see :py:meth:`.get_resolution_params` documentation for all possible keywords); the z-plane is not accessible due to the nature of the sample orientation and is integrated out. In this case we will extract the resolution parameters for the projection into the :math:`Q_x Q_y` plane for the first ``q``, *i.e.* [1,0,0,0]:
+We can get projections or slices in the *x-y*, *x-e* or *y-e* planes (see :py:meth:`.get_resolution_params` documentation for all possible keywords); the z-plane is not accessible due to the nature of the sample orientation and is integrated out. In this case we will extract the resolution parameters for the projection into the :math:`Q_x Q_y` plane for the first ``q``, *i.e.* ``[1,0,0,0]``:
 
 >>> R0, RMxx, RMyy, RMxy = EXP.get_resolution_params(q[:, 0], 'QxQy', mode='project')
 
