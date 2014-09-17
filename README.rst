@@ -1,6 +1,8 @@
 NeutronPy
 =========
-**WARNING: 0.X RELEASES MAY NOT BE BACKWARDS COMPATIBILE. THIS SOFTWARE IS IN A FLUID STATE AND UNDERGOING RAPID CHANGES. THE 1.0 RELEASE WILL INDICATE THE START OF BACKWARDS COMPATIBILE UPDATES. MAJOR NUMBER RELEASES (X.0) MAY BREAK BACKWARDS COMPATIBILITY, BUT USERS WILL BE NOTIFIED IN THE CHANGELOG.**
+.. warning::
+
+    v0.x.x releases may not be backwards compatibile. This software is in a fluid state and undergoing rapid changes. The v1.0.0 release will indicate the start of backwards compatibile updates. Major number releases (x.0) may break backwards compatibility, but users will be notified in the changelog.
 
 **master** |master| :: **develop** |develop|
 
@@ -10,7 +12,7 @@ NeutronPy
 .. |develop| image:: https://travis-ci.org/neutronpy/neutronpy.svg?branch=develop
       :target: https://travis-ci.org/neutronpy/neutronpy
 
-**NeutronPy** is a python library with commonly used tools for neutron scattering measurements, primarily for Triple Axis Spectrometer data, but easily applied to other types of data, including Time of Flight.
+NeutronPy is a python library with commonly used tools for neutron scattering measurements, primarily for Triple Axis Spectrometer data, but easily applied to other types of data, including Time of Flight.
 
 * Triple Axis Spectrometer resolution function calculation (Translated from ResLib), including:
 	* Resolution ellipses
@@ -49,6 +51,8 @@ The following packages are required to install this library:
 Installation
 ------------
 It is recommended that you use ``pip`` to install NeutronPy:
+
+.. code-block:: bash
 
     pip install neutronpy
 
