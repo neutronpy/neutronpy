@@ -7,7 +7,7 @@ import unittest
 
 class EnergyTest(unittest.TestCase):
     def test_energy(self):
-        energy = tools.Neutron(e=25.)
+        energy = tools.Energy(e=25.)
         self.assertAlmostEqual(energy.e, 25.0, 4)
         self.assertAlmostEqual(energy.l, 1.8089, 4)
         self.assertAlmostEqual(energy.k, 3.473, 3)
