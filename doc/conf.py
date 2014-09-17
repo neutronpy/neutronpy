@@ -16,14 +16,12 @@
 
 import sys
 import os
-
-# sys.path.insert(0, os.path.abspath('../neutronpy'))
-# sys.path.insert(0, os.path.abspath('../src'))
+import re
 
 try:
     import neutronpy
 except ImportError:
-    raise RuntimeError('Cannot import dipy, please investigate')
+    raise RuntimeError('Cannot import neutronpy, please investigate')
 
 from distutils.version import LooseVersion
 import sphinx
@@ -31,6 +29,11 @@ if LooseVersion(sphinx.__version__) < LooseVersion('1'):
     raise RuntimeError('Need sphinx >= 1 for numpydoc to work correctly')
 
 sys.path.append(os.path.abspath('sphinxext'))
+
+# 'releases' (changelog) settings
+releases_issue_uri = "https://github.com/neutronpy/neutronpy/issues/%s"
+releases_release_uri = "https://github.com/neutronpy/neutronpy/tree/%s"
+releases_github_path = "neutronpy/neutronpy"
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -53,7 +56,10 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'matplotlib.sphinxext.plot_directive',
-    'numpydoc'
+    'numpydoc',
+    'alabaster',
+    'sphinx_rtd_theme',
+    'releases',
 ]
 
 numpydoc_show_class_members = False
@@ -113,7 +119,7 @@ exclude_patterns = ['_build']
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'sphinx_rtd_theme.support.LightStyle'#'sphinx'
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -124,13 +130,48 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ----------------------------------------------
 
-themedir = os.path.join(os.curdir, 'scipy-sphinx-theme', '_theme')
-if not os.path.isdir(themedir):
-    raise RuntimeError("Get the scipy-sphinx-theme first, "
-                       "via git submodule init && git submodule update")
+#themedir = os.path.join(os.curdir, 'scipy-sphinx-theme', '_theme')
+#if not os.path.isdir(themedir):
+#    raise RuntimeError("Get the scipy-sphinx-theme first, "
+#                       "via git submodule init && git submodule update")
 
-html_theme = 'scipy'
-html_theme_path = [themedir]
+import sphinx_rtd_theme
+html_theme = "sphinx_rtd_theme"
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+# Alabaster theme + mini-extension
+#import alabaster
+#html_theme_path = [alabaster.get_path()]
+#html_theme = 'alabaster'
+
+html_static_path = [os.path.join('..', '_static')]
+html_theme_options = {
+    'logo': 'logo.png',
+    'logo_name': True,
+    'logo_text_align': 'center',
+    'description': "",
+    'github_user': 'neutronpy',
+    'github_repo': 'neutronpy',
+    'travis_button': True,
+    'github_banner': True,
+    'link': '#3782BE',
+    'link_hover': '#3782BE',
+    'sidebar_includehidden': True,
+}
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'searchbox.html',
+        'donate.html',
+    ]
+}
+# Sister-site links to API docs
+html_theme_options['extra_nav_links'] = {
+    "NeutronPy Docs": 'http://neutronpy.github.io/docs',
+}
+# html_theme = 'scipy'
+# html_theme_path = [themedir]
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
