@@ -56,7 +56,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'matplotlib.sphinxext.plot_directive',
-    'numpydoc',
+    'sphinxcontrib.napoleon',
     'alabaster',
     'sphinx_rtd_theme',
     'releases',
