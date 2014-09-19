@@ -9,7 +9,6 @@ import re
 from scipy import constants
 
 
-
 def _call_bin_parallel(arg, **kwarg):
     r'''Wrapper function to work around pickling problem in Python 2.7
     '''
@@ -48,8 +47,8 @@ class Data(object):
 
     Returns
     -------
-    Data Class
-        The data class for handling Triple Axis Spectrometer Data
+    Data object
+        The Data object for handling neutron scattering data
 
     '''
     def __init__(self, files=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., time=0., Q=None, **kwargs):
@@ -146,7 +145,6 @@ class Data(object):
             self.Q[:, 1] = np.array(value)
         except ValueError:
             raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
-
 
     @property
     def l(self):
@@ -853,14 +851,33 @@ class Data(object):
 
 
 class Energy():
-    r'''Class containing the most commonly used properties of a neutron beam
-    given some initial input, e.g. energy, wavelength, wavevector,
-    temperature, or frequency
-    
+    u'''Class containing the most commonly used properties of a neutron beam
+    given some initial input, e.g. energy, wavelength, velocity, wavevector,
+    temperature, or frequency. At least one input must be supplied.
+
+    Parameters
+    ----------
+    energy : float
+        Neutron energy in millielectron volts (meV)
+    wavelength : float
+        Neutron wavelength in angstroms (Å)
+    velocity : float
+        Neutron velocity in meters per second (m/s)
+    wavevector : float
+        Neutron wavevector k in inverse angstroms (1/Å)
+    temperature : float
+        Neutron temperature in kelvin (K)
+    frequency : float
+        Neutron frequency in terahertz (THz)
+
+    Returns
+    -------
+    Energy object
+        The energy object containing the properties of the neutron beam
     '''
     def __init__(self, energy=None, wavelength=None, velocity=None, wavevector=None, temperature=None, frequency=None):
         try:
-            if energy is None: 
+            if energy is None:
                 if wavelength is not None:
                     self.energy = constants.h ** 2 / (2. * constants.m_n * (wavelength / 1.e10) ** 2) * JOULES_TO_MEV
                 elif velocity is not None:
@@ -885,6 +902,17 @@ class Energy():
 
     @property
     def values(self):
+        '''Prints all of the properties of the Neutron beam
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        values : string
+            A string containing all the properties of the neutron including respective units
+        '''
         print(u'''
 Energy: {0:3.3f} meV
 Wavelength: {1:3.3f} Å
