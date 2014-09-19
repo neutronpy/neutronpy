@@ -55,25 +55,25 @@ class Data(object):
     def __init__(self, files=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., time=0., Q=None, **kwargs):
         if files is not None:
             self.load_file(*files)
-        else:           
+        else:
             if Q is None:
                 try:
                     n_dim = max([len(item) for item in (h, k, l, e, temp, detector, monitor, time) if not isinstance(item, numbers.Number)])
                 except ValueError:
                     n_dim = 1
-                
+
                 self.Q = np.empty((n_dim, 5))
 
                 for arg, key in zip((h, k, l, e, temp), ('h', 'k', 'l', 'e', 'temp')):
                     if isinstance(arg, numbers.Number):
                         arg = np.array([arg] * n_dim)
-                    try: 
+                    try:
                         setattr(self, key, np.array(arg))
                     except ValueError:
                         raise
             else:
                 self.Q = Q
-            
+
             for arg, key in zip((detector, monitor, time), ('detector', 'monitor', 'time')):
                 if isinstance(arg, numbers.Number):
                     arg = np.array([arg] * n_dim)
@@ -81,9 +81,9 @@ class Data(object):
 
         self.m0 = np.nanmax(self.monitor)
         self.t0 = np.nanmax(self.time)
-        
+
         self.time_norm = False
-        
+
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -115,53 +115,89 @@ class Data(object):
 
     @property
     def h(self):
+        r'''Gets h from Q
+        '''
         return self.Q[:, 0]
 
     @h.setter
     def h(self, value):
+        r'''Set h to appropriate column of Q
+        '''
         if isinstance(value, numbers.Number):
             value = [value] * self.Q.shape[0]
-        self.Q[:, 0] = np.array(value)
+        try:
+            self.Q[:, 0] = np.array(value)
+        except ValueError:
+            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
 
     @property
     def k(self):
+        r'''Gets k from Q
+        '''
         return self.Q[:, 1]
 
     @k.setter
     def k(self, value):
+        r'''Set k to appropriate column of Q
+        '''
         if isinstance(value, numbers.Number):
             value = [value] * self.Q.shape[0]
-        self.Q[:, 1] = np.array(value)
+        try:
+            self.Q[:, 1] = np.array(value)
+        except ValueError:
+            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
+
 
     @property
     def l(self):
+        r'''Gets l from Q
+        '''
         return self.Q[:, 2]
 
     @l.setter
     def l(self, value):
+        r'''Set l to appropriate column of Q
+        '''
         if isinstance(value, numbers.Number):
             value = [value] * self.Q.shape[0]
-        self.Q[:, 2] = np.array(value)
+        try:
+            self.Q[:, 2] = np.array(value)
+        except ValueError:
+            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
 
     @property
     def e(self):
+        r'''Gets e from Q
+        '''
         return self.Q[:, 3]
 
     @e.setter
     def e(self, value):
+        r'''Set e to appropriate column of Q
+        '''
         if isinstance(value, numbers.Number):
             value = [value] * self.Q.shape[0]
-        self.Q[:, 3] = np.array(value)
+        try:
+            self.Q[:, 3] = np.array(value)
+        except ValueError:
+            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
 
     @property
     def temp(self):
+        r'''Gets temp from Q
+        '''
         return self.Q[:, 4]
 
     @temp.setter
     def temp(self, value):
+        r'''Set temp to appropriate column of Q
+        '''
         if isinstance(value, numbers.Number):
             value = [value] * self.Q.shape[0]
-        self.Q[:, 4] = np.array(value)
+        try:
+            self.Q[:, 4] = np.array(value)
+        except ValueError:
+            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
 
     @property
     def intensity(self):
@@ -225,7 +261,7 @@ class Data(object):
 
         '''
 
-        return (1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp))
+        return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
 
     def load_file(self, *files, **kwargs):
         r'''Loads one or more files in either SPICE, ICE or ICP formats
@@ -358,7 +394,7 @@ class Data(object):
                 args += (getattr(self, i),)
 
             self.Q = np.vstack((item.flatten() for item in args)).T
-        
+
         return np.vstack((item.flatten() for item in args)).T
 
     def combine_data(self, *args, **kwargs):
@@ -522,7 +558,7 @@ class Data(object):
 
         monitor, detector, time = (np.concatenate(arg) for arg in zip(*outputs))
 
-        return Data(Q=Q, monitor=monitor, detector=detector, time=time)
+        return Data(Q=Q, monitor=monitor, detector=detector, time=time, m0=self.m0, t0=self.t0)
 
     def integrate(self, **kwargs):
         r'''Returns the integrated intensity within given bounds
@@ -724,11 +760,11 @@ class Data(object):
             binned_data = self.bin(to_bin)
             to_plot = np.where(binned_data.monitor > 0)
             dims = {'h': binned_data.Q[to_plot, 0][0], 'k': binned_data.Q[to_plot, 1][0], 'l': binned_data.Q[to_plot, 2][0], 'e': binned_data.Q[to_plot, 3][0],
-                'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.intensity[to_plot], 'error': binned_data.error[to_plot]}
+                    'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.intensity[to_plot], 'error': binned_data.error[to_plot]}
         else:
             to_plot = np.where(self.monitor > 0)
             dims = {'h': self.Q[to_plot, 0][0], 'k': self.Q[to_plot, 1][0], 'l': self.Q[to_plot, 2][0], 'e': self.Q[to_plot, 3][0],
-                'temp': self.Q[to_plot, 4][0], 'intensity': self.intensity[to_plot], 'error': self.error[to_plot]}
+                    'temp': self.Q[to_plot, 4][0], 'intensity': self.intensity[to_plot], 'error': self.error[to_plot]}
 
         if smooth_options['sigma'] > 0:
             from scipy.ndimage.filters import gaussian_filter
