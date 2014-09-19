@@ -413,17 +413,15 @@ class Data(object):
         None
 
         '''
-        time, monitor, detector, Q = self.time.copy(), self.monitor.copy(), self.detector.copy(), self.Q.copy()  # pylint: disable=access-member-before-definition
+        Q = self.Q.copy()
+        detector = self.detector.copy()  # pylint: disable=access-member-before-definition
+        monitor = self.monitor.copy()  # pylint: disable=access-member-before-definition
+        time = self.time.copy()  # pylint: disable=access-member-before-definition
 
         try:
-            tols = kwargs['tols']
+            tols = np.array(kwargs['tols'])
         except KeyError:
-            tols = None
-
-        if tols is None:
             tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
-        elif type(tols) is not np.ndarray:
-            tols = np.array(tols)
 
         for arg in args:
             combine = []
@@ -449,21 +447,13 @@ class Data(object):
         order = np.lexsort([Q[:, i] for i in reversed(range(Q.shape[1]))])
 
         if 'ret' in kwargs and kwargs['ret']:
-            new = Data(Q=Q[order], monitor=monitor[order], detector=detector[order], time=time[order])
-
-            for i, var in enumerate(['h', 'k', 'l', 'e', 'temp']):
-                setattr(new, var, new.Q[:, i])
-
-            return new
+            return Data(Q=Q[order], monitor=monitor[order], detector=detector[order], time=time[order])
 
         else:
-            self.Q = Q[order].copy()
-            self.monitor = monitor[order].copy()
-            self.detector = detector[order].copy()
-            self.time = time[order].copy()
-
-            for i, var in enumerate(['h', 'k', 'l', 'e', 'temp']):
-                setattr(self, var, self.Q[:, i])
+            self.Q = Q[order]
+            self.detector = detector[order]
+            self.monitor = monitor[order]
+            self.time = time[order]
 
     def bg_estimate(self, perc):
         r'''Estimate the background by averaging the
