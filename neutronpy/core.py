@@ -16,7 +16,7 @@ def _call_bin_parallel(arg, **kwarg):
 
 
 class Data(object):
-    r'''Data class for handling multi-dimensional TAS data. If input file type
+    r'''Data class for handling multi-dimensional scattering data. If input file type
     is not supported, data can be entered manually.
 
     Parameters
@@ -46,19 +46,34 @@ class Data(object):
         Array of time per point in minutes.
 
     m0 : float, optional
-        Monitor to which detector counts are normalized in :py:meth:`.Data.intensity` or :py:meth:`.Data.error` call
+        Monitor to which detector counts are normalized in :py:attr:`.Data.intensity` or :py:attr:`.Data.error` call
 
     t0 : float, optional
-        Time to which detector counts are normalized in :py:meth:`.Data.intensity` or :py:meth:`.Data.error` call if ``time_norm`` is True
+        Time to which detector counts are normalized in :py:attr:`.Data.intensity` or :py:attr:`.Data.error` call if :py:data:`time_norm` is True
 
     time_norm : bool, optional
-        If True, calls to :py:meth:`.Data.intensity` and :py:meth:`.Data.error` with normalize to time instead of monitor
+        If True, calls to :py:attribute:`.Data.intensity` and :py:attr:`.Data.error` with normalize to time instead of monitor
 
-    Returns
+    Attributes
+    ----------
+    h
+    k
+    l
+    e
+    temp
+    intensity
+    error
+    detailed_balance_factor
+    
+    Methods
     -------
-    Data object
-        The Data object for handling neutron scattering data
-
+    bin
+    integrate
+    position
+    width
+    load_file
+    plot
+    
     '''
     def __init__(self, files=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., time=0., Q=None, **kwargs):
         if files is not None:
@@ -123,7 +138,9 @@ class Data(object):
 
     @property
     def h(self):
-        r'''Gets h from Q
+        r'''Returns lattice parameter q\ :sub:`x`\ , *i.e.* h
+        
+        Equivalent to Q[:, 0]
         '''
         return self.Q[:, 0]
 
@@ -140,7 +157,9 @@ class Data(object):
 
     @property
     def k(self):
-        r'''Gets k from Q
+        r'''Returns lattice parameter q\ :sub:`y`\ , *i.e.* k
+        
+        Equivalent to Q[:, 1]
         '''
         return self.Q[:, 1]
 
@@ -157,7 +176,9 @@ class Data(object):
 
     @property
     def l(self):
-        r'''Gets l from Q
+        r'''Returns lattice parameter q\ :sub:`z`\ , *i.e.* l
+        
+        Equivalent to Q[:, 2]
         '''
         return self.Q[:, 2]
 
@@ -174,7 +195,9 @@ class Data(object):
 
     @property
     def e(self):
-        r'''Gets e from Q
+        r'''Returns energy transfer
+        
+        Equivalent to Q[:, 3]
         '''
         return self.Q[:, 3]
 
@@ -191,7 +214,9 @@ class Data(object):
 
     @property
     def temp(self):
-        r'''Gets temp from Q
+        r'''Returns temperature
+        
+        Equivalent to Q[:, 4]
         '''
         return self.Q[:, 4]
 
@@ -208,19 +233,8 @@ class Data(object):
 
     @property
     def intensity(self):
-        r'''Returns the monitor normalized intensity
-
-        Parameters
-        ----------
-        m0 : float, optional
-            Desired monitor to normalize the intensity. If not specified, m0
-            is set to the max monitor.
-
-        Returns
-        -------
-        intensity : ndarray
-            The monitor normalized intensity scaled by m0
-
+        r'''Returns the monitor or time normalized intensity
+        
         '''
 
         if self.time_norm:
@@ -234,17 +248,7 @@ class Data(object):
 
     @property
     def error(self):
-        r'''Returns square-root error of monitor normalized intensity
-
-        Parameters
-        ----------
-        m0 : float, optional
-            Desired monitor to normalize the intensity
-
-        Returns
-        -------
-        error : ndarray
-            The square-root error of the monitor normalized intensity
+        r'''Returns square-root error of monitor or time normalized intensity
 
         '''
         if self.time_norm:
@@ -511,7 +515,7 @@ class Data(object):
 
         Returns
         -------
-        (monitor, detector, temps) : tuple of ndarrays
+        (monitor, detector, temps) : tup of ndarrays
             New monitor, detector, and temps of the binned data
 
         '''
@@ -587,7 +591,7 @@ class Data(object):
 
         Parameters
         ----------
-        bounds : Boolean, optional
+        bounds : bool, optional
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
@@ -619,13 +623,13 @@ class Data(object):
 
         Parameters
         ----------
-        bounds : Boolean, optional
+        bounds : bool, optional
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
         Returns
         -------
-        result : tuple
+        result : tup
             The result is a tuple with position in each dimension of Q,
             (h, k, l, e)
 
@@ -657,13 +661,13 @@ class Data(object):
 
         Parameters
         ----------
-        bounds : Boolean, optional
+        bounds : bool, optional
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
         Returns
         -------
-        result : tuple
+        result : tup
             The result is a tuple with the width in each dimension of Q,
             (h, k, l, e)
 
