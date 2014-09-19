@@ -45,6 +45,15 @@ class Data(object):
     time : ndarray or float, optional
         Array of time per point in minutes.
 
+    m0 : float, optional
+        Monitor to which detector counts are normalized in :py:meth:`.Data.intensity` or :py:meth:`.Data.error` call
+    
+    t0 : float, optional
+        Time to which detector counts are normalized in :py:meth:`.Data.intensity` or :py:meth:`.Data.error` call if ``time_norm`` is True
+    
+    time_norm : bool, optional
+        If True, calls to :py:meth:`.Data.intensity` and :py:meth:`.Data.error` with normalize to time instead of monitor
+        
     Returns
     -------
     Data object
@@ -455,15 +464,37 @@ class Data(object):
             self.monitor = monitor[order]
             self.time = time[order]
 
-    def bg_estimate(self, perc):
-        r'''Estimate the background by averaging the
-        bottom perc % of points that are >= 0
+    def bg_estimate(self, bg_params):
+        r'''Estimate the background according to ``type`` specified.
+
+        Parameters
+        ----------
+        bg_params : dict
+            Input dictionary has keys 'type' and 'value'. Types are
+                * 'constant' : background is the constant given by 'value'
+                * 'percent' : background is estimated by the bottom x%, where x is value
+                * 'minimum' : background is estimated as the detector counts
+
+        Returns
+        -------
+        background : float or ndarray
+            Value determined to be the background. Will return ndarray only if 'type' is 'constant' and 'value' is an ndarray
         '''
-        inten = self.intensity[self.intensity >= 0.]
-        Npts = inten.size * (perc / 100.)
-        min_vals = inten[np.argsort(inten)[:Npts]]
-        bg = np.average(min_vals)
-        return bg
+        if bg_params['type'] == 'constant':
+            return bg_params['value']
+
+        elif bg_params['type'] == 'percent':
+            with self.intensity[self.intensity >= 0.] as inten:
+                Npts = inten.size * (bg_params['value'] / 100.)
+                min_vals = inten[np.argsort(inten)[:Npts]]
+                background = np.average(min_vals)
+                return background
+
+        elif bg_params['type'] == 'minimum':
+            return min(self.intensity)
+        
+        else:
+            return 0
 
     def _bin_parallel(self, Q_chunk):
         r'''Performs binning by finding data chunks to bin together.
@@ -564,22 +595,19 @@ class Data(object):
             specified boundaries
 
         '''
-        if 'bg' in kwargs:
-            if kwargs['bg'][0] == 'c':
-                bg = np.float(kwargs['bg'][1:])
-            elif kwargs['bg'][0] == 'p':
-                bg = self.bg_estimate(kwargs['bg'][1:])
+        if 'background' in kwargs:
+            background = self.bg_estimate(kwargs['background'])
         else:
-            bg = 0
+            background = 0
 
         result = 0
         if 'bounds' in kwargs:
             to_fit = np.where(kwargs['bounds'])
             for i in range(4):
-                result += np.trapz(self.intensity[to_fit] - bg, x=self.Q[to_fit, i])
+                result += np.trapz(self.intensity[to_fit] - background, x=self.Q[to_fit, i])
         else:
             for i in range(4):
-                result += np.trapz(self.intensity - bg, x=self.Q[:, i])
+                result += np.trapz(self.intensity - background, x=self.Q[:, i])
 
         return result
 
@@ -599,14 +627,10 @@ class Data(object):
             (h, k, l, e)
 
         '''
-
-        if 'bg' in kwargs:
-            if kwargs['bg'][0] == 'c':
-                bg = np.float(kwargs['bg'][1:])
-            elif kwargs['bg'][0] == 'p':
-                bg = self.bg_estimate(kwargs['bg'][1:])
+        if 'background' in kwargs:
+            background = self.bg_estimate(kwargs['background'])
         else:
-            bg = 0
+            background = 0
 
         result = ()
         if 'bounds' in kwargs:
@@ -614,13 +638,13 @@ class Data(object):
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz(self.Q[to_fit, j] * (self.intensity[to_fit] - bg), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                    _result += np.trapz(self.Q[to_fit, j] * (self.intensity[to_fit] - background), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
                 result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz(self.Q[:, j] * (self.intensity - bg), x=self.Q[:, i]) / self.integrate(**kwargs)
+                    _result += np.trapz(self.Q[:, j] * (self.intensity - background), x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
@@ -641,13 +665,10 @@ class Data(object):
             (h, k, l, e)
 
         '''
-        if 'bg' in kwargs:
-            if kwargs['bg'][0] == 'c':
-                bg = np.float(kwargs['bg'][1:])
-            elif kwargs['bg'][0] == 'p':
-                bg = self.bg_estimate(kwargs['bg'][1:])
+        if 'background' in kwargs:
+            background = self.bg_estimate(kwargs['background'])
         else:
-            bg = 0
+            background = 0
 
         result = ()
         if 'bounds' in kwargs:
@@ -655,13 +676,13 @@ class Data(object):
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz((self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity[to_fit] - bg), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                    _result += np.trapz((self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity[to_fit] - background), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
                 result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity - bg), x=self.Q[:, i]) / self.integrate(**kwargs)
+                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity - background), x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
