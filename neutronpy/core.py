@@ -426,17 +426,20 @@ class Data(object):
         detector = self.detector.copy()  # pylint: disable=access-member-before-definition
         monitor = self.monitor.copy()  # pylint: disable=access-member-before-definition
         time = self.time.copy()  # pylint: disable=access-member-before-definition
-
+        
+        tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
+        
         try:
-            tols = np.array(kwargs['tols'])
+            if kwargs['tols'] is not None:
+                tols = np.array(kwargs['tols'])
         except KeyError:
-            tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
+            pass
 
         for arg in args:
             combine = []
             for i in range(arg['Q'].shape[0]):
                 for j in range(self.Q.shape[0]):
-                    if np.all(np.abs(self.Q[j, :-1] - arg['Q'][i, :-1]) <= tols[:-1]):
+                    if np.all(np.abs(self.Q[j, :] - arg['Q'][i, :]) <= tols):
                         combine.append([i, j])
 
             for item in combine:
