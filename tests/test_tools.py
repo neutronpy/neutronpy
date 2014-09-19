@@ -71,7 +71,7 @@ class DataTest(unittest.TestCase):
 
     def test_analysis(self):
         data = self.build_data(clean=True)
-
+        
         self.assertAlmostEqual(data.integrate(), 45.8424794006, 6)
         self.assertTrue((data.position()[0] < 1e-15))
         self.assertAlmostEqual(data.width()[0], 0.3, 2)

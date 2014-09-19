@@ -3,9 +3,11 @@ r'''Tools Module
 '''
 from .constants import BOLTZMANN_IN_MEV_K, JOULES_TO_MEV
 from multiprocessing import cpu_count, Pool  # pylint: disable=no-name-in-module
+import numbers
 import numpy as np
 import re
 from scipy import constants
+
 
 
 def _call_bin_parallel(arg, **kwarg):
@@ -20,31 +22,28 @@ class Data(object):
 
     Parameters
     ----------
-    Q : ndarray, optional
-        Array of columns of h, k, l, e, and temp with shape (N, 5)
-
-    h : ndarray, optional
+    h : ndarray or float, optional
         Array of :math:`Q_x` in reciprocal lattice units.
 
-    k : ndarray, optional
+    k : ndarray or float, optional
         Array of :math:`Q_y` in reciprocal lattice units.
 
-    l : ndarray, optional
+    l : ndarray or float, optional
         Array of :math:`Q_z` in reciprocal lattice units.
 
-    e : ndarray, optional
+    e : ndarray or float, optional
         Array of :math:`\hbar \omega` in meV.
 
-    detector : ndarray, optional
-        Array of measured counts on detector.
-
-    monitor : ndarray, optional
-        Array of measured counts on monitor.
-
-    temp : ndarray, optional
+    temp : ndarray or float, optional
         Array of sample temperatures in K.
 
-    time : ndarray, optional
+    detector : ndarray or float, optional
+        Array of measured counts on detector.
+
+    monitor : ndarray or float, optional
+        Array of measured counts on monitor.
+
+    time : ndarray or float, optional
         Array of time per point in minutes.
 
     Returns
@@ -53,7 +52,38 @@ class Data(object):
         The data class for handling Triple Axis Spectrometer Data
 
     '''
-    def __init__(self, **kwargs):
+    def __init__(self, files=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., time=0., Q=None, **kwargs):
+        if files is not None:
+            self.load_file(*files)
+        else:           
+            if Q is None:
+                try:
+                    n_dim = max([len(item) for item in (h, k, l, e, temp, detector, monitor, time) if not isinstance(item, numbers.Number)])
+                except ValueError:
+                    n_dim = 1
+                
+                self.Q = np.empty((n_dim, 5))
+
+                for arg, key in zip((h, k, l, e, temp), ('h', 'k', 'l', 'e', 'temp')):
+                    if isinstance(arg, numbers.Number):
+                        arg = np.array([arg] * n_dim)
+                    try: 
+                        setattr(self, key, np.array(arg))
+                    except ValueError:
+                        raise
+            else:
+                self.Q = Q
+            
+            for arg, key in zip((detector, monitor, time), ('detector', 'monitor', 'time')):
+                if isinstance(arg, numbers.Number):
+                    arg = np.array([arg] * n_dim)
+                setattr(self, key, np.array(arg))
+
+        self.m0 = np.nanmax(self.monitor)
+        self.t0 = np.nanmax(self.time)
+        
+        self.time_norm = False
+        
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -82,6 +112,120 @@ class Data(object):
     def __pow__(self, right):
         self.detector **= right
         return self
+
+    @property
+    def h(self):
+        return self.Q[:, 0]
+
+    @h.setter
+    def h(self, value):
+        if isinstance(value, numbers.Number):
+            value = [value] * self.Q.shape[0]
+        self.Q[:, 0] = np.array(value)
+
+    @property
+    def k(self):
+        return self.Q[:, 1]
+
+    @k.setter
+    def k(self, value):
+        if isinstance(value, numbers.Number):
+            value = [value] * self.Q.shape[0]
+        self.Q[:, 1] = np.array(value)
+
+    @property
+    def l(self):
+        return self.Q[:, 2]
+
+    @l.setter
+    def l(self, value):
+        if isinstance(value, numbers.Number):
+            value = [value] * self.Q.shape[0]
+        self.Q[:, 2] = np.array(value)
+
+    @property
+    def e(self):
+        return self.Q[:, 3]
+
+    @e.setter
+    def e(self, value):
+        if isinstance(value, numbers.Number):
+            value = [value] * self.Q.shape[0]
+        self.Q[:, 3] = np.array(value)
+
+    @property
+    def temp(self):
+        return self.Q[:, 4]
+
+    @temp.setter
+    def temp(self, value):
+        if isinstance(value, numbers.Number):
+            value = [value] * self.Q.shape[0]
+        self.Q[:, 4] = np.array(value)
+
+    @property
+    def intensity(self):
+        r'''Returns the monitor normalized intensity
+
+        Parameters
+        ----------
+        m0 : float, optional
+            Desired monitor to normalize the intensity. If not specified, m0
+            is set to the max monitor.
+
+        Returns
+        -------
+        intensity : ndarray
+            The monitor normalized intensity scaled by m0
+
+        '''
+
+        if self.time_norm:
+            if self.t0 == 0:
+                self.t0 = np.nanmax(self.time)
+            return self.detector / self.time * self.t0
+        else:
+            if self.m0 == 0:
+                self.m0 = np.nanmax(self.monitor)
+            return self.detector / self.monitor * self.m0
+
+    @property
+    def error(self):
+        r'''Returns square-root error of monitor normalized intensity
+
+        Parameters
+        ----------
+        m0 : float, optional
+            Desired monitor to normalize the intensity
+
+        Returns
+        -------
+        error : ndarray
+            The square-root error of the monitor normalized intensity
+
+        '''
+        if self.time_norm:
+            return np.sqrt(self.detector) / self.time * self.t0
+        else:
+            return np.sqrt(self.detector) / self.monitor * self.m0
+
+    @property
+    def detailed_balance_factor(self):
+        r'''Returns the detailed balance factor (sometimes called the Bose
+        factor)
+
+        Parameters
+        ----------
+            None
+
+        Returns
+        -------
+        dbf : ndarray
+            The detailed balance factor (temperature correction)
+
+        '''
+
+        return (1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp))
 
     def load_file(self, *files, **kwargs):
         r'''Loads one or more files in either SPICE, ICE or ICP formats
@@ -188,34 +332,34 @@ class Data(object):
                     self.combine_data(output, tols=tols)
 
     def build_Q(self, **kwargs):
-        r'''Internal method for constructing :math:`Q(q, hw)` from h, k, l,
-        and energy
+        r'''Internal method for constructing :math:`Q(q, hw, temp)` from h, k, l,
+        energy, and temperature
 
         Parameters
         ----------
         output : dictionary, optional
-            A dictionary of the h, k, l, and e arrays to form into a column
+            A dictionary of the h, k, l, e and temp arrays to form into a column
             oriented array
 
         Returns
         -------
-        Q : ndarray, shape (N, 4,)
-            Returns Q (h, k, l, e) in a column oriented array.
+        Q : ndarray, shape (N, 5)
+            Returns Q (h, k, l, e, temp) in a column oriented array.
 
         '''
         args = ()
         if 'output' in kwargs:
             for i in ['h', 'k', 'l', 'e', 'temp']:
                 args += (kwargs['output'][i],)
+
+            return np.vstack((item.flatten() for item in args)).T
         else:
             for i in ['h', 'k', 'l', 'e', 'temp']:
                 args += (getattr(self, i),)
 
-        _Q = np.vstack((item.flatten() for item in args)).T
-        order = np.lexsort([_Q[:, i] for i in reversed(range(_Q.shape[1]))])
-
-#         return _Q[order]
-        return _Q
+            self.Q = np.vstack((item.flatten() for item in args)).T
+        
+        return np.vstack((item.flatten() for item in args)).T
 
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
@@ -287,106 +431,11 @@ class Data(object):
             for i, var in enumerate(['h', 'k', 'l', 'e', 'temp']):
                 setattr(self, var, self.Q[:, i])
 
-    def intensity(self, time=False, **kwargs):
-        r'''Returns the monitor normalized intensity
-
-        Parameters
-        ----------
-        m0 : float, optional
-            Desired monitor to normalize the intensity. If not specified, m0
-            is set to the max monitor.
-
-        Returns
-        -------
-        intensity : ndarray
-            The monitor normalized intensity scaled by m0
-
-        '''
-        if time:
-            try:
-                t0 = kwargs['m0']
-            except KeyError:
-                try:
-                    t0 = self.t0
-                except AttributeError:
-                    self.t0 = t0 = np.nanmax(self.time)
-
-            return self.detector / self.time * t0
-        else:
-            try:
-                m0 = kwargs['m0']
-            except KeyError:
-                try:
-                    m0 = self.m0
-                except AttributeError:
-                    self.m0 = m0 = np.nanmax(self.monitor)
-
-            return self.detector / self.monitor * m0
-
-    def error(self, time=False, **kwargs):
-        r'''Returns square-root error of monitor normalized intensity
-
-        Parameters
-        ----------
-        m0 : float, optional
-            Desired monitor to normalize the intensity
-
-        Returns
-        -------
-        error : ndarray
-            The square-root error of the monitor normalized intensity
-
-        '''
-        if time:
-            try:
-                t0 = kwargs['m0']
-            except KeyError:
-                try:
-                    t0 = self.t0
-                except AttributeError:
-                    self.t0 = t0 = np.nanmax(self.time)
-
-            return np.sqrt(self.detector) / self.time * t0
-        else:
-            try:
-                m0 = kwargs['m0']
-            except KeyError:
-                try:
-                    m0 = self.m0
-                except AttributeError:
-                    self.m0 = m0 = np.nanmax(self.monitor)
-
-            return np.sqrt(self.detector) / self.monitor * m0
-#         return np.sqrt(np.abs(self.intensity(time=time, **kwargs)))
-
-    def detailed_balance_factor(self, **kwargs):
-        r'''Returns the detailed balance factor (sometimes called the Bose
-        factor)
-
-        Parameters
-        ----------
-        temp : float, optional
-            If not already a property of the class, the sample temperature
-            can be specified as a float.
-
-        Returns
-        -------
-        dbf : ndarray
-            The detailed balance factor (temperature correction)
-
-        '''
-        try:
-            self.temps = np.zeros(self.Q.shape[0]) + kwargs['temp']
-        except KeyError:
-            pass
-
-        return (1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temps))
-
     def bg_estimate(self, perc):
         r'''Estimate the background by averaging the
         bottom perc % of points that are >= 0
         '''
-        inten = self.intensity()[self.intensity() >= 0.]
+        inten = self.intensity[self.intensity >= 0.]
         Npts = inten.size * (perc / 100.)
         min_vals = inten[np.argsort(inten)[:Npts]]
         bg = np.average(min_vals)
@@ -503,10 +552,10 @@ class Data(object):
         if 'bounds' in kwargs:
             to_fit = np.where(kwargs['bounds'])
             for i in range(4):
-                result += np.trapz(self.intensity()[to_fit] - bg, x=self.Q[to_fit, i])
+                result += np.trapz(self.intensity[to_fit] - bg, x=self.Q[to_fit, i])
         else:
             for i in range(4):
-                result += np.trapz(self.intensity() - bg, x=self.Q[:, i])
+                result += np.trapz(self.intensity - bg, x=self.Q[:, i])
 
         return result
 
@@ -541,13 +590,13 @@ class Data(object):
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz(self.Q[to_fit, j] * (self.intensity()[to_fit] - bg), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                    _result += np.trapz(self.Q[to_fit, j] * (self.intensity[to_fit] - bg), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
                 result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz(self.Q[:, j] * (self.intensity() - bg), x=self.Q[:, i]) / self.integrate(**kwargs)
+                    _result += np.trapz(self.Q[:, j] * (self.intensity - bg), x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
@@ -582,13 +631,13 @@ class Data(object):
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz((self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity()[to_fit] - bg), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                    _result += np.trapz((self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity[to_fit] - bg), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
                 result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity() - bg), x=self.Q[:, i]) / self.integrate(**kwargs)
+                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity - bg), x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
@@ -675,11 +724,11 @@ class Data(object):
             binned_data = self.bin(to_bin)
             to_plot = np.where(binned_data.monitor > 0)
             dims = {'h': binned_data.Q[to_plot, 0][0], 'k': binned_data.Q[to_plot, 1][0], 'l': binned_data.Q[to_plot, 2][0], 'e': binned_data.Q[to_plot, 3][0],
-                'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.intensity()[to_plot]}
+                'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.intensity[to_plot], 'error': binned_data.error[to_plot]}
         else:
             to_plot = np.where(self.monitor > 0)
             dims = {'h': self.Q[to_plot, 0][0], 'k': self.Q[to_plot, 1][0], 'l': self.Q[to_plot, 2][0], 'e': self.Q[to_plot, 3][0],
-                'temp': self.Q[to_plot, 4][0], 'intensity': self.intensity()[to_plot]}
+                'temp': self.Q[to_plot, 4][0], 'intensity': self.intensity[to_plot], 'error': self.error[to_plot]}
 
         if smooth_options['sigma'] > 0:
             from scipy.ndimage.filters import gaussian_filter
@@ -793,7 +842,8 @@ class Energy():
         self.temp = self.e / constants.k / JOULES_TO_MEV
         self.freq = (self.e / JOULES_TO_MEV / constants.hbar / 2. / np.pi / 1.e12)
 
-    def print_values(self):
+    @property
+    def values(self):
         print(u'''
 Energy: {0:3.3f} meV
 Wavelength: {1:3.3f} Å
