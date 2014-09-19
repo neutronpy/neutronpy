@@ -855,28 +855,33 @@ class Data(object):
 class Energy():
     r'''Class containing the most commonly used properties of a neutron beam
     given some initial input, e.g. energy, wavelength, wavevector,
-    temperature, or frequency'''
+    temperature, or frequency
+    
+    '''
+    def __init__(self, energy=None, wavelength=None, velocity=None, wavevector=None, temperature=None, frequency=None):
+        try:
+            if energy is None: 
+                if wavelength is not None:
+                    self.energy = constants.h ** 2 / (2. * constants.m_n * (wavelength / 1.e10) ** 2) * JOULES_TO_MEV
+                elif velocity is not None:
+                    self.energy = 1. / 2. * constants.m_n * velocity ** 2 * JOULES_TO_MEV
+                elif wavevector is not None:
+                    self.energy = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / wavevector) / 1.e10) ** 2) * JOULES_TO_MEV)
+                elif temperature is not None:
+                    self.energy = constants.k * temperature * JOULES_TO_MEV
+                elif frequency is not None:
+                    self.energy = (constants.hbar * frequency * 2. * np.pi * JOULES_TO_MEV * 1.e12)
+            else:
+                self.energy = energy
 
-    def __init__(self, e=None, l=None, v=None, k=None, temp=None, freq=None):
-        if e is None:
-            if l is not None:
-                self.e = constants.h ** 2 / (2. * constants.m_n * (l / 1.e10) ** 2) * JOULES_TO_MEV
-            elif v is not None:
-                self.e = 1. / 2. * constants.m_n * v ** 2 * JOULES_TO_MEV
-            elif k is not None:
-                self.e = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / k) / 1.e10) ** 2) * JOULES_TO_MEV)
-            elif temp is not None:
-                self.e = constants.k * temp * JOULES_TO_MEV
-            elif freq is not None:
-                self.e = (constants.hbar * freq * 2. * np.pi * JOULES_TO_MEV * 1.e12)
-        else:
-            self.e = e
+            self.wavelength = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.energy / JOULES_TO_MEV)) * 1.e10
+            self.velocity = np.sqrt(2. * self.energy / JOULES_TO_MEV / constants.m_n)
+            self.wavevector = 2. * np.pi / self.wavelength
+            self.temperature = self.energy / constants.k / JOULES_TO_MEV
+            self.frequency = (self.energy / JOULES_TO_MEV / constants.hbar / 2. / np.pi / 1.e12)
 
-        self.l = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.e / JOULES_TO_MEV)) * 1.e10
-        self.v = np.sqrt(2. * self.e / JOULES_TO_MEV / constants.m_n)
-        self.k = 2. * np.pi / self.l
-        self.temp = self.e / constants.k / JOULES_TO_MEV
-        self.freq = (self.e / JOULES_TO_MEV / constants.hbar / 2. / np.pi / 1.e12)
+        except AttributeError:
+            raise AttributeError('You must define at least one of the following: energy, wavelength, velocity, wavevector, temperature, frequency')
 
     @property
     def values(self):
@@ -887,4 +892,4 @@ Wavevector: {2:3.3f} 1/Å
 Velocity: {3:3.3f} m/s
 Temperature: {4:3.3f} K
 Frequency: {5:3.3f} THz
-'''.format(self.e, self.l, self.k, self.v, self.temp, self.freq))
+'''.format(self.energy, self.wavelength, self.wavevector, self.velocity, self.temperature, self.frequency))
