@@ -47,13 +47,13 @@ class Data(object):
 
     m0 : float, optional
         Monitor to which detector counts are normalized in :py:meth:`.Data.intensity` or :py:meth:`.Data.error` call
-    
+
     t0 : float, optional
         Time to which detector counts are normalized in :py:meth:`.Data.intensity` or :py:meth:`.Data.error` call if ``time_norm`` is True
-    
+
     time_norm : bool, optional
         If True, calls to :py:meth:`.Data.intensity` and :py:meth:`.Data.error` with normalize to time instead of monitor
-        
+
     Returns
     -------
     Data object
@@ -426,9 +426,9 @@ class Data(object):
         detector = self.detector.copy()  # pylint: disable=access-member-before-definition
         monitor = self.monitor.copy()  # pylint: disable=access-member-before-definition
         time = self.time.copy()  # pylint: disable=access-member-before-definition
-        
+
         tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
-        
+
         try:
             if kwargs['tols'] is not None:
                 tols = np.array(kwargs['tols'])
@@ -495,7 +495,7 @@ class Data(object):
 
         elif bg_params['type'] == 'minimum':
             return min(self.intensity)
-        
+
         else:
             return 0
 
