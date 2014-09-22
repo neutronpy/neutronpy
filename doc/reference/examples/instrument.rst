@@ -1,5 +1,5 @@
-Example: Resolution calculation with Instrument Class
-=====================================================
+Resolution calculation with Instrument Class
+============================================
 
 *Note: This module is still a work-in-progress and the usage of these classes and/or functions will likely change in the near future.*
 
