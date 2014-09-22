@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :release:`0.1.2 <2014-09-22>`
+* :feature:`11` tools package has been changed to core package and package contents are accessible from root level ``neutronpy.``
+* :support:`12` Major overhaul of documentation, including new theme based on ReadTheDocs style
 * :release:`v0.1.1 <2014-09-12>`
 * :bug:`5 major` Update :py:meth:`.Data.bin` to use binary search algorithm for speed increase
 * :feature:`6` Added time to :py:class:`.Data` for normalization purposes
