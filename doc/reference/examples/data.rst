@@ -1,5 +1,5 @@
-Example: Data handling with the Data Class
-==========================================
+Data handling with the Data Class
+=================================
 
 *Note: This module is still a work-in-progress and the usage of these classes and/or functions may change in the future.*
 

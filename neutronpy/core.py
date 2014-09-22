@@ -3,6 +3,7 @@ r'''Tools Module
 '''
 from .constants import BOLTZMANN_IN_MEV_K, JOULES_TO_MEV
 from multiprocessing import cpu_count, Pool  # pylint: disable=no-name-in-module
+import numbers
 import numpy as np
 import re
 from scipy import constants
@@ -15,45 +16,97 @@ def _call_bin_parallel(arg, **kwarg):
 
 
 class Data(object):
-    r'''Data class for handling multi-dimensional TAS data. If input file type
+    r'''Data class for handling multi-dimensional scattering data. If input file type
     is not supported, data can be entered manually.
 
     Parameters
     ----------
-    Q : ndarray, optional
-        Array of columns of h, k, l, e, and temp with shape (N, 5)
-
-    h : ndarray, optional
+    h : ndarray or float, optional
         Array of :math:`Q_x` in reciprocal lattice units.
 
-    k : ndarray, optional
+    k : ndarray or float, optional
         Array of :math:`Q_y` in reciprocal lattice units.
 
-    l : ndarray, optional
+    l : ndarray or float, optional
         Array of :math:`Q_z` in reciprocal lattice units.
 
-    e : ndarray, optional
+    e : ndarray or float, optional
         Array of :math:`\hbar \omega` in meV.
 
-    detector : ndarray, optional
-        Array of measured counts on detector.
-
-    monitor : ndarray, optional
-        Array of measured counts on monitor.
-
-    temp : ndarray, optional
+    temp : ndarray or float, optional
         Array of sample temperatures in K.
 
-    time : ndarray, optional
+    detector : ndarray or float, optional
+        Array of measured counts on detector.
+
+    monitor : ndarray or float, optional
+        Array of measured counts on monitor.
+
+    time : ndarray or float, optional
         Array of time per point in minutes.
 
-    Returns
-    -------
-    Data Class
-        The data class for handling Triple Axis Spectrometer Data
+    m0 : float, optional
+        Monitor to which detector counts are normalized in :py:attr:`.Data.intensity` or :py:attr:`.Data.error` call
 
+    t0 : float, optional
+        Time to which detector counts are normalized in :py:attr:`.Data.intensity` or :py:attr:`.Data.error` call if :py:data:`time_norm` is True
+
+    time_norm : bool, optional
+        If True, calls to :py:attribute:`.Data.intensity` and :py:attr:`.Data.error` with normalize to time instead of monitor
+
+    Attributes
+    ----------
+    h
+    k
+    l
+    e
+    temp
+    intensity
+    error
+    detailed_balance_factor
+    
+    Methods
+    -------
+    bin
+    integrate
+    position
+    width
+    load_file
+    plot
+    
     '''
-    def __init__(self, **kwargs):
+    def __init__(self, files=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., time=0., Q=None, **kwargs):
+        if files is not None:
+            self.load_file(*files)
+        else:
+            if Q is None:
+                try:
+                    n_dim = max([len(item) for item in (h, k, l, e, temp, detector, monitor, time) if not isinstance(item, numbers.Number)])
+                except ValueError:
+                    n_dim = 1
+
+                self.Q = np.empty((n_dim, 5))
+
+                for arg, key in zip((h, k, l, e, temp), ('h', 'k', 'l', 'e', 'temp')):
+                    if isinstance(arg, numbers.Number):
+                        arg = np.array([arg] * n_dim)
+                    try:
+                        setattr(self, key, np.array(arg))
+                    except ValueError:
+                        raise
+            else:
+                self.Q = Q
+
+            for arg, key in zip((detector, monitor, time), ('detector', 'monitor', 'time')):
+                if isinstance(arg, numbers.Number):
+                    arg = np.array([arg] * n_dim)
+                setattr(self, key, np.array(arg))
+
+        self.m0 = np.nanmax(self.monitor)
+        self.t0 = np.nanmax(self.time)
+
+        self.time_norm = False
+
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -82,6 +135,144 @@ class Data(object):
     def __pow__(self, right):
         self.detector **= right
         return self
+
+    @property
+    def h(self):
+        r'''Returns lattice parameter q\ :sub:`x`\ , *i.e.* h
+        
+        Equivalent to Q[:, 0]
+        '''
+        return self.Q[:, 0]
+
+    @h.setter
+    def h(self, value):
+        r'''Set h to appropriate column of Q
+        '''
+        if isinstance(value, numbers.Number):
+            value = [value] * self.Q.shape[0]
+        try:
+            self.Q[:, 0] = np.array(value)
+        except ValueError:
+            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
+
+    @property
+    def k(self):
+        r'''Returns lattice parameter q\ :sub:`y`\ , *i.e.* k
+        
+        Equivalent to Q[:, 1]
+        '''
+        return self.Q[:, 1]
+
+    @k.setter
+    def k(self, value):
+        r'''Set k to appropriate column of Q
+        '''
+        if isinstance(value, numbers.Number):
+            value = [value] * self.Q.shape[0]
+        try:
+            self.Q[:, 1] = np.array(value)
+        except ValueError:
+            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
+
+    @property
+    def l(self):
+        r'''Returns lattice parameter q\ :sub:`z`\ , *i.e.* l
+        
+        Equivalent to Q[:, 2]
+        '''
+        return self.Q[:, 2]
+
+    @l.setter
+    def l(self, value):
+        r'''Set l to appropriate column of Q
+        '''
+        if isinstance(value, numbers.Number):
+            value = [value] * self.Q.shape[0]
+        try:
+            self.Q[:, 2] = np.array(value)
+        except ValueError:
+            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
+
+    @property
+    def e(self):
+        r'''Returns energy transfer
+        
+        Equivalent to Q[:, 3]
+        '''
+        return self.Q[:, 3]
+
+    @e.setter
+    def e(self, value):
+        r'''Set e to appropriate column of Q
+        '''
+        if isinstance(value, numbers.Number):
+            value = [value] * self.Q.shape[0]
+        try:
+            self.Q[:, 3] = np.array(value)
+        except ValueError:
+            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
+
+    @property
+    def temp(self):
+        r'''Returns temperature
+        
+        Equivalent to Q[:, 4]
+        '''
+        return self.Q[:, 4]
+
+    @temp.setter
+    def temp(self, value):
+        r'''Set temp to appropriate column of Q
+        '''
+        if isinstance(value, numbers.Number):
+            value = [value] * self.Q.shape[0]
+        try:
+            self.Q[:, 4] = np.array(value)
+        except ValueError:
+            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
+
+    @property
+    def intensity(self):
+        r'''Returns the monitor or time normalized intensity
+        
+        '''
+
+        if self.time_norm:
+            if self.t0 == 0:
+                self.t0 = np.nanmax(self.time)
+            return self.detector / self.time * self.t0
+        else:
+            if self.m0 == 0:
+                self.m0 = np.nanmax(self.monitor)
+            return self.detector / self.monitor * self.m0
+
+    @property
+    def error(self):
+        r'''Returns square-root error of monitor or time normalized intensity
+
+        '''
+        if self.time_norm:
+            return np.sqrt(self.detector) / self.time * self.t0
+        else:
+            return np.sqrt(self.detector) / self.monitor * self.m0
+
+    @property
+    def detailed_balance_factor(self):
+        r'''Returns the detailed balance factor (sometimes called the Bose
+        factor)
+
+        Parameters
+        ----------
+            None
+
+        Returns
+        -------
+        dbf : ndarray
+            The detailed balance factor (temperature correction)
+
+        '''
+
+        return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
 
     def load_file(self, *files, **kwargs):
         r'''Loads one or more files in either SPICE, ICE or ICP formats
@@ -188,34 +379,34 @@ class Data(object):
                     self.combine_data(output, tols=tols)
 
     def build_Q(self, **kwargs):
-        r'''Internal method for constructing :math:`Q(q, hw)` from h, k, l,
-        and energy
+        r'''Internal method for constructing :math:`Q(q, hw, temp)` from h, k, l,
+        energy, and temperature
 
         Parameters
         ----------
         output : dictionary, optional
-            A dictionary of the h, k, l, and e arrays to form into a column
+            A dictionary of the h, k, l, e and temp arrays to form into a column
             oriented array
 
         Returns
         -------
-        Q : ndarray, shape (N, 4,)
-            Returns Q (h, k, l, e) in a column oriented array.
+        Q : ndarray, shape (N, 5)
+            Returns Q (h, k, l, e, temp) in a column oriented array.
 
         '''
         args = ()
         if 'output' in kwargs:
             for i in ['h', 'k', 'l', 'e', 'temp']:
                 args += (kwargs['output'][i],)
+
+            return np.vstack((item.flatten() for item in args)).T
         else:
             for i in ['h', 'k', 'l', 'e', 'temp']:
                 args += (getattr(self, i),)
 
-        _Q = np.vstack((item.flatten() for item in args)).T
-        order = np.lexsort([_Q[:, i] for i in reversed(range(_Q.shape[1]))])
+            self.Q = np.vstack((item.flatten() for item in args)).T
 
-#         return _Q[order]
-        return _Q
+        return np.vstack((item.flatten() for item in args)).T
 
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
@@ -235,23 +426,24 @@ class Data(object):
         None
 
         '''
-        time, monitor, detector, Q = self.time.copy(), self.monitor.copy(), self.detector.copy(), self.Q.copy()  # pylint: disable=access-member-before-definition
+        Q = self.Q.copy()
+        detector = self.detector.copy()  # pylint: disable=access-member-before-definition
+        monitor = self.monitor.copy()  # pylint: disable=access-member-before-definition
+        time = self.time.copy()  # pylint: disable=access-member-before-definition
+
+        tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
 
         try:
-            tols = kwargs['tols']
+            if kwargs['tols'] is not None:
+                tols = np.array(kwargs['tols'])
         except KeyError:
-            tols = None
-
-        if tols is None:
-            tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
-        elif type(tols) is not np.ndarray:
-            tols = np.array(tols)
+            pass
 
         for arg in args:
             combine = []
             for i in range(arg['Q'].shape[0]):
                 for j in range(self.Q.shape[0]):
-                    if np.all(np.abs(self.Q[j, :-1] - arg['Q'][i, :-1]) <= tols[:-1]):
+                    if np.all(np.abs(self.Q[j, :] - arg['Q'][i, :]) <= tols):
                         combine.append([i, j])
 
             for item in combine:
@@ -271,126 +463,45 @@ class Data(object):
         order = np.lexsort([Q[:, i] for i in reversed(range(Q.shape[1]))])
 
         if 'ret' in kwargs and kwargs['ret']:
-            new = Data(Q=Q[order], monitor=monitor[order], detector=detector[order], time=time[order])
-
-            for i, var in enumerate(['h', 'k', 'l', 'e', 'temp']):
-                setattr(new, var, new.Q[:, i])
-
-            return new
+            return Data(Q=Q[order], monitor=monitor[order], detector=detector[order], time=time[order])
 
         else:
-            self.Q = Q[order].copy()
-            self.monitor = monitor[order].copy()
-            self.detector = detector[order].copy()
-            self.time = time[order].copy()
+            self.Q = Q[order]
+            self.detector = detector[order]
+            self.monitor = monitor[order]
+            self.time = time[order]
 
-            for i, var in enumerate(['h', 'k', 'l', 'e', 'temp']):
-                setattr(self, var, self.Q[:, i])
-
-    def intensity(self, time=False, **kwargs):
-        r'''Returns the monitor normalized intensity
+    def bg_estimate(self, bg_params):
+        r'''Estimate the background according to ``type`` specified.
 
         Parameters
         ----------
-        m0 : float, optional
-            Desired monitor to normalize the intensity. If not specified, m0
-            is set to the max monitor.
+        bg_params : dict
+            Input dictionary has keys 'type' and 'value'. Types are
+                * 'constant' : background is the constant given by 'value'
+                * 'percent' : background is estimated by the bottom x%, where x is value
+                * 'minimum' : background is estimated as the detector counts
 
         Returns
         -------
-        intensity : ndarray
-            The monitor normalized intensity scaled by m0
-
+        background : float or ndarray
+            Value determined to be the background. Will return ndarray only if 'type' is 'constant' and 'value' is an ndarray
         '''
-        if time:
-            try:
-                t0 = kwargs['m0']
-            except KeyError:
-                try:
-                    t0 = self.t0
-                except AttributeError:
-                    self.t0 = t0 = np.nanmax(self.time)
+        if bg_params['type'] == 'constant':
+            return bg_params['value']
 
-            return self.detector / self.time * t0
+        elif bg_params['type'] == 'percent':
+            with self.intensity[self.intensity >= 0.] as inten:
+                Npts = inten.size * (bg_params['value'] / 100.)
+                min_vals = inten[np.argsort(inten)[:Npts]]
+                background = np.average(min_vals)
+                return background
+
+        elif bg_params['type'] == 'minimum':
+            return min(self.intensity)
+
         else:
-            try:
-                m0 = kwargs['m0']
-            except KeyError:
-                try:
-                    m0 = self.m0
-                except AttributeError:
-                    self.m0 = m0 = np.nanmax(self.monitor)
-
-            return self.detector / self.monitor * m0
-
-    def error(self, time=False, **kwargs):
-        r'''Returns square-root error of monitor normalized intensity
-
-        Parameters
-        ----------
-        m0 : float, optional
-            Desired monitor to normalize the intensity
-
-        Returns
-        -------
-        error : ndarray
-            The square-root error of the monitor normalized intensity
-
-        '''
-        if time:
-            try:
-                t0 = kwargs['m0']
-            except KeyError:
-                try:
-                    t0 = self.t0
-                except AttributeError:
-                    self.t0 = t0 = np.nanmax(self.time)
-
-            return np.sqrt(self.detector) / self.time * t0
-        else:
-            try:
-                m0 = kwargs['m0']
-            except KeyError:
-                try:
-                    m0 = self.m0
-                except AttributeError:
-                    self.m0 = m0 = np.nanmax(self.monitor)
-
-            return np.sqrt(self.detector) / self.monitor * m0
-#         return np.sqrt(np.abs(self.intensity(time=time, **kwargs)))
-
-    def detailed_balance_factor(self, **kwargs):
-        r'''Returns the detailed balance factor (sometimes called the Bose
-        factor)
-
-        Parameters
-        ----------
-        temp : float, optional
-            If not already a property of the class, the sample temperature
-            can be specified as a float.
-
-        Returns
-        -------
-        dbf : ndarray
-            The detailed balance factor (temperature correction)
-
-        '''
-        try:
-            self.temps = np.zeros(self.Q.shape[0]) + kwargs['temp']
-        except KeyError:
-            pass
-
-        return (1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temps))
-
-    def bg_estimate(self, perc):
-        r'''Estimate the background by averaging the
-        bottom perc % of points that are >= 0
-        '''
-        inten = self.intensity()[self.intensity() >= 0.]
-        Npts = inten.size * (perc / 100.)
-        min_vals = inten[np.argsort(inten)[:Npts]]
-        bg = np.average(min_vals)
-        return bg
+            return 0
 
     def _bin_parallel(self, Q_chunk):
         r'''Performs binning by finding data chunks to bin together.
@@ -404,7 +515,7 @@ class Data(object):
 
         Returns
         -------
-        (monitor, detector, temps) : tuple of ndarrays
+        (monitor, detector, temps) : tup of ndarrays
             New monitor, detector, and temps of the binned data
 
         '''
@@ -473,14 +584,14 @@ class Data(object):
 
         monitor, detector, time = (np.concatenate(arg) for arg in zip(*outputs))
 
-        return Data(Q=Q, monitor=monitor, detector=detector, time=time)
+        return Data(Q=Q, monitor=monitor, detector=detector, time=time, m0=self.m0, t0=self.t0)
 
     def integrate(self, **kwargs):
         r'''Returns the integrated intensity within given bounds
 
         Parameters
         ----------
-        bounds : Boolean, optional
+        bounds : bool, optional
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
@@ -491,22 +602,19 @@ class Data(object):
             specified boundaries
 
         '''
-        if 'bg' in kwargs:
-            if kwargs['bg'][0] == 'c':
-                bg = np.float(kwargs['bg'][1:])
-            elif kwargs['bg'][0] == 'p':
-                bg = self.bg_estimate(kwargs['bg'][1:])
+        if 'background' in kwargs:
+            background = self.bg_estimate(kwargs['background'])
         else:
-            bg = 0
+            background = 0
 
         result = 0
         if 'bounds' in kwargs:
             to_fit = np.where(kwargs['bounds'])
             for i in range(4):
-                result += np.trapz(self.intensity()[to_fit] - bg, x=self.Q[to_fit, i])
+                result += np.trapz(self.intensity[to_fit] - background, x=self.Q[to_fit, i])
         else:
             for i in range(4):
-                result += np.trapz(self.intensity() - bg, x=self.Q[:, i])
+                result += np.trapz(self.intensity - background, x=self.Q[:, i])
 
         return result
 
@@ -515,25 +623,21 @@ class Data(object):
 
         Parameters
         ----------
-        bounds : Boolean, optional
+        bounds : bool, optional
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
         Returns
         -------
-        result : tuple
+        result : tup
             The result is a tuple with position in each dimension of Q,
             (h, k, l, e)
 
         '''
-
-        if 'bg' in kwargs:
-            if kwargs['bg'][0] == 'c':
-                bg = np.float(kwargs['bg'][1:])
-            elif kwargs['bg'][0] == 'p':
-                bg = self.bg_estimate(kwargs['bg'][1:])
+        if 'background' in kwargs:
+            background = self.bg_estimate(kwargs['background'])
         else:
-            bg = 0
+            background = 0
 
         result = ()
         if 'bounds' in kwargs:
@@ -541,13 +645,13 @@ class Data(object):
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz(self.Q[to_fit, j] * (self.intensity()[to_fit] - bg), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                    _result += np.trapz(self.Q[to_fit, j] * (self.intensity[to_fit] - background), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
                 result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz(self.Q[:, j] * (self.intensity() - bg), x=self.Q[:, i]) / self.integrate(**kwargs)
+                    _result += np.trapz(self.Q[:, j] * (self.intensity - background), x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
@@ -557,24 +661,21 @@ class Data(object):
 
         Parameters
         ----------
-        bounds : Boolean, optional
+        bounds : bool, optional
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
         Returns
         -------
-        result : tuple
+        result : tup
             The result is a tuple with the width in each dimension of Q,
             (h, k, l, e)
 
         '''
-        if 'bg' in kwargs:
-            if kwargs['bg'][0] == 'c':
-                bg = np.float(kwargs['bg'][1:])
-            elif kwargs['bg'][0] == 'p':
-                bg = self.bg_estimate(kwargs['bg'][1:])
+        if 'background' in kwargs:
+            background = self.bg_estimate(kwargs['background'])
         else:
-            bg = 0
+            background = 0
 
         result = ()
         if 'bounds' in kwargs:
@@ -582,13 +683,13 @@ class Data(object):
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz((self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity()[to_fit] - bg), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                    _result += np.trapz((self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity[to_fit] - background), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
                 result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity() - bg), x=self.Q[:, i]) / self.integrate(**kwargs)
+                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity - background), x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
@@ -675,11 +776,11 @@ class Data(object):
             binned_data = self.bin(to_bin)
             to_plot = np.where(binned_data.monitor > 0)
             dims = {'h': binned_data.Q[to_plot, 0][0], 'k': binned_data.Q[to_plot, 1][0], 'l': binned_data.Q[to_plot, 2][0], 'e': binned_data.Q[to_plot, 3][0],
-                'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.intensity()[to_plot]}
+                    'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.intensity[to_plot], 'error': binned_data.error[to_plot]}
         else:
             to_plot = np.where(self.monitor > 0)
             dims = {'h': self.Q[to_plot, 0][0], 'k': self.Q[to_plot, 1][0], 'l': self.Q[to_plot, 2][0], 'e': self.Q[to_plot, 3][0],
-                'temp': self.Q[to_plot, 4][0], 'intensity': self.intensity()[to_plot]}
+                    'temp': self.Q[to_plot, 4][0], 'intensity': self.intensity[to_plot], 'error': self.error[to_plot]}
 
         if smooth_options['sigma'] > 0:
             from scipy.ndimage.filters import gaussian_filter
@@ -767,33 +868,69 @@ class Data(object):
             pass
 
 
-class Neutron():
-    r'''Class containing the most commonly used properties of a neutron beam
-    given some initial input, e.g. energy, wavelength, wavevector,
-    temperature, or frequency'''
+class Energy():
+    u'''Class containing the most commonly used properties of a neutron beam
+    given some initial input, e.g. energy, wavelength, velocity, wavevector,
+    temperature, or frequency. At least one input must be supplied.
 
-    def __init__(self, e=None, l=None, v=None, k=None, temp=None, freq=None):
-        if e is None:
-            if l is not None:
-                self.e = constants.h ** 2 / (2. * constants.m_n * (l / 1.e10) ** 2) * JOULES_TO_MEV
-            elif v is not None:
-                self.e = 1. / 2. * constants.m_n * v ** 2 * JOULES_TO_MEV
-            elif k is not None:
-                self.e = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / k) / 1.e10) ** 2) * JOULES_TO_MEV)
-            elif temp is not None:
-                self.e = constants.k * temp * JOULES_TO_MEV
-            elif freq is not None:
-                self.e = (constants.hbar * freq * 2. * np.pi * JOULES_TO_MEV * 1.e12)
-        else:
-            self.e = e
+    Parameters
+    ----------
+    energy : float
+        Neutron energy in millielectron volts (meV)
+    wavelength : float
+        Neutron wavelength in angstroms (Å)
+    velocity : float
+        Neutron velocity in meters per second (m/s)
+    wavevector : float
+        Neutron wavevector k in inverse angstroms (1/Å)
+    temperature : float
+        Neutron temperature in kelvin (K)
+    frequency : float
+        Neutron frequency in terahertz (THz)
 
-        self.l = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.e / JOULES_TO_MEV)) * 1.e10
-        self.v = np.sqrt(2. * self.e / JOULES_TO_MEV / constants.m_n)
-        self.k = 2. * np.pi / self.l
-        self.temp = self.e / constants.k / JOULES_TO_MEV
-        self.freq = (self.e / JOULES_TO_MEV / constants.hbar / 2. / np.pi / 1.e12)
+    Returns
+    -------
+    Energy object
+        The energy object containing the properties of the neutron beam
+    '''
+    def __init__(self, energy=None, wavelength=None, velocity=None, wavevector=None, temperature=None, frequency=None):
+        try:
+            if energy is None:
+                if wavelength is not None:
+                    self.energy = constants.h ** 2 / (2. * constants.m_n * (wavelength / 1.e10) ** 2) * JOULES_TO_MEV
+                elif velocity is not None:
+                    self.energy = 1. / 2. * constants.m_n * velocity ** 2 * JOULES_TO_MEV
+                elif wavevector is not None:
+                    self.energy = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / wavevector) / 1.e10) ** 2) * JOULES_TO_MEV)
+                elif temperature is not None:
+                    self.energy = constants.k * temperature * JOULES_TO_MEV
+                elif frequency is not None:
+                    self.energy = (constants.hbar * frequency * 2. * np.pi * JOULES_TO_MEV * 1.e12)
+            else:
+                self.energy = energy
 
-    def print_values(self):
+            self.wavelength = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.energy / JOULES_TO_MEV)) * 1.e10
+            self.velocity = np.sqrt(2. * self.energy / JOULES_TO_MEV / constants.m_n)
+            self.wavevector = 2. * np.pi / self.wavelength
+            self.temperature = self.energy / constants.k / JOULES_TO_MEV
+            self.frequency = (self.energy / JOULES_TO_MEV / constants.hbar / 2. / np.pi / 1.e12)
+
+        except AttributeError:
+            raise AttributeError('You must define at least one of the following: energy, wavelength, velocity, wavevector, temperature, frequency')
+
+    @property
+    def values(self):
+        '''Prints all of the properties of the Neutron beam
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        values : string
+            A string containing all the properties of the neutron including respective units
+        '''
         print(u'''
 Energy: {0:3.3f} meV
 Wavelength: {1:3.3f} Å
@@ -801,4 +938,4 @@ Wavevector: {2:3.3f} 1/Å
 Velocity: {3:3.3f} m/s
 Temperature: {4:3.3f} K
 Frequency: {5:3.3f} THz
-'''.format(self.e, self.l, self.k, self.v, self.temp, self.freq))
+'''.format(self.energy, self.wavelength, self.wavevector, self.velocity, self.temperature, self.frequency))
