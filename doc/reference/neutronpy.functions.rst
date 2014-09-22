@@ -1,7 +1,14 @@
+.. currentmodule:: neutronpy.functions
+
 neutronpy.functions module
 ==========================
 
-.. automodule:: neutronpy.functions
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autosummary::
+    :toctree: generated/
+
+    gaussian
+    gaussian2d
+    lorentzian
+    voigt
+    resolution
+    gaussian_ring

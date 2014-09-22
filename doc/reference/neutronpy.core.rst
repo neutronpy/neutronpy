@@ -1,7 +1,11 @@
+.. currentmodule:: neutronpy
+
 neutronpy.core module
 =====================
 
-.. automodule:: neutronpy.core
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autosummary::
+    :toctree: generated/
+
+    Data
+    Energy
+    Fitter

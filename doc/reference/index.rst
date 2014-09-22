@@ -1,3 +1,5 @@
+.. module:: neutronpy
+
 Module Table of Contents
 ========================
 

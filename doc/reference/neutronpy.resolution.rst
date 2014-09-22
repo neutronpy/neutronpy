@@ -1,7 +1,10 @@
+.. currentmodule:: neutronpy.resolution
+
 neutronpy.resolution module
 ===========================
 
-.. automodule:: neutronpy.resolution
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autosummary::
+    :toctree: generated/
+
+    Instrument
+    Sample

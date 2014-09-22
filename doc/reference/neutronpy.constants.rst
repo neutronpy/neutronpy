@@ -1,7 +1,13 @@
+.. currentmodule:: neutronpy.constants
+
 neutronpy.constants module
 ==========================
 
-.. automodule:: neutronpy.constants
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autosummary::
+    :toctree: generated/
+
+    magnetic_ion_j
+    periodic_table
+    scattering_lengths
+    JOULES_TO_MEV
+    BOLTZMANN_IN_MEV_K
