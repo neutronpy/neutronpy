@@ -1,18 +1,14 @@
 .. toctree::
     :hidden:
 
-    changelog
+    Reference <reference>
     Examples <examples>
     FAQs <faq>
-    Installation
+    Installation <installation>
     troubleshooting
     development
-    Roadmap <https://github.com/neutronpy/neutronpy/wiki/Roadmap>
-    contact
-
-.. neutronpy documentation master file, created by
-   sphinx-quickstart on Tue Jul 29 11:02:07 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+    Roadmap <roadmap>
+    changelog
+    Contact <contact>
 
 .. include:: ../README.rst
