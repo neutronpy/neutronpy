@@ -1,5 +1,5 @@
-Example: Form Factor calculation with the Material Class
-========================================================
+Form Factor calculation with the Material Class
+===============================================
 
 *Note: This module is still a work-in-progress and the usage of these classes and/or functions may change in the future.*
 

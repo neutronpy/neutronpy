@@ -22,6 +22,7 @@ __pycache__/
 _build
 *.egg-info/
 MANIFEST
+generated
 
 # Virtual Env #
 ###############
