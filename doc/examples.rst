@@ -7,4 +7,4 @@ Examples
     :glob:
     :maxdepth: 1
 
-    docs/examples/*
+    reference/examples/*

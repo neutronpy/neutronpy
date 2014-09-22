@@ -7,6 +7,7 @@ Submodules
 .. toctree::
 
    neutronpy.constants
+   neutronpy.core
    neutronpy.form_facs
    neutronpy.functions
    neutronpy.kmpfit
