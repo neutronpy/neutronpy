@@ -2,6 +2,6 @@ neutronpy
 =========
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 3
 
    neutronpy
