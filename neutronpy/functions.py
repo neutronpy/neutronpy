@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 r'''A collection of commonly used one- and two-dimensional functions in neutron scattering,
 
 =============== ==========================================================
@@ -204,7 +205,7 @@ def lorentzian(p, q):
     -----
     A Lorentzian profile is defined as:
 
-    .. math::    f(q) = \frac{a}{\pi} \frac{\frac{1}{2} \Gamma}{(q-q_0)^2 + (\frac{1}{2} \Gamma)^2},
+    .. math::    f(q) = \\frac{a}{\\pi} \\frac{\\frac{1}{2} \\Gamma}{(q-q_0)^2 + (\\frac{1}{2} \\Gamma)^2},
 
     where the integral over the whole function is *a*, and Γ is the full width at half maximum.
 
@@ -357,7 +358,7 @@ def resolution(p, q, mode='gaussian'):
     Notes
     -----
     A resolution profile is defined as a two dimensional gaussian that is comprised of elements of a
-    resolution matrix for a triple axis spectrometer, as produced by neutronpy.resolution.res_calc():
+    resolution matrix for a triple axis spectrometer, as produced by :py:meth:`.Instrument.calc_resolution`
 
     .. math::    f(q) = R_0 e^{-\frac{1}{2}(RM_{xx}^2 (x-x_0)^2 + RM_{yy}^2 (y-y_0)^2 + 2RM_{xy}(x-x_0)(y-y_0))},
 
@@ -410,7 +411,7 @@ def gaussian_ring(p, q):
             +-------+------------------------------+
 
     q : tuple of ndarray
-        Two input arrays of equivalent size and shape, e.g. formed with np.meshgrid().
+        Two input arrays of equivalent size and shape, e.g. formed with :py:func:`numpy.meshgrid`.
 
     Returns
     -------
