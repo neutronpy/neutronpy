@@ -22,16 +22,16 @@ class Data(object):
     Parameters
     ----------
     h : ndarray or float, optional
-        Array of :math:`Q_x` in reciprocal lattice units.
+        Array of Q\ :sub:`x` in reciprocal lattice units.
 
     k : ndarray or float, optional
-        Array of :math:`Q_y` in reciprocal lattice units.
+        Array of Q\ :sub:`y` in reciprocal lattice units.
 
     l : ndarray or float, optional
-        Array of :math:`Q_z` in reciprocal lattice units.
+        Array of Q\ :sub:`x` in reciprocal lattice units.
 
     e : ndarray or float, optional
-        Array of :math:`\hbar \omega` in meV.
+        Array of ℏω in meV.
 
     temp : ndarray or float, optional
         Array of sample temperatures in K.
@@ -46,13 +46,13 @@ class Data(object):
         Array of time per point in minutes.
 
     m0 : float, optional
-        Monitor to which detector counts are normalized in :py:attr:`.Data.intensity` or :py:attr:`.Data.error` call
+        Monitor to which detector counts are normalized in :attr:`intensity` or :attr:`error` call
 
     t0 : float, optional
-        Time to which detector counts are normalized in :py:attr:`.Data.intensity` or :py:attr:`.Data.error` call if :py:data:`time_norm` is True
+        Time to which detector counts are normalized in :attr:`intensity` or :attr:`error` call if :data:`time_norm` is True
 
     time_norm : bool, optional
-        If True, calls to :py:attribute:`.Data.intensity` and :py:attr:`.Data.error` with normalize to time instead of monitor
+        If True, calls to :attr:`intensity` and :attr:`error` with normalize to time instead of monitor
 
     Attributes
     ----------
@@ -64,7 +64,7 @@ class Data(object):
     intensity
     error
     detailed_balance_factor
-    
+
     Methods
     -------
     bin
@@ -73,7 +73,7 @@ class Data(object):
     width
     load_file
     plot
-    
+
     '''
     def __init__(self, files=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., time=0., Q=None, **kwargs):
         if files is not None:
@@ -139,7 +139,7 @@ class Data(object):
     @property
     def h(self):
         r'''Returns lattice parameter q\ :sub:`x`\ , *i.e.* h
-        
+
         Equivalent to Q[:, 0]
         '''
         return self.Q[:, 0]
@@ -158,7 +158,7 @@ class Data(object):
     @property
     def k(self):
         r'''Returns lattice parameter q\ :sub:`y`\ , *i.e.* k
-        
+
         Equivalent to Q[:, 1]
         '''
         return self.Q[:, 1]
@@ -177,7 +177,7 @@ class Data(object):
     @property
     def l(self):
         r'''Returns lattice parameter q\ :sub:`z`\ , *i.e.* l
-        
+
         Equivalent to Q[:, 2]
         '''
         return self.Q[:, 2]
@@ -196,7 +196,7 @@ class Data(object):
     @property
     def e(self):
         r'''Returns energy transfer
-        
+
         Equivalent to Q[:, 3]
         '''
         return self.Q[:, 3]
@@ -215,7 +215,7 @@ class Data(object):
     @property
     def temp(self):
         r'''Returns temperature
-        
+
         Equivalent to Q[:, 4]
         '''
         return self.Q[:, 4]
@@ -234,7 +234,7 @@ class Data(object):
     @property
     def intensity(self):
         r'''Returns the monitor or time normalized intensity
-        
+
         '''
 
         if self.time_norm:
@@ -379,7 +379,7 @@ class Data(object):
                     self.combine_data(output, tols=tols)
 
     def build_Q(self, **kwargs):
-        r'''Internal method for constructing :math:`Q(q, hw, temp)` from h, k, l,
+        u'''Internal method for constructing **Q**(*q*, ℏω, temp) from h, k, l,
         energy, and temperature
 
         Parameters
@@ -541,24 +541,29 @@ class Data(object):
         return (monitor, detector, time)
 
     def bin(self, to_bin):  # pylint: disable=unused-argument
-        r'''Rebin the data into the specified shape.
+        u'''Rebin the data into the specified shape.
 
         Parameters
         ----------
         to_bin : dict
-            h : list :math:`Q_x`: [lower bound, upper bound, number of points]
+            h : array_like
+                Q\ :sub:`x`: [lower bound, upper bound, number of points]
 
-            k : list :math:`Q_y`: [lower bound, upper bound, number of points]
+            k : array_like
+                Q\ :sub:`y` [lower bound, upper bound, number of points]
 
-            l : list :math:`Q_z`: [lower bound, upper bound, number of points]
+            l : array_like
+                Q\ :sub:`z` [lower bound, upper bound, number of points]
 
-            e : list :math:`\hbar \omega`: [lower bound, upper bound, number of points]
+            e : array_like
+                ℏω: [lower bound, upper bound, number of points]
 
-            temp : list :math:`T`: [lower bound, upper bound, number of points]
+            temp : array_like
+                *T*: [lower bound, upper bound, number of points]
 
         Returns
         -------
-        binned_data : :py:class:`.Data` object
+        binned_data : :class:`.Data` object
             The resulting data object with values binned to the specified bounds
 
         '''
