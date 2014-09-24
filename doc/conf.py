@@ -39,7 +39,7 @@ sys.path.insert(1, os.path.abspath('sphinxext'))
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.coverage',
-              'sphinx.ext.mathjax',
+              'sphinx.ext.pngmath',
               'sphinx.ext.intersphinx',
               'matplotlib.sphinxext.plot_directive',
               'numpydoc',
@@ -107,7 +107,7 @@ import sphinx_rtd_theme
 html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
-html_static_path = [os.path.join('..', '_static')]
+html_static_path = [os.path.join('.', '_static')]
 
 html_theme_options = {'logo': 'logo.png',
                       'logo_name': True,
