@@ -73,6 +73,11 @@ class Material(object):
     -------
     output : object
         Material Object defining a single crystal.
+        
+    Methods
+    -------
+    calc_str_fac
+    
 
     '''
 
@@ -162,6 +167,9 @@ class Ion(object):
     output : Object
         Ion object defining a single magnetic ion.
 
+    Methods
+    -------
+    calc_mag_form_fac
     '''
 
     def __init__(self, ion):
