@@ -77,7 +77,7 @@ class Data(object):
     '''
     def __init__(self, files=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., time=0., Q=None, **kwargs):
         if files is not None:
-            self.load_file(*files)
+            self.load_file(*files, mode=kwargs['mode'])
         else:
             if Q is None:
                 try:
@@ -320,8 +320,9 @@ class Data(object):
 
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
-                        setattr(self, key, value)
-                    self.Q = self.build_Q(**kwargs)
+                        if key not in ['h', 'k', 'l', 'e', 'temp']:
+                            setattr(self, key, value)
+                    self.Q = self.build_Q(output=output, **kwargs)
                 else:
                     output['Q'] = self.build_Q(output=output, **kwargs)
                     self.combine_data(output, tols=tols)
@@ -345,8 +346,9 @@ class Data(object):
 
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
-                        setattr(self, key, value)
-                    self.Q = self.build_Q(**kwargs)
+                        if key not in ['h', 'k', 'l', 'e', 'temp']:
+                            setattr(self, key, value)
+                    self.Q = self.build_Q(output=output, **kwargs)
                 else:
                     output['Q'] = self.build_Q(output=output, **kwargs)
                     self.combine_data(output, tols=tols)
@@ -372,8 +374,9 @@ class Data(object):
 
                 if not hasattr(self, 'Q'):
                     for key, value in output.items():
-                        setattr(self, key, value)
-                    self.Q = self.build_Q(**kwargs)
+                        if key not in ['h', 'k', 'l', 'e', 'temp']:
+                            setattr(self, key, value)
+                    self.Q = self.build_Q(output=output, **kwargs)
                 else:
                     output['Q'] = self.build_Q(output=output, **kwargs)
                     self.combine_data(output, tols=tols)
