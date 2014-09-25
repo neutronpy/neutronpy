@@ -77,6 +77,8 @@ class Data(object):
     '''
     def __init__(self, files=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., time=0., Q=None, **kwargs):
         if files is not None:
+            if type(files) is not tuple:
+                files = (files,)
             self.load_file(*files, mode=kwargs['mode'])
         else:
             if Q is None:
