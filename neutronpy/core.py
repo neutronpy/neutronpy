@@ -16,8 +16,8 @@ def _call_bin_parallel(arg, **kwarg):
 
 
 class Data(object):
-    r'''Data class for handling multi-dimensional scattering data. If input file type
-    is not supported, data can be entered manually.
+    r'''Data class for handling multi-dimensional scattering data. If input
+    file type is not supported, data can be entered manually.
 
     Parameters
     ----------
@@ -46,13 +46,16 @@ class Data(object):
         Array of time per point in minutes.
 
     m0 : float, optional
-        Monitor to which detector counts are normalized in :attr:`intensity` or :attr:`error` call
+        Monitor to which detector counts are normalized in :attr:`intensity`
+        or :attr:`error` call
 
     t0 : float, optional
-        Time to which detector counts are normalized in :attr:`intensity` or :attr:`error` call if :data:`time_norm` is True
+        Time to which detector counts are normalized in :attr:`intensity` or
+        :attr:`error` call if :data:`time_norm` is True
 
     time_norm : bool, optional
-        If True, calls to :attr:`intensity` and :attr:`error` with normalize to time instead of monitor
+        If True, calls to :attr:`intensity` and :attr:`error` with normalize to
+        time instead of monitor
 
     Attributes
     ----------
@@ -75,21 +78,32 @@ class Data(object):
     plot
 
     '''
-    def __init__(self, files=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., time=0., Q=None, **kwargs):
+    def __init__(self, files=None, Q=None, h=0., k=0., l=0., e=0., temp=0.,
+                 detector=0., monitor=0., time=0., **kwargs):
         if files is not None:
-            if type(files) is not tuple:
+            if 'filetype' in kwargs:
+                filetype = kwargs['filetype']
+            else:
+                filetype = 'auto'
+
+            if isinstance(files, str):
                 files = (files,)
-            self.load_file(*files, mode=kwargs['mode'])
+
+            self = load(files, filetype=filetype)
+        
         else:
             if Q is None:
                 try:
-                    n_dim = max([len(item) for item in (h, k, l, e, temp, detector, monitor, time) if not isinstance(item, numbers.Number)])
+                    n_dim = max([len(item) for item in
+                                 (h, k, l, e, temp, detector, monitor, time)
+                                 if not isinstance(item, numbers.Number)])
                 except ValueError:
                     n_dim = 1
 
                 self.Q = np.empty((n_dim, 5))
 
-                for arg, key in zip((h, k, l, e, temp), ('h', 'k', 'l', 'e', 'temp')):
+                for arg, key in zip((h, k, l, e, temp),
+                                    ('h', 'k', 'l', 'e', 'temp')):
                     if isinstance(arg, numbers.Number):
                         arg = np.array([arg] * n_dim)
                     try:
@@ -99,7 +113,8 @@ class Data(object):
             else:
                 self.Q = Q
 
-            for arg, key in zip((detector, monitor, time), ('detector', 'monitor', 'time')):
+            for arg, key in zip((detector, monitor, time),
+                                ('detector', 'monitor', 'time')):
                 if isinstance(arg, numbers.Number):
                     arg = np.array([arg] * n_dim)
                 setattr(self, key, np.array(arg))
@@ -114,14 +129,16 @@ class Data(object):
 
     def __add__(self, right):
         try:
-            output = {'Q': right.Q, 'detector': right.detector, 'monitor': right.monitor, 'time': right.time}
+            output = {'Q': right.Q, 'detector': right.detector,
+                      'monitor': right.monitor, 'time': right.time}
             return self.combine_data(output, ret=True)
         except AttributeError:
             raise AttributeError('Data types cannot be combined')
 
     def __sub__(self, right):
         try:
-            output = {'Q': right.Q, 'detector': np.negative(right.detector), 'monitor': right.monitor, 'time': right.time}
+            output = {'Q': right.Q, 'detector': np.negative(right.detector),
+                      'monitor': right.monitor, 'time': right.time}
             return self.combine_data(output, ret=True)
         except AttributeError:
             raise AttributeError('Data types cannot be combined')
@@ -155,7 +172,8 @@ class Data(object):
         try:
             self.Q[:, 0] = np.array(value)
         except ValueError:
-            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
+            raise ValueError('''Input value must have the shape ({0},) or be \
+                                a float.'''.format(self.Q.shape[0]))
 
     @property
     def k(self):
@@ -174,7 +192,8 @@ class Data(object):
         try:
             self.Q[:, 1] = np.array(value)
         except ValueError:
-            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
+            raise ValueError('''Input value must have the shape ({0},) or be \
+                                a float.'''.format(self.Q.shape[0]))
 
     @property
     def l(self):
@@ -193,7 +212,8 @@ class Data(object):
         try:
             self.Q[:, 2] = np.array(value)
         except ValueError:
-            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
+            raise ValueError('''Input value must have the shape ({0},) or be \
+                                a float.'''.format(self.Q.shape[0]))
 
     @property
     def e(self):
@@ -212,7 +232,8 @@ class Data(object):
         try:
             self.Q[:, 3] = np.array(value)
         except ValueError:
-            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
+            raise ValueError('''Input value must have the shape ({0},) or be \
+                                a float.'''.format(self.Q.shape[0]))
 
     @property
     def temp(self):
@@ -231,7 +252,8 @@ class Data(object):
         try:
             self.Q[:, 4] = np.array(value)
         except ValueError:
-            raise ValueError('Input value must have the shape ({0},) or be a float.'.format(self.Q.shape[0]))
+            raise ValueError('''Input value must have the shape ({0},) or be \
+                                a float.'''.format(self.Q.shape[0]))
 
     @property
     def intensity(self):
@@ -275,143 +297,6 @@ class Data(object):
         '''
 
         return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
-
-    def load_file(self, *files, **kwargs):
-        r'''Loads one or more files in either SPICE, ICE or ICP formats
-
-        Parameters
-        ----------
-        files : string
-            A file or non-keyworded list of files containing data for input.
-
-        mode : string
-            Specify file type (SPICE | ICE | ICP). Currently only file types
-            supported.
-
-        Returns
-        -------
-        None
-
-        '''
-        try:
-            tols = kwargs['tols']
-        except KeyError:
-            tols = None
-
-        try:
-            mode = kwargs['mode']
-        except KeyError:
-            raise ValueError('Input file type "mode" is not specified.')
-
-        if mode == 'SPICE':
-            keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'monitor': 'monitor', 'detector': 'detector', 'temp': 'tvti', 'time': 'time'}
-            for filename in files:
-                output = {}
-                with open(filename) as f:
-                    for line in f:
-                        if 'col_headers' in line:
-                            args = next(f).split()
-                            headers = [head.replace('.', '') for head in args[1:]]
-
-                args = np.loadtxt(filename, unpack=True, dtype=np.float64)
-
-                for key, value in keys.items():
-                    output[key] = args[headers.index(value)]
-
-                output['time'] /= 60.
-
-                if not hasattr(self, 'Q'):
-                    for key, value in output.items():
-                        if key not in ['h', 'k', 'l', 'e', 'temp']:
-                            setattr(self, key, value)
-                    self.Q = self.build_Q(output=output, **kwargs)
-                else:
-                    output['Q'] = self.build_Q(output=output, **kwargs)
-                    self.combine_data(output, tols=tols)
-
-        elif mode == 'ICE':
-            keys = {'h': 'QX', 'k': 'QY', 'l': 'QZ', 'e': 'E', 'detector': 'Detector', 'monitor': 'Monitor', 'temp': 'Temp', 'time': 'Time'}
-            for filename in files:
-                output = {}
-                with open(filename) as f:
-                    for line in f:
-                        if 'Columns' in line:
-                            args = line.split()
-                            headers = [head.replace('(', '').replace(')', '').replace('-', '') for head in args[1:]]
-
-                args = np.genfromtxt(filename, comments="#", dtype=np.float64, unpack=True, usecols=(0, 1, 2, 3, 4, 5, 6, 7, 8))
-
-                for key, value in keys.items():
-                    output[key] = args[headers.index(value)]
-
-                output['time'] /= 60.
-
-                if not hasattr(self, 'Q'):
-                    for key, value in output.items():
-                        if key not in ['h', 'k', 'l', 'e', 'temp']:
-                            setattr(self, key, value)
-                    self.Q = self.build_Q(output=output, **kwargs)
-                else:
-                    output['Q'] = self.build_Q(output=output, **kwargs)
-                    self.combine_data(output, tols=tols)
-
-        elif mode == 'ICP':
-            keys = {'h': 'Qx', 'k': 'Qy', 'l': 'Qz', 'e': 'E', 'detector': 'Counts', 'temp': 'Tact', 'time': 'min'}
-            for filename in files:
-                output = {}
-                with open(filename) as f:
-                    for i, line in enumerate(f):
-                        if i == 0:
-                            self.length = int(re.findall(r"(?='(.*?)')", line)[-2])
-                            self.m0 = float(re.findall(r"(?='(.*?)')", line)[-4].split()[0])
-                        if 'Q(x)' in line:
-                            args = line.split()
-                            headers = [head.replace('(', '').replace(')', '').replace('-', '') for head in args]
-                args = np.loadtxt(filename, unpack=True, dtype=np.float64, skiprows=12)
-
-                for key, value in keys.items():
-                    output[key] = args[headers.index(value)]
-
-                output['monitor'] = np.zeros(output['detector'].shape) + self.m0
-
-                if not hasattr(self, 'Q'):
-                    for key, value in output.items():
-                        if key not in ['h', 'k', 'l', 'e', 'temp']:
-                            setattr(self, key, value)
-                    self.Q = self.build_Q(output=output, **kwargs)
-                else:
-                    output['Q'] = self.build_Q(output=output, **kwargs)
-                    self.combine_data(output, tols=tols)
-
-    def build_Q(self, **kwargs):
-        u'''Internal method for constructing **Q**(*q*, ℏω, temp) from h, k, l,
-        energy, and temperature
-
-        Parameters
-        ----------
-        output : dictionary, optional
-            A dictionary of the h, k, l, e and temp arrays to form into a column
-            oriented array
-
-        Returns
-        -------
-        Q : ndarray, shape (N, 5)
-            Returns Q (h, k, l, e, temp) in a column oriented array.
-
-        '''
-        args = ()
-        if 'output' in kwargs:
-            for i in ['h', 'k', 'l', 'e', 'temp']:
-                args += (kwargs['output'][i],)
-
-            return np.vstack((item.flatten() for item in args)).T
-        else:
-            for i in ['h', 'k', 'l', 'e', 'temp']:
-                args += (getattr(self, i),)
-
-            self.Q = np.vstack((item.flatten() for item in args)).T
-
-        return np.vstack((item.flatten() for item in args)).T
 
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
@@ -468,7 +353,8 @@ class Data(object):
         order = np.lexsort([Q[:, i] for i in reversed(range(Q.shape[1]))])
 
         if 'ret' in kwargs and kwargs['ret']:
-            return Data(Q=Q[order], monitor=monitor[order], detector=detector[order], time=time[order])
+            return Data(Q=Q[order], monitor=monitor[order],
+                        detector=detector[order], time=time[order])
 
         else:
             self.Q = Q[order]
@@ -484,13 +370,15 @@ class Data(object):
         bg_params : dict
             Input dictionary has keys 'type' and 'value'. Types are
                 * 'constant' : background is the constant given by 'value'
-                * 'percent' : background is estimated by the bottom x%, where x is value
+                * 'percent' : background is estimated by the bottom x%, where x
+                  is value
                 * 'minimum' : background is estimated as the detector counts
 
         Returns
         -------
         background : float or ndarray
-            Value determined to be the background. Will return ndarray only if 'type' is 'constant' and 'value' is an ndarray
+            Value determined to be the background. Will return ndarray only if
+            `'type'` is `'constant'` and `'value'` is an ndarray
         '''
         if bg_params['type'] == 'constant':
             return bg_params['value']
@@ -524,20 +412,36 @@ class Data(object):
             New monitor, detector, and temps of the binned data
 
         '''
-        monitor, detector, time = np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0]), np.zeros(Q_chunk.shape[0])
+        monitor = np.empty(Q_chunk.shape[0])
+        detector = np.empty(Q_chunk.shape[0])
+        time = np.empty(Q_chunk.shape[0])
 
         for i, _Q_chunk in enumerate(Q_chunk):
-            _Q, _mon, _det, _tim = self.Q, self.monitor, self.detector, self.time
+            _Q = self.Q
+            _mon = self.monitor
+            _det = self.detector
+            _tim = self.time
 
             for j in range(_Q.shape[1]):
-                _order = np.lexsort([_Q[:, j - n] for n in reversed(range(_Q.shape[1]))])
-                _Q, _mon, _det, _tim = _Q[_order], _mon[_order], _det[_order], _tim[_order]
+                _order = np.lexsort([_Q[:, j - n] for n
+                                     in reversed(range(_Q.shape[1]))])
+                _Q = _Q[_order]
+                _mon = _mon[_order]
+                _det = _det[_order]
+                _tim = _tim[_order]
 
-                chunk0 = np.searchsorted(_Q[:, j], _Q_chunk[j] - self._qstep[j] / 2., side='left')
-                chunk1 = np.searchsorted(_Q[:, j], _Q_chunk[j] + self._qstep[j] / 2., side='right')
+                chunk0 = np.searchsorted(_Q[:, j],
+                                         _Q_chunk[j] - self._qstep[j] / 2.,
+                                         side='left')
+                chunk1 = np.searchsorted(_Q[:, j],
+                                         _Q_chunk[j] + self._qstep[j] / 2.,
+                                         side='right')
 
                 if chunk0 < chunk1:
-                    _Q, _mon, _det, _tim = _Q[chunk0:chunk1, :], _mon[chunk0:chunk1], _det[chunk0:chunk1], _tim[chunk0:chunk1]
+                    _Q = _Q[chunk0:chunk1, :]
+                    _mon = _mon[chunk0:chunk1]
+                    _det = _det[chunk0:chunk1]
+                    _tim = _tim[chunk0:chunk1]
 
             monitor[i] = np.average(_mon[chunk0:chunk1])
             detector[i] = np.average(_det[chunk0:chunk1])
@@ -596,7 +500,7 @@ class Data(object):
 
         return Data(Q=Q, monitor=monitor, detector=detector, time=time, m0=self.m0, t0=self.t0)
 
-    def integrate(self, **kwargs):
+    def integrate(self, background=None, **kwargs):
         r'''Returns the integrated intensity within given bounds
 
         Parameters
@@ -612,7 +516,7 @@ class Data(object):
             specified boundaries
 
         '''
-        if 'background' in kwargs:
+        if background is not None:
             background = self.bg_estimate(kwargs['background'])
         else:
             background = 0
@@ -628,7 +532,7 @@ class Data(object):
 
         return result
 
-    def position(self, **kwargs):
+    def position(self, background=None, **kwargs):
         r'''Returns the position of a peak within the given bounds
 
         Parameters
@@ -644,7 +548,7 @@ class Data(object):
             (h, k, l, e)
 
         '''
-        if 'background' in kwargs:
+        if background is not None:
             background = self.bg_estimate(kwargs['background'])
         else:
             background = 0
@@ -655,18 +559,20 @@ class Data(object):
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz(self.Q[to_fit, j] * (self.intensity[to_fit] - background), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                    y = self.Q[to_fit, j] * (self.intensity[to_fit] - background)
+                    _result += np.trapz(y, x=self.Q[to_fit, i]) / self.integrate(**kwargs)
                 result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz(self.Q[:, j] * (self.intensity - background), x=self.Q[:, i]) / self.integrate(**kwargs)
+                    y = self.Q[:, j] * (self.intensity - background)
+                    _result += np.trapz(y, x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
 
-    def width(self, **kwargs):
+    def width(self, background=None, **kwargs):
         r'''Returns the mean-squared width of a peak within the given bounds
 
         Parameters
@@ -682,7 +588,7 @@ class Data(object):
             (h, k, l, e)
 
         '''
-        if 'background' in kwargs:
+        if background is not None:
             background = self.bg_estimate(kwargs['background'])
         else:
             background = 0
@@ -693,19 +599,22 @@ class Data(object):
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz((self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity[to_fit] - background), x=self.Q[to_fit, i]) / self.integrate(**kwargs)
+                    y = (self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity[to_fit] - background)
+                    _result += np.trapz(y, x=self.Q[to_fit, i]) / self.integrate(**kwargs)
                 result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    _result += np.trapz((self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity - background), x=self.Q[:, i]) / self.integrate(**kwargs)
+                    y = (self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity - background)
+                    _result += np.trapz(y, x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
 
-    def plot(self, x, y, z=None, w=None, show_err=True, to_bin=None, plot_options=None, fit_options=None,
-             smooth_options=None, output_file='', show_plot=True, **kwargs):
+    def plot(self, x, y, z=None, w=None, show_err=True, to_bin=None,
+             plot_options=None, fit_options=None, smooth_options=None,
+             output_file='', show_plot=True, **kwargs):
         r'''Plots the data in the class. x and y must at least be specified,
         and z and/or w being specified will produce higher dimensional plots
         (contour and volume, respectively).
@@ -785,16 +694,27 @@ class Data(object):
         if to_bin:
             binned_data = self.bin(to_bin)
             to_plot = np.where(binned_data.monitor > 0)
-            dims = {'h': binned_data.Q[to_plot, 0][0], 'k': binned_data.Q[to_plot, 1][0], 'l': binned_data.Q[to_plot, 2][0], 'e': binned_data.Q[to_plot, 3][0],
-                    'temp': binned_data.Q[to_plot, 4][0], 'intensity': binned_data.intensity[to_plot], 'error': binned_data.error[to_plot]}
+            dims = {'h': binned_data.h[to_plot],
+                    'k': binned_data.k[to_plot],
+                    'l': binned_data.l[to_plot],
+                    'e': binned_data.e[to_plot],
+                    'temp': binned_data.temp[to_plot],
+                    'intensity': binned_data.intensity[to_plot],
+                    'error': binned_data.error[to_plot]}
         else:
             to_plot = np.where(self.monitor > 0)
-            dims = {'h': self.Q[to_plot, 0][0], 'k': self.Q[to_plot, 1][0], 'l': self.Q[to_plot, 2][0], 'e': self.Q[to_plot, 3][0],
-                    'temp': self.Q[to_plot, 4][0], 'intensity': self.intensity[to_plot], 'error': self.error[to_plot]}
+            dims = {'h': self.h[to_plot],
+                    'k': self.k[to_plot],
+                    'l': self.l[to_plot],
+                    'e': self.e[to_plot],
+                    'temp': self.temp[to_plot],
+                    'intensity': self.intensity[to_plot],
+                    'error': self.error[to_plot]}
 
         if smooth_options['sigma'] > 0:
             from scipy.ndimage.filters import gaussian_filter
-            dims['intensity'] = gaussian_filter(dims['intensity'], **smooth_options)
+            dims['intensity'] = gaussian_filter(dims['intensity'],
+                                                **smooth_options)
 
         x = dims[args['x']]
         y = dims[args['y']]
@@ -850,9 +770,11 @@ class Data(object):
 
                     return (y - funct(params, x)) / err
 
-                fitobj = Fitter(residuals, data=(fit_options['function'], x, y, np.sqrt(dims['intensity'])))
+                fitobj = Fitter(residuals, data=(fit_options['function'], x, y,
+                                                 np.sqrt(dims['intensity'])))
                 if 'fixp' in fit_options:
-                    fitobj.parinfo = [{'fixed': fix} for fix in fit_options['fixp']]
+                    fitobj.parinfo = [{'fixed': fix} for fix in
+                                      fit_options['fixp']]
 
                 try:
                     fitobj.fit(params0=fit_options['p'])
@@ -860,8 +782,9 @@ class Data(object):
                     fit_y = fit_options['function'](fitobj.params, fit_x)
                     plt.plot(fit_x, fit_y, '{0}-'.format(plot_options['fmt'][0]))
 
-                    param_string = u'\n'.join(['p$_{{{0:d}}}$: {1:.3f}'.format(i, p) for i, p in enumerate(fitobj.params)])
-                    chi2_params = u'$\chi^2$: {0:.3f}\n\n'.format(fitobj.chi2_min) + param_string  # pylint: disable=anomalous-backslash-in-string
+                    param_string = u'\n'.join(['p$_{{{0:d}}}$: {1:.3f}'.format(i, p)
+                                               for i, p in enumerate(fitobj.params)])
+                    chi2_params = u'$\chi^2$: {0:.3f}\n\n'.format(fitobj.chi2_min) + param_string
 
                     plt.annotate(chi2_params, xy=(0.05, 0.95), xycoords='axes fraction',
                                  horizontalalignment='left', verticalalignment='top',
@@ -876,6 +799,168 @@ class Data(object):
             plt.show()
         else:
             pass
+
+def load(files, filetype='auto', tols=1e-4, **kwargs):
+    r'''Loads one or more files and creates a :class:`Data` object with the
+    loaded data.
+
+    Parameters
+    ----------
+    files : str or tuple of str
+        A file or non-keyworded list of files containing data for input.
+
+    filetype : str, optional
+        Default: `'auto'`. Specify file type; Currently supported file types
+        are SPICE, ICE, and ICP. By default, the function will attempt to
+        determine the filetype automatically.
+
+    tols : float or array_like
+        Default: `1e-4`. A float or array of shape `(5,)` giving tolerances for
+        combining multiple files. If multiple points are within the given
+        tolerances then they will be combined into a single point. If a float
+        is given, tolerances will all be the same for all variables in **Q**.
+        If an array is given tolerances should be in the format
+        `[h, k, l, e, temp]`.
+
+    Returns
+    -------
+    Data : object
+        A :class:`Data` object populated with the data from the input file or
+        files.
+
+    '''
+    if isinstance(files, str):
+        files = (files,)
+
+    if isinstance(tols, numbers.Number):
+        tols = [tols for i in range(5)]
+
+    for filename in files:
+        if filetype == 'auto':
+            try:
+                filetype = detect_filetype(filename)
+            except ValueError:
+                raise
+
+        if filetype == 'SPICE':
+            data_keys = {'monitor': 'monitor', 'detector': 'detector',
+                         'time': 'time'}
+            Q_keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'temp': 'tvti'}
+            raw_data = {}
+
+            with open(filename) as f:
+                for line in f:
+                    if 'col_headers' in line:
+                        args = next(f).split()
+                        headers = [head for head in args[1:]]
+
+            args = np.genfromtxt(filename, unpack=True, dtype=np.float64)
+
+            _t0 = 60.
+
+        elif filetype == 'ICE':
+            data_keys = {'detector': 'Detector', 'monitor': 'Monitor',
+                         'time': 'Time'}
+            Q_keys = {'h': 'QX', 'k': 'QY', 'l': 'QZ', 'e': 'E',
+                      'temp': 'Temp'}
+            raw_data = {}
+            _t0 = 60.
+
+            with open(filename) as f:
+                for line in f:
+                    if 'Columns' in line:
+                        args = line.split()
+                        headers = [head for head in args[1:]]
+
+            args = np.genfromtxt(filename, usecols=(0, 1, 2, 3, 4, 5, 6, 7, 8),
+                                 unpack=True, comments="#", dtype=np.float64)
+
+        elif filetype == 'ICP':
+            data_keys = {'detector': 'Counts', 'time': 'min'}
+            Q_keys = {'h': 'Q(x)', 'k': 'Q(y)', 'l': 'Q(z)', 'e': 'E',
+                      'temp': 'T-act'}
+            raw_data = {}
+            _t0 = 1.
+
+            with open(filename) as f:
+                for i, line in enumerate(f):
+                    if i == 0:
+                        _length = int(re.findall(r"(?='(.*?)')", line)[-2])
+                        _m0 = float(re.findall(r"(?='(.*?)')", line)[-4].split()[0])
+                    if 'Q(x)' in line:
+                        args = line.split()
+                        headers = [head for head in args]
+
+            args = np.genfromtxt(filename, unpack=True, dtype=np.float64, skip_header=12)
+
+            raw_data['monitor'] = np.empty(args[0].shape)
+            raw_data['monitor'].fill(_m0)
+
+        else:
+            raise ValueError('Filetype not supported.')
+
+        for key, value in data_keys.items():
+            raw_data[key] = args[headers.index(value)]
+
+        _Q_dict = {}
+        for key, value in Q_keys.items():
+            _Q_dict[key] = args[headers.index(value)]
+
+        raw_data['time'] /= _t0
+        raw_data['Q'] = build_Q(_Q_dict)
+
+        del _Q_dict, args
+
+        try:
+            _data_object.combine_data(raw_data)
+        except NameError:
+            _data_object = Data(**raw_data)
+
+    return _data_object
+
+
+def save(obj, filename, mode='ascii'):
+    pass
+
+
+def build_Q(vars, **kwargs):
+    u'''Method for constructing **Q**\ (*q*, ℏω, temp) from h, k, l,
+    energy, and temperature
+
+    Parameters
+    ----------
+    vars : dict
+        A dictionary of the `h`, `k`, `l`, `e` and `temp` arrays to form into
+        a column oriented array
+
+    Returns
+    -------
+    Q : ndarray
+        Returns **Q**\ (h, k, l, e, temp) with shape (N, 5) in a column oriented
+        array.
+
+    '''
+    return np.vstack((vars[i].flatten() for i in
+                      ['h', 'k', 'l', 'e', 'temp'])).T
+
+
+def detect_filetype(file):
+    if file[-3:] == 'nxs':
+        return 'nexus'
+    elif file[-4:] == 'iexy':
+        return 'iexy'
+    else:
+        with open(file) as f:
+            first_line = f.readline()
+            second_line = f.readline()
+            if '#ICE' in first_line:
+                return 'ICE'
+            elif '# scan' in first_line:
+                return 'SPICE'
+            elif 'Filename' in second_line:
+                return 'ICP'
+            else:
+                raise ValueError('Unknown filetype.')
 
 
 class Energy():
@@ -903,7 +988,8 @@ class Energy():
     Energy object
         The energy object containing the properties of the neutron beam
     '''
-    def __init__(self, energy=None, wavelength=None, velocity=None, wavevector=None, temperature=None, frequency=None):
+    def __init__(self, energy=None, wavelength=None, velocity=None,
+                 wavevector=None, temperature=None, frequency=None):
         try:
             if energy is None:
                 if wavelength is not None:
@@ -926,7 +1012,9 @@ class Energy():
             self.frequency = (self.energy / JOULES_TO_MEV / constants.hbar / 2. / np.pi / 1.e12)
 
         except AttributeError:
-            raise AttributeError('You must define at least one of the following: energy, wavelength, velocity, wavevector, temperature, frequency')
+            raise AttributeError('''You must define at least one of the \
+                                    following: energy, wavelength, velocity, \
+                                    wavevector, temperature, frequency''')
 
     @property
     def values(self):
@@ -939,7 +1027,8 @@ class Energy():
         Returns
         -------
         values : string
-            A string containing all the properties of the neutron including respective units
+            A string containing all the properties of the neutron including
+            respective units
         '''
         print(u'''
 Energy: {0:3.3f} meV
@@ -948,4 +1037,5 @@ Wavevector: {2:3.3f} 1/Å
 Velocity: {3:3.3f} m/s
 Temperature: {4:3.3f} K
 Frequency: {5:3.3f} THz
-'''.format(self.energy, self.wavelength, self.wavevector, self.velocity, self.temperature, self.frequency))
+'''.format(self.energy, self.wavelength, self.wavevector, self.velocity,
+           self.temperature, self.frequency))
