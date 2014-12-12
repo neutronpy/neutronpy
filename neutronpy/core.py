@@ -16,46 +16,42 @@ def _call_bin_parallel(arg, **kwarg):
 
 
 class Data(object):
-    r'''Data class for handling multi-dimensional scattering data. If input
+    u'''Data class for handling multi-dimensional scattering data. If input
     file type is not supported, data can be entered manually.
 
     Parameters
     ----------
+    Q : array_like, optional
+        Default: None. **Q** in a column oriented array of [*q*\ :sub:`x`,
+        *q*\ :sub:`y`, *q*\ :sub:`z`, *ℏω*, *T*]
+
     h : ndarray or float, optional
-        Array of Q\ :sub:`x` in reciprocal lattice units.
+        Default: 0. Array of Q\ :sub:`x` in reciprocal lattice units.
 
     k : ndarray or float, optional
-        Array of Q\ :sub:`y` in reciprocal lattice units.
+        Default: 0. Array of Q\ :sub:`y` in reciprocal lattice units.
 
     l : ndarray or float, optional
-        Array of Q\ :sub:`x` in reciprocal lattice units.
+        Default: 0. Array of Q\ :sub:`x` in reciprocal lattice units.
 
     e : ndarray or float, optional
-        Array of ℏω in meV.
+        Default: 0. Array of ℏω in meV.
 
     temp : ndarray or float, optional
-        Array of sample temperatures in K.
+        Default: 0. Array of sample temperatures in K.
 
     detector : ndarray or float, optional
-        Array of measured counts on detector.
+        Default: 0. Array of measured counts on detector.
 
     monitor : ndarray or float, optional
-        Array of measured counts on monitor.
+        Default: 0. Array of measured counts on monitor.
 
     time : ndarray or float, optional
-        Array of time per point in minutes.
-
-    m0 : float, optional
-        Monitor to which detector counts are normalized in :attr:`intensity`
-        or :attr:`error` call
-
-    t0 : float, optional
-        Time to which detector counts are normalized in :attr:`intensity` or
-        :attr:`error` call if :data:`time_norm` is True
+        Default: 0. Array of time per point in minutes.
 
     time_norm : bool, optional
-        If True, calls to :attr:`intensity` and :attr:`error` with normalize to
-        time instead of monitor
+        Default: False. If True, calls to :attr:`intensity` and :attr:`error`
+        with normalize to time instead of monitor
 
     Attributes
     ----------
@@ -78,51 +74,39 @@ class Data(object):
     plot
 
     '''
-    def __init__(self, files=None, Q=None, h=0., k=0., l=0., e=0., temp=0.,
-                 detector=0., monitor=0., time=0., **kwargs):
-        if files is not None:
-            if 'filetype' in kwargs:
-                filetype = kwargs['filetype']
-            else:
-                filetype = 'auto'
+    def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0.,
+                 detector=0., monitor=0., time=0., time_norm=False, **kwargs):
+        if Q is None:
+            try:
+                n_dim = max([len(item) for item in
+                             (h, k, l, e, temp, detector, monitor, time)
+                             if not isinstance(item, numbers.Number)])
+            except ValueError:
+                n_dim = 1
 
-            if isinstance(files, str):
-                files = (files,)
+            self.Q = np.empty((n_dim, 5))
 
-            self = load(files, filetype=filetype)
-        
-        else:
-            if Q is None:
-                try:
-                    n_dim = max([len(item) for item in
-                                 (h, k, l, e, temp, detector, monitor, time)
-                                 if not isinstance(item, numbers.Number)])
-                except ValueError:
-                    n_dim = 1
-
-                self.Q = np.empty((n_dim, 5))
-
-                for arg, key in zip((h, k, l, e, temp),
-                                    ('h', 'k', 'l', 'e', 'temp')):
-                    if isinstance(arg, numbers.Number):
-                        arg = np.array([arg] * n_dim)
-                    try:
-                        setattr(self, key, np.array(arg))
-                    except ValueError:
-                        raise
-            else:
-                self.Q = Q
-
-            for arg, key in zip((detector, monitor, time),
-                                ('detector', 'monitor', 'time')):
+            for arg, key in zip((h, k, l, e, temp),
+                                ('h', 'k', 'l', 'e', 'temp')):
                 if isinstance(arg, numbers.Number):
                     arg = np.array([arg] * n_dim)
-                setattr(self, key, np.array(arg))
+                try:
+                    setattr(self, key, np.array(arg))
+                except ValueError:
+                    raise
+        else:
+            self.Q = Q
+
+        for arg, key in zip((detector, monitor, time),
+                            ('detector', 'monitor', 'time')):
+            if isinstance(arg, numbers.Number):
+                arg = np.array([arg] * n_dim)
+            setattr(self, key, np.array(arg))
 
         self.m0 = np.nanmax(self.monitor)
         self.t0 = np.nanmax(self.time)
 
-        self.time_norm = False
+        self.time_norm = time_norm
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -276,8 +260,12 @@ class Data(object):
 
         '''
         if self.time_norm:
+            if self.t0 == 0:
+                self.t0 = np.nanmax(self.time)
             return np.sqrt(self.detector) / self.time * self.t0
         else:
+            if self.m0 == 0:
+                self.m0 = np.nanmax(self.monitor)
             return np.sqrt(self.detector) / self.monitor * self.m0
 
     @property
@@ -296,7 +284,7 @@ class Data(object):
 
         '''
 
-        return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
+        return 1. - np.exp(-np.abs(self.Q[:, 3]) / BOLTZMANN_IN_MEV_K / self.temp)
 
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
@@ -362,7 +350,7 @@ class Data(object):
             self.monitor = monitor[order]
             self.time = time[order]
 
-    def bg_estimate(self, bg_params):
+    def estimate_background(self, bg_params):
         r'''Estimate the background according to ``type`` specified.
 
         Parameters
@@ -517,7 +505,7 @@ class Data(object):
 
         '''
         if background is not None:
-            background = self.bg_estimate(kwargs['background'])
+            background = self.estimate_background(kwargs['background'])
         else:
             background = 0
 
@@ -549,7 +537,7 @@ class Data(object):
 
         '''
         if background is not None:
-            background = self.bg_estimate(kwargs['background'])
+            background = self.estimate_background(kwargs['background'])
         else:
             background = 0
 
@@ -589,7 +577,7 @@ class Data(object):
 
         '''
         if background is not None:
-            background = self.bg_estimate(kwargs['background'])
+            background = self.estimate_background(kwargs['background'])
         else:
             background = 0
 
@@ -677,7 +665,7 @@ class Data(object):
         if to_bin is None:
             to_bin = {}
         if plot_options is None:
-            plot_options = {'fmt': 'rs'}
+            plot_options = {}
         if fit_options is None:
             fit_options = {}
         if smooth_options is None:
@@ -742,17 +730,24 @@ class Data(object):
 
         elif z is not None and w is None:
             try:
-                z = dims[kwargs['z']]
+                z = dims[args['z']]
 
-                x, y, z = (np.ma.masked_where(z <= 0, x),
-                           np.ma.masked_where(z <= 0, y),
-                           np.ma.masked_where(z <= 0, z))
-
-                plt.pcolormesh(x, y, z, vmin=1.e-4, vmax=0.1,
-                               norm=colors.LogNorm())
+#                 x, y, z = (np.ma.masked_where(z <= 0, x),
+#                            np.ma.masked_where(z <= 0, y),
+#                            np.ma.masked_where(z <= 0, z))
+                X, Y = np.meshgrid(np.linspace(x.min(), x.max(), np.around(np.abs(np.unique(x)-np.roll(np.unique(x), 1))[1], decimals=4)),
+                                   np.linspace(y.min(), y.max(), np.around(np.abs(np.unique(y)-np.roll(np.unique(y), 1))[1], decimals=4)))
+                
+                from scipy.interpolate import griddata
+                Z = griddata((x, y), z, (X, Y))
+                
+                plt.pcolormesh(X, Y, Z, **plot_options)
             except KeyError:
-                pass
+                raise
         else:
+            if not plot_options:
+                plot_options['fmt'] = 'rs'
+
             if show_err:
                 err = np.sqrt(dims['intensity'])
                 plt.errorbar(x, y, yerr=err, **plot_options)
@@ -800,7 +795,8 @@ class Data(object):
         else:
             pass
 
-def load(files, filetype='auto', tols=1e-4, **kwargs):
+
+def load(files, filetype='auto', tols=1e-4):
     r'''Loads one or more files and creates a :class:`Data` object with the
     loaded data.
 
@@ -900,11 +896,19 @@ def load(files, filetype='auto', tols=1e-4, **kwargs):
             raise ValueError('Filetype not supported.')
 
         for key, value in data_keys.items():
-            raw_data[key] = args[headers.index(value)]
+            try:
+                raw_data[key] = args[headers.index(value)]
+            except ValueError:
+                print("ValueError: '{0}' is not in list.".format(value))
+                raw_data[key] = np.ones(args[0].shape)
 
         _Q_dict = {}
         for key, value in Q_keys.items():
-            _Q_dict[key] = args[headers.index(value)]
+            try:
+                _Q_dict[key] = args[headers.index(value)]
+            except ValueError:
+                print("ValueError: '{0}' is not in list.".format(value))
+                _Q_dict[key] = np.ones(args[0].shape)
 
         raw_data['time'] /= _t0
         raw_data['Q'] = build_Q(_Q_dict)
@@ -919,8 +923,32 @@ def load(files, filetype='auto', tols=1e-4, **kwargs):
     return _data_object
 
 
-def save(obj, filename, mode='ascii'):
-    pass
+def save(obj, filename, format='ascii', **kwargs):
+    '''Saves a given object to a file in a specified format.
+    
+    Parameters
+    ----------
+    obj : :class:`Data`
+        A :class:`Data` object to be saved to disk
+    
+    filename : str
+        Path to file where data will be saved
+    
+    format : str
+        Default: `'ascii'`. Data can either be saved in `'ascii'`,
+        human-readable format, `'binary'` format, or `'nexus'` format.
+    '''
+    output = np.hstack((obj.Q, obj.detector, obj.monitor, obj.time))
+    
+    if format == 'ascii':
+        np.savetxt(filename, output, **kwargs)
+    elif format == 'binary':
+        pass
+    elif format == 'nexus':
+        pass
+    else:
+        raise ValueError("""Format not supported. Please use 'ascii', \
+                            'binary', 'pickle' or 'nexus'""")
 
 
 def build_Q(vars, **kwargs):
@@ -945,6 +973,18 @@ def build_Q(vars, **kwargs):
 
 
 def detect_filetype(file):
+    u'''Simple method for quickly determining filetype of a given input file.
+    
+    Parameters
+    ----------
+    file : str
+        File path
+    
+    Returns
+    -------
+    filetype : str
+        The filetype of the given input file
+    '''
     if file[-3:] == 'nxs':
         return 'nexus'
     elif file[-4:] == 'iexy':
@@ -990,31 +1030,86 @@ class Energy():
     '''
     def __init__(self, energy=None, wavelength=None, velocity=None,
                  wavevector=None, temperature=None, frequency=None):
+        
+        self._update_values(energy, wavelength, velocity,
+                 wavevector, temperature, frequency)
+
+    def _update_values(self, energy=None, wavelength=None, velocity=None,
+                 wavevector=None, temperature=None, frequency=None):
         try:
             if energy is None:
                 if wavelength is not None:
-                    self.energy = constants.h ** 2 / (2. * constants.m_n * (wavelength / 1.e10) ** 2) * JOULES_TO_MEV
+                    self.en = constants.h ** 2 / (2. * constants.m_n * (wavelength / 1.e10) ** 2) * JOULES_TO_MEV
                 elif velocity is not None:
-                    self.energy = 1. / 2. * constants.m_n * velocity ** 2 * JOULES_TO_MEV
+                    self.en = 1. / 2. * constants.m_n * velocity ** 2 * JOULES_TO_MEV
                 elif wavevector is not None:
-                    self.energy = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / wavevector) / 1.e10) ** 2) * JOULES_TO_MEV)
+                    self.en = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / wavevector) / 1.e10) ** 2) * JOULES_TO_MEV)
                 elif temperature is not None:
-                    self.energy = constants.k * temperature * JOULES_TO_MEV
+                    self.en = constants.k * temperature * JOULES_TO_MEV
                 elif frequency is not None:
-                    self.energy = (constants.hbar * frequency * 2. * np.pi * JOULES_TO_MEV * 1.e12)
+                    self.en = (constants.hbar * frequency * 2. * np.pi * JOULES_TO_MEV * 1.e12)
             else:
-                self.energy = energy
+                self.en = energy
 
-            self.wavelength = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.energy / JOULES_TO_MEV)) * 1.e10
-            self.velocity = np.sqrt(2. * self.energy / JOULES_TO_MEV / constants.m_n)
-            self.wavevector = 2. * np.pi / self.wavelength
-            self.temperature = self.energy / constants.k / JOULES_TO_MEV
-            self.frequency = (self.energy / JOULES_TO_MEV / constants.hbar / 2. / np.pi / 1.e12)
+            self.wavelen = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.energy / JOULES_TO_MEV)) * 1.e10
+            self.vel = np.sqrt(2. * self.energy / JOULES_TO_MEV / constants.m_n)
+            self.wavevec = 2. * np.pi / self.wavelength
+            self.temp = self.energy / constants.k / JOULES_TO_MEV
+            self.freq = (self.energy / JOULES_TO_MEV / constants.hbar / 2. / np.pi / 1.e12)
 
         except AttributeError:
             raise AttributeError('''You must define at least one of the \
                                     following: energy, wavelength, velocity, \
                                     wavevector, temperature, frequency''')
+    
+    @property
+    def energy(self):
+        return self.en
+    
+    @energy.setter
+    def energy(self, value):
+        self._update_values(energy=value)
+    
+    @property
+    def wavelength(self):
+        return self.wavelen
+
+    @wavelength.setter
+    def wavelength(self, value):
+        self._update_values(wavelength=value)
+    
+    @property
+    def wavevector(self):
+        return self.wavevec
+    
+    @wavevector.setter
+    def wavevector(self, value):
+        self._update_values(wavevector=value)
+    
+    @property
+    def temperature(self):
+        return self.temp
+
+    @temperature.setter
+    def temperature(self, value):
+        self._update_values(temperature=value)
+    
+    @property
+    def frequency(self):
+        return self.freq
+
+    @frequency.setter
+    def frequency(self, value):
+        self._update_values(frequency=value)
+    
+    @property
+    def velocity(self):
+        return self.vel
+    
+    @velocity.setter
+    def velocity(self, value):
+        self._update_values(velocity=value)
+
 
     @property
     def values(self):
@@ -1030,7 +1125,7 @@ class Energy():
             A string containing all the properties of the neutron including
             respective units
         '''
-        print(u'''
+        return u'''
 Energy: {0:3.3f} meV
 Wavelength: {1:3.3f} Å
 Wavevector: {2:3.3f} 1/Å
@@ -1038,4 +1133,4 @@ Velocity: {3:3.3f} m/s
 Temperature: {4:3.3f} K
 Frequency: {5:3.3f} THz
 '''.format(self.energy, self.wavelength, self.wavevector, self.velocity,
-           self.temperature, self.frequency))
+           self.temperature, self.frequency)
