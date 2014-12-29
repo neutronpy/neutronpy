@@ -1,4 +1,5 @@
 from neutronpy import form_facs
+import numpy as np
 import unittest
 
 
@@ -18,7 +19,27 @@ class StructureFactor(unittest.TestCase):
 
     def test_str_fac(self):
         structure = form_facs.Material(self.input)
-        self.assertAlmostEqual(abs(structure.calc_str_fac((2., 0., 0.)) ** 2), 1583878.155915682, 6)
+        self.assertAlmostEqual(np.abs(structure.calc_str_fac((2., 0., 0.))) ** 2, 1583878.155915682, 6)
+        self.assertAlmostEqual(np.abs(structure.calc_str_fac((2, 0, 0))) ** 2, 1583878.155915682, 6)
+        self.assertAlmostEqual(np.abs(structure.calc_str_fac((0, 2., 0))) ** 2, 1583878.155915682, 6)
+        self.assertAlmostEqual(np.abs(structure.calc_str_fac((0, 2, 0))) ** 2, 1583878.155915682, 6)
+
+        ndarray_example = np.linspace(0.5, 1.5, 21)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((ndarray_example, 0, 0))) ** 2), 1261922.414836668, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, ndarray_example, 0))) ** 2), 1261922.414836668, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, 0, ndarray_example))) ** 2), 16294175.79743738, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((ndarray_example, ndarray_example, 0))) ** 2), 5572585.110405569, 6)
+
+
+        list_example = list(ndarray_example)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((list_example, 0, 0))) ** 2), 1261922.414836668, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, list_example, 0))) ** 2), 1261922.414836668, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, 0, list_example))) ** 2), 16294175.79743738, 6)
+        
+        tuple_example = tuple(ndarray_example)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((tuple_example, 0, 0))) ** 2), 1261922.414836668, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, tuple_example, 0))) ** 2), 1261922.414836668, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, 0, tuple_example))) ** 2), 16294175.79743738, 6)
 
 
 class MagneticFormFactor(unittest.TestCase):
