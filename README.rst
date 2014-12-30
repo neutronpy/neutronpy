@@ -1,5 +1,6 @@
 NeutronPy
 =========
+
 .. warning::
 
     v0.x.x releases may not be backwards compatibile. This software is in a fluid state and undergoing rapid changes. The v1.0.0 release will indicate the start of backwards compatibile updates. Major number releases (x.0) may break backwards compatibility, but users will be notified in the changelog.
@@ -50,9 +51,7 @@ The following packages are required to install this library:
 
 Installation
 ------------
-It is recommended that you use ``pip`` to install NeutronPy:
-
-.. code-block:: bash
+It is recommended that you use ``pip`` to install NeutronPy::
 
     pip install neutronpy
 
