@@ -1,23 +1,34 @@
-# Check on http://lint.travis-ci.org/ after modifying it!  Originally
-# modified from https://gist.github.com/dan-blanchard/7045057
 language: python
 env:
   - PYTHON_VERSION=2.6 NUMPY_VERSION=1.8 SCIPY_VERSION=0.14 USE_CYTHON=TRUE
   - PYTHON_VERSION=2.7 NUMPY_VERSION=1.8 SCIPY_VERSION=0.14 USE_CYTHON=TRUE
   - PYTHON_VERSION=3.3 NUMPY_VERSION=1.8 SCIPY_VERSION=0.14 USE_CYTHON=TRUE
   - PYTHON_VERSION=3.4 NUMPY_VERSION=1.8 SCIPY_VERSION=0.14 USE_CYTHON=TRUE 
-before_install:
-  - wget http://repo.continuum.io/miniconda/Miniconda-2.2.2-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=/home/travis/anaconda/bin:$PATH
-  # Update conda itself
-  - conda update --yes conda
 install:
-  - conda create --yes -n env_name python=$PYTHON_VERSION pip numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose pep8 Sphinx
-  - if [ ${USE_CYTHON} ]; then conda install --yes -n env_name cython; fi
-  - source activate env_name
+  - sudo apt-get update
+  # You may want to periodically update this, although the conda update
+  # conda line below will keep everything up-to-date.  We do this
+  # conditionally because it saves us some downloading if the version is
+  # the same.
+  - if [[ "$PYTHON_VERSION" == "2.7" ]] || [[ "$PYTHON_VERSION" == "2.6" ]]; then
+      wget http://repo.continuum.io/miniconda/Miniconda-3.7.3-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget http://repo.continuum.io/miniconda/Miniconda3-3.7.3-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+
+  # Replace dep1 dep2 ... with your dependencies
+  - conda create -q -n test-environment python=$PYTHON_VERSION pip numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose pep8 Sphinx
+  - if [ ${USE_CYTHON} ]; then conda install --yes -n test-environment cython; fi
+  - source activate test-environment
   - pip install -e . -q --no-deps
+
 script:
   - nosetests
 after_success:
