@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 from scipy.linalg import block_diag as blkdiag
 
 
 class Sample():
-    r'''Private class containing sample information.
+    u'''Private class containing sample information.
 
     Parameters
     ----------
@@ -28,12 +29,12 @@ class Sample():
     mosaic : float, optional
         Sample mosaic (FWHM) in arc minutes
 
-    direct : :math:`\pm`\ 1, optional
+    direct : ±1, optional
         Direction of the crystal (left or right, -1 or +1, respectively)
 
     Returns
     -------
-    Sample : Class
+    Sample : object
 
     '''
     def __init__(self, a, b, c, alpha, beta, gamma, mosaic=60, direct=1):
@@ -48,7 +49,7 @@ class Sample():
 
 
 class _Monochromator():
-    r'''Private class containing monochromator information.
+    u'''Private class containing monochromator information.
 
     Parameters
     ----------
@@ -58,7 +59,7 @@ class _Monochromator():
     mosaic : int
         Mosaic of the crystal in arc minutes
 
-    dir : :math:`\pm`\ 1, optional
+    dir : ±1, optional
         Direction of the crystal (left or right, -1 or +1, respectively)
 
     Returns
@@ -210,17 +211,17 @@ def _GetLattice(EXP):
 
 
 def GetTau(x, getlabel=False):
-    r''':math:`\tau`-values for common monochromator and analyzer crystals.
+    u'''τ-values for common monochromator and analyzer crystals.
 
     Parameters
     ----------
     x : float or string
-        Either the numerical Tau value, in :math:`\unicode{x212B}^{-1}`, or a
+        Either the numerical Tau value, in Å\ :sup:`-1`, or a
         common monochromater / analyzer type. Currently included crystals and their
-        corresponding :math:`\tau` values are
+        corresponding τ values are
 
             +------------------+--------------+-----------+
-            | String           | :math:`\tau` |           |
+            | String           |     τ        |           |
             +==================+==============+===========+
             | Be(002)          | 3.50702      |           |
             +------------------+--------------+-----------+
@@ -256,12 +257,12 @@ def GetTau(x, getlabel=False):
 
     getlabel : boolean
         If True, return the name of the common crystal type that is a
-        match to the input :math:`\tau`.
+        match to the input τ.
 
     Returns
     -------
     tau : float or string
-        Returns either the numerical :math:`\tau` for a given crystal type or the
+        Returns either the numerical τ for a given crystal type or the
         name of a crystal type
 
     Notes
@@ -951,7 +952,7 @@ def ellipse(saxis1, saxis2, phi=0, origin=None, npts=31):
 
 
 class Instrument(object):
-    r'''An object that represents a Triple Axis Spectrometer (TAS) instrument
+    u'''An object that represents a Triple Axis Spectrometer (TAS) instrument
     experimental configuration, including a sample.
 
     Parameters
@@ -959,7 +960,7 @@ class Instrument(object):
     efixed : float
         Fixed energy, either ei or ef, depending on the instrument configuration.
 
-    sample : class
+    sample : obj
         Sample lattice constants, parameters, mosaic, and orientation (reciprocal-space orienting vectors).
 
     hcol : list(4)
@@ -968,26 +969,47 @@ class Instrument(object):
     vcol : list(4), optional
         Vertical Soller collimations in minutes of arc starting from the neutron guide.
 
-    mono_tau : string or float, optional
-        The monochromator reciprocal lattice vector in :math:`\unicode{x212B}^{-1}`,
+    mono_tau : str or float, optional
+        The monochromator reciprocal lattice vector in Å\ :sup:`-1`,
         given either as a float, or as a string for common monochromator types.
 
     mono_mosaic : float, optional
         The mosaic of the monochromator in minutes of arc.
 
-    ana_tau : string or float, optional
-        The analyzer reciprocal lattice vector in :math:`\unicode{x212B}^{-1}`,
+    ana_tau : str or float, optional
+        The analyzer reciprocal lattice vector in Å\ :sup:`-1`,
         given either as a float, or as a string for common analyzer types.
 
     ana_mosaic : float, optional
         The mosaic of the monochromator in minutes of arc.
 
-    Additional Parameters
-    ---------------------
-    The following parameters can be added later as needed for resolution calculation. The parameters
-    listed above are the only parameters absolutely required for the Cooper-Nathans resolution
-    calculation.
+    Attributes
+    ----------
+    method
+    moncar
+    mono
+    ana
+    hcol
+    vcol
+    arms
+    efixed
+    sample
+    orient1
+    orient2
+    dir1
+    dir2
+    mondir
+    infin
+    beam
+    detector
+    monitor
+    Smooth
 
+    Methods
+    -------
+    calc_resolution
+    calc_projections
+    get_resolution_params
     '''
 
     def __init__(self, efixed, sample, hcol, vcol=None, arms=None,
@@ -1012,6 +1034,315 @@ class Instrument(object):
 
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+    @property
+    def mono(self):
+        u'''A structure that describes the monochromator.
+        
+        Parameters
+        ----------
+        tau : str or float 
+            The monochromator reciprocal lattice vector in Å\ :sup:`-1`. Instead of
+            a numerical input one can use one of the following keyword strings:
+            
+                +------------------+--------------+-----------+
+                | String           |     τ        |           |
+                +==================+==============+===========+
+                | Be(002)          | 3.50702      |           |
+                +------------------+--------------+-----------+
+                | Co0.92Fe0.08(200)| 3.54782      | (Heusler) |
+                +------------------+--------------+-----------+
+                | Cu(002)          | 3.47714      |           |
+                +------------------+--------------+-----------+
+                | Cu(111)          | 2.99913      |           |
+                +------------------+--------------+-----------+
+                | Cu(220)          | 4.91642      |           |
+                +------------------+--------------+-----------+
+                | Cu2MnAl(111)     | 1.82810      | (Heusler) |
+                +------------------+--------------+-----------+
+                | Ge(111)          | 1.92366      |           |
+                +------------------+--------------+-----------+
+                | Ge(220)          | 3.14131      |           |
+                +------------------+--------------+-----------+
+                | Ge(311)          | 3.68351      |           |
+                +------------------+--------------+-----------+
+                | Ge(511)          | 5.76968      |           |
+                +------------------+--------------+-----------+
+                | Ge(533)          | 7.28063      |           |
+                +------------------+--------------+-----------+
+                | PG(002)          | 1.87325      |           |
+                +------------------+--------------+-----------+
+                | PG(004)          | 3.74650      |           |
+                +------------------+--------------+-----------+
+                | PG(110)          | 5.49806      |           |
+                +------------------+--------------+-----------+
+                | Si(111)          | 2.00421      |           |
+                +------------------+--------------+-----------+
+        
+        mosaic : int
+            The monochromator mosaic in minutes of arc.
+        
+        vmosaic : int
+            The vertical mosaic of monochromator in minutes of arc. If
+            this field is left unassigned, an isotropic mosaic is assumed.
+        '''
+        return self._mono
+
+    @mono.setter
+    def mono(self, value):
+        self._mono = value
+
+    @property
+    def ana(self):
+        u'''A structure that describes the analyzer and contains fields as in :attr:`mono`
+        plus optional fields.
+        
+        Parameters
+        ----------
+        thickness: float 
+            The analyzer thickness in cm for ideal-crystal reflectivity
+            corrections (Section II C 3). If no reflectivity corrections are to be made, this field
+            should remain unassigned or set to a negative value.
+        
+        Q : float
+            The kinematic reflectivity coefficient for this correction. It is given by 
+        
+            .. math::    Q = \\frac{4|F|^2}{V_0} \\frac{(2\\pi)^3}{\\tau^3}, 
+        
+            where V0 is the unit cell volume for the analyzer crystal, F is the structure factor of 
+            the analyzer reflection, and τ is the analyzer reciprocal lattice vector. 
+            For PG(002) Q = 0.1287. Leave this field unassigned or make it negative if you don’t
+            want the correction done.
+        
+        horifoc : bool 
+            A flag that is set to 1 if a horizontally focusing analyzer is used
+            (Section II D). In this case ``hcol[2]`` (see below) is the angular size of the
+            analyzer, as seen from the sample position. If the field is unassigned or equal to
+            -1, a flat analyzer is assumed. Note that this option is only available with the
+            Cooper-Nathans method.
+        '''
+        return self._ana
+
+    @ana.setter
+    def ana(self, value):
+        self._ana = value
+
+    @property
+    def method(self):
+        '''Selects the computation method. 
+        If ``method=0`` or left undefined, a Cooper-Nathans calculation is
+        performed. For a Popovici calculation set ``method=1``.
+        '''
+        return self._method
+
+    @method.setter
+    def method(self, value):
+        self._method = value
+
+    @property
+    def moncar(self):
+        '''Selects the type of normalization used to calculate ``R0``. 
+        If ``moncor=1`` or left undefined, ``R0`` is calculated in normalization to monitor counts (Section
+        II C 2). 1/k\ :sub:`i` monitor efficiency correction is included automatically. To normalize
+        ``R0`` to source flux (Section II C 1), use ``moncor=0``.
+        '''
+        return self._moncar
+
+    @moncar.setter
+    def moncar(self, value):
+        self._moncar = value
+
+    @property
+    def hcol(self):
+        ''' The horizontal Soller collimations in minutes of arc (FWHM beam
+        divergence) starting from the in-pile collimator. In case of a horizontally-focusing
+        analyzer ``hcol[2] is the angular size of the analyzer, as seen from the sample
+        position. If the beam divergence is limited by a neutron guide, the corresponding
+        element of :attr:`hcol` is the negative of the guide’s *m*-value. For example, for a 58-Ni
+        guide (*m*=1.2) before the monochromator, `hcol[0]` should be -1.2.
+        '''
+        return self._hcol
+
+    @hcol.setter
+    def hcol(self, value):
+        self._hcol = value
+
+    @property
+    def vcol(self):
+        '''The vertical Soller collimations in minutes of arc (FWHM beam
+        divergence) starting from the in-pile collimator. If the beam divergence is limited
+        by a neutron guide, the corresponding element of :attr:`vcol` is the negative of the
+        guide’s *m*-value. For example, for a 58-Ni guide (*m*=1.2) before the monochromator,
+        ``vcol[0]`` should be -1.2.
+        '''
+        return self._vcol
+
+    @vcol.setter
+    def vcol(self, value):
+        self._vcol = value
+
+    @property
+    def arms(self):
+        '''distances between the source and monochromator, monochromator
+        and sample, sample and analyzer, analyzer and detector, and monochromator and
+        monitor, respectively. The 5th element is only needed if ``moncor=1``
+        '''
+        return self._arms
+
+    @arms.setter
+    def arms(self, value):
+        self._arms = value
+
+    @property
+    def efixed(self):
+        '''the fixed incident or final neutron energy, in meV.
+        '''
+        return self._efixed
+
+    @efixed.setter
+    def efixed(self, value):
+        self._efixed = value
+
+    @property
+    def sample(self):
+        '''A structure that describes the sample. 
+        
+        It contains the following fields:
+        
+        * EXP.sample.mosaic is the FWHM sample mosaic in the scattering plane in minutes
+        of arc. If this field is left unassigned, no sample mosaic corrections (section
+        II E) are performed.
+
+        * ``sample.vmosaic`` is the vertical sample mosaic in minutes of arc. If this field
+        is left unassigned, isotropic mosaic is assumed.
+        '''
+        return self._sample
+
+    @sample.setter
+    def sample(self, value):
+        self._sample = value
+
+    @property
+    def orient1(self):
+        '''Miller indexes of the first reciprocal-space orienting vector for
+        the S coordinate system, as explained in Section II G.
+        '''
+        return self._orient1
+
+    @orient1.setter
+    def orient1(self, value):
+        self._orient1 = value
+
+    @property
+    def orient2(self):
+        '''Miller indexes of the second reciprocal-space orienting vector
+        for the S coordinate system, as explained in Section II G.
+        '''
+        return self._orient2
+
+    @orient2.setter
+    def orient2(self, value):
+        self._orient2 = value
+
+    @property
+    def dir1(self):
+        '''defines the scattering direction in the monochromator. This field is equal
+        to 1 or left unassigned if the scattering direction in the monochromator is opposite to
+        that in the sample. Set this field to -1 if the sample and monochromator scattering
+        directions are the same.
+        '''
+        return self._dir1
+
+    @dir1.setter
+    def dir1(self, value):
+        self._dir1 = value
+
+    @property
+    def dir2(self):
+        '''defines the scattering direction in the analyzer. This field is equal to 1 or
+        left unassigned if the scattering direction in the analyzer is opposite to that in the
+        sample. Set this field to -1 if the sample and analyzer scattering directions are the
+        same.
+        '''
+        return self._dir2
+
+    @dir2.setter
+    def dir2(self, value):
+        self._dir2 = value
+
+    @property
+    def mondir(self):
+        '''defines the scattering angle in the monochromator which is positive
+        (counter-clockwise) if this field is absent or positive, and negative (clockwise) otherwise
+        [10].
+        '''
+        return self._mondir
+
+    @mondir.setter
+    def mondir(self, value):
+        self._mondir = value
+
+    @property
+    def infin(self):
+        '''a flag set to -1 or left unassigned if the final energy is fixed, or set to +1
+        in a fixed-incident setup.
+        '''
+        return self._infin
+
+    @infin.setter
+    def infin(self, value):
+        self._infin = value
+
+    @property
+    def beam(self):
+        '''
+        '''
+        return self._beam
+
+    @beam.setter
+    def beam(self, value):
+        self._beam = value
+
+    @property
+    def detector(self):
+        '''
+        '''
+        return self._detector
+
+    @detector.setter
+    def detector(self, value):
+        self._detector = value
+
+    @property
+    def monitor(self):
+        '''
+        '''
+        return self._monitor
+
+    @monitor.setter
+    def monitor(self, value):
+        self._monitor = value
+
+    @property
+    def Smooth(self):
+        u'''Defines the smoothing parameters as explained in Section II H. Leave this
+        field unassigned if you don’t want this correction done.
+        
+        * ``Smooth.E`` is the smoothing FWHM in energy (meV). A small number means
+        “no smoothing along this direction”.
+        
+        * ``Smooth.X`` is the smoothing FWHM along the first orienting vector (x0 axis)
+        in Å\ :sup:`-1`.
+        
+        * ``Smooth.Y`` is the smoothing FWHM along the y axis in Å\ :sup:`-1`.
+        
+        * ``Smooth.Z`` is the smoothing FWHM along the vertical direction in Å\ :sup:`-1`.
+        '''
+        return self._Smooth
+
+    @Smooth.setter
+    def Smooth(self, value):
+        self._Smooth = value
 
     def calc_resolution(self, hkle, npts=36):
         r'''For a scattering vector (H,K,L) and  energy transfers W, given

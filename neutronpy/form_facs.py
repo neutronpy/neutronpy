@@ -1,5 +1,6 @@
 import neutronpy.constants as const
 import numpy as np
+from numbers import Number
 
 
 class _Atom(object):
@@ -73,6 +74,11 @@ class Material(object):
     -------
     output : object
         Material Object defining a single crystal.
+        
+    Methods
+    -------
+    calc_str_fac
+    
 
     '''
 
@@ -128,23 +134,38 @@ class Material(object):
         h, k, l = hkl
 
         # Determines shape of input variables to build FQ = 0 array
-        if type(h) is float and type(k) is float and type(l) is float:
-            FQ = 0. * 1j
-        else:
-            # if one dimension is zero, flatten FQ to 2D
-            if type(h) is float:
-                FQ = np.zeros(k.shape) * 1j
-            elif type(k) is float:
-                FQ = np.zeros(l.shape) * 1j
-            elif type(l) is float:
-                FQ = np.zeros(h.shape) * 1j
-            else:
-                FQ = np.zeros(h.shape) * 1j
+        dims = []
+        for x in hkl:
+            if isinstance(x, np.ndarray):
+                dims.append(x.shape)
+            elif isinstance(x, (list, tuple)):
+                dims.append((len(x),))
+            elif isinstance(x, Number):
+                dims.append(1)
+        
+        dims_str = np.array([str(x) for x in dims], dtype=str)
 
+        if np.unique(dims_str).size == 1:
+            FQ = np.zeros(dims[0])
+        elif np.unique(dims_str[np.where([isinstance(x, tuple) for x in dims])]).size == 1:
+            FQ = np.zeros(dims[np.where([isinstance(x, tuple) for x in dims])[0][0]])
+        else:
+            raise ValueError("Dimensions of 'hkl' elements are not compatible. An " \
+                             "element must be either the same shape as an other " \
+                             "non-decimal element, or a decimal number.")
+
+        # Ensures input arrays are complex ndarrays
+        if isinstance(h, (np.ndarray, list, tuple)):
+            h = np.array(h).astype(complex, casting='unsafe')
+        if isinstance(k, (np.ndarray, list, tuple)):
+            k = np.array(k).astype(complex, casting='unsafe')
+        if isinstance(l, (np.ndarray, list, tuple)):
+            l = np.array(l).astype(complex, casting='unsafe')
+            
         # construct structure factor
         for atom in self.atoms:
             FQ += atom.b * np.exp(1j * 2. * np.pi * (h * atom.pos[0] + k * atom.pos[1] + l * atom.pos[2])) * \
-                np.exp(-(2. * np.pi * (h * atom.dpos[0] + k * atom.dpos[1] + l * atom.dpos[2])) ** 2)
+                  np.exp(-(2. * np.pi * (h * atom.dpos[0] + k * atom.dpos[1] + l * atom.dpos[2])) ** 2)
 
         return FQ
 
@@ -162,6 +183,9 @@ class Ion(object):
     output : Object
         Ion object defining a single magnetic ion.
 
+    Methods
+    -------
+    calc_mag_form_fac
     '''
 
     def __init__(self, ion):

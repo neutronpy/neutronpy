@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 r'''A collection of commonly used one- and two-dimensional functions in neutron scattering,
 
 =============== ==========================================================
@@ -54,7 +55,7 @@ def gaussian(p, q):
 
     .. math::    f(q) = \frac{a}{\sigma \sqrt{2\pi}} e^{-\frac{(q-q_0)^2}{2\sigma^2}},
 
-    where the integral over the whole function is :math:`a`, and
+    where the integral over the whole function is *a*, and
 
     .. math::    fwhm = 2 \sqrt{2 \ln{2}} \sigma.
 
@@ -130,7 +131,7 @@ def gaussian2d(p, q):
 
     .. math::    f(q) = \frac{a}{\sigma \sqrt{2\pi}} e^{-\left(\frac{(q_x-q_x0)^2}{2\sigma_x^2} + \frac{(q_y-q_y0)^2}{2\sigma_y^2}\right)},
 
-    where the integral over the whole function is :math:`a`, and
+    where the integral over the whole function is *a*, and
 
     .. math::    fwhm = 2 \sqrt{2 \ln{2}} \sigma.
 
@@ -169,7 +170,7 @@ def gaussian2d(p, q):
 
 
 def lorentzian(p, q):
-    r'''Returns an arbitrary number of Lorentz profiles.
+    u'''Returns an arbitrary number of Lorentz profiles.
 
     Parameters
     ----------
@@ -204,9 +205,9 @@ def lorentzian(p, q):
     -----
     A Lorentzian profile is defined as:
 
-    .. math::    f(q) = \frac{a}{\pi} \frac{\frac{1}{2} \Gamma}{(q-q_0)^2 + (\frac{1}{2} \Gamma)^2},
+    .. math::    f(q) = \\frac{a}{\\pi} \\frac{\\frac{1}{2} \\Gamma}{(q-q_0)^2 + (\\frac{1}{2} \\Gamma)^2},
 
-    where the integral over the whole function is `a`, and :math:`\Gamma` is the full width at half maximum.
+    where the integral over the whole function is *a*, and Γ is the full width at half maximum.
 
     Examples
     --------
@@ -333,13 +334,13 @@ def resolution(p, q, mode='gaussian'):
             +-------+------------------------------+
             | p[4]  | Y position of the first peak |
             +-------+------------------------------+
-            | p[5]  | :math:`R_0`                  |
+            | p[5]  | R\ :sub:`0`                  |
             +-------+------------------------------+
-            | p[6]  | :math:`RM_{xx}`              |
+            | p[6]  | RM\ :sub:`xx`                |
             +-------+------------------------------+
-            | p[7]  | :math:`RM_{yy}`              |
+            | p[7]  | RM\ :sub:`yy`                |
             +-------+------------------------------+
-            | p[8]  | :math:`RM_{xy}`              |
+            | p[8]  | RM\ :sub:`xy`                |
             +-------+------------------------------+
             | p[9]  | Area under the second peak   |
             +-------+------------------------------+
@@ -357,7 +358,7 @@ def resolution(p, q, mode='gaussian'):
     Notes
     -----
     A resolution profile is defined as a two dimensional gaussian that is comprised of elements of a
-    resolution matrix for a triple axis spectrometer, as produced by neutronpy.resolution.res_calc():
+    resolution matrix for a triple axis spectrometer, as produced by :py:meth:`.Instrument.calc_resolution`
 
     .. math::    f(q) = R_0 e^{-\frac{1}{2}(RM_{xx}^2 (x-x_0)^2 + RM_{yy}^2 (y-y_0)^2 + 2RM_{xy}(x-x_0)(y-y_0))},
 
@@ -410,7 +411,7 @@ def gaussian_ring(p, q):
             +-------+------------------------------+
 
     q : tuple of ndarray
-        Two input arrays of equivalent size and shape, e.g. formed with np.meshgrid().
+        Two input arrays of equivalent size and shape, e.g. formed with :py:func:`numpy.meshgrid`.
 
     Returns
     -------

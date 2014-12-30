@@ -1,13 +1,24 @@
 neutronpy package
 =================
 
+.. currentmodule:: neutronpy
+
+Members
+-------
+
+.. autosummary::
+    :toctree: generated/
+
+    Data
+    Energy
+    Fitter
+
 Submodules
 ----------
 
 .. toctree::
 
    neutronpy.constants
-   neutronpy.core
    neutronpy.form_facs
    neutronpy.functions
    neutronpy.kmpfit
