@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :release:`0.1.3 <2014-12-30>`
+* :bug:`18 major` Update :py:meth:`.Material.calc_str_fac` to include better checking of input hkl tuple
 * :release:`0.1.2 <2014-09-22>`
 * :feature:`11` tools package has been changed to core package and package contents are accessible from root level ``neutronpy.``
 * :support:`12` Major overhaul of documentation, including new theme based on ReadTheDocs style
