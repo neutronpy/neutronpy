@@ -13,7 +13,7 @@ Load from file
 ^^^^^^^^^^^^^^
 First, lets assume that you have a data file, ``'scan.dat'`` from a HFIR instrument (SPICE format):
 
->>> from neutronpy.tools import Data
+>>> from neutronpy import Data
 >>> data = Data()
 >>> data.load_file('scan.dat', mode='SPICE')
 
