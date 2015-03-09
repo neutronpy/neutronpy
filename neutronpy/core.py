@@ -882,7 +882,7 @@ def load(files, filetype='auto', tols=1e-4):
                 for i, line in enumerate(f):
                     if i == 0:
                         _length = int(re.findall(r"(?='(.*?)')", line)[-2])
-                        _m0 = float(re.findall(r"(?='(.*?)')", line)[-4].split()[0])
+                        [_m0, _prf] = [float(i) for i in re.findall(r"(?='(.*?)')", line)[-4].split()]
                     if 'Q(x)' in line:
                         args = line.split()
                         headers = [head for head in args]
@@ -890,7 +890,7 @@ def load(files, filetype='auto', tols=1e-4):
             args = np.genfromtxt(filename, unpack=True, dtype=np.float64, skip_header=12)
 
             raw_data['monitor'] = np.empty(args[0].shape)
-            raw_data['monitor'].fill(_m0)
+            raw_data['monitor'].fill(_m0 * _prf)
 
         else:
             raise ValueError('Filetype not supported.')
