@@ -132,28 +132,7 @@ class Material(object):
         '''
 
         h, k, l = hkl
-
-        # Determines shape of input variables to build FQ = 0 array
-        dims = []
-        for x in hkl:
-            if isinstance(x, np.ndarray):
-                dims.append(x.shape)
-            elif isinstance(x, (list, tuple)):
-                dims.append((len(x),))
-            elif isinstance(x, Number):
-                dims.append(1)
-        
-        dims_str = np.array([str(x) for x in dims], dtype=str)
-
-        if np.unique(dims_str).size == 1:
-            FQ = np.zeros(dims[0])
-        elif np.unique(dims_str[np.where([isinstance(x, tuple) for x in dims])]).size == 1:
-            FQ = np.zeros(dims[np.where([isinstance(x, tuple) for x in dims])[0][0]])
-        else:
-            raise ValueError("Dimensions of 'hkl' elements are not compatible. An " \
-                             "element must be either the same shape as an other " \
-                             "non-decimal element, or a decimal number.")
-
+ 
         # Ensures input arrays are complex ndarrays
         if isinstance(h, (np.ndarray, list, tuple)):
             h = np.array(h).astype(complex, casting='unsafe')
@@ -161,7 +140,14 @@ class Material(object):
             k = np.array(k).astype(complex, casting='unsafe')
         if isinstance(l, (np.ndarray, list, tuple)):
             l = np.array(l).astype(complex, casting='unsafe')
-            
+
+        # Determines shape of input variables to build FQ = 0 array
+        _dims = h + k + l
+        if isinstance(_dims, Number):
+            FQ = 0 * 1j
+        else:
+            FQ = np.zeros(_dims.shape)
+
         # construct structure factor
         for atom in self.atoms:
             FQ += atom.b * np.exp(1j * 2. * np.pi * (h * atom.pos[0] + k * atom.pos[1] + l * atom.pos[2])) * \
