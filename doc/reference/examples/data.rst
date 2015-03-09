@@ -7,40 +7,46 @@ The following contains examples of how to use the various features in the :py:cl
 
 Initialization: loading data
 ----------------------------
-There are a couple of options to initialize the :py:class:`.Data` object. If your data is in SPICE (HFIR, ORNL), ICE or ICP (NCNR) formats then you can use :py:meth:`.Data.load_file`, otherwise you will need to load the data and pass it to :py:class:`.Data` manually.
+There are a couple of options to initialize the :py:class:`.Data` object. If your data is in SPICE (HFIR, ORNL), ICE or ICP (NCNR) formats then you can use :py:meth:`.load`, otherwise you will need to load the data and pass it to :py:class:`.Data` manually.
 
 Load from file
 ^^^^^^^^^^^^^^
-First, lets assume that you have a data file, ``'scan.dat'`` from a HFIR instrument (SPICE format):
+First, let's assume that you have a data file, ``'scan.dat'`` from a HFIR instrument (SPICE format):
 
->>> from neutronpy.tools import Data
->>> data = Data()
->>> data.load_file('scan.dat', mode='SPICE')
+>>> from neutronpy import load
+>>> data = load('scan.dat')
 
-This builds ``data.Q`` automatically and loads the following information from the file:
+This builds ``data`` automatically and loads the following information from the file:
 
 * detector counts
 * monitor counts
 * h, k, l
 * energy transfer
 * temperature
+* time
 * ei, ef (future feature)
-* time (future feature)
 
 Currently, other data from the files is not included, but some additional support will be added in the future.
 
-**Note: The primary problem is there is no standard variable name set between different file formats, and documentation for the file formats are not complete in some cases. Additionally, instruments at the same facility often use different software, so formats are frequently incompatible.**
+.. note::
+    Note: The primary problem is there is no standard variable name set between different file formats, and documentation for the file formats are not complete in some cases. Additionally, instruments at the same facility often use different software, so formats are frequently incompatible.
 
 If you want to load more than one file at a time, simple add the file names as separate arguments, *e.g.*
 
->>> data.load_file('scan1.dat', 'scan2.dat', mode='SPICE')
+>>> data = load('scan1.dat', 'scan2.dat')
+
+By default, :py:meth:`.load` attempts to determine the format of the input files automatically, but you can specify the ``mode`` if desired. Valid modes are currently:
+
+* ``'SPICE'`` - HFIR files
+* ``'ICE'`` - NCNR files
+* ``'ICP'`` - NCNR files
+* ``'iexy'`` - plaintext files from *e.g.* DAVE (future support planned)
 
 Pass pre-loaded data
 ^^^^^^^^^^^^^^^^^^^^
 Assuming that your data is in a format that is not supported by :py:meth:`.Data.load_file` you will need to load the data yourself and pass it to the :py:class:`.Data` class and build ``Data.Q`` using :py:meth:`.Data.build_Q`. To build ``Data.Q`` you must have defined ``h``, ``k``, ``l``, ``e``, and ``temp``.
 
 >>> data = Data(h=h, k=k, l=l, e=e, temp=temp, detector=detector, monitor=monitor, time=time)
->>> data.Q = data.build_Q()
 
 ``Data`` properties
 ---------------
@@ -50,8 +56,8 @@ Intensity and error
 ^^^^^^^^^^^^^^^^^^^
 Intensity, *i.e.* ``detector / monitor * m0`` and square-root error are respectively obtained by
 
->>> data.intensity()
->>> data.error()
+>>> data.intensity
+>>> data.error
 
 Monitor normalization
 ^^^^^^^^^^^^^^^^^^^^^
@@ -59,7 +65,16 @@ If you want to normalize to a particular monitor ``m0`` then you will need to de
 
 >>> data.m0 = 1e5
 
-If you do not choose a ``m0``, when you call :py:meth:`.Data.intensity()` one will be defined for you based on the ``monitor`` already defined in ``data``.
+If you do not choose a ``m0``, when you call :py:meth:`.Data.intensity` one will be defined for you based on the ``monitor`` already defined in ``data``.
+
+Time normalization
+^^^^^^^^^^^^^^^^^^
+If you want to normalize to a particular time ``t0`` then you will need to set ``time_norm`` to ``True`` and define ``t0`` in minutes, *e.g.*
+
+>>> data.time_norm = True
+>>> data.t0 = 5
+
+If you do not choose a ``t0``, when you call :py:meth:`.Data.intensity` one will be defined for you based on the ``time`` already defined in ``data``.
 
 The ``Q`` vector
 ^^^^^^^^^^^^^^^^
@@ -75,12 +90,8 @@ In this case, ``Q`` is collection of column arrays defined as ``[h, k, l, e, tem
 -------------------
 Combining data is as easy as adding multiple ``Data`` objects together, *e.g.*
 
->>> data1 = Data()
->>> data1.load_file('scan1.dat', mode='SPICE')
-
->>> data2 = Data()
->>> data2.load_file('scan2.dat', mode='SPICE')
-
+>>> data1 = load('scan1.dat', mode='SPICE')
+>>> data2 = load('scan2.dat', mode='SPICE')
 >>> data = data1 + data2
 
 This will combine monitor and detector counts for existing points and concatenate unique points in the two objects to create a new ``data`` object.
