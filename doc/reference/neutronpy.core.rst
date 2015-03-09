@@ -9,3 +9,6 @@ neutronpy.core module
     Data
     Energy
     Fitter
+    build_Q
+    load
+    save
