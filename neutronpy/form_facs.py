@@ -69,6 +69,38 @@ class Material(object):
              'massNorm': bool,
              'formulaUnits': float,
              'lattice': [float, float, float]}
+             
+    The following are valid options for the data dictionary:
+    
+    'name' : str
+        Name of the structure
+        
+    'composition': list of dicts
+        For each atom in the unit cell, you must provide:
+        
+            'ion': str
+                Name of the atom. Needed for mass and scattering length
+        
+            'pos' : list of 3 floats
+                x, y, z position of the atom within the unit cell in normalized units
+        
+            'dpos' : list of 3 floats
+                x, y, z displacements of the atom, for Debye-Waller factor, in normalized units
+        
+            'occupancy' : float
+                Occupancy of the site, e.g. if atoms only partially occupy this site
+        
+    'debye-waller' : bool
+        Include Debye-Waller in calculation
+        
+    'massNorm' : bool
+        Normalize calculations to mass of atoms
+            
+    'formulaUnits': float
+        Number of formula units to use in the calculation
+        
+    'lattice' : list of 3 floats
+        lattice parameters of unit cell
 
     Returns
     -------
@@ -78,6 +110,7 @@ class Material(object):
     Methods
     -------
     calc_str_fac
+    plot_unit_cell
     
 
     '''
@@ -120,7 +153,7 @@ class Material(object):
 
         Parameters
         ----------
-        hkl : tuple of floats, or tuple of ndarrays
+        hkl : tuple of floats, or tuple of array-like
             Reciprocal lattice positions at which the structure
             factor should be calculated
 
