@@ -1,4 +1,4 @@
-from neutronpy import tools, functions
+from neutronpy import Energy, Data, load, save, detect_filetype, functions
 import numpy as np
 from scipy.integrate import simps
 import os
@@ -7,7 +7,7 @@ import unittest
 
 class EnergyTest(unittest.TestCase):
     def test_energy(self):
-        energy = tools.Energy(energy=25.)
+        energy = Energy(energy=25.)
         self.assertAlmostEqual(energy.energy, 25.0, 4)
         self.assertAlmostEqual(energy.wavelength, 1.8089, 4)
         self.assertAlmostEqual(energy.wavevector, 3.473, 3)
@@ -30,24 +30,25 @@ class DataTest(unittest.TestCase):
             mon = 1e3
             tim = 5
 
-        output = tools.Data()
-        output.Q = np.vstack((item.ravel() for item in np.meshgrid(x, 0., 0., 0., 300.))).T
-        output.detector = y
-        output.monitor = np.zeros(x.shape) + mon
-        output.time = np.zeros(x.shape) + tim
+        output = Data(Q=np.vstack((item.ravel() for item in np.meshgrid(x, 0., 0., 0., 300.))).T,
+                      detector=y, monitor=np.full(x.shape, mon), time=np.full(x.shape, tim))
 
         return output
 
     def test_load_files(self):
-        data1 = tools.Data()
-        data1.load_file(os.path.join(os.path.dirname(__file__), 'scan0001.dat'), os.path.join(os.path.dirname(__file__), 'scan0002.dat'), mode='SPICE')
+        data1 = load((os.path.join(os.path.dirname(__file__), 'scan0001.dat'),
+                      os.path.join(os.path.dirname(__file__), 'scan0002.dat')))
+        data2 = load((os.path.join(os.path.dirname(__file__), 'scan0003.ng5')))
+        data3 = load((os.path.join(os.path.dirname(__file__), 'scan0004.bt7')))
 
-        data2 = tools.Data()
-        data2.load_file(os.path.join(os.path.dirname(__file__), 'scan0003.ng5'), mode='ICP')
-        
-        data3 = tools.Data()
-        data3.load_file(os.path.join(os.path.dirname(__file__), 'scan0004.bt7'), mode='ICE')
-
+    def test_save_file(self):
+        pass
+    
+    def test_filetype_detection(self):
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0001.dat')) == 'SPICE')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0003.ng5')) == 'ICP')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0004.bt7')) == 'ICE')
+    
     def test_combine_data(self):
         data1 = self.build_data(clean=True)
         data2 = self.build_data(clean=False)

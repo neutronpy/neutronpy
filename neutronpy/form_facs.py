@@ -69,6 +69,38 @@ class Material(object):
              'massNorm': bool,
              'formulaUnits': float,
              'lattice': [float, float, float]}
+             
+    The following are valid options for the data dictionary:
+    
+    'name' : str
+        Name of the structure
+        
+    'composition': list of dicts
+        For each atom in the unit cell, you must provide:
+        
+            'ion': str
+                Name of the atom. Needed for mass and scattering length
+        
+            'pos' : list of 3 floats
+                x, y, z position of the atom within the unit cell in normalized units
+        
+            'dpos' : list of 3 floats
+                x, y, z displacements of the atom, for Debye-Waller factor, in normalized units
+        
+            'occupancy' : float
+                Occupancy of the site, e.g. if atoms only partially occupy this site
+        
+    'debye-waller' : bool
+        Include Debye-Waller in calculation
+        
+    'massNorm' : bool
+        Normalize calculations to mass of atoms
+            
+    'formulaUnits': float
+        Number of formula units to use in the calculation
+        
+    'lattice' : list of 3 floats
+        lattice parameters of unit cell
 
     Returns
     -------
@@ -78,6 +110,7 @@ class Material(object):
     Methods
     -------
     calc_str_fac
+    plot_unit_cell
     
 
     '''
@@ -120,7 +153,7 @@ class Material(object):
 
         Parameters
         ----------
-        hkl : tuple of floats, or tuple of ndarrays
+        hkl : tuple of floats, or tuple of array-like
             Reciprocal lattice positions at which the structure
             factor should be calculated
 
@@ -132,28 +165,7 @@ class Material(object):
         '''
 
         h, k, l = hkl
-
-        # Determines shape of input variables to build FQ = 0 array
-        dims = []
-        for x in hkl:
-            if isinstance(x, np.ndarray):
-                dims.append(x.shape)
-            elif isinstance(x, (list, tuple)):
-                dims.append((len(x),))
-            elif isinstance(x, Number):
-                dims.append(1)
-        
-        dims_str = np.array([str(x) for x in dims], dtype=str)
-
-        if np.unique(dims_str).size == 1:
-            FQ = np.zeros(dims[0])
-        elif np.unique(dims_str[np.where([isinstance(x, tuple) for x in dims])]).size == 1:
-            FQ = np.zeros(dims[np.where([isinstance(x, tuple) for x in dims])[0][0]])
-        else:
-            raise ValueError("Dimensions of 'hkl' elements are not compatible. An " \
-                             "element must be either the same shape as an other " \
-                             "non-decimal element, or a decimal number.")
-
+ 
         # Ensures input arrays are complex ndarrays
         if isinstance(h, (np.ndarray, list, tuple)):
             h = np.array(h).astype(complex, casting='unsafe')
@@ -161,13 +173,52 @@ class Material(object):
             k = np.array(k).astype(complex, casting='unsafe')
         if isinstance(l, (np.ndarray, list, tuple)):
             l = np.array(l).astype(complex, casting='unsafe')
-            
+
+        # Determines shape of input variables to build FQ = 0 array
+        _dims = h + k + l
+        if isinstance(_dims, Number):
+            FQ = 0 * 1j
+        else:
+            FQ = np.zeros(_dims.shape)
+
         # construct structure factor
         for atom in self.atoms:
             FQ += atom.b * np.exp(1j * 2. * np.pi * (h * atom.pos[0] + k * atom.pos[1] + l * atom.pos[2])) * \
                   np.exp(-(2. * np.pi * (h * atom.dpos[0] + k * atom.dpos[1] + l * atom.dpos[2])) ** 2)
 
         return FQ
+
+    def plot_unit_cell(self):
+        r'''Plots the unit cell and atoms of the material.
+        
+        '''
+        
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+        from itertools import product, combinations
+        
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        
+        # draw unit cell
+        for s, e in combinations(np.array(list(product([0, self.abc[0]], [0, self.abc[1]], [0, self.abc[2]]))), 2):
+            if np.sum(np.abs(s - e)) in self.abc:
+                ax.plot3D(*zip(s, e), color="b")
+
+        # plot atoms
+        x, y, z, m = [], [], [], []
+        for item in self.atoms:
+            x.append(item.pos[0] * self.abc[0])
+            y.append(item.pos[1] * self.abc[1])
+            z.append(item.pos[2] * self.abc[2])
+            m.append(item.mass)
+
+        ax.scatter(x, y, z, s=m)
+        
+        plt.axis('scaled')
+        plt.axis('off')
+        
+        plt.show()  
 
 
 class Ion(object):
