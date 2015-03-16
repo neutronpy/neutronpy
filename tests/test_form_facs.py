@@ -40,6 +40,10 @@ class StructureFactor(unittest.TestCase):
         self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((tuple_example, 0, 0))) ** 2), 1261922.414836668, 6)
         self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, tuple_example, 0))) ** 2), 1261922.414836668, 6)
         self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, 0, tuple_example))) ** 2), 16294175.79743738, 6)
+    
+    def test_N_atoms(self):
+        structure = form_facs.Material(self.input)
+        self.assertTrue(np.abs(structure.N_atoms(22.) - 3.611085294775001e+22) < 1)
 
 
 class MagneticFormFactor(unittest.TestCase):

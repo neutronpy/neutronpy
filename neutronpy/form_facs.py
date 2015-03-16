@@ -111,6 +111,7 @@ class Material(object):
     -------
     calc_str_fac
     plot_unit_cell
+    N_atoms
     
 
     '''
@@ -220,6 +221,23 @@ class Material(object):
         
         plt.show()  
 
+    def N_atoms(self, mass):
+        r'''Number of atoms in the defined Material, given the mass of the sample.
+        
+        Parameters
+        ----------
+        mass : float
+            The mass of the sample in grams.
+            
+        Returns
+        -------
+        Natoms : int
+            The number of atoms of the material based on the mass of the sample.
+        
+        '''
+        
+        return const.N_A * mass / self.muCell
+        
 
 class Ion(object):
     r'''Class defining a magnetic ion.
