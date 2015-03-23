@@ -37,14 +37,15 @@ class Sample():
     Sample : object
 
     '''
-    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=60, direct=1):
+    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=None, direct=1):
         self.a = a
         self.b = b
         self.c = c
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
-        self.mosaic = mosaic
+        if mosaic is not None:
+            self.mosaic = mosaic
         self.dir = direct
 
 
@@ -132,9 +133,9 @@ def _star(lattice):
 
     '''
     V = 2 * lattice.a * lattice.b * lattice.c * \
-        np.sqrt(np.sin((lattice.alpha + lattice.beta + lattice.gamma) / 2) *
-                np.sin((-lattice.alpha + lattice.beta + lattice.gamma) / 2) *
-                np.sin((lattice.alpha - lattice.beta + lattice.gamma) / 2) *
+        np.sqrt(np.sin((lattice.alpha + lattice.beta + lattice.gamma) / 2) * 
+                np.sin((-lattice.alpha + lattice.beta + lattice.gamma) / 2) * 
+                np.sin((lattice.alpha - lattice.beta + lattice.gamma) / 2) * 
                 np.sin((lattice.alpha + lattice.beta - lattice.gamma) / 2))
 
     Vstar = (2 * np.pi) ** 3 / V
@@ -143,11 +144,11 @@ def _star(lattice):
     latticestar.a = 2 * np.pi * lattice.b * lattice.c * np.sin(lattice.alpha) / V
     latticestar.b = 2 * np.pi * lattice.a * lattice.c * np.sin(lattice.beta) / V
     latticestar.c = 2 * np.pi * lattice.b * lattice.a * np.sin(lattice.gamma) / V
-    latticestar.alpha = np.arccos((np.cos(lattice.beta) * np.cos(lattice.gamma) -
+    latticestar.alpha = np.arccos((np.cos(lattice.beta) * np.cos(lattice.gamma) - 
                                    np.cos(lattice.alpha)) / (np.sin(lattice.beta) * np.sin(lattice.gamma)))
-    latticestar.beta = np.arccos((np.cos(lattice.alpha) * np.cos(lattice.gamma) -
+    latticestar.beta = np.arccos((np.cos(lattice.alpha) * np.cos(lattice.gamma) - 
                                   np.cos(lattice.beta)) / (np.sin(lattice.alpha) * np.sin(lattice.gamma)))
-    latticestar.gamma = np.arccos((np.cos(lattice.alpha) * np.cos(lattice.beta) -
+    latticestar.gamma = np.arccos((np.cos(lattice.alpha) * np.cos(lattice.beta) - 
                                    np.cos(lattice.gamma)) / (np.sin(lattice.alpha) * np.sin(lattice.beta)))
 
     return [V, Vstar, latticestar]
@@ -455,9 +456,7 @@ def ResMat(Q, W, EXP):
     Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
 
     '''
-    # 0.424660900144 = FWHM2RMS
-    # CONVERT1=0.4246609*pi/60/180
-    CONVERT1 = np.pi / 60. / 180.  # TODO: FIX constant from CN. 0.4246
+    CONVERT1 = 0.4246609 * np.pi / 60. / 180.
     CONVERT2 = 2.072
 
     [length, Q, W, EXP] = _CleanArgs(Q, W, EXP)
@@ -479,23 +478,23 @@ def ResMat(Q, W, EXP):
             method = EXP[ind].method
 
         # Assign default values and decode parameters
-        moncor = 0
+        moncor = 1
         if hasattr(EXP[ind], 'moncor'):
             moncor = EXP[ind].moncor
 
-        alpha = EXP[ind].hcol * CONVERT1
-        beta = EXP[ind].vcol * CONVERT1
+        alpha = np.array(EXP[ind].hcol) * CONVERT1
+        beta = np.array(EXP[ind].vcol) * CONVERT1
         mono = EXP[ind].mono
-        etam = mono.mosaic * CONVERT1
-        etamv = etam
+        etam = np.array(mono.mosaic) * CONVERT1
+        etamv = np.copy(etam)
         if hasattr(mono, 'vmosaic') and (method == 1 or method == 'Popovici'):
-            etamv = mono.vmosaic * CONVERT1
+            etamv = np.array(mono.vmosaic) * CONVERT1
 
         ana = EXP[ind].ana
-        etaa = ana.mosaic * CONVERT1
-        etaav = etaa
+        etaa = np.array(ana.mosaic) * CONVERT1
+        etaav = np.copy(etaa)
         if hasattr(ana, 'vmosaic'):
-            etaav = ana.vmosaic * CONVERT1
+            etaav = np.array(ana.vmosaic) * CONVERT1
 
         sample = EXP[ind].sample
         infin = -1
@@ -503,13 +502,13 @@ def ResMat(Q, W, EXP):
             infin = EXP[ind].infin
 
         efixed = EXP[ind].efixed
-        epm = 1  # @UnusedVariable
+        epm = 1
         if hasattr(EXP[ind], 'dir1'):
-            epm = EXP[ind].dir1  # @UnusedVariable
+            epm = EXP[ind].dir1
 
-        ep = 1  # @UnusedVariable
+        ep = 1
         if hasattr(EXP[ind], 'dir2'):
-            ep = EXP[ind].dir2  # @UnusedVariable
+            ep = EXP[ind].dir2
 
         monitorw = 1.
         monitorh = 1.
@@ -536,55 +535,55 @@ def ResMat(Q, W, EXP):
         if hasattr(EXP[ind], 'beam'):
             beam = EXP[ind].beam
             if hasattr(beam, 'width'):
-                beamw = beam.width ** 2 / 12.
+                beamw = beam.width ** 2
 
             if hasattr(beam, 'height'):
-                beamh = beam.height ** 2 / 12.
+                beamh = beam.height ** 2
 
         bshape = np.diag([beamw, beamh])
         if hasattr(EXP[ind], 'monitor'):
             monitor = EXP[ind].monitor
             if hasattr(monitor, 'width'):
-                monitorw = monitor.width ** 2 / 12.
+                monitorw = monitor.width ** 2
 
             monitorh = monitorw
             if hasattr(monitor, 'height'):
-                monitorh = monitor.height ** 2 / 12.
+                monitorh = monitor.height ** 2
 
         monitorshape = np.diag([monitorw, monitorh])
         if hasattr(EXP[ind], 'detector'):
             detector = EXP[ind].detector
             if hasattr(detector, 'width'):
-                detectorw = detector.width ** 2 / 12.
+                detectorw = detector.width ** 2
 
             if hasattr(detector, 'height'):
-                detectorh = detector.height ** 2 / 12.
+                detectorh = detector.height ** 2
 
         dshape = np.diag([detectorw, detectorh])
         if hasattr(mono, 'width'):
-            monow = mono.width ** 2 / 12.
+            monow = mono.width ** 2
 
         if hasattr(mono, 'height'):
-            monoh = mono.height ** 2 / 12.
+            monoh = mono.height ** 2
 
         if hasattr(mono, 'depth'):
-            monod = mono.depth ** 2 / 12.
+            monod = mono.depth ** 2
 
         mshape = np.diag([monod, monow, monoh])
         if hasattr(ana, 'width'):
-            anaw = ana.width ** 2 / 12.
+            anaw = ana.width ** 2
 
         if hasattr(ana, 'height'):
-            anah = ana.height ** 2 / 12.
+            anah = ana.height ** 2
 
         if hasattr(ana, 'depth'):
-            anad = ana.depth ** 2 / 12.
+            anad = ana.depth ** 2
 
         ashape = np.diag([anad, anaw, anah])
         if hasattr(sample, 'width') and hasattr(sample, 'depth') and hasattr(sample, 'height'):
-            sshape = np.diag([sample.depth, sample.width, sample.height]) ** 2 / 12.
+            sshape = np.diag([sample.depth, sample.width, sample.height]) ** 2
         elif hasattr(sample, 'shape'):
-            sshape = sample.shape / 12.
+            sshape = sample.shape
 
         if hasattr(EXP[ind], 'arms'):
             arms = EXP[ind].arms
@@ -592,9 +591,9 @@ def ResMat(Q, W, EXP):
             L1 = arms[1]
             L2 = arms[2]
             L3 = arms[3]
-            L1mon = L1
+            L1mon = np.copy(L1)
             if len(arms) > 4:
-                L1mon = arms[4]
+                L1mon = np.copy(arms[4])
 
         if hasattr(mono, 'rv'):
             monorv = mono.rv
@@ -618,9 +617,9 @@ def ResMat(Q, W, EXP):
         if horifoc == 1:
             alpha[2] = alpha[2] * np.sqrt(8 * np.log(2) / 12.)
 
-        em = 1  # @UnusedVariable
+        em = 1
         if hasattr(EXP[ind], 'mondir'):
-            em = EXP[ind].mondir  # @UnusedVariable
+            em = EXP[ind].mondir
 
         sm = EXP[ind].mono.dir
         ss = EXP[ind].sample.dir
@@ -638,14 +637,33 @@ def ResMat(Q, W, EXP):
         ki = np.sqrt(ei / CONVERT2)
         kf = np.sqrt(ef / CONVERT2)
 
-        thetam = np.arcsin(taum / (2. * ki)) * sm  # added sign(em) K.P.
-        thetaa = np.arcsin(taua / (2. * kf)) * sa
-        s2theta = np.arccos((ki ** 2 + kf ** 2 - q ** 2) / (2. * ki * kf)) * ss  # 2theta sample @IgnorePep8
+        thetam = np.arcsin(taum / (2. * ki)) * np.sign(epm) * np.sign(em)  # sm  # added sign(em) K.P.
+        thetaa = np.arcsin(taua / (2. * kf)) * np.sign(ep) * np.sign(em)  # sa
+        s2theta = -np.arccos((ki ** 2 + kf ** 2 - q ** 2) / (2. * ki * kf)) * np.sign(em)  # ss  # 2theta sample @IgnorePep8
         if np.iscomplex(s2theta):
             raise ValueError(': KI,KF,Q triangle will not close (kinematic equations). Change the value of KFIX,FX,QH,QK or QL.')
 
         thetas = s2theta / 2.
-        phi = np.arctan2(-kf * np.sin(s2theta), ki - kf * np.cos(s2theta))
+        phi = np.arctan2(np.sign(em) * (-kf * np.sin(s2theta)), np.sign(em) * (ki - kf * np.cos(s2theta)))
+
+        #Calculate beam divergences defined by neutron guides
+        if alpha[0] < 0:
+            alpha[0] = -alpha[0] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
+        if alpha[1] < 0:
+            alpha[1] = -alpha[1] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
+        if alpha[2] < 0:
+            alpha[2] = -alpha[2] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
+        if alpha[3] < 0:
+            alpha[3] = -alpha[3] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
+        
+        if beta[0] < 0:
+            beta[0] = -beta[0] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
+        if beta[1] < 0:
+            beta[1] = -beta[1] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
+        if beta[2] < 0:
+            beta[2] = -beta[2] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
+        if beta[3] < 0:
+            beta[3] = -beta[3] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
 
         # Redefine sample geometry
         psi = thetas - phi  # Angle from sample geometry X axis to Q
@@ -657,7 +675,7 @@ def ResMat(Q, W, EXP):
         rot[2, 2] = 1.
 
         # sshape=rot'*sshape*rot
-        sshape = rot * np.matrix(sshape) * rot.H
+        sshape = np.matrix(rot) * np.matrix(sshape) * np.matrix(rot).H
 
         # Definition of matrix G
         G = 1. / np.array([alpha[0], alpha[1], beta[0], beta[1], alpha[2], alpha[3], beta[2], beta[3]], dtype=np.float64) ** 2
@@ -708,7 +726,7 @@ def ResMat(Q, W, EXP):
         # Definition of matrix T
         T[0, 0] = -1. / (2. * L0)  # mistake in paper
         T[0, 2] = np.cos(thetam) * (1. / L1 - 1. / L0) / 2.
-        T[0, 3] = np.sin(thetam) * (1. / L0 + 1. / L1 - 2. * (monorh * np.sin(thetam))) / 2.
+        T[0, 3] = np.sin(thetam) * (1. / L0 + 1. / L1 - 2. / (monorh * np.sin(thetam))) / 2.
         T[0, 5] = np.sin(thetas) / (2. * L1)
         T[0, 6] = np.cos(thetas) / (2. * L1)
         T[1, 1] = -1. / (2. * L0 * np.sin(thetam))
@@ -717,7 +735,7 @@ def ResMat(Q, W, EXP):
         T[2, 5] = np.sin(thetas) / (2. * L2)
         T[2, 6] = -np.cos(thetas) / (2. * L2)
         T[2, 8] = np.cos(thetaa) * (1. / L3 - 1. / L2) / 2.
-        T[2, 9] = np.sin(thetaa) * (1. / L2 + 1. / L3 - 2. * (anarh * np.sin(thetaa))) / 2.
+        T[2, 9] = np.sin(thetaa) * (1. / L2 + 1. / L3 - 2. / (anarh * np.sin(thetaa))) / 2.
         T[2, 11] = 1. / (2. * L3)
         T[3, 7] = -1. / (2. * L2 * np.sin(thetaa))
         T[3, 10] = (1. / L2 + 1. / L3 - 2. * np.sin(thetaa) / anarv) / (2. * np.sin(thetaa))
@@ -750,63 +768,56 @@ def ResMat(Q, W, EXP):
 
         # Definition of resolution matrix M
         if method == 1 or method == 'Popovici':
-            K = S + T.H * F * T
-            H = np.linalg.inv(D * np.linalg.inv(K) * D.H)
-            Ninv = A * np.linalg.inv(H + G) * A.H  # Popovici Eq 20
+            Minv = np.matrix(B) * np.matrix(A) * np.linalg.inv(np.linalg.inv(np.matrix(D) * np.linalg.inv(np.matrix(S) + np.matrix(T).H * np.matrix(F) * np.matrix(T)) * np.matrix(D).H) + np.matrix(G)) * np.matrix(A).H * np.matrix(B).H
         else:
-            H = G + C.H * F * C  # Popovici Eq 8
-            Ninv = A * np.linalg.inv(H) * A.H  # Cooper-Nathans (in Popovici Eq 10)
+            HF = np.matrix(A) * np.linalg.inv(np.matrix(G) + np.matrix(C).H * np.matrix(F) * np.matrix(C)) * np.matrix(A).H
             # Horizontally focusing analyzer if needed
             if horifoc > 0:
-                Ninv = np.linalg.inv(Ninv)
-                Ninv[4, 4] = (1. / (kf * alpha[3])) ** 2
-                Ninv[4, 3] = 0.
-                Ninv[3, 4] = 0.
-                Ninv[3, 3] = (np.tan(thetaa) / (etaa * kf)) ** 2
-                Ninv = np.linalg.inv(Ninv)
+                HF = np.linalg.inv(HF)
+                HF[4, 4] = (1 / (kf * alpha[2])) ** 2
+                HF[4, 3] = 0
+                HF[3, 4] = 0 
+                HF[3, 3] = (np.tan(thetaa) / (etaa * kf)) ** 2
+                HF = np.linalg.inv(HF)
+            Minv = np.matrix(B) * np.matrix(HF) * np.matrix(B).H
 
-        Minv = B * Ninv * B.H  # Popovici Eq 3
-
-        # TODO: FIX added factor 5.545 from ResCal5
-        M = 8. * np.log(2.) * np.linalg.inv(Minv)
-        # Correction factor 8*log(2) as input parameters are expressed as FWHM.
-
+        M = np.linalg.inv(Minv)
         # TODO: rows-columns 3-4 swapped for ResPlot to work.
         # Inactivate as we want M=[x,y,z,E]
-#         RM_[0, 0] = M[0, 0]
-#         RM_[1, 0] = M[1, 0]
-#         RM_[0, 1] = M[0, 1]
-#         RM_[1, 1] = M[1, 1]
-#
-#         RM_[0, 2] = M[0, 3]
-#         RM_[2, 0] = M[3, 0]
-#         RM_[2, 2] = M[3, 3]
-#         RM_[2, 1] = M[3, 1]
-#         RM_[1, 2] = M[1, 3]
-#
-#         RM_[0, 3] = M[0, 2]
-#         RM_[3, 0] = M[2, 0]
-#         RM_[3, 3] = M[2, 2]
-#         RM_[3, 1] = M[2, 1]
-#         RM_[1, 3] = M[1, 2]
+        RM_[0, 0] = M[0, 0]
+        RM_[1, 0] = M[1, 0]
+        RM_[0, 1] = M[0, 1]
+        RM_[1, 1] = M[1, 1]
 
+        RM_[0, 2] = M[0, 3]
+        RM_[2, 0] = M[3, 0]
+        RM_[2, 2] = M[3, 3]
+        RM_[2, 1] = M[3, 1]
+        RM_[1, 2] = M[1, 3]
+
+        RM_[0, 3] = M[0, 2]
+        RM_[3, 0] = M[2, 0]
+        RM_[3, 3] = M[2, 2]
+        RM_[3, 1] = M[2, 1]
+        RM_[1, 3] = M[1, 2]
+            
         # Calculation of prefactor, normalized to source
         Rm = ki ** 3 / np.tan(thetam)
         Ra = kf ** 3 / np.tan(thetaa)
-        R0_ = Rm * Ra * (2. * np.pi) ** 4 / (64. * np.pi ** 2 * np.sin(thetam) * np.sin(thetaa))
 
         if method == 1 or method == 'Popovici':
             # Popovici
-            R0_ = R0_ * np.sqrt(np.linalg.det(F) / np.linalg.det(np.matrix(H) + np.matrix(G)))
+            R0_ = Rm * Ra * (2. * np.pi) ** 4 / (64. * np.pi ** 2 * np.sin(thetam) * np.sin(thetaa)) * np.sqrt(np.linalg.det(F) / np.linalg.det(np.linalg.inv(np.matrix(D) * np.linalg.inv(np.matrix(S) + np.matrix(T).H * np.matrix(F) * np.matrix(T)) * np.matrix(D).H) + np.matrix(G)))
         else:
             # Cooper-Nathans (popovici Eq 5 and 9)
-            R0_ = R0_ * np.sqrt(np.linalg.det(np.matrix(F)) / np.linalg.det(np.matrix(H)))
-
+#             R0_ = R0_ * np.sqrt(np.linalg.det(np.matrix(F)) / np.linalg.det(np.matrix(H)))
+            R0_ = Rm * Ra * (2. * np.pi) ** 4 / (64. * np.pi ** 2 * np.sin(thetam) * np.sin(thetaa)) * np.sqrt(np.linalg.det(np.matrix(F)) / np.linalg.det(np.matrix(G) + np.matrix(C).H * np.matrix(F) * np.matrix(C)))
+            
         # Normalization to flux on monitor
         if moncor == 1:
-            g = G[0:3, 0:3]
-            f = F[0:1, 0:1]
-            c = C[0:1, 0:3]
+            g = G[0:4, 0:4]
+            f = F[0:2, 0:2]
+            c = C[0:2, 0:4]
             t[0, 0] = -1. / (2. * L0)  # mistake in paper
             t[0, 2] = np.cos(thetam) * (1. / L1mon - 1. / L0) / 2.
             t[0, 3] = np.sin(thetam) * (1. / L0 + 1. / L1mon - 2. / (monorh * np.sin(thetam))) / 2.
@@ -814,12 +825,12 @@ def ResMat(Q, W, EXP):
             t[1, 1] = -1. / (2. * L0 * np.sin(thetam))
             t[1, 4] = (1. / L0 + 1. / L1mon - 2. * np.sin(thetam) / monorv) / (2. * np.sin(thetam))
             sinv = blkdiag(np.array(bshape, dtype=np.float32), mshape, monitorshape)  # S-1 matrix
-            s = np.matrix(sinv).I
+            s = np.linalg.inv(sinv)
             d[0, 0] = -1. / L0
             d[0, 2] = -np.cos(thetam) / L0
             d[0, 3] = np.sin(thetam) / L0
-            d[2, 1] = D[1, 1]
-            d[2, 4] = -D[1, 1]
+            d[2, 1] = D[0, 0]
+            d[2, 4] = -D[0, 0]
             d[1, 2] = np.cos(thetam) / L1mon
             d[1, 3] = np.sin(thetam) / L1mon
             d[1, 5] = 0.
@@ -827,20 +838,20 @@ def ResMat(Q, W, EXP):
             d[3, 4] = -1. / L1mon
             if method == 1 or method == 'Popovici':
                 # Popovici
-                Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) *
-                        np.sqrt(np.linalg.det(f) / np.linalg.det((np.matrix(d) *
-                                                                  (np.matrix(s) + np.matrix(t).H * np.matrix(f) * np.matrix(t)).I *
+                Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * 
+                        np.sqrt(np.linalg.det(f) / np.linalg.det((np.matrix(d) * 
+                                                                  (np.matrix(s) + np.matrix(t).H * np.matrix(f) * np.matrix(t)).I * 
                                                                   np.matrix(d).H).I + np.matrix(g))))
             else:
                 # Cooper-Nathans
-                Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) *
+                Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * 
                         np.sqrt(np.linalg.det(f) / np.linalg.det(np.matrix(g) + np.matrix(c).H * np.matrix(f) * np.matrix(c))))
 
             R0_ = R0_ / Rmon
             R0_ = R0_ * ki  # 1/ki monitor efficiency
 
         # Transform prefactor to Chesser-Axe normalization
-        R0_ = R0_ / (2. * np.pi) ** 2 * np.sqrt(np.linalg.det(M))
+        R0_ = R0_ / (2. * np.pi) ** 2 * np.sqrt(np.linalg.det(RM_))
 
         # Include kf/ki part of cross section
         R0_ = R0_ * kf / ki
@@ -849,17 +860,15 @@ def ResMat(Q, W, EXP):
         # [S. A. Werner & R. Pynn, J. Appl. Phys. 42, 4736, (1971), eq 19]
         if hasattr(sample, 'mosaic'):
             etas = sample.mosaic * CONVERT1
-            etasv = etas
+            etasv = np.copy(etas)
             if hasattr(sample, 'vmosaic'):
                 etasv = sample.vmosaic * CONVERT1
 
-            # TODO: FIX changed RM_(4,4) and M(4,4) to M(3,3)
-            R0_ = R0_ / np.sqrt((1. + (q * etasv) ** 2 * M[2, 2]) * (1. + (q * etas) ** 2 * M[1, 1]))
-            # Minv=RM_^(-1)
+            R0_ = R0_ / np.sqrt((1 + (q * etas) ** 2 * RM_[3, 3]) * (1 + (q * etasv) ** 2 * RM_[1, 1]))
+            Minv = np.linalg.inv(RM_)
             Minv[1, 1] = Minv[1, 1] + q ** 2 * etas ** 2
-            Minv[2, 2] = Minv[2, 2] + q ** 2 * etasv ** 2
-            # TODO: FIX add 8*log(2) factor for mosaicities in FWHM
-            M = 8 * np.log(2) * np.linalg.inv(Minv)
+            Minv[3, 3] = Minv[3, 3] + q ** 2 * etasv ** 2
+            RM_ = np.linalg.inv(Minv)
 
         # Take care of analyzer reflectivity if needed [I. Zaliznyak, BNL]
         if hasattr(ana, 'thickness') and hasattr(ana, 'Q'):
@@ -878,7 +887,7 @@ def ResMat(Q, W, EXP):
             R0_ = R0_ * reflec
 
         R0[ind] = R0_
-        RM[:, :, ind] = M[:, :]
+        RM[:, :, ind] = np.copy(RM_[:, :])
 
     return [R0, RM]
 
@@ -1012,21 +1021,16 @@ class Instrument(object):
     get_resolution_params
     '''
 
-    def __init__(self, efixed, sample, hcol, vcol=None, arms=None,
-                 mono='PG(002)', mono_mosaic=25, ana='PG(002)', ana_mosaic=25,
-                 **kwargs):
+    def __init__(self, efixed, sample, hcol, vcol=None, mono='PG(002)',
+                 mono_mosaic=25, ana='PG(002)', ana_mosaic=25, **kwargs):
 
         if vcol is None:
             vcol = [120, 120, 120, 120]
-
-        if arms is None:
-            arms = [150, 150, 150, 150]
 
         self.mono = _Monochromator(mono, mono_mosaic)
         self.ana = _Monochromator(ana, ana_mosaic)
         self.hcol = np.array(hcol)
         self.vcol = np.array(vcol)
-        self.arms = np.array(arms)
         self.efixed = efixed
         self.sample = sample
         self.orient1 = np.array(sample.u)
@@ -1373,10 +1377,10 @@ class Instrument(object):
         [x, y, z, sample, rsample] = _StandardSystem(EXP)  # @UnusedVariable
 
         Q = _modvec([H, K, L], rsample)
-        uq = np.zeros((3, length), dtype=np.float64)
-        uq[0, :] = H / Q  # Unit vector along Q
-        uq[1, :] = K / Q
-        uq[2, :] = L / Q
+        uq0 = H / Q  # Unit vector along Q
+        uq1 = K / Q
+        uq2 = L / Q
+        uq = np.vstack((uq0, uq1, uq2))
 
         xq = _scalar([x[0, :], x[1, :], x[2, :]], [uq[0, :], uq[1, :], uq[2, :]], rsample)
         yq = _scalar([y[0, :], y[1, :], y[2, :]], [uq[0, :], uq[1, :], uq[2, :]], rsample)
@@ -1408,7 +1412,7 @@ class Instrument(object):
         [R0, RM] = ResMat(Q, W, EXProt)
 
         for i in range(length):
-            RMS[:, :, i] = np.matrix(tmat[:, :, i]).T * np.matrix(RM[:, :, i]) * np.matrix(tmat[:, :, i])
+            RMS[:, :, i] = np.matrix(tmat[:, :, i]).H * np.matrix(RM[:, :, i]) * np.matrix(tmat[:, :, i])
 
         mul = np.zeros((4, 4))
         e = np.identity(4)
@@ -1419,8 +1423,8 @@ class Instrument(object):
                     mul[1, 1] = 1 / (EXP[i].Smooth.Y ** 2 / 8 / np.log(2))
                     mul[2, 2] = 1 / (EXP[i].Smooth.E ** 2 / 8 / np.log(2))
                     mul[3, 3] = 1 / (EXP[i].Smooth.Z ** 2 / 8 / np.log(2))
-                    R0[i] = R0[i] / np.sqrt(np.linalg.det(e / RMS[:, :, i])) * np.sqrt(np.linalg.det(e / mul + e / RMS[:, :, i]))
-                    RMS[:, :, i] = e / (e / mul + e / RMS[:, :, i])
+                    R0[i] = R0[i] / np.sqrt(np.linalg.det(np.matrix(e) / np.matrix(RMS[:, :, i]))) * np.sqrt(np.linalg.det(np.matrix(e) / np.matrix(mul) + np.matrix(e) / np.matrix(RMS[:, :, i])))
+                    RMS[:, :, i] = np.matrix(e) / (np.matrix(e) / np.matrix(mul) + np.matrix(e) / np.matrix(RMS[:, :, i]))
 
         self.R0, self.RMS, self.RM = R0, RMS, RM
         self.calc_projections([H, K, L, W], npts=npts)
