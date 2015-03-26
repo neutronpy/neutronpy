@@ -169,18 +169,18 @@ class Material(object):
  
         # Ensures input arrays are complex ndarrays
         if isinstance(h, (np.ndarray, list, tuple)):
-            h = np.array(h).astype(complex, casting='unsafe')
+            h = np.array(h).astype(complex)
         if isinstance(k, (np.ndarray, list, tuple)):
-            k = np.array(k).astype(complex, casting='unsafe')
+            k = np.array(k).astype(complex)
         if isinstance(l, (np.ndarray, list, tuple)):
-            l = np.array(l).astype(complex, casting='unsafe')
+            l = np.array(l).astype(complex)
 
         # Determines shape of input variables to build FQ = 0 array
         _dims = h + k + l
         if isinstance(_dims, Number):
             FQ = 0 * 1j
         else:
-            FQ = np.zeros(_dims.shape)
+            FQ = np.zeros(_dims.shape, dtype=np.complex)
 
         # construct structure factor
         for atom in self.atoms:

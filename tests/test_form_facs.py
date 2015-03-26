@@ -25,21 +25,21 @@ class StructureFactor(unittest.TestCase):
         self.assertAlmostEqual(np.abs(structure.calc_str_fac((0, 2, 0))) ** 2, 1583878.155915682, 6)
 
         ndarray_example = np.linspace(0.5, 1.5, 21)
-        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((ndarray_example, 0, 0))) ** 2), 1261922.414836668, 6)
-        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, ndarray_example, 0))) ** 2), 1261922.414836668, 6)
-        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, 0, ndarray_example))) ** 2), 16294175.79743738, 6)
-        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((ndarray_example, ndarray_example, 0))) ** 2), 5572585.110405569, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((ndarray_example, 0, 0))) ** 2), 6913512.8842766033, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, ndarray_example, 0))) ** 2), 6913512.8842766033, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, 0, ndarray_example))) ** 2), 16702432.671269652, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((ndarray_example, ndarray_example, 0))) ** 2), 9805385.2963885423, 6)
 
 
         list_example = list(ndarray_example)
-        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((list_example, 0, 0))) ** 2), 1261922.414836668, 6)
-        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, list_example, 0))) ** 2), 1261922.414836668, 6)
-        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, 0, list_example))) ** 2), 16294175.79743738, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((list_example, 0, 0))) ** 2), 6913512.8842766033, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, list_example, 0))) ** 2), 6913512.8842766033, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, 0, list_example))) ** 2), 16702432.671269652, 6)
         
         tuple_example = tuple(ndarray_example)
-        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((tuple_example, 0, 0))) ** 2), 1261922.414836668, 6)
-        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, tuple_example, 0))) ** 2), 1261922.414836668, 6)
-        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, 0, tuple_example))) ** 2), 16294175.79743738, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((tuple_example, 0, 0))) ** 2), 6913512.8842766033, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, tuple_example, 0))) ** 2), 6913512.8842766033, 6)
+        self.assertAlmostEqual(np.sum(abs(structure.calc_str_fac((0, 0, tuple_example))) ** 2), 16702432.671269652, 6)
     
     def test_N_atoms(self):
         structure = form_facs.Material(self.input)
