@@ -1693,7 +1693,7 @@ class Instrument(object):
 
     @property
     def beam(self):
-        '''
+        r'''A structure that describes the source
         '''
         return self._beam
 
@@ -1703,7 +1703,7 @@ class Instrument(object):
 
     @property
     def detector(self):
-        '''
+        '''A structure that describes the detector
         '''
         return self._detector
 
@@ -1713,7 +1713,7 @@ class Instrument(object):
 
     @property
     def monitor(self):
-        '''
+        '''A structure that describes the monitor
         '''
         return self._monitor
 
@@ -2476,7 +2476,7 @@ class Instrument(object):
     def resolution_convolution(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None):
         r'''Numerically calculate the convolution of a user-defined cross-section 
         function with the resolution function for a 3-axis neutron scattering 
-        experiment. See manual for details.
+        experiment.
         
         Parameters
         ----------
@@ -2510,7 +2510,7 @@ class Instrument(object):
         ACCURACY : array(2) or int
             Determines the number of sampling points in the integration.
         
-        p : tup
+        p : list
             A parameter that is passed on, without change to sqw and pref.
             
         Returns
@@ -2518,6 +2518,12 @@ class Instrument(object):
         conv : array
             Calculated value of the cross section, folded with the resolution
             function at the given $\mathbf{Q}_0$
+            
+        Notes
+        -----
+        Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
+        Oak Ridge National Laboratory
+
         '''        
         self.calc_resolution(hkle)
         [R0, RMS] = [np.copy(self.R0), np.copy(self.RMS)]
@@ -2550,7 +2556,6 @@ class Instrument(object):
         tqwy = -Myw / Mww / np.sqrt(Myy)
         tqwx = -(Mxw / Mww - Myw / Mww * Mxy / Myy) / np.sqrt(MMxx)
     
-        #================================================================================================
         inte = sqw(H, K, L, W, p)
         [modes, points] = inte.shape
     
@@ -2567,7 +2572,6 @@ class Instrument(object):
                 raise ValueError('Invalid number or output arguments in prefactor function, pref')           
     
         found = 0
-        #========================= fix  method ===========================================================
         if METHOD == 'fix':
             found = 1
             if ACCURACY is None:
@@ -2610,7 +2614,6 @@ class Instrument(object):
             if M[0] == 0:
                 conv = conv * 0.79788 ** 3
         
-        #========================= mc  method =============================================================
         if METHOD == 'mc':
             found = 1
             if ACCURACY is None:
@@ -2647,7 +2650,6 @@ class Instrument(object):
                     conv[i] = np.sum(convs[:, i] * prefactor[:, i])
         
             conv = conv / M / 1000 * np.pi ** 4. / np.sqrt(detM) 
-        #==================================================================================================
         
         if found == 0:
             raise ValueError('Unknown convolution METHOD. Valid options are: "fix",  "mc".')
@@ -2658,21 +2660,57 @@ class Instrument(object):
         return conv
     
     def resolution_convolution_SMA(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None):
-        r'''
-        # ===================================================================================
-        #   function conv=ConvResSMA(sqw,pref,H,K,L,W,EXP,METHOD,ACCURACY,p)
-        #   ResLib v.3.4
-        # ===================================================================================
-        # 
-        #  Numerically calculate the convolution of a user-defined single-mode cross-section 
-        #  function with the Cooper-Nathans resolution function for a 3-axis neutron 
-        #  scattering experiment. See manual for details.
-        # 
-        #  A. Zheludev, 1999-2006
-        #  Oak Ridge National Laboratory
-        # ====================================================================================
-        '''
-        # Calculate the resolution matrix...
+        r'''Numerically calculate the convolution of a user-defined single-mode
+        cross-section function with the resolution function for a 3-axis
+        neutron scattering experiment.
+        
+        Parameters
+        ----------
+        sqw : func
+            User-supplied "fast" model cross section.
+        
+        pref : func
+            User-supplied "slow" cross section prefactor and background function.
+        
+        nargout : int
+            Number of arguments returned by the pref function
+        
+        hkle : tup
+            Tuple of H, K, L, and W, specifying the wave vector and energy
+            transfers at which the convolution is to be calculated (i.e. 
+            define $\mathbf{Q}_0$). H, K, and L are given in reciprocal lattice 
+            units and W in meV.
+        
+        EXP : obj
+            Instrument object containing all information on experimental setup.
+        
+        METHOD : str
+            Specifies which 3D-integration method to use. 'fix' (Default): sample
+            the cross section on a fixed grid of points uniformly distributed 
+            $\phi$-space. 2*ACCURACY[0]+1 points are sampled along $\phi_1$,
+            and $\phi_2$, and 2*ACCURACY[1]+1 along $\phi_3$ (vertical
+            direction). 'mc': 3D Monte Carlo integration. The cross section is
+            sampled in 1000*ACCURACY randomly chosen points, uniformly distributed
+            in $\phi$-space.
+        
+        ACCURACY : array(2) or int
+            Determines the number of sampling points in the integration.
+        
+        p : list
+            A parameter that is passed on, without change to sqw and pref.
+            
+        Returns
+        -------
+        conv : array
+            Calculated value of the cross section, folded with the resolution
+            function at the given $\mathbf{Q}_0$
+            
+        Notes
+        -----
+        Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
+        Oak Ridge National Laboratory
+        
+        '''        
         self.calc_resolution(hkle)
         [R0, RMS] = [np.copy(self.R0), np.copy(self.RMS)]
         
@@ -2680,7 +2718,6 @@ class Instrument(object):
         H, K, L, W = hkle
         [length, H, K, L, W, EXP] = _CleanArgs(H, K, L, W, EXP);
         
-        # Get standard orthonormnal coordinate system, cell parameters and reciprocal cell parameters...
         [xvec, yvec, zvec, sample, rsample] = _StandardSystem(EXP);        
         
         Mww = RMS[2, 2, :]
@@ -2706,7 +2743,7 @@ class Instrument(object):
         tqy = np.sqrt(Mxx) / detxy
         tqxx = 1. / np.sqrt(Mxx)
         tqxy = Mxy / np.sqrt(Mxx) / detxy
-        # ================================================================================================
+
         [disp, inte, WL0] = sqw(H, K, L, p)
         [modes, points] = disp.shape
         
@@ -2723,7 +2760,6 @@ class Instrument(object):
                 ValueError('Fata error: invalid number or output arguments in prefactor function')         
         
         found = 0
-        # ========================= mc  method =============================================================
         if METHOD == 'mc': 
             found = 1
             if ACCURACY is None:
@@ -2759,7 +2795,6 @@ class Instrument(object):
 
             conv = conv / M / 1000. * np.pi ** 3
 
-        # ========================= fix  method =============================================================
         if METHOD == 'fix':
             found = 1
             if ACCURACY is None:
@@ -2771,7 +2806,7 @@ class Instrument(object):
             dd2 = np.linspace(-np.pi / 2 + step2 / 2, np.pi / 2 - step2 / 2, (2 * M[1] + 1))
             convs = np.zeros((modes, length))
             conv = np.zeros(length)
-            [cy, cx] = np.meshgrid(dd1, dd1, indexing='ij')  # ndgrid
+            [cy, cx] = np.meshgrid(dd1, dd1, indexing='ij')
             tx = np.tan(cx.flatten())
             ty = np.tan(cy.flatten())
             tz = np.tan(dd2)
@@ -2801,8 +2836,7 @@ class Instrument(object):
                 conv = conv * 0.79788
             if M[0] == 0:
                 conv = conv * 0.79788 ** 2
-        
-        # ==================================================================================================
+
         if found==0:
             ValueError('??? Error in ConvRes: Unknown convolution method! Valid options are: "fix" or "mc".')
         

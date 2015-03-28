@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :feature:`22` Convolution algorithm methods added to :py:class:`.Instrument`
+* :bug:'25 major' Fixed ComplexWarning in the structural form factor calculation which was casting complex values to only real
+
 * :release:`v0.2.0 <2015-03-11>`
 * :feature:`15` Data class rewrite. Data is now loaded with neutronpy.load method, not using Data class.
 * :support:`16` Documentation for Material and Instrument classes updated
