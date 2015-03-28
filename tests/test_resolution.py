@@ -55,7 +55,7 @@ def SMADemo(H, K, L, p):
 
 
 def PrefDemo(H, K, L, EXP, p):    
-    [sample, rsample] = resolution._GetLattice(EXP)
+    [sample, rsample] = EXP.get_lattice()
     
     q2 = resolution._modvec([H, K, L], rsample) ** 2
     

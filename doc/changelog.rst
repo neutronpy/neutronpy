@@ -2,8 +2,10 @@
 Changelog
 =========
 
+* :feature:`26` Added :py:meth:`.resolution.load` to load experimental setup from files
+* :feature:`17` :py:class:`.Instrument` has been refactored to be more self contained and pythonic
 * :feature:`22` Convolution algorithm methods added to :py:class:`.Instrument`
-* :bug:'25 major' Fixed ComplexWarning in the structural form factor calculation which was casting complex values to only real
+* :bug:`25 major` Fixed ComplexWarning in the structural form factor calculation which was casting complex values to only real
 
 * :release:`v0.2.0 <2015-03-11>`
 * :feature:`15` Data class rewrite. Data is now loaded with neutronpy.load method, not using Data class.

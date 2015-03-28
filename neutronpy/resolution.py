@@ -508,37 +508,6 @@ def _modvec(v, lattice):
     return np.sqrt(_scalar(v, v, lattice))
 
 
-def _GetLattice(EXP):
-    r'''Extracts lattice parameters from EXP and returns the direct and
-    reciprocal lattice parameters in the form used by _scalar.m, _star.m, etc.
-
-    Parameters
-    ----------
-    EXP : Instrument Class
-        The Instrument information
-
-    Returns
-    -------
-    [lattice, rlattice] : [class, class]
-        Returns the direct and reciprocal lattice sample classes
-
-    Notes
-    -----
-    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
-
-    '''
-    s = np.array([item.sample for item in EXP])
-    lattice = Sample(np.array([item.a for item in s]),
-                      np.array([item.b for item in s]),
-                      np.array([item.c for item in s]),
-                      np.array([item.alpha for item in s]) * np.pi / 180,
-                      np.array([item.beta for item in s]) * np.pi / 180,
-                      np.array([item.gamma for item in s]) * np.pi / 180)
-    V, Vstar, rlattice = _star(lattice)  # @UnusedVariable
-
-    return [lattice, rlattice]
-
-
 def GetTau(x, getlabel=False):
     u'''τ-values for common monochromator and analyzer crystals.
 
@@ -680,550 +649,6 @@ def _CleanArgs(*varargin):
     return [length] + varargout
 
 
-def _StandardSystem(EXP):
-    r'''Returns rotation matrices to calculate resolution in the sample view
-    instead of the instrument view
-
-    Parameters
-    ----------
-    EXP : class
-        Instrument class
-
-    Returns
-    -------
-    [x, y, z, lattice, rlattice] : [ndarray, ndarray, ndarray, class, class]
-        Returns the rotation matrices and real and reciprocal lattice sample classes
-
-    Notes
-    -----
-    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
-
-    '''
-    [lattice, rlattice] = _GetLattice(EXP)
-    length = len(EXP)
-
-    orient1 = np.zeros((3, length), dtype=np.float64)
-    orient2 = np.zeros((3, length), dtype=np.float64)
-    for i in range(length):
-        orient1[:, i] = EXP[i].orient1
-        orient2[:, i] = EXP[i].orient2
-
-    modx = _modvec([orient1[0, :], orient1[1, :], orient1[2, :]], rlattice)
-
-    x = orient1
-    x[0, :] = x[0, :] / modx  # First unit basis vector
-    x[1, :] = x[1, :] / modx
-    x[2, :] = x[2, :] / modx
-
-    proj = _scalar([orient2[0, :], orient2[1, :], orient2[2, :]], [x[0, :], x[1, :], x[2, :]], rlattice)
-
-    y = orient2
-    y[0, :] = y[0, :] - x[0, :] * proj
-    y[1, :] = y[1, :] - x[1, :] * proj
-    y[2, :] = y[2, :] - x[2, :] * proj
-
-    mody = _modvec([y[0, :], y[1, :], y[2, :]], rlattice)
-
-    if len(np.where(mody <= 0)[0]) > 0:
-        raise ValueError('??? Fatal error: Orienting vectors are colinear!')
-
-    y[0, :] = y[0, :] / mody  # Second unit basis vector
-    y[1, :] = y[1, :] / mody
-    y[2, :] = y[2, :] / mody
-
-    z = np.zeros((3, length), dtype=np.float64)
-    z[0, :] = x[1, :] * y[2, :] - y[1, :] * x[2, :]
-    z[1, :] = x[2, :] * y[0, :] - y[2, :] * x[0, :]
-    z[2, :] = -x[1, :] * y[0, :] + y[1, :] * x[0, :]
-
-    proj = _scalar([z[0, :], z[1, :], z[2, :]], [x[0, :], x[1, :], x[2, :]], rlattice)
-
-    z[0, :] = z[0, :] - x[0, :] * proj
-    z[1, :] = z[1, :] - x[1, :] * proj
-    z[2, :] = z[2, :] - x[2, :] * proj
-
-    proj = _scalar([z[0, :], z[1, :], z[2, :]], [y[0, :], y[1, :], y[2, :]], rlattice)
-
-    z[0, :] = z[0, :] - y[0, :] * proj
-    z[1, :] = z[1, :] - y[1, :] * proj
-    z[2, :] = z[2, :] - y[2, :] * proj
-
-    modz = _modvec([z[0, :], z[1, :], z[2, :]], rlattice)
-
-    z[0, :] = z[0, :] / modz  # Third unit basis vector
-    z[1, :] = z[1, :] / modz
-    z[2, :] = z[2, :] / modz
-
-    return [x, y, z, lattice, rlattice]
-
-
-def ResMat(Q, W, EXP):
-    r'''For a momentum transfer Q and energy transfers W, given experimental
-    conditions specified in EXP, calculates the Cooper-Nathans or Popovici
-    resolution matrix RM and resolution prefactor R0 in the Q coordinate
-    system (defined by the scattering vector and the scattering plane).
-
-    Parameters
-    ----------
-    Q : ndarray or list of ndarray
-        The Q vectors in reciprocal space at which resolution should be
-        calculated, in inverse angstroms
-
-    W : float or list of floats
-        The energy transfers at which resolution should be calculated in meV
-
-    EXP : Class
-        Instrument class containing the relevant information about the
-        instrument
-
-    Returns
-    -------
-    [R0, RM] : list(float, ndarray)
-        Resolution pre-factor (R0) and resolution matrix (RM) at the given
-        reciprocal lattice vectors and energy transfers
-
-    Notes
-    -----
-    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
-    Oak Ridge National Laboratory
-
-    '''
-    CONVERT1 = 0.4246609 * np.pi / 60. / 180.
-    CONVERT2 = 2.072
-
-    [length, Q, W, EXP] = _CleanArgs(Q, W, EXP)
-
-    RM = np.zeros((4, 4, length), dtype=np.float64)
-    R0 = np.zeros(length, dtype=np.float64)
-    RM_ = np.zeros((4, 4), dtype=np.float64)  # @UnusedVariable
-    D = np.matrix(np.zeros((8, 13), dtype=np.float64))
-    d = np.matrix(np.zeros((4, 7), dtype=np.float64))
-    T = np.matrix(np.zeros((4, 13), dtype=np.float64))
-    t = np.matrix(np.zeros((2, 7), dtype=np.float64))
-    A = np.matrix(np.zeros((6, 8), dtype=np.float64))
-    C = np.matrix(np.zeros((4, 8), dtype=np.float64))
-    B = np.matrix(np.zeros((4, 6), dtype=np.float64))
-    for ind in range(length):
-        # the method to use
-        method = 0
-        if hasattr(EXP[ind], 'method'):
-            method = EXP[ind].method
-
-        # Assign default values and decode parameters
-        moncor = 1
-        if hasattr(EXP[ind], 'moncor'):
-            moncor = EXP[ind].moncor
-
-        alpha = np.array(EXP[ind].hcol) * CONVERT1
-        beta = np.array(EXP[ind].vcol) * CONVERT1
-        mono = EXP[ind].mono
-        etam = np.array(mono.mosaic) * CONVERT1
-        etamv = np.copy(etam)
-        if hasattr(mono, 'vmosaic') and (method == 1 or method == 'Popovici'):
-            etamv = np.array(mono.vmosaic) * CONVERT1
-
-        ana = EXP[ind].ana
-        etaa = np.array(ana.mosaic) * CONVERT1
-        etaav = np.copy(etaa)
-        if hasattr(ana, 'vmosaic'):
-            etaav = np.array(ana.vmosaic) * CONVERT1
-
-        sample = EXP[ind].sample
-        infin = -1
-        if hasattr(EXP[ind], 'infin'):
-            infin = EXP[ind].infin
-
-        efixed = EXP[ind].efixed
-        epm = 1
-        if hasattr(EXP[ind], 'dir1'):
-            epm = EXP[ind].dir1
-
-        ep = 1
-        if hasattr(EXP[ind], 'dir2'):
-            ep = EXP[ind].dir2
-
-        monitorw = 1.
-        monitorh = 1.
-        beamw = 1.
-        beamh = 1.
-        monow = 1.
-        monoh = 1.
-        monod = 1.
-        anaw = 1.
-        anah = 1.
-        anad = 1.
-        detectorw = 1.
-        detectorh = 1.
-        sshape = np.identity(3)
-        L0 = 1.
-        L1 = 1.
-        L1mon = 1.
-        L2 = 1.
-        L3 = 1.
-        monorv = 1.e6
-        monorh = 1.e6
-        anarv = 1.e6
-        anarh = 1.e6
-        if hasattr(EXP[ind], 'beam'):
-            beam = EXP[ind].beam
-            if hasattr(beam, 'width'):
-                beamw = beam.width ** 2
-
-            if hasattr(beam, 'height'):
-                beamh = beam.height ** 2
-
-        bshape = np.diag([beamw, beamh])
-        if hasattr(EXP[ind], 'monitor'):
-            monitor = EXP[ind].monitor
-            if hasattr(monitor, 'width'):
-                monitorw = monitor.width ** 2
-
-            monitorh = monitorw
-            if hasattr(monitor, 'height'):
-                monitorh = monitor.height ** 2
-
-        monitorshape = np.diag([monitorw, monitorh])
-        if hasattr(EXP[ind], 'detector'):
-            detector = EXP[ind].detector
-            if hasattr(detector, 'width'):
-                detectorw = detector.width ** 2
-
-            if hasattr(detector, 'height'):
-                detectorh = detector.height ** 2
-
-        dshape = np.diag([detectorw, detectorh])
-        if hasattr(mono, 'width'):
-            monow = mono.width ** 2
-
-        if hasattr(mono, 'height'):
-            monoh = mono.height ** 2
-
-        if hasattr(mono, 'depth'):
-            monod = mono.depth ** 2
-
-        mshape = np.diag([monod, monow, monoh])
-        if hasattr(ana, 'width'):
-            anaw = ana.width ** 2
-
-        if hasattr(ana, 'height'):
-            anah = ana.height ** 2
-
-        if hasattr(ana, 'depth'):
-            anad = ana.depth ** 2
-
-        ashape = np.diag([anad, anaw, anah])
-        if hasattr(sample, 'width') and hasattr(sample, 'depth') and hasattr(sample, 'height'):
-            sshape = np.diag([sample.depth, sample.width, sample.height]) ** 2
-        elif hasattr(sample, 'shape'):
-            sshape = sample.shape
-
-        if hasattr(EXP[ind], 'arms'):
-            arms = EXP[ind].arms
-            L0 = arms[0]
-            L1 = arms[1]
-            L2 = arms[2]
-            L3 = arms[3]
-            L1mon = np.copy(L1)
-            if len(arms) > 4:
-                L1mon = np.copy(arms[4])
-
-        if hasattr(mono, 'rv'):
-            monorv = mono.rv
-
-        if hasattr(mono, 'rh'):
-            monorh = mono.rh
-
-        if hasattr(ana, 'rv'):
-            anarv = ana.rv
-
-        if hasattr(ana, 'rh'):
-            anarh = ana.rh
-
-        taum = GetTau(mono.tau)
-        taua = GetTau(ana.tau)
-
-        horifoc = -1
-        if hasattr(EXP[ind], 'horifoc'):
-            horifoc = EXP[ind].horifoc
-
-        if horifoc == 1:
-            alpha[2] = alpha[2] * np.sqrt(8 * np.log(2) / 12.)
-
-        em = 1
-        if hasattr(EXP[ind], 'mondir'):
-            em = EXP[ind].mondir
-
-        sm = EXP[ind].mono.dir
-        ss = EXP[ind].sample.dir
-        sa = EXP[ind].ana.dir
-
-        # Calculate angles and energies
-        w = W[ind]
-        q = Q[ind]
-        ei = efixed
-        ef = efixed
-        if infin > 0:
-            ef = efixed - w
-        else:
-            ei = efixed + w
-        ki = np.sqrt(ei / CONVERT2)
-        kf = np.sqrt(ef / CONVERT2)
-
-        thetam = np.arcsin(taum / (2. * ki)) * np.sign(epm) * np.sign(em)  # sm  # added sign(em) K.P.
-        thetaa = np.arcsin(taua / (2. * kf)) * np.sign(ep) * np.sign(em)  # sa
-        s2theta = -np.arccos((ki ** 2 + kf ** 2 - q ** 2) / (2. * ki * kf)) * np.sign(em)  # ss  # 2theta sample @IgnorePep8
-        if np.iscomplex(s2theta):
-            raise ValueError(': KI,KF,Q triangle will not close (kinematic equations). Change the value of KFIX,FX,QH,QK or QL.')
-
-        thetas = s2theta / 2.
-        phi = np.arctan2(np.sign(em) * (-kf * np.sin(s2theta)), np.sign(em) * (ki - kf * np.cos(s2theta)))
-
-        # Calculate beam divergences defined by neutron guides
-        if alpha[0] < 0:
-            alpha[0] = -alpha[0] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-        if alpha[1] < 0:
-            alpha[1] = -alpha[1] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-        if alpha[2] < 0:
-            alpha[2] = -alpha[2] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-        if alpha[3] < 0:
-            alpha[3] = -alpha[3] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-        
-        if beta[0] < 0:
-            beta[0] = -beta[0] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-        if beta[1] < 0:
-            beta[1] = -beta[1] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-        if beta[2] < 0:
-            beta[2] = -beta[2] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-        if beta[3] < 0:
-            beta[3] = -beta[3] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-
-        # Redefine sample geometry
-        psi = thetas - phi  # Angle from sample geometry X axis to Q
-        rot = np.matrix(np.zeros((3, 3), dtype=np.float64))
-        rot[0, 0] = np.cos(psi)
-        rot[1, 1] = np.cos(psi)
-        rot[0, 1] = np.sin(psi)
-        rot[1, 0] = -np.sin(psi)
-        rot[2, 2] = 1.
-
-        # sshape=rot'*sshape*rot
-        sshape = np.matrix(rot) * np.matrix(sshape) * np.matrix(rot).H
-
-        # Definition of matrix G
-        G = 1. / np.array([alpha[0], alpha[1], beta[0], beta[1], alpha[2], alpha[3], beta[2], beta[3]], dtype=np.float64) ** 2
-        G = np.matrix(np.diag(G))
-
-        # Definition of matrix F
-        F = 1. / np.array([etam, etamv, etaa, etaav], dtype=np.float64) ** 2
-        F = np.matrix(np.diag(F))
-
-        # Definition of matrix A
-        A[0, 0] = ki / 2. / np.tan(thetam)
-        A[0, 1] = -A[0, 0]
-        A[3, 4] = kf / 2. / np.tan(thetaa)
-        A[3, 5] = -A[3, 4]
-        A[1, 1] = ki
-        A[2, 3] = ki
-        A[4, 4] = kf
-        A[5, 6] = kf
-
-        # Definition of matrix C
-        C[0, 0] = 1. / 2.
-        C[0, 1] = 1. / 2.
-        C[2, 4] = 1. / 2.
-        C[2, 5] = 1. / 2.
-        C[1, 2] = 1. / (2. * np.sin(thetam))
-        C[1, 3] = -C[1, 2]  # mistake in paper
-        C[3, 6] = 1. / (2. * np.sin(thetaa))
-        C[3, 7] = -C[3, 6]
-
-        # Definition of matrix B
-        B[0, 0] = np.cos(phi)
-        B[0, 1] = np.sin(phi)
-        B[0, 3] = -np.cos(phi - s2theta)
-        B[0, 4] = -np.sin(phi - s2theta)
-        B[1, 0] = -B[0, 1]
-        B[1, 1] = B[0, 0]
-        B[1, 3] = -B[0, 4]
-        B[1, 4] = B[0, 3]
-        B[2, 2] = 1.
-        B[2, 5] = -1.
-        B[3, 0] = 2. * CONVERT2 * ki
-        B[3, 3] = -2. * CONVERT2 * kf
-
-        # Definition of matrix S
-        Sinv = np.matrix(blkdiag(np.array(bshape, dtype=np.float32), mshape, sshape, ashape, dshape))  # S-1 matrix
-        S = Sinv.I
-
-        # Definition of matrix T
-        T[0, 0] = -1. / (2. * L0)  # mistake in paper
-        T[0, 2] = np.cos(thetam) * (1. / L1 - 1. / L0) / 2.
-        T[0, 3] = np.sin(thetam) * (1. / L0 + 1. / L1 - 2. / (monorh * np.sin(thetam))) / 2.
-        T[0, 5] = np.sin(thetas) / (2. * L1)
-        T[0, 6] = np.cos(thetas) / (2. * L1)
-        T[1, 1] = -1. / (2. * L0 * np.sin(thetam))
-        T[1, 4] = (1. / L0 + 1. / L1 - 2. * np.sin(thetam) / monorv) / (2. * np.sin(thetam))
-        T[1, 7] = -1. / (2. * L1 * np.sin(thetam))
-        T[2, 5] = np.sin(thetas) / (2. * L2)
-        T[2, 6] = -np.cos(thetas) / (2. * L2)
-        T[2, 8] = np.cos(thetaa) * (1. / L3 - 1. / L2) / 2.
-        T[2, 9] = np.sin(thetaa) * (1. / L2 + 1. / L3 - 2. / (anarh * np.sin(thetaa))) / 2.
-        T[2, 11] = 1. / (2. * L3)
-        T[3, 7] = -1. / (2. * L2 * np.sin(thetaa))
-        T[3, 10] = (1. / L2 + 1. / L3 - 2. * np.sin(thetaa) / anarv) / (2. * np.sin(thetaa))
-        T[3, 12] = -1. / (2. * L3 * np.sin(thetaa))
-
-        # Definition of matrix D
-        # Lots of index mistakes in paper for matrix D
-        D[0, 0] = -1. / L0
-        D[0, 2] = -np.cos(thetam) / L0
-        D[0, 3] = np.sin(thetam) / L0
-        D[2, 1] = D[0, 0]
-        D[2, 4] = -D[0, 0]
-        D[1, 2] = np.cos(thetam) / L1
-        D[1, 3] = np.sin(thetam) / L1
-        D[1, 5] = np.sin(thetas) / L1
-        D[1, 6] = np.cos(thetas) / L1
-        D[3, 4] = -1. / L1
-        D[3, 7] = -D[3, 4]
-        D[4, 5] = np.sin(thetas) / L2
-        D[4, 6] = -np.cos(thetas) / L2
-        D[4, 8] = -np.cos(thetaa) / L2
-        D[4, 9] = np.sin(thetaa) / L2
-        D[6, 7] = -1. / L2
-        D[6, 10] = -D[6, 7]
-        D[5, 8] = np.cos(thetaa) / L3
-        D[5, 9] = np.sin(thetaa) / L3
-        D[5, 11] = 1. / L3
-        D[7, 10] = -D[5, 11]
-        D[7, 12] = D[5, 11]
-
-        # Definition of resolution matrix M
-        if method == 1 or method == 'Popovici':
-            Minv = np.matrix(B) * np.matrix(A) * np.linalg.inv(np.linalg.inv(np.matrix(D) * np.linalg.inv(np.matrix(S) + np.matrix(T).H * np.matrix(F) * np.matrix(T)) * np.matrix(D).H) + np.matrix(G)) * np.matrix(A).H * np.matrix(B).H
-        else:
-            HF = np.matrix(A) * np.linalg.inv(np.matrix(G) + np.matrix(C).H * np.matrix(F) * np.matrix(C)) * np.matrix(A).H
-            # Horizontally focusing analyzer if needed
-            if horifoc > 0:
-                HF = np.linalg.inv(HF)
-                HF[4, 4] = (1 / (kf * alpha[2])) ** 2
-                HF[4, 3] = 0
-                HF[3, 4] = 0 
-                HF[3, 3] = (np.tan(thetaa) / (etaa * kf)) ** 2
-                HF = np.linalg.inv(HF)
-            Minv = np.matrix(B) * np.matrix(HF) * np.matrix(B).H
-
-        M = np.linalg.inv(Minv)
-        # TODO: rows-columns 3-4 swapped for ResPlot to work.
-        # Inactivate as we want M=[x,y,z,E]
-        RM_[0, 0] = M[0, 0]
-        RM_[1, 0] = M[1, 0]
-        RM_[0, 1] = M[0, 1]
-        RM_[1, 1] = M[1, 1]
-
-        RM_[0, 2] = M[0, 3]
-        RM_[2, 0] = M[3, 0]
-        RM_[2, 2] = M[3, 3]
-        RM_[2, 1] = M[3, 1]
-        RM_[1, 2] = M[1, 3]
-
-        RM_[0, 3] = M[0, 2]
-        RM_[3, 0] = M[2, 0]
-        RM_[3, 3] = M[2, 2]
-        RM_[3, 1] = M[2, 1]
-        RM_[1, 3] = M[1, 2]
-            
-        # Calculation of prefactor, normalized to source
-        Rm = ki ** 3 / np.tan(thetam)
-        Ra = kf ** 3 / np.tan(thetaa)
-
-        if method == 1 or method == 'Popovici':
-            # Popovici
-            R0_ = Rm * Ra * (2. * np.pi) ** 4 / (64. * np.pi ** 2 * np.sin(thetam) * np.sin(thetaa)) * np.sqrt(np.linalg.det(F) / np.linalg.det(np.linalg.inv(np.matrix(D) * np.linalg.inv(np.matrix(S) + np.matrix(T).H * np.matrix(F) * np.matrix(T)) * np.matrix(D).H) + np.matrix(G)))
-        else:
-            # Cooper-Nathans (popovici Eq 5 and 9)
-#             R0_ = R0_ * np.sqrt(np.linalg.det(np.matrix(F)) / np.linalg.det(np.matrix(H)))
-            R0_ = Rm * Ra * (2. * np.pi) ** 4 / (64. * np.pi ** 2 * np.sin(thetam) * np.sin(thetaa)) * np.sqrt(np.linalg.det(np.matrix(F)) / np.linalg.det(np.matrix(G) + np.matrix(C).H * np.matrix(F) * np.matrix(C)))
-            
-        # Normalization to flux on monitor
-        if moncor == 1:
-            g = G[0:4, 0:4]
-            f = F[0:2, 0:2]
-            c = C[0:2, 0:4]
-            t[0, 0] = -1. / (2. * L0)  # mistake in paper
-            t[0, 2] = np.cos(thetam) * (1. / L1mon - 1. / L0) / 2.
-            t[0, 3] = np.sin(thetam) * (1. / L0 + 1. / L1mon - 2. / (monorh * np.sin(thetam))) / 2.
-            t[0, 6] = 1. / (2. * L1mon)
-            t[1, 1] = -1. / (2. * L0 * np.sin(thetam))
-            t[1, 4] = (1. / L0 + 1. / L1mon - 2. * np.sin(thetam) / monorv) / (2. * np.sin(thetam))
-            sinv = blkdiag(np.array(bshape, dtype=np.float32), mshape, monitorshape)  # S-1 matrix
-            s = np.linalg.inv(sinv)
-            d[0, 0] = -1. / L0
-            d[0, 2] = -np.cos(thetam) / L0
-            d[0, 3] = np.sin(thetam) / L0
-            d[2, 1] = D[0, 0]
-            d[2, 4] = -D[0, 0]
-            d[1, 2] = np.cos(thetam) / L1mon
-            d[1, 3] = np.sin(thetam) / L1mon
-            d[1, 5] = 0.
-            d[1, 6] = 1. / L1mon
-            d[3, 4] = -1. / L1mon
-            if method == 1 or method == 'Popovici':
-                # Popovici
-                Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * 
-                        np.sqrt(np.linalg.det(f) / np.linalg.det((np.matrix(d) * 
-                                                                  (np.matrix(s) + np.matrix(t).H * np.matrix(f) * np.matrix(t)).I * 
-                                                                  np.matrix(d).H).I + np.matrix(g))))
-            else:
-                # Cooper-Nathans
-                Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * 
-                        np.sqrt(np.linalg.det(f) / np.linalg.det(np.matrix(g) + np.matrix(c).H * np.matrix(f) * np.matrix(c))))
-
-            R0_ = R0_ / Rmon
-            R0_ = R0_ * ki  # 1/ki monitor efficiency
-
-        # Transform prefactor to Chesser-Axe normalization
-        R0_ = R0_ / (2. * np.pi) ** 2 * np.sqrt(np.linalg.det(RM_))
-
-        # Include kf/ki part of cross section
-        R0_ = R0_ * kf / ki
-
-        # Take care of sample mosaic if needed
-        # [S. A. Werner & R. Pynn, J. Appl. Phys. 42, 4736, (1971), eq 19]
-        if hasattr(sample, 'mosaic'):
-            etas = sample.mosaic * CONVERT1
-            etasv = np.copy(etas)
-            if hasattr(sample, 'vmosaic'):
-                etasv = sample.vmosaic * CONVERT1
-
-            R0_ = R0_ / np.sqrt((1 + (q * etas) ** 2 * RM_[3, 3]) * (1 + (q * etasv) ** 2 * RM_[1, 1]))
-            Minv = np.linalg.inv(RM_)
-            Minv[1, 1] = Minv[1, 1] + q ** 2 * etas ** 2
-            Minv[3, 3] = Minv[3, 3] + q ** 2 * etasv ** 2
-            RM_ = np.linalg.inv(Minv)
-
-        # Take care of analyzer reflectivity if needed [I. Zaliznyak, BNL]
-        if hasattr(ana, 'thickness') and hasattr(ana, 'Q'):
-            KQ = ana.Q
-            KT = ana.thickness
-            toa = (taua / 2.) / np.sqrt(kf ** 2 - (taua / 2.) ** 2)
-            smallest = alpha[3]
-            if alpha[3] > alpha[2]:
-                smallest = alpha[2]
-            Qdsint = KQ * toa
-            dth = (np.arange(1, 201) / 200.) * np.sqrt(2. * np.log(2.)) * smallest
-            wdth = np.exp(-dth ** 2 / 2. / etaa ** 2)
-            sdth = KT * Qdsint * wdth / etaa / np.sqrt(2. * np.pi)
-            rdth = 1. / (1 + 1. / sdth)
-            reflec = sum(rdth) / sum(wdth)
-            R0_ = R0_ * reflec
-
-        R0[ind] = R0_
-        RM[:, :, ind] = np.copy(RM_[:, :])
-
-    return [R0, RM]
-
-
 def project_into_plane(rm, index):
     r'''Projects out-of-plane resolution into a specified plane by performing
     a gaussian integral over the third axis.
@@ -1351,35 +776,39 @@ class Instrument(object):
 
     Parameters
     ----------
-    efixed : float
+    efixed : float, optional
         Fixed energy, either ei or ef, depending on the instrument
-        configuration.
+        configuration. Default: 14.7
 
-    sample : obj
+    sample : obj, optional
         Sample lattice constants, parameters, mosaic, and orientation
-        (reciprocal-space orienting vectors).
+        (reciprocal-space orienting vectors). Default: A crystal with
+        a,b,c = 6,7,8 and alpha,beta,gamma = 90,90,90 and orientation
+        vectors u=[1 0 0] and v=[0 1 0].
 
     hcol : list(4)
         Horizontal Soller collimations in minutes of arc starting from the
-        neutron guide.
+        neutron guide. Default: [40 40 40 40]
 
     vcol : list(4), optional
         Vertical Soller collimations in minutes of arc starting from the
-        neutron guide.
+        neutron guide. Default: [120 120 120 120]
 
     mono_tau : str or float, optional
         The monochromator reciprocal lattice vector in Å\ :sup:`-1`,
         given either as a float, or as a string for common monochromator types.
+        Default: 'PG(002)'
 
     mono_mosaic : float, optional
-        The mosaic of the monochromator in minutes of arc.
+        The mosaic of the monochromator in minutes of arc. Default: 25
 
     ana_tau : str or float, optional
         The analyzer reciprocal lattice vector in Å\ :sup:`-1`,
         given either as a float, or as a string for common analyzer types.
+        Default: 'PG(002)'
 
     ana_mosaic : float, optional
-        The mosaic of the monochromator in minutes of arc.
+        The mosaic of the monochromator in minutes of arc. Default: 25
 
     Attributes
     ----------
@@ -1406,14 +835,24 @@ class Instrument(object):
     Methods
     -------
     calc_resolution
+    calc_resolution_in_Q_coords
     calc_projections
     get_resolution_params
     resolution_convolution
     resolution_convolution_SMA
+    get_lattice
     '''
 
-    def __init__(self, efixed, sample, hcol, vcol=None, mono='PG(002)',
+    def __init__(self, efixed=14.7, sample=None, hcol=None, vcol=None, mono='PG(002)',
                  mono_mosaic=25, ana='PG(002)', ana_mosaic=25, **kwargs):
+
+        if sample is None:
+            sample = Sample(6, 7, 8, 90, 90, 90)
+            sample.u = [1, 0, 0]
+            sample.v = [0, 1, 0]
+
+        if hcol is None:
+            hcol = [40, 40, 40, 40]
 
         if vcol is None:
             vcol = [120, 120, 120, 120]
@@ -1742,7 +1181,108 @@ class Instrument(object):
     def Smooth(self, value):
         self._Smooth = value
 
-    def _calc_resolution_in_Q_coords(self, Q, W):
+    def get_lattice(self):
+        r'''Extracts lattice parameters from EXP and returns the direct and
+        reciprocal lattice parameters in the form used by _scalar.m, _star.m, etc.
+    
+        Returns
+        -------
+        [lattice, rlattice] : [class, class]
+            Returns the direct and reciprocal lattice sample classes
+    
+        Notes
+        -----
+        Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+    
+        '''
+        s = np.array([self.sample])
+        lattice = Sample(np.array([item.a for item in s]),
+                          np.array([item.b for item in s]),
+                          np.array([item.c for item in s]),
+                          np.array([item.alpha for item in s]) * np.pi / 180,
+                          np.array([item.beta for item in s]) * np.pi / 180,
+                          np.array([item.gamma for item in s]) * np.pi / 180)
+        V, Vstar, rlattice = _star(lattice)  # @UnusedVariable
+    
+        return [lattice, rlattice]
+
+    def _StandardSystem(self):
+        r'''Returns rotation matrices to calculate resolution in the sample view
+        instead of the instrument view
+    
+        Parameters
+        ----------
+        EXP : class
+            Instrument class
+    
+        Returns
+        -------
+        [x, y, z, lattice, rlattice] : [ndarray, ndarray, ndarray, class, class]
+            Returns the rotation matrices and real and reciprocal lattice sample classes
+    
+        Notes
+        -----
+        Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+    
+        '''
+        [lattice, rlattice] = self.get_lattice()
+    
+        orient1 = self.orient1
+        orient2 = self.orient2
+    
+        modx = _modvec([orient1[0], orient1[1], orient1[2]], rlattice)
+    
+        x = orient1 / modx
+#         x[0] = x[0] / modx  # First unit basis vector
+#         x[1] = x[1] / modx
+#         x[2] = x[2] / modx
+    
+        proj = _scalar([orient2[0], orient2[1], orient2[2]], [x[0], x[1], x[2]], rlattice)
+    
+        y = orient2 - x * proj
+#         y[0] = y[0] - x[0, :] * proj
+#         y[1] = y[1, :] - x[1, :] * proj
+#         y[2] = y[2, :] - x[2, :] * proj
+    
+        mody = _modvec([y[0], y[1], y[2]], rlattice)
+    
+        if len(np.where(mody <= 0)[0]) > 0:
+            raise ValueError('??? Fatal error: Orienting vectors are colinear!')
+    
+        y /= mody
+#         y[0, :] = y[0, :] / mody  # Second unit basis vector
+#         y[1, :] = y[1, :] / mody
+#         y[2, :] = y[2, :] / mody
+    
+        z = np.zeros(3, dtype=np.float64)
+        z[0] = x[1] * y[2] - y[1] * x[2]
+        z[1] = x[2] * y[0] - y[2] * x[0]
+        z[2] = -x[1] * y[0] + y[1] * x[0]
+    
+        proj = _scalar([z[0], z[1], z[2]], [x[0], x[1], x[2]], rlattice)
+        
+        z = z - x * proj
+#         z[0, :] = z[0, :] - x[0, :] * proj
+#         z[1, :] = z[1, :] - x[1, :] * proj
+#         z[2, :] = z[2, :] - x[2, :] * proj
+    
+        proj = _scalar([z[0], z[1], z[2]], [y[0], y[1], y[2]], rlattice)
+    
+        z = z - y * proj
+#         z[0, :] = z[0, :] - y[0, :] * proj
+#         z[1, :] = z[1, :] - y[1, :] * proj
+#         z[2, :] = z[2, :] - y[2, :] * proj
+    
+        modz = _modvec([z[0], z[1], z[2]], rlattice)
+        
+        z /= modz
+#         z[0, :] = z[0, :] / modz  # Third unit basis vector
+#         z[1, :] = z[1, :] / modz
+#         z[2, :] = z[2, :] / modz
+    
+        return [x, y, z, lattice, rlattice]
+
+    def calc_resolution_in_Q_coords(self, Q, W):
         r'''For a momentum transfer Q and energy transfers W, given experimental
         conditions specified in EXP, calculates the Cooper-Nathans or Popovici
         resolution matrix RM and resolution prefactor R0 in the Q coordinate
@@ -1775,10 +1315,8 @@ class Instrument(object):
         '''
         CONVERT1 = 0.4246609 * np.pi / 60. / 180.
         CONVERT2 = 2.072
-        
-        EXP = self
-        
-        [length, Q, W, EXP] = _CleanArgs(Q, W, EXP)
+                
+        [length, Q, W] = _CleanArgs(Q, W)
     
         RM = np.zeros((4, 4, length), dtype=np.float64)
         R0 = np.zeros(length, dtype=np.float64)
@@ -1790,160 +1328,159 @@ class Instrument(object):
         A = np.matrix(np.zeros((6, 8), dtype=np.float64))
         C = np.matrix(np.zeros((4, 8), dtype=np.float64))
         B = np.matrix(np.zeros((4, 6), dtype=np.float64))
+
+        # the method to use
+        method = 0
+        if hasattr(self, 'method'):
+            method = self.method
+
+        # Assign default values and decode parameters
+        moncor = 1
+        if hasattr(self, 'moncor'):
+            moncor = self.moncor
+
+        alpha = np.array(self.hcol) * CONVERT1
+        beta = np.array(self.vcol) * CONVERT1
+        mono = self.mono
+        etam = np.array(mono.mosaic) * CONVERT1
+        etamv = np.copy(etam)
+        if hasattr(mono, 'vmosaic') and (method == 1 or method == 'Popovici'):
+            etamv = np.array(mono.vmosaic) * CONVERT1
+
+        ana = self.ana
+        etaa = np.array(ana.mosaic) * CONVERT1
+        etaav = np.copy(etaa)
+        if hasattr(ana, 'vmosaic'):
+            etaav = np.array(ana.vmosaic) * CONVERT1
+
+        sample = self.sample
+        infin = -1
+        if hasattr(self, 'infin'):
+            infin = self.infin
+
+        efixed = self.efixed
+        epm = 1
+        if hasattr(self, 'dir1'):
+            epm = self.dir1
+
+        ep = 1
+        if hasattr(self, 'dir2'):
+            ep = self.dir2
+
+        monitorw = 1.
+        monitorh = 1.
+        beamw = 1.
+        beamh = 1.
+        monow = 1.
+        monoh = 1.
+        monod = 1.
+        anaw = 1.
+        anah = 1.
+        anad = 1.
+        detectorw = 1.
+        detectorh = 1.
+        sshapes = [np.identity(3)] * length
+        L0 = 1.
+        L1 = 1.
+        L1mon = 1.
+        L2 = 1.
+        L3 = 1.
+        monorv = 1.e6
+        monorh = 1.e6
+        anarv = 1.e6
+        anarh = 1.e6
+        
+        if hasattr(self, 'beam'):
+            beam = self.beam
+            if hasattr(beam, 'width'):
+                beamw = beam.width ** 2
+
+            if hasattr(beam, 'height'):
+                beamh = beam.height ** 2
+
+        bshape = np.diag([beamw, beamh])
+        if hasattr(self, 'monitor'):
+            monitor = self.monitor
+            if hasattr(monitor, 'width'):
+                monitorw = monitor.width ** 2
+
+            monitorh = monitorw
+            if hasattr(monitor, 'height'):
+                monitorh = monitor.height ** 2
+
+        monitorshape = np.diag([monitorw, monitorh])
+        if hasattr(self, 'detector'):
+            detector = self.detector
+            if hasattr(detector, 'width'):
+                detectorw = detector.width ** 2
+
+            if hasattr(detector, 'height'):
+                detectorh = detector.height ** 2
+
+        dshape = np.diag([detectorw, detectorh])
+        if hasattr(mono, 'width'):
+            monow = mono.width ** 2
+
+        if hasattr(mono, 'height'):
+            monoh = mono.height ** 2
+
+        if hasattr(mono, 'depth'):
+            monod = mono.depth ** 2
+
+        mshape = np.diag([monod, monow, monoh])
+        if hasattr(ana, 'width'):
+            anaw = ana.width ** 2
+
+        if hasattr(ana, 'height'):
+            anah = ana.height ** 2
+
+        if hasattr(ana, 'depth'):
+            anad = ana.depth ** 2
+
+        ashape = np.diag([anad, anaw, anah])
+        if hasattr(sample, 'width') and hasattr(sample, 'depth') and hasattr(sample, 'height'):
+            sshape = np.diag([sample.depth, sample.width, sample.height]) ** 2
+        elif hasattr(sample, 'shape'):
+            sshapes = sample.shape
+
+        if hasattr(self, 'arms'):
+            arms = self.arms
+            L0 = arms[0]
+            L1 = arms[1]
+            L2 = arms[2]
+            L3 = arms[3]
+            L1mon = np.copy(L1)
+            if len(arms) > 4:
+                L1mon = np.copy(arms[4])
+
+        if hasattr(mono, 'rv'):
+            monorv = mono.rv
+
+        if hasattr(mono, 'rh'):
+            monorh = mono.rh
+
+        if hasattr(ana, 'rv'):
+            anarv = ana.rv
+
+        if hasattr(ana, 'rh'):
+            anarh = ana.rh
+
+        taum = GetTau(mono.tau)
+        taua = GetTau(ana.tau)
+
+        horifoc = -1
+        if hasattr(self, 'horifoc'):
+            horifoc = self.horifoc
+
+        if horifoc == 1:
+            alpha[2] = alpha[2] * np.sqrt(8 * np.log(2) / 12.)
+
+        em = 1
+        if hasattr(self, 'mondir'):
+            em = self.mondir
+    
         for ind in range(length):
-            # the method to use
-            method = 0
-            if hasattr(EXP[ind], 'method'):
-                method = EXP[ind].method
-    
-            # Assign default values and decode parameters
-            moncor = 1
-            if hasattr(EXP[ind], 'moncor'):
-                moncor = EXP[ind].moncor
-    
-            alpha = np.array(EXP[ind].hcol) * CONVERT1
-            beta = np.array(EXP[ind].vcol) * CONVERT1
-            mono = EXP[ind].mono
-            etam = np.array(mono.mosaic) * CONVERT1
-            etamv = np.copy(etam)
-            if hasattr(mono, 'vmosaic') and (method == 1 or method == 'Popovici'):
-                etamv = np.array(mono.vmosaic) * CONVERT1
-    
-            ana = EXP[ind].ana
-            etaa = np.array(ana.mosaic) * CONVERT1
-            etaav = np.copy(etaa)
-            if hasattr(ana, 'vmosaic'):
-                etaav = np.array(ana.vmosaic) * CONVERT1
-    
-            sample = EXP[ind].sample
-            infin = -1
-            if hasattr(EXP[ind], 'infin'):
-                infin = EXP[ind].infin
-    
-            efixed = EXP[ind].efixed
-            epm = 1
-            if hasattr(EXP[ind], 'dir1'):
-                epm = EXP[ind].dir1
-    
-            ep = 1
-            if hasattr(EXP[ind], 'dir2'):
-                ep = EXP[ind].dir2
-    
-            monitorw = 1.
-            monitorh = 1.
-            beamw = 1.
-            beamh = 1.
-            monow = 1.
-            monoh = 1.
-            monod = 1.
-            anaw = 1.
-            anah = 1.
-            anad = 1.
-            detectorw = 1.
-            detectorh = 1.
-            sshape = np.identity(3)
-            L0 = 1.
-            L1 = 1.
-            L1mon = 1.
-            L2 = 1.
-            L3 = 1.
-            monorv = 1.e6
-            monorh = 1.e6
-            anarv = 1.e6
-            anarh = 1.e6
-            if hasattr(EXP[ind], 'beam'):
-                beam = EXP[ind].beam
-                if hasattr(beam, 'width'):
-                    beamw = beam.width ** 2
-    
-                if hasattr(beam, 'height'):
-                    beamh = beam.height ** 2
-    
-            bshape = np.diag([beamw, beamh])
-            if hasattr(EXP[ind], 'monitor'):
-                monitor = EXP[ind].monitor
-                if hasattr(monitor, 'width'):
-                    monitorw = monitor.width ** 2
-    
-                monitorh = monitorw
-                if hasattr(monitor, 'height'):
-                    monitorh = monitor.height ** 2
-    
-            monitorshape = np.diag([monitorw, monitorh])
-            if hasattr(EXP[ind], 'detector'):
-                detector = EXP[ind].detector
-                if hasattr(detector, 'width'):
-                    detectorw = detector.width ** 2
-    
-                if hasattr(detector, 'height'):
-                    detectorh = detector.height ** 2
-    
-            dshape = np.diag([detectorw, detectorh])
-            if hasattr(mono, 'width'):
-                monow = mono.width ** 2
-    
-            if hasattr(mono, 'height'):
-                monoh = mono.height ** 2
-    
-            if hasattr(mono, 'depth'):
-                monod = mono.depth ** 2
-    
-            mshape = np.diag([monod, monow, monoh])
-            if hasattr(ana, 'width'):
-                anaw = ana.width ** 2
-    
-            if hasattr(ana, 'height'):
-                anah = ana.height ** 2
-    
-            if hasattr(ana, 'depth'):
-                anad = ana.depth ** 2
-    
-            ashape = np.diag([anad, anaw, anah])
-            if hasattr(sample, 'width') and hasattr(sample, 'depth') and hasattr(sample, 'height'):
-                sshape = np.diag([sample.depth, sample.width, sample.height]) ** 2
-            elif hasattr(sample, 'shape'):
-                sshape = sample.shape
-    
-            if hasattr(EXP[ind], 'arms'):
-                arms = EXP[ind].arms
-                L0 = arms[0]
-                L1 = arms[1]
-                L2 = arms[2]
-                L3 = arms[3]
-                L1mon = np.copy(L1)
-                if len(arms) > 4:
-                    L1mon = np.copy(arms[4])
-    
-            if hasattr(mono, 'rv'):
-                monorv = mono.rv
-    
-            if hasattr(mono, 'rh'):
-                monorh = mono.rh
-    
-            if hasattr(ana, 'rv'):
-                anarv = ana.rv
-    
-            if hasattr(ana, 'rh'):
-                anarh = ana.rh
-    
-            taum = GetTau(mono.tau)
-            taua = GetTau(ana.tau)
-    
-            horifoc = -1
-            if hasattr(EXP[ind], 'horifoc'):
-                horifoc = EXP[ind].horifoc
-    
-            if horifoc == 1:
-                alpha[2] = alpha[2] * np.sqrt(8 * np.log(2) / 12.)
-    
-            em = 1
-            if hasattr(EXP[ind], 'mondir'):
-                em = EXP[ind].mondir
-    
-            sm = EXP[ind].mono.dir
-            ss = EXP[ind].sample.dir
-            sa = EXP[ind].ana.dir
-    
+            sshape = sshapes[ind]
             # Calculate angles and energies
             w = W[ind]
             q = Q[ind]
@@ -2086,7 +1623,7 @@ class Instrument(object):
             D[7, 12] = D[5, 11]
     
             # Definition of resolution matrix M
-            if method == 1 or method == 'Popovici':
+            if method == 1 or method == 'popovici':
                 Minv = np.matrix(B) * np.matrix(A) * np.linalg.inv(np.linalg.inv(np.matrix(D) * np.linalg.inv(np.matrix(S) + np.matrix(T).H * np.matrix(F) * np.matrix(T)) * np.matrix(D).H) + np.matrix(G)) * np.matrix(A).H * np.matrix(B).H
             else:
                 HF = np.matrix(A) * np.linalg.inv(np.matrix(G) + np.matrix(C).H * np.matrix(F) * np.matrix(C)) * np.matrix(A).H
@@ -2124,7 +1661,7 @@ class Instrument(object):
             Rm = ki ** 3 / np.tan(thetam)
             Ra = kf ** 3 / np.tan(thetaa)
     
-            if method == 1 or method == 'Popovici':
+            if method == 1 or method == 'popovici':
                 # Popovici
                 R0_ = Rm * Ra * (2. * np.pi) ** 4 / (64. * np.pi ** 2 * np.sin(thetam) * np.sin(thetaa)) * np.sqrt(np.linalg.det(F) / np.linalg.det(np.linalg.inv(np.matrix(D) * np.linalg.inv(np.matrix(S) + np.matrix(T).H * np.matrix(F) * np.matrix(T)) * np.matrix(D).H) + np.matrix(G)))
             else:
@@ -2155,7 +1692,7 @@ class Instrument(object):
                 d[1, 5] = 0.
                 d[1, 6] = 1. / L1mon
                 d[3, 4] = -1. / L1mon
-                if method == 1 or method == 'Popovici':
+                if method == 1 or method == 'popovici':
                     # Popovici
                     Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * 
                             np.sqrt(np.linalg.det(f) / np.linalg.det((np.matrix(d) * 
@@ -2231,22 +1768,21 @@ class Instrument(object):
 
         '''
         [H, K, L, W] = hkle
-        EXP = self
 
-        [length, H, K, L, W, EXP] = _CleanArgs(H, K, L, W, EXP)
+        [length, H, K, L, W] = _CleanArgs(H, K, L, W)
         self.H, self.K, self.L, self.W = H, K, L, W
 
-        [x, y, z, sample, rsample] = _StandardSystem(EXP)  # @UnusedVariable
-
+        [x, y, z, sample, rsample] = self._StandardSystem()
+        
         Q = _modvec([H, K, L], rsample)
         uq0 = H / Q  # Unit vector along Q
         uq1 = K / Q
         uq2 = L / Q
         uq = np.vstack((uq0, uq1, uq2))
 
-        xq = _scalar([x[0, :], x[1, :], x[2, :]], [uq[0, :], uq[1, :], uq[2, :]], rsample)
-        yq = _scalar([y[0, :], y[1, :], y[2, :]], [uq[0, :], uq[1, :], uq[2, :]], rsample)
-        zq = 0  # @UnusedVariable # scattering vector assumed to be in (orient1,orient2) plane
+        xq = _scalar([x[0], x[1], x[2]], [uq[0], uq[1], uq[2]], rsample)
+        yq = _scalar([y[0], y[1], y[2]], [uq[0], uq[1], uq[2]], rsample)
+        zq = 0  # scattering vector assumed to be in (orient1,orient2) plane
 
         tmat = np.zeros((4, 4, length), dtype=np.float64)  # Coordinate transformation matrix
         tmat[3, 3, :] = 1.
@@ -2258,20 +1794,22 @@ class Instrument(object):
 
         RMS = np.zeros((4, 4, length), dtype=np.float64)
         rot = np.zeros((3, 3), dtype=np.float64)
-        EXProt = EXP
 
         # Sample shape matrix in coordinate system defined by scattering vector
-        for i in range(length):
-            sample = EXP[i].sample
-            if hasattr(sample, 'shape'):
+        
+        sample = self.sample
+        if hasattr(sample, 'shape'):
+            samples = []
+            for i in range(length):
                 rot[0, 0] = tmat[0, 0, i]
                 rot[1, 0] = tmat[1, 0, i]
                 rot[0, 1] = tmat[0, 1, i]
                 rot[1, 1] = tmat[1, 1, i]
                 rot[2, 2] = tmat[2, 2, i]
-                EXProt[i].sample.shape = np.matrix(rot) * np.matrix(sample.shape) * np.matrix(rot.T)
+                samples.append(np.matrix(rot) * np.matrix(sample.shape) * np.matrix(rot.T))
+            self.sample.shape = samples
 
-        [R0, RM] = ResMat(Q, W, EXProt)
+        [R0, RM] = self.calc_resolution_in_Q_coords(Q, W)
 
         for i in range(length):
             RMS[:, :, i] = np.matrix(tmat[:, :, i]).H * np.matrix(RM[:, :, i]) * np.matrix(tmat[:, :, i])
@@ -2279,17 +1817,16 @@ class Instrument(object):
         mul = np.zeros((4, 4))
         e = np.identity(4)
         for i in range(length):
-            if hasattr(EXP[i], 'Smooth'):
-                if EXP[i].Smooth.X:
-                    mul[0, 0] = 1 / (EXP[i].Smooth.X ** 2 / 8 / np.log(2))
-                    mul[1, 1] = 1 / (EXP[i].Smooth.Y ** 2 / 8 / np.log(2))
-                    mul[2, 2] = 1 / (EXP[i].Smooth.E ** 2 / 8 / np.log(2))
-                    mul[3, 3] = 1 / (EXP[i].Smooth.Z ** 2 / 8 / np.log(2))
+            if hasattr(self, 'Smooth'):
+                if self.Smooth.X:
+                    mul[0, 0] = 1 / (self.Smooth.X ** 2 / 8 / np.log(2))
+                    mul[1, 1] = 1 / (self.Smooth.Y ** 2 / 8 / np.log(2))
+                    mul[2, 2] = 1 / (self.Smooth.E ** 2 / 8 / np.log(2))
+                    mul[3, 3] = 1 / (self.Smooth.Z ** 2 / 8 / np.log(2))
                     R0[i] = R0[i] / np.sqrt(np.linalg.det(np.matrix(e) / np.matrix(RMS[:, :, i]))) * np.sqrt(np.linalg.det(np.matrix(e) / np.matrix(mul) + np.matrix(e) / np.matrix(RMS[:, :, i])))
                     RMS[:, :, i] = np.matrix(e) / (np.matrix(e) / np.matrix(mul) + np.matrix(e) / np.matrix(RMS[:, :, i]))
 
         self.R0, self.RMS, self.RM = R0, RMS, RM
-        self.calc_projections([H, K, L, W], npts=npts)
 
     def calc_projections(self, hkle, npts=36):
         r'''Calculates the resolution ellipses for projections and slices from the resolution matrix.
@@ -2310,10 +1847,15 @@ class Instrument(object):
         '''
         try:
             A = np.array(self.RMS)
-        except Exception:
-            raise Exception('Resolution calculation has not been performed')
+        except:
+            self.calc_resolution(hkle)
+            A = np.array(self.RMS)
 
         const = 1.17741  # half width factor
+        
+        [H, K, L, W] = hkle
+        [length, H, K, L, W] = _CleanArgs(H, K, L, W)
+        hkle = [H, K, L, W]
 
         self.projections = {'QxQy': np.zeros((2, npts, A.shape[-1])),
                             'QxQySlice': np.zeros((2, npts, A.shape[-1])),
@@ -2528,10 +2070,9 @@ class Instrument(object):
         self.calc_resolution(hkle)
         [R0, RMS] = [np.copy(self.R0), np.copy(self.RMS)]
         
-        EXP = self
         H, K, L, W = hkle
-        [length, H, K, L, W, EXP] = _CleanArgs(H, K, L, W, EXP)
-        [xvec, yvec, zvec, sample, rsample] = _StandardSystem(EXP)
+        [length, H, K, L, W] = _CleanArgs(H, K, L, W)
+        [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
     
         Mzz = RMS[3, 3, :]
         Mww = RMS[2, 2, :]
@@ -2564,9 +2105,9 @@ class Instrument(object):
             bgr = 0
         else:
             if nargout == 2:
-                [prefactor, bgr] = pref(H, K, L, EXP, p)
+                [prefactor, bgr] = pref(H, K, L, self, p)
             elif nargout == 1:
-                prefactor = pref(H, K, L, EXP, p)
+                prefactor = pref(H, K, L, self, p)
                 bgr = 0
             else: 
                 raise ValueError('Invalid number or output arguments in prefactor function, pref')           
@@ -2597,9 +2138,9 @@ class Instrument(object):
                     dQ2 = tqyy[i] * ty + tqyx[i] * tx
                     dW = tqwx[i] * tx + tqwy[i] * ty + tqww[i] * tw
                     dQ4 = tqz[i] * tz[iz]
-                    H1 = H[i] + dQ1 * xvec[0, i] + dQ2 * yvec[0, i] + dQ4 * zvec[0, i]
-                    K1 = K[i] + dQ1 * xvec[1, i] + dQ2 * yvec[1, i] + dQ4 * zvec[1, i]
-                    L1 = L[i] + dQ1 * xvec[2, i] + dQ2 * yvec[2, i] + dQ4 * zvec[2, i]
+                    H1 = H[i] + dQ1 * xvec[0] + dQ2 * yvec[0] + dQ4 * zvec[0]
+                    K1 = K[i] + dQ1 * xvec[1] + dQ2 * yvec[1] + dQ4 * zvec[1]
+                    L1 = L[i] + dQ1 * xvec[2] + dQ2 * yvec[2] + dQ4 * zvec[2]
                     W1 = W[i] + dW
                     inte = sqw(H1, K1, L1, W1, p)
                     for j in range(modes):
@@ -2638,9 +2179,9 @@ class Instrument(object):
                     dQ2 = tqyy[i] * ty + tqyx[i] * tx
                     dW = tqwx[i] * tx + tqwy[i] * ty + tqww[i] * tw
                     dQ4 = tqz[i] * tz
-                    H1 = H[i] + dQ1 * xvec[0, i] + dQ2 * yvec[0, i] + dQ4 * zvec[0, i]
-                    K1 = K[i] + dQ1 * xvec[1, i] + dQ2 * yvec[1, i] + dQ4 * zvec[1, i]
-                    L1 = L[i] + dQ1 * xvec[2, i] + dQ2 * yvec[2, i] + dQ4 * zvec[2, i]
+                    H1 = H[i] + dQ1 * xvec[0] + dQ2 * yvec[0] + dQ4 * zvec[0]
+                    K1 = K[i] + dQ1 * xvec[1] + dQ2 * yvec[1] + dQ4 * zvec[1]
+                    L1 = L[i] + dQ1 * xvec[2] + dQ2 * yvec[2] + dQ4 * zvec[2]
                     W1 = W[i] + dW
                     inte = sqw(H1, K1, L1, W1, p)
                     for j in range(modes):
@@ -2714,11 +2255,10 @@ class Instrument(object):
         self.calc_resolution(hkle)
         [R0, RMS] = [np.copy(self.R0), np.copy(self.RMS)]
         
-        EXP = self
         H, K, L, W = hkle
-        [length, H, K, L, W, EXP] = _CleanArgs(H, K, L, W, EXP);
+        [length, H, K, L, W] = _CleanArgs(H, K, L, W);
         
-        [xvec, yvec, zvec, sample, rsample] = _StandardSystem(EXP);        
+        [xvec, yvec, zvec, sample, rsample] = self._StandardSystem();        
         
         Mww = RMS[2, 2, :]
         Mxw = RMS[0, 2, :]
@@ -2752,9 +2292,9 @@ class Instrument(object):
             bgr = 0
         else:
             if nargout == 2:
-                [prefactor, bgr] = pref(H, K, L, EXP, p)
+                [prefactor, bgr] = pref(H, K, L, self, p)
             elif nargout == 1:
-                prefactor = pref(H, K, L, EXP, p)
+                prefactor = pref(H, K, L, self, p)
                 bgr = 0
             else:
                 ValueError('Fata error: invalid number or output arguments in prefactor function')         
@@ -2780,9 +2320,9 @@ class Instrument(object):
                     dQ1 = tqxx[i] * tx - tqxy[i] * ty
                     dQ2 = tqy[i] * ty
                     dQ4 = tqz[i] * tz
-                    H1 = H[i] + dQ1 * xvec[0, i] + dQ2 * yvec[0, i] + dQ4 * zvec[0, i]
-                    K1 = K[i] + dQ1 * xvec[1, i] + dQ2 * yvec[1, i] + dQ4 * zvec[1, i]
-                    L1 = L[i] + dQ1 * xvec[2, i] + dQ2 * yvec[2, i] + dQ4 * zvec[2, i]
+                    H1 = H[i] + dQ1 * xvec[0] + dQ2 * yvec[0] + dQ4 * zvec[0]
+                    K1 = K[i] + dQ1 * xvec[1] + dQ2 * yvec[1] + dQ4 * zvec[1]
+                    L1 = L[i] + dQ1 * xvec[2] + dQ2 * yvec[2] + dQ4 * zvec[2]
                     [disp, inte, WL] = sqw(H1, K1, L1, p)
                     [modes, points] = disp.shape
                     for j in range(modes):
@@ -2817,9 +2357,9 @@ class Instrument(object):
                     dQ1 = tqxx[i] * tx - tqxy[i] * ty
                     dQ2 = tqy[i] * ty
                     dQ4 = tqz[i] * tz[iz]
-                    H1 = H[i] + dQ1 * xvec[0, i] + dQ2 * yvec[0, i] + dQ4 * zvec[0, i]
-                    K1 = K[i] + dQ1 * xvec[1, i] + dQ2 * yvec[1, i] + dQ4 * zvec[1, i]
-                    L1 = L[i] + dQ1 * xvec[2, i] + dQ2 * yvec[2, i] + dQ4 * zvec[2, i]
+                    H1 = H[i] + dQ1 * xvec[0] + dQ2 * yvec[0] + dQ4 * zvec[0]
+                    K1 = K[i] + dQ1 * xvec[1] + dQ2 * yvec[1] + dQ4 * zvec[1]
+                    L1 = L[i] + dQ1 * xvec[2] + dQ2 * yvec[2] + dQ4 * zvec[2]
                     [disp, inte, WL] = sqw(H1, K1, L1, p)
                     [modes, points] = disp.shape
                     for j in range(modes):
