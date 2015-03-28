@@ -8,3 +8,4 @@ neutronpy.resolution module
 
     Instrument
     Sample
+    load
