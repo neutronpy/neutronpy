@@ -354,13 +354,19 @@ class Sample():
 
     direct : ±1, optional
         Direction of the crystal (left or right, -1 or +1, respectively)
+        
+    u : array_like
+        First orientation vector
+        
+    v : array_like
+        Second orientation vector
 
     Returns
     -------
     Sample : object
 
     '''
-    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=None, direct=1):
+    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=None, direct=1, u=None, v=None):
         self.a = a
         self.b = b
         self.c = c
@@ -370,6 +376,10 @@ class Sample():
         if mosaic is not None:
             self.mosaic = mosaic
         self.dir = direct
+        if u is not None:
+            self.u = np.array(u)
+        if v is not None:
+            self.v = np.array(v)
 
 
 class _Monochromator():
@@ -649,7 +659,7 @@ def _CleanArgs(*varargin):
     return [length] + varargout
 
 
-def project_into_plane(rm, index):
+def project_into_plane(index, r0, rm):
     r'''Projects out-of-plane resolution into a specified plane by performing
     a gaussian integral over the third axis.
 
@@ -668,6 +678,7 @@ def project_into_plane(rm, index):
 
     '''
 
+    r = np.sqrt(2 * np.pi / rm[index, index]) * r0
     mp = rm
 
     b = rm[:, index] + rm[index, :].T
@@ -678,7 +689,7 @@ def project_into_plane(rm, index):
 
     mp -= 1 / (4. * rm[index, index]) * np.outer(b, b.T)
 
-    return mp
+    return [r, mp]
 
 
 def ellipse(saxis1, saxis2, phi=0, origin=None, npts=31):
@@ -837,10 +848,12 @@ class Instrument(object):
     calc_resolution
     calc_resolution_in_Q_coords
     calc_projections
+    get_lattice
     get_resolution_params
+    plot_projections
     resolution_convolution
     resolution_convolution_SMA
-    get_lattice
+    
     '''
 
     def __init__(self, efixed=14.7, sample=None, hcol=None, vcol=None, mono='PG(002)',
@@ -1064,22 +1077,22 @@ class Instrument(object):
         '''Miller indexes of the first reciprocal-space orienting vector for
         the S coordinate system, as explained in Section II G.
         '''
-        return self._orient1
+        return self._sample.u
 
     @orient1.setter
     def orient1(self, value):
-        self._orient1 = value
+        self._sample.u = np.array(value)
 
     @property
     def orient2(self):
         '''Miller indexes of the second reciprocal-space orienting vector
         for the S coordinate system, as explained in Section II G.
         '''
-        return self._orient2
+        return self._sample.v
 
     @orient2.setter
     def orient2(self, value):
-        self._orient2 = value
+        self._sample.v = np.array(value)
 
     @property
     def dir1(self):
@@ -1296,10 +1309,6 @@ class Instrument(object):
     
         W : float or list of floats
             The energy transfers at which resolution should be calculated in meV
-    
-        EXP : Class
-            Instrument class containing the relevant information about the
-            instrument
     
         Returns
         -------
@@ -1747,7 +1756,7 @@ class Instrument(object):
     
         return [R0, RM]
     
-    def calc_resolution(self, hkle, npts=36):
+    def calc_resolution(self, hkle):
         r'''For a scattering vector (H,K,L) and  energy transfers W, given
         experimental conditions specified in EXP, calculates the Cooper-Nathans
         resolution matrix RMS and Cooper-Nathans Resolution prefactor R0 in a
@@ -1845,34 +1854,64 @@ class Instrument(object):
             A dictionary containing projections in the planes: QxQy, QxW, and QyW, both projections and slices
 
         '''
+        [H, K, L, W] = hkle
         try:
-            A = np.array(self.RMS)
-        except:
+            if H == self.H and K == self.K and L == self.L and W == self.W:
+                NP = np.array(self.RMS)
+                R0 = self.R0
+            else:
+                self.calc_resolution(hkle)
+                NP = np.array(self.RMS)
+                R0 = self.R0
+        except AttributeError:
             self.calc_resolution(hkle)
-            A = np.array(self.RMS)
+            NP = np.array(self.RMS)
+            R0 = self.R0
 
         const = 1.17741  # half width factor
         
-        [H, K, L, W] = hkle
         [length, H, K, L, W] = _CleanArgs(H, K, L, W)
         hkle = [H, K, L, W]
 
-        self.projections = {'QxQy': np.zeros((2, npts, A.shape[-1])),
-                            'QxQySlice': np.zeros((2, npts, A.shape[-1])),
-                            'QxW': np.zeros((2, npts, A.shape[-1])),
-                            'QxWSlice': np.zeros((2, npts, A.shape[-1])),
-                            'QyW': np.zeros((2, npts, A.shape[-1])),
-                            'QyWSlice': np.zeros((2, npts, A.shape[-1]))}
+        self.projections = {'QxQy': np.zeros((2, npts, NP.shape[-1])),
+                            'QxQySlice': np.zeros((2, npts, NP.shape[-1])),
+                            'QxW': np.zeros((2, npts, NP.shape[-1])),
+                            'QxWSlice': np.zeros((2, npts, NP.shape[-1])),
+                            'QyW': np.zeros((2, npts, NP.shape[-1])),
+                            'QyWSlice': np.zeros((2, npts, NP.shape[-1]))}
+        
+        [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
+        
+        o1 = self.orient1
+        o2 = self.orient2
+        pr = _scalar([o2[0], o2[1], o2[2]], [yvec[0], yvec[1], yvec[2]], rsample)
+        o2[0] = yvec[0] * pr
+        o2[1] = yvec[1] * pr
+        o2[2] = yvec[2] * pr
+        
+        if np.abs(o2[0]) < 1e-5:
+            o2[0] = 0
+        if np.abs(o2[1]) < 1e-5:
+            o2[1] = 0
+        if np.abs(o2[2]) < 1e-5:
+            o2[2] = 0
+        
+        if np.abs(o1[0]) < 1e-5:
+            o1[0] = 0
+        if np.abs(o1[1]) < 1e-5:
+            o1[1] = 0
+        if np.abs(o1[2]) < 1e-5:
+            o1[2] = 0
+        frame = '[Q1,Q2,E]'
+        
+        A = NP
 
         for ind in range(A.shape[-1]):
             # Remove the vertical component from the matrix.
-            B = np.vstack((np.hstack((A[0, :2:1, ind], A[0, 3, ind])),
-                           np.hstack((A[1, :2:1, ind], A[1, 3, ind])),
-                           np.hstack((A[3, :2:1, ind], A[3, 3, ind]))))
+            B = A[:3, :3, ind]
 
             # Projection into Qx, Qy plane
-            MP = project_into_plane(B, 2)
-
+            [R0P, MP] = project_into_plane(2, R0, B)
             theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
             S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
 
@@ -1881,10 +1920,10 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
-            self.projections['QxQy'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[1][ind]], npts)
+            self.projections['QxQy'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, npts=npts)
 
             # Slice through Qx,Qy plane
-            MP = np.array(A[:2:1, :2:1, ind])
+            MP = A[:2, :2, ind]
 
             theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
             S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
@@ -1894,11 +1933,11 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
-            self.projections['QxQySlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[1][ind]], npts)
+            self.projections['QxQySlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, npts=npts)
 
             # Projection into Qx, W plane
 
-            MP = project_into_plane(B, 1)
+            [R0P, MP] = project_into_plane(1, R0, B)
 
             theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
             S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
@@ -1908,7 +1947,7 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
-            self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[3][ind]], npts)
+            self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[3][ind]], npts=npts)
 
             # Slice through Qx,W plane
             MP = np.array([[A[0, 0, ind], A[0, 3, ind]], [A[3, 0, ind], A[3, 3, ind]]])
@@ -1921,10 +1960,10 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
-            self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[3][ind]], npts)
+            self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[3][ind]], npts=npts)
 
             # Projections into Qy, W plane
-            MP = project_into_plane(B, 0)
+            [R0P, MP] = project_into_plane(0, R0, B)
 
             theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
             S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
@@ -1934,7 +1973,7 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
-            self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1][ind], hkle[3][ind]], npts)
+            self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1][ind], hkle[3][ind]], npts=npts)
 
             # Slice through Qy,W plane
             MP = np.array([[A[1, 1, ind], A[1, 3, ind]], [A[3, 1, ind], A[3, 3, ind]]])
@@ -1947,7 +1986,7 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
-            self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1][ind], hkle[3][ind]], npts)
+            self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1][ind], hkle[3][ind]], npts=npts)
 
     def get_resolution_params(self, hkle, plane, mode='project'):
         r'''Returns parameters for the resolution gaussian.
@@ -2384,3 +2423,54 @@ class Instrument(object):
         conv=conv+bgr
         
         return conv
+
+    def plot_projections(self, hkle, npts=36):
+        r'''Plots resolution ellipses in the QxQy, QxW, and QyW zones
+        
+        Parameters
+        ----------
+        hkle : tup
+            A tuple of intergers or arrays of H, K, L, and W (energy transfer) values at which resolution ellipses are desired to be plotted
+        
+        npts : int, optional
+            Number of points in an individual resolution ellipse. Default: 36
+                    
+        '''
+        try:
+            projections = self.projections
+        except AttributeError:
+            self.calc_projections(hkle, npts)
+            projections = self.projections
+        
+        import matplotlib.pyplot as plt
+        plt.rc('font', **{'family': 'serif', 'serif': 'Times New Roman', 'size': 12})
+        plt.rc('lines', markersize=3, linewidth=0.5)
+
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, facecolor='w', edgecolor='k')
+        fig.subplots_adjust(bottom=0.175, left=0.15, right=0.85, top=0.95, wspace=0.35, hspace=0.25)
+        
+        for i in range(self.RMS.shape[-1]):
+            ax1.plot(projections['QxQy'][0, :, i], projections['QxQy'][1, :, i])
+            ax1.plot(projections['QxQySlice'][0, :, i], projections['QxQySlice'][1, :, i])
+
+            ax2.plot(projections['QyW'][0, :, i], projections['QxW'][1, :, i])
+            ax2.plot(projections['QyWSlice'][0, :, i], projections['QxWSlice'][1, :, i])
+             
+            ax3.plot(projections['QxW'][0, :, i], projections['QyW'][1, :, i])
+            ax3.plot(projections['QxWSlice'][0, :, i], projections['QyWSlice'][1, :, i])
+        
+        ax1.set_xlabel('$\mathbf{Q}_x$ (r.l.u.)')
+        ax1.set_ylabel('$\mathbf{Q}_y$ (r.l.u.)')
+        ax1.locator_params(nbins=4)
+        
+        ax2.set_xlabel('$\mathbf{Q}_y$ (r.l.u.)')
+        ax2.set_ylabel('$E$ (meV)')
+        ax2.locator_params(nbins=4)
+        
+        ax3.set_xlabel('$\mathbf{Q}_x$ (r.l.u.)')
+        ax3.set_ylabel('$E$ (meV)')
+        ax3.locator_params(nbins=4)
+        
+        ax4.axis('off')
+        
+        plt.show()

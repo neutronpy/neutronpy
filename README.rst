@@ -3,7 +3,7 @@ NeutronPy
 
 .. warning::
 
-    v0.x.x releases may not be backwards compatibile. This software is in a fluid state and undergoing rapid changes. The v1.0.0 release will indicate the start of backwards compatibile updates. Major number releases (x.0) may break backwards compatibility, but users will be notified in the changelog.
+    v0.x.0 releases may not be backwards compatibile. This software is in a fluid state and undergoing rapid changes. The v1.0.0 release will indicate the start of backwards compatibile updates. Major number releases (x.0) may break backwards compatibility, but users will be notified in the changelog.
 
 **master** |master| :: **develop** |develop|
 
@@ -65,7 +65,7 @@ Contributions may be made by submitting a pull-request for review using the fork
 
 Copyright & Licensing
 ---------------------
-Copyright (c) 2014, David M. Fobes, Released under terms in LICENSE.
+Copyright (c) 2014-2015, David M. Fobes, Released under terms in LICENSE.
 
 KMPFIT and MPFIT are currently used in part from the `Kapteyn <https://www.astro.rug.nl/software/kapteyn/>`_ package and a custom implementation of the `MINPACK-1 <http://www.physics.wisc.edu/~craigm/idl/cmpfit.html>`_ Least Squares Fitting Library in C, released under the terms in LICENSE.KAPTEYN and LICENSE.MPFIT, respectively.
 
