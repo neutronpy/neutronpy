@@ -1,7 +1,9 @@
 Resolution calculation with Instrument Class
 ============================================
 
-*Note: This module is still a work-in-progress and the usage of these classes and/or functions will likely change in the near future.*
+.. warning::
+
+     This module is still a work-in-progress and the usage of these classes and/or functions will likely change in the near future.
 
 The following are examples on the usage of the :py:class:`.Instrument` class, used to define a triple-axis spectrometer instrument configuration and calculate the resolution in reciprocal lattice units for a given sample at a given wave-vector :math:`q`. This tutorial will cover the utilization of both Cooper-Nathans and Popovici calculation methods.
 
@@ -58,23 +60,23 @@ First, we will begin by defining an generic triple-axis spectrometer instrument 
 
 For the Cooper-Nathans calculation only a rudimentary set of information is required to estimate the resolution at a given :math:`q`. Namely, the fixed energy (incident or final), the relevant (horizontal) collimations (Col\ :math:`_n`), and the monochromator and analyzer crystal types (or :math:`\tau`, if the crystal type is not included in this software). In this case we will use the following values:
 
->>> efixed = 5.
->>> hcol = [32, 80, 120, 120]
+>>> efixed = 14.7
+>>> hcol = [40, 40, 40, 40]
 >>> ana = 'PG(002)'
 >>> mono = 'PG(002)'
 
 The rest of the *required* information are all dependent on the sample configuration.
 
-**Note: Many settings have default values, that don't need to be changed for the resolution calculation to function, but will provide more accuracy if assigned appropriate values.**
+.. note::
+
+    Many settings have default values, that don't need to be changed for the resolution calculation to function, but will provide more accuracy if assigned appropriate values.**
 
 Sample Configuration
 --------------------
-Defining the sample using the :py:class:`.Sample` class is simple. In this example we define Fe\ :sub:`1.1`\ Te, a high-temperature tetragonal sample, with a sample mosiac of :math:`\sim`\ 1.16\ :math:`^{\circ}` or 70'.
+Defining the sample using the :py:class:`.Sample` class is simple. In this example we define an arbitrary sample with no given sample mosaic.
 
 >>> from neutronpy.resolution import Sample
->>> FeTe = Sample(3.81, 3.81, 6.25, 90, 90, 90, 70)
->>> FeTe.u = [1, 0, 0]
->>> FeTe.v = [0, 1, 0]
+>>> sample = Sample(6, 7, 8, 90, 90, 90, u=[1, 0, 0], v=[0, 1, 0])
 
 where the inputs for ``Sample`` are ``a``, ``b``, ``c``, ``alpha``, ``beta``, ``gamma``, and ``mosaic``, respectively, and ``u`` and ``v`` are the orientation vectors in reciprocal lattice units. In this case the sample is oriented in the (*h*, *k*, 0)-plane
 
@@ -82,10 +84,8 @@ Initializing the Instrument
 ---------------------------
 Once the sample is defined and information about the instrument collected we can formally define the instrument using :py:class:`.Instrument` and the variables that we have already assigned above.
 
-Most of the settings below are straight-forward, but there is one that is yet unexplained; ``infin`` defines whether the incident or final energy is fixed, which is important for resolution calculations at inelastic energies later. Left unassigned or set to ``-1`` indicates that the final energy is fixed, and set to ``1`` indicates fixed incident energy.
-
 >>> from neutronpy.resolution import Instrument
->>> EXP = Instrument(efixed, FeTe, hcol, ana=ana, mono=mono, infin=1)
+>>> EXP = Instrument(efixed, sample, hcol, ana=ana, mono=mono)
 
 There are a great deal more settings available than are used here; see :py:class:`.Instrument` documentation.
 
@@ -101,11 +101,13 @@ More positions can be easily added; *e.g.* if we wanted to add (0.5, 0.5, 0) at 
 
 We will use this second ``q`` to calculate the resolution.
 
-**Note: We use ``np.array()`` here to allow us to use 'fancy indexing', which will simplify using slices of ``q`` later.
+.. note::
+
+    We use ``np.array()`` here to allow us to use 'fancy indexing', which will simplify using slices of ``q`` later.
 
 Resolution parameters
 ^^^^^^^^^^^^^^^^^^^^^
-First we need to calculate the resolution parameters using :py:meth:`.calc_resolution`:
+To calculate the resolution parameters, without needing projections or plots, one may use :py:meth:`.calc_resolution`:
 
 >>> EXP.calc_resolution(q)
 
@@ -124,7 +126,7 @@ We can get projections or slices in the *x-y*, *x-e* or *y-e* planes (see :py:me
 
 Resolution ellipses
 ^^^^^^^^^^^^^^^^^^^
-The resolution ellipses are calculated at the same time :py:meth:`.calc_resolution` is called, and can be accessed using ``EXP.projections``, which is a dictionary with the keys ``QxQy``, ``QxQySlice``, ``QxW``, ``QxWSlice``, ``QyW``, and ``QyWSlice``, providing ``x`` and ``y`` values.
+The resolution ellipses are calculated when :py:meth:`.calc_projections` is called, and can be accessed using :py:meth:`.calc_projections`, which is a dictionary with the keys ``QxQy``, ``QxQySlice``, ``QxW``, ``QxWSlice``, ``QyW``, and ``QyWSlice``, providing ``x`` and ``y`` values.
 
 The following is an example of a resolution calculation using the Cooper-Nathans method (for a slice in the :math:`Q_x Q_y` plane), with resolution ellipses (projection (filled) and slice (dashed)) overlaid, using the settings we have used in this example.
 
@@ -136,14 +138,10 @@ The following is an example of a resolution calculation using the Cooper-Nathans
     from neutronpy.resolution import Instrument, Sample
     from neutronpy.functions import resolution
 
-    FeTe = Sample(3.81, 3.81, 6.25, 90, 90, 90, 70)
-    FeTe.u = [1, 0, 0]
-    FeTe.v = [0, 1, 0]
-
-    EXP = Instrument(5., FeTe, [32, 80, 120, 120], ana='PG(002)', mono='PG(002)', infin=1)
+    EXP = Instrument()
 
     hkle = [1., 1., 0., 0.]
-    EXP.calc_resolution(hkle)
+    EXP.calc_projections(hkle)
 
     x, y = np.meshgrid(np.linspace(hkle[0] - 0.05, hkle[0] + 0.05, 101), np.linspace(hkle[1] - 0.05, hkle[1] + 0.05, 101), sparse=True)
 
@@ -156,9 +154,9 @@ The following is an example of a resolution calculation using the Cooper-Nathans
     plt.pcolormesh(x, y, z, cmap=cm.jet)
 
     [x1, y1] = EXP.projections['QxQy'][:, :, 0]
-    plt.fill(x1, y1, 'r', alpha=0.25)
+    plt.fill(x1 + 1, y1 + 1, 'r', alpha=0.25)
     [x1, y1] = EXP.projections['QxQySlice'][:, :, 0]
-    plt.plot(x1, y1, 'w--')
+    plt.plot(x1 + 1, y1 + 1, 'w--')
 
     plt.xlim(hkle[0] - 0.05, hkle[0] + 0.05)
     plt.ylim(hkle[1] - 0.05, hkle[1] + 0.05)
@@ -167,7 +165,7 @@ The following is an example of a resolution calculation using the Cooper-Nathans
 
 Popovici calculation
 --------------------
-All of the previous sections are still relevant and are necessary for the Popovici method of resolution calculation, but more details about the instrument are required, and the Popovici method must be enabled. The most essential properties that need to be defined are the distances between each major element of the instrument, namely, guide-to-monochromator, monochromator-to-sample, sample-to-analyzer, and analyzer-to-detector. These distances are assigned to the ``arms`` property in the above order:
+All of the previous sections are still relevant and are necessary for the Popovici method of resolution calculation, but more details about the instrument are required, and the Popovici method must be enabled. The most essential properties that need to be defined are the distances between each major element of the instrument, namely, guide-to-monochromator, monochromator-to-sample, sample-to-analyzer, and analyzer-to-detector. These distances are assigned to the :py:attr:`.arms` property in the above order:
 
 >>> EXP.arms = [1560, 600, 260, 300]
 
@@ -176,7 +174,9 @@ Once this variable is set we can enable the Popovici method and recalculate the 
 >>> EXP.method=1
 >>> EXP.calc_resolution(q)
 
-**Note: Like with the Cooper-Nathans method above, many of these settings have default values, that don't need to be changed for the resolution calculation to function, but will provide more accuracy if assigned appropriate values.**
+.. note::
+
+    Like with the Cooper-Nathans method above, many of these settings have default values, that don't need to be changed for the resolution calculation to function, but will provide more accuracy if assigned appropriate values.
 
 The following is an example of a resolution calculation using the Popovici method (for a slice in the :math:`Q_x Q_y` plane), with resolution ellipses (projection (filled) and slice (dashed)) overlaid, using the settings used in this example.
 
@@ -188,16 +188,10 @@ The following is an example of a resolution calculation using the Popovici metho
     from neutronpy.resolution import Instrument, Sample
     from neutronpy.functions import resolution
 
-    FeTe = Sample(3.81, 3.81, 6.25, 90, 90, 90, 70)
-    FeTe.u = [1, 0, 0]
-    FeTe.v = [0, 1, 0]
-
-    EXP = Instrument(5., FeTe, [32, 80, 120, 120], ana='PG(002)', mono='PG(002)', infin=1)
-    EXP.arms = [1560, 600, 260, 300]
-    EXP.method = 1
+    EXP = Instrument(arms=[1560, 600, 260, 300], method=1)
 
     hkle = [1., 1., 0., 0.]
-    EXP.calc_resolution(hkle)
+    EXP.calc_projections(hkle)
 
     x, y = np.meshgrid(np.linspace(hkle[0] - 0.05, hkle[0] + 0.05, 101), np.linspace(hkle[1] - 0.05, hkle[1] + 0.05, 101), sparse=True)
 
@@ -210,11 +204,29 @@ The following is an example of a resolution calculation using the Popovici metho
     plt.pcolormesh(x, y, z, cmap=cm.jet)
 
     [x1, y1] = EXP.projections['QxQy'][:, :, 0]
-    plt.fill(x1, y1, 'r', alpha=0.25)
+    plt.fill(x1 + 1, y1 + 1, 'r', alpha=0.25)
     [x1, y1] = EXP.projections['QxQySlice'][:, :, 0]
-    plt.plot(x1, y1, 'w--')
+    plt.plot(x1 + 1, y1 + 1, 'w--')
 
     plt.xlim(hkle[0] - 0.05, hkle[0] + 0.05)
     plt.ylim(hkle[1] - 0.05, hkle[1] + 0.05)
 
     plt.show()
+
+Simple Plotting of Resolution Ellipses
+--------------------------------------
+To see a simple plot of the resolution ellipses in the :math:`Q_x Q_y`, :math:`Q_x W` and :math:`Q_y W` zones the :py:meth:`.plot_projections` method may be used.
+
+A very simple plot for the default instrument, containing resolution ellipses for several different energies at may be obtained with these commands
+
+>>> from numpy import linspace
+>>> EXP = Instrument()
+>>> EXP.plot_projections([1., 1., 0., linspace(0, 15, 7)])
+
+.. plot::
+
+    from neutronpy.resolution import Instrument
+    from numpy import linspace
+
+    EXP = Instrument()
+    EXP.plot_projections([1., 1., 0., linspace(0, 15, 7)])
