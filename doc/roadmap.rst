@@ -6,9 +6,9 @@ Milestones
 ----------
 There is currently one milestone on Github:
 
-* `0.1.x Refactor <https://github.com/neutronpy/neutronpy/milestones/0.1.x%20Refactor>`_ - contains issues which are ready to be worked on
+* `0.3 ResLib <https://github.com/neutronpy/neutronpy/milestones/0.3%20ResLib>`_ - contains issues which are ready to be worked on
 
-The Refactor milestone will focus on making existing code more user friendly, eliminating redundant features, and enforcing PEP8 guidelines and general python best practices.
+The Reslib milestone will focus on making the Instrument class more pythonic, and implementing additional ResLib features, such as Monte Carlo convolution with the resolution fuctions.
 
 Next Release
 ------------

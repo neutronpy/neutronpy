@@ -75,3 +75,4 @@ JOULES_TO_MEV = 1. / consts.physical_constants\
     ['electron volt-joule relationship'][0] * 1.e3  # Joules to meV
 BOLTZMANN_IN_MEV_K = consts.physical_constants['Boltzmann constant in eV/K'][0]\
                         * 1.e3  # Boltzmann constant in meV/K
+N_A = consts.N_A

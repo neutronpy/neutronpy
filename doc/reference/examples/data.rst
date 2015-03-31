@@ -35,8 +35,9 @@ If you want to load more than one file at a time, simple add the file names as s
 
 >>> data = load('scan1.dat', 'scan2.dat')
 
-By default, :py:meth:`.load` attempts to determine the format of the input files automatically, but you can specify the ``mode`` if desired. Valid modes are currently:
+By default, :py:meth:`.load` attempts to determine the format of the input files automatically, but you can specify the ``filetype`` if desired. Valid filetypes are currently:
 
+* ``'auto'`` - Default: attempt to automatically determine the file type
 * ``'SPICE'`` - HFIR files
 * ``'ICE'`` - NCNR files
 * ``'ICP'`` - NCNR files
@@ -90,8 +91,8 @@ In this case, ``Q`` is collection of column arrays defined as ``[h, k, l, e, tem
 -------------------
 Combining data is as easy as adding multiple ``Data`` objects together, *e.g.*
 
->>> data1 = load('scan1.dat', mode='SPICE')
->>> data2 = load('scan2.dat', mode='SPICE')
+>>> data1 = load('scan1.dat', filetype='SPICE')
+>>> data2 = load('scan2.dat', filetype='SPICE')
 >>> data = data1 + data2
 
 This will combine monitor and detector counts for existing points and concatenate unique points in the two objects to create a new ``data`` object.

@@ -1,4 +1,4 @@
-.. currentmodule:: neutronpy
+.. currentmodule:: neutronpy.core
 
 neutronpy.core module
 =====================
