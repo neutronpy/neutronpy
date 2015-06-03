@@ -65,6 +65,10 @@ def setup_package():
     except ImportError:
         kmpfit_loc = "src/kmpfit.c"
 
+    modules = [Extension("kmpfit", [kmpfit_loc, "src/mpfit.c"], include_dirs=include_dirs)]
+    for e in modules:
+        e.cython_directives = {"embedsignature" : True}
+        
     metadata = dict(name='neutronpy',
                     version=__version__,
                     description=DOCLINES[0],
@@ -80,7 +84,7 @@ def setup_package():
                     test_suite='nose.collector',
                     cmdclass=cmdclass,
                     ext_package='neutronpy',
-                    ext_modules=[Extension("kmpfit", [kmpfit_loc, "src/mpfit.c"], include_dirs=include_dirs)],
+                    ext_modules=modules,
                     package_data={'neutronpy': ['database/*.json']},
                     packages=['neutronpy'],)
 
