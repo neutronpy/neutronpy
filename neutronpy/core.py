@@ -8,6 +8,11 @@ import numpy as np
 import re
 from scipy import constants
 
+try:
+    from .kmpfit import Fitter
+except ImportError:
+    print(ImportError(u'Fitter module is not loaded.'))
+
 
 def _call_bin_parallel(arg, **kwarg):
     r'''Wrapper function to work around pickling problem in Python 2.7
@@ -75,13 +80,13 @@ class Data(object):
 
     '''
     def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0.,
-                 detector=0., monitor=0., time=0., time_norm=False, **kwargs):
+                 detector=0., monitor=0., error=0., time=0., time_norm=False, **kwargs):
         if Q is None:
             try:
                 n_dim = max([len(item) for item in
                              (h, k, l, e, temp, detector, monitor, time)
                              if not isinstance(item, numbers.Number)])
-            except ValueError:
+            except (ValueError, UnboundLocalError):
                 n_dim = 1
 
             self.Q = np.empty((n_dim, 5))
@@ -96,6 +101,7 @@ class Data(object):
                     raise
         else:
             self.Q = Q
+            n_dim = Q.shape[1]
 
         for arg, key in zip((detector, monitor, time),
                             ('detector', 'monitor', 'time')):
@@ -119,13 +125,13 @@ class Data(object):
         except AttributeError:
             raise AttributeError('Data types cannot be combined')
 
-    def __sub__(self, right):
-        try:
-            output = {'Q': right.Q, 'detector': np.negative(right.detector),
-                      'monitor': right.monitor, 'time': right.time}
-            return self.combine_data(output, ret=True)
-        except AttributeError:
-            raise AttributeError('Data types cannot be combined')
+#     def __sub__(self, right):
+#         try:
+#             output = {'Q': right.Q, 'detector': np.negative(right.detector),
+#                       'monitor': right.monitor, 'time': right.time}
+#             return self.combine_data(output, ret=True)
+#         except AttributeError:
+#             raise AttributeError('Data types cannot be combined')
 
     def __mul__(self, right):
         self.detector *= right
@@ -256,17 +262,38 @@ class Data(object):
 
     @property
     def error(self):
-        r'''Returns square-root error of monitor or time normalized intensity
+        r'''Returns error of monitor or time normalized intensity
 
         '''
+        try:
+            if self._err is not None:
+                err = self._err
+            else:
+                err = np.sqrt(self.detector)
+        except AttributeError:
+            self._err = None
+            err = np.sqrt(self.detector)
+
         if self.time_norm:
             if self.t0 == 0:
                 self.t0 = np.nanmax(self.time)
-            return np.sqrt(self.detector) / self.time * self.t0
+            return err / self.time * self.t0
         else:
             if self.m0 == 0:
                 self.m0 = np.nanmax(self.monitor)
-            return np.sqrt(self.detector) / self.monitor * self.m0
+            return err / self.monitor * self.m0
+
+    @error.setter
+    def error(self, value):
+        r'''Set error in detector counts
+        '''
+        if isinstance(value, numbers.Number):
+            value = np.array([value] * self.detector.shape[0])
+        
+        if value.shape != self.detector.shape:
+            raise ValueError('''Input value must have the shape ({0},) or be \
+                                a float.'''.format(self.detector.shape[0]))
+        self._err = value
 
     @property
     def detailed_balance_factor(self):
@@ -310,13 +337,12 @@ class Data(object):
         time = self.time.copy()  # pylint: disable=access-member-before-definition
 
         tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
-
         try:
             if kwargs['tols'] is not None:
                 tols = np.array(kwargs['tols'])
         except KeyError:
             pass
-
+        
         for arg in args:
             combine = []
             for i in range(arg['Q'].shape[0]):
@@ -403,12 +429,14 @@ class Data(object):
         monitor = np.empty(Q_chunk.shape[0])
         detector = np.empty(Q_chunk.shape[0])
         time = np.empty(Q_chunk.shape[0])
+        error = np.empty(Q_chunk.shape[0])
 
         for i, _Q_chunk in enumerate(Q_chunk):
             _Q = self.Q
             _mon = self.monitor
             _det = self.detector
             _tim = self.time
+            _err = self.error
 
             for j in range(_Q.shape[1]):
                 _order = np.lexsort([_Q[:, j - n] for n
@@ -417,6 +445,7 @@ class Data(object):
                 _mon = _mon[_order]
                 _det = _det[_order]
                 _tim = _tim[_order]
+                _err = _err[_order]
 
                 chunk0 = np.searchsorted(_Q[:, j],
                                          _Q_chunk[j] - self._qstep[j] / 2.,
@@ -430,12 +459,15 @@ class Data(object):
                     _mon = _mon[chunk0:chunk1]
                     _det = _det[chunk0:chunk1]
                     _tim = _tim[chunk0:chunk1]
+                    _err = _err[chunk0:chunk1]
 
             monitor[i] = np.average(_mon[chunk0:chunk1])
             detector[i] = np.average(_det[chunk0:chunk1])
             time[i] = np.average(_tim[chunk0:chunk1])
+            error[i] = np.sqrt(1 / np.sum(1 / _err[chunk0:chunk1] ** 2))
+            # error[i] = 1 / np.sqrt(2) * np.average(_err[chunk0:chunk1])
 
-        return (monitor, detector, time)
+        return (monitor, detector, time, error)
 
     def bin(self, to_bin):  # pylint: disable=unused-argument
         u'''Rebin the data into the specified shape.
@@ -484,9 +516,9 @@ class Data(object):
         pool = Pool(processes=nprocs)  # pylint: disable=not-callable
         outputs = pool.map(_call_bin_parallel, zip([self] * len(Q_chunks), Q_chunks))
 
-        monitor, detector, time = (np.concatenate(arg) for arg in zip(*outputs))
+        monitor, detector, time, error = (np.concatenate(arg) for arg in zip(*outputs))
 
-        return Data(Q=Q, monitor=monitor, detector=detector, time=time, m0=self.m0, t0=self.t0)
+        return Data(Q=Q, monitor=monitor, detector=detector, time=time, m0=self.m0, t0=self.t0, error=error)
 
     def integrate(self, background=None, **kwargs):
         r'''Returns the integrated intensity within given bounds
@@ -735,8 +767,8 @@ class Data(object):
 #                 x, y, z = (np.ma.masked_where(z <= 0, x),
 #                            np.ma.masked_where(z <= 0, y),
 #                            np.ma.masked_where(z <= 0, z))
-                X, Y = np.meshgrid(np.linspace(x.min(), x.max(), np.around(np.abs(np.unique(x)-np.roll(np.unique(x), 1))[1], decimals=4)),
-                                   np.linspace(y.min(), y.max(), np.around(np.abs(np.unique(y)-np.roll(np.unique(y), 1))[1], decimals=4)))
+                X, Y = np.meshgrid(np.linspace(x.min(), x.max(), np.around(np.abs(np.unique(x) - np.roll(np.unique(x), 1))[1], decimals=4)),
+                                   np.linspace(y.min(), y.max(), np.around(np.abs(np.unique(y) - np.roll(np.unique(y), 1))[1], decimals=4)))
                 
                 from scipy.interpolate import griddata
                 Z = griddata((x, y), z, (X, Y))
@@ -916,8 +948,8 @@ def load(files, filetype='auto', tols=1e-4):
         del _Q_dict, args
 
         try:
-            _data_object.combine_data(raw_data)
-        except NameError:
+            _data_object.combine_data(raw_data, tols=tols)
+        except (NameError, UnboundLocalError):
             _data_object = Data(**raw_data)
 
     return _data_object
