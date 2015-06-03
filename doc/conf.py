@@ -43,7 +43,9 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
               'matplotlib.sphinxext.plot_directive',
               'numpydoc',
-              'releases']
+              'releases',
+#               'autodoc_cython',
+              ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -97,14 +99,14 @@ add_function_parentheses = False
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx_rtd_theme_custom.support.LightStyle'
+pygments_style = 'sphinx_rtd_theme.support.LightStyle'
 
 # -----------------------------------------------------------------------------
 # HTML output
 # -----------------------------------------------------------------------------
 
 import sphinx_rtd_theme_custom
-html_theme = "sphinx_rtd_theme_custom"
+html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme_custom.get_html_theme_path()]
 
 html_static_path = [os.path.join('.', '_static')]
@@ -119,7 +121,9 @@ html_theme_options = {'logo': 'logo.png',
                       'github_banner': True,
                       'link': '#3782BE',
                       'link_hover': '#3782BE',
-                      'sidebar_includehidden': True,}
+                      'sidebar_includehidden': True, 
+                      #'pygments_style': pygments_style,
+                      }
 
 # Sister-site links to API docs
 # html_theme_options['extra_nav_links'] = {
@@ -183,10 +187,10 @@ htmlhelp_basename = 'neutronpydoc'
 # -----------------------------------------------------------------------------
 
 # The paper size ('letter' or 'a4').
-#latex_paper_size = 'letter'
+# latex_paper_size = 'letter'
 
 # The font size ('10pt', '11pt' or '12pt').
-#latex_font_size = '10pt'
+# latex_font_size = '10pt'
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
@@ -220,7 +224,7 @@ latex_preamble = r'''
 '''
 
 # Documents to append as an appendix to all manuals.
-#latex_appendices = []
+# latex_appendices = []
 
 # If false, no module index is generated.
 latex_use_modindex = False
@@ -260,9 +264,17 @@ intersphinx_mapping = {'http://docs.python.org/dev': None}
 # -----------------------------------------------------------------------------
 # Autosummary
 # -----------------------------------------------------------------------------
+# from sphinx.ext import autodoc
+# class DocsonlyMethodDocumenter(autodoc.MethodDocumenter):
+#     def format_args(self):
+#         return None
+#
+# autodoc.add_documenter(DocsonlyMethodDocumenter)
 
 import glob
 numpydoc_show_class_members = False
+# autodoc_default_flags = ['members']
+autodoc_docstring_signature = True
 autosummary_generate = glob.glob("reference/*.rst")
 
 # -----------------------------------------------------------------------------
@@ -287,7 +299,7 @@ coverage_ignore_c_items = {}
 
 import inspect
 from os.path import relpath, dirname
- 
+
 for name in ['sphinx.ext.linkcode', 'numpydoc.linkcode']:
     try:
         __import__(name)
@@ -297,47 +309,47 @@ for name in ['sphinx.ext.linkcode', 'numpydoc.linkcode']:
         pass
 else:
     print("NOTE: linkcode extension not found -- no links to source generated")
- 
+
 def linkcode_resolve(domain, info):
     """
     Determine the URL corresponding to Python object
     """
     if domain != 'py':
         return None
- 
+
     modname = info['module']
     fullname = info['fullname']
- 
+
     submod = sys.modules.get(modname)
     if submod is None:
         return None
- 
+
     obj = submod
     for part in fullname.split('.'):
         try:
             obj = getattr(obj, part)
         except:
             return None
- 
+
     try:
         fn = inspect.getsourcefile(obj)
     except:
         fn = None
     if not fn:
         return None
- 
+
     try:
         source, lineno = inspect.findsource(obj)
     except:
         lineno = None
- 
+
     if lineno:
         linespec = "#L%d" % (lineno + 1)
     else:
         linespec = ""
- 
+
     fn = relpath(fn, start=dirname(neutronpy.__file__))
- 
+
     if 'dev' in neutronpy.__version__:
         return "http://github.com/neutronpy/neutronpy/blob/master/neutronpy/%s%s" % (
            fn, linespec)

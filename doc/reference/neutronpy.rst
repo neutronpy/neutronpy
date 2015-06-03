@@ -9,12 +9,12 @@ Members
 .. autosummary::
     :toctree: generated/
 
-    Data
-    Energy
-    Fitter
-    build_Q
-    load
-    save
+    core.Data
+    core.Energy
+    kmpfit.Fitter
+    core.build_Q
+    core.load
+    core.save
 
 Submodules
 ----------
@@ -25,6 +25,7 @@ Submodules
    neutronpy.form_facs
    neutronpy.functions
    neutronpy.kmpfit
+   neutronpy.lattice
    neutronpy.models
    neutronpy.resolution
    neutronpy.tools
