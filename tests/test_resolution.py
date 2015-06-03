@@ -107,8 +107,8 @@ class ResolutionTest(unittest.TestCase):
 
         EXP.calc_resolution(hkle)
 
-        NP = EXP.RMS[:, :, 0]
-        R = EXP.R0[0]
+        NP = EXP.RMS
+        R = EXP.R0
         
         ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * (2. / 1.e-5)
         
@@ -136,8 +136,8 @@ class ResolutionTest(unittest.TestCase):
 
         EXP.calc_resolution(hkle)
 
-        NP = EXP.RMS[:, :, 0]
-        R = EXP.R0[0]
+        NP = EXP.RMS
+        R = EXP.R0
         
         ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * (2. / 1.e-5)
 
@@ -160,7 +160,6 @@ class ResolutionTest(unittest.TestCase):
                 
         sumI11, sumI12, sumI13 = np.sum(I11), np.sum(I12), np.sum(I13)
         
-        print(np.abs(self.sumI11 - sumI11))
         self.assertTrue(np.abs(self.sumI11 - sumI11) < 25)
         self.assertTrue(np.abs(self.sumI12 - sumI12) < 25)
         self.assertTrue(np.abs(self.sumI13 - sumI13) < 50)

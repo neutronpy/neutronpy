@@ -197,12 +197,12 @@ def load(parfile, cfgfile):
         for line in lines:
             rows = line.split()
             cfg.append(float(rows[0]))
-    
+
     if par['sm'] == par['ss']:
         dir1 = -1
     else:
         dir1 = 1
-    
+
     if par['ss'] == par['sa']:
         dir2 = -1
     else:
@@ -212,7 +212,7 @@ def load(parfile, cfgfile):
         infin = -1
     else:
         infin = par['kfix']
-    
+
     hcol = [par['alpha1'], par['alpha2'], par['alpha3'], par['alpha4']]
     vcol = [par['beta1'], par['beta2'], par['beta3'], par['beta4']]
 
@@ -285,7 +285,7 @@ def load(parfile, cfgfile):
     monitorh = cfg[29] / np.sqrt(12)  # monitor height [cm]
 
     # -------------------------------------------------------------------------
-    
+
     energy = Energy(wavevector=par['k'])
 
     sample = Sample(par['as'], par['bs'], par['cs'],
@@ -296,12 +296,15 @@ def load(parfile, cfgfile):
     sample.shape = np.diag([xsam, ysam, zsam])
 
     setup = Instrument(energy.energy, sample, hcol, vcol,
-                       par['dm'], par['etam'],
-                       par['da'], par['etaa'],
-                       method=1,
-                       dir1=dir1, dir2=dir2, mondir=par['sm'], infin=infin,
-                       arms=[L0, L1, L2, L3, L1mon])
-    
+                       2 * np.pi / par['dm'], par['etam'],
+                       2 * np.pi / par['da'], par['etaa'])
+
+    setup.method = 1
+    setup.dir1 = dir1
+    setup.dir2 = dir2
+    setup.mondir = par['sm']
+    setup.infin = infin
+    setup.arms = [L0, L1, L2, L3, L1mon]
     setup.beam.width = ysrc
     setup.beam.height = zsrc
 
@@ -322,7 +325,7 @@ def load(parfile, cfgfile):
 
     setup.monitor.width = monitorw
     setup.monitor.height = monitorh
-    
+
     return setup
 
 
@@ -471,9 +474,9 @@ def _star(lattice):
 
     '''
     V = 2 * lattice.a * lattice.b * lattice.c * \
-        np.sqrt(np.sin((lattice.alpha + lattice.beta + lattice.gamma) / 2) * 
-                np.sin((-lattice.alpha + lattice.beta + lattice.gamma) / 2) * 
-                np.sin((lattice.alpha - lattice.beta + lattice.gamma) / 2) * 
+        np.sqrt(np.sin((lattice.alpha + lattice.beta + lattice.gamma) / 2) *
+                np.sin((-lattice.alpha + lattice.beta + lattice.gamma) / 2) *
+                np.sin((lattice.alpha - lattice.beta + lattice.gamma) / 2) *
                 np.sin((lattice.alpha + lattice.beta - lattice.gamma) / 2))
 
     Vstar = (2 * np.pi) ** 3 / V
@@ -482,11 +485,11 @@ def _star(lattice):
     latticestar.a = 2 * np.pi * lattice.b * lattice.c * np.sin(lattice.alpha) / V
     latticestar.b = 2 * np.pi * lattice.a * lattice.c * np.sin(lattice.beta) / V
     latticestar.c = 2 * np.pi * lattice.b * lattice.a * np.sin(lattice.gamma) / V
-    latticestar.alpha = np.arccos((np.cos(lattice.beta) * np.cos(lattice.gamma) - 
+    latticestar.alpha = np.arccos((np.cos(lattice.beta) * np.cos(lattice.gamma) -
                                    np.cos(lattice.alpha)) / (np.sin(lattice.beta) * np.sin(lattice.gamma)))
-    latticestar.beta = np.arccos((np.cos(lattice.alpha) * np.cos(lattice.gamma) - 
+    latticestar.beta = np.arccos((np.cos(lattice.alpha) * np.cos(lattice.gamma) -
                                   np.cos(lattice.beta)) / (np.sin(lattice.alpha) * np.sin(lattice.gamma)))
-    latticestar.gamma = np.arccos((np.cos(lattice.alpha) * np.cos(lattice.beta) - 
+    latticestar.gamma = np.arccos((np.cos(lattice.alpha) * np.cos(lattice.beta) -
                                    np.cos(lattice.gamma)) / (np.sin(lattice.alpha) * np.sin(lattice.beta)))
 
     return [V, Vstar, latticestar]
@@ -665,11 +668,14 @@ def project_into_plane(index, r0, rm):
 
     Parameters
     ----------
-    rm : ndarray
-        Resolution array
-
     index : int
         Index of the axis that should be integrated out
+    
+    r0 : float
+        Resolution prefactor
+
+    rm : ndarray
+        Resolution array
 
     Returns
     -------
@@ -729,19 +735,19 @@ def ellipse(saxis1, saxis2, phi=0, origin=None, npts=31):
 
 
 def _voigt(x, a):
-    def _approx1(t): 
+    def _approx1(t):
         return (t * 0.5641896) / (0.5 + t ** 2);
-    
-    
+
+
     def _approx2(t, u):
         return (t * (1.410474 + u * 0.5641896)) / (0.75 + (u * (3. + u)))
-    
-    
+
+
     def _approx3(t):
         return (16.4955 + t * (20.20933 + t * (11.96482 + t * (3.778987 + 0.5642236 * t)))) \
             / (16.4955 + t * (38.82363 + t * (39.27121 + t * (21.69274 + t * (6.699398 + t)))))
-    
-         
+
+
     def _approx4(t, u):
         return (t * (36183.31 - u * (3321.99 - u * (1540.787 - u * (219.031 - u * (35.7668 - u * (1.320522 - u * 0.56419)))))) \
                 / (32066.6 - u * (24322.8 - u * (9022.23 - u * (2186.18 - u * (364.219 - u * (61.5704 - u * (1.84144 - u))))))))
@@ -755,28 +761,28 @@ def _voigt(x, a):
     ax = np.abs(x)
     s = ax + a
     u = t ** 2
-        
+
     good = np.where(a == 0)
     y[good] = np.exp(-x[good] ** 2)
-    
+
     good = np.where((a >= 15) | (s >= 15))
     y[good] = _approx1(t[good])
-    
+
     good = np.where((s < 15) & (a < 15) & (a >= 5.5))
-    y[good] = _approx2(t[good], u[good])   
-    
+    y[good] = _approx2(t[good], u[good])
+
     good = np.where((s < 15) & (s >= 5.5) & (a < 5.5))
-    y[good] = _approx2(t[good], u[good])   
-    
+    y[good] = _approx2(t[good], u[good])
+
     good = np.where((s < 5.5) & (a < 5.5) & (a >= 0.75))
     y[good] = _approx3(t[good])
-    
+
     good = np.where((s < 5.5) & (a >= 0.195 * ax - 0.176) & (a < 0.75))
     y[good] = _approx3(t[good])
-    
+
     good = np.where((~((s < 5.5) & (a >= 0.195 * ax - 0.176))) & (a < 0.75))
     y[good] = np.exp(u[good]) - _approx4(t[good], u[good])
-    
+
     y = np.real(y)
     return y
 
@@ -1216,7 +1222,7 @@ class Instrument(object):
                           np.array([item.beta for item in s]) * np.pi / 180,
                           np.array([item.gamma for item in s]) * np.pi / 180)
         V, Vstar, rlattice = _star(lattice)  # @UnusedVariable
-    
+
         return [lattice, rlattice]
 
     def _StandardSystem(self):
@@ -1239,60 +1245,60 @@ class Instrument(object):
     
         '''
         [lattice, rlattice] = self.get_lattice()
-    
+
         orient1 = self.orient1
         orient2 = self.orient2
-    
+
         modx = _modvec([orient1[0], orient1[1], orient1[2]], rlattice)
-    
+
         x = orient1 / modx
 #         x[0] = x[0] / modx  # First unit basis vector
 #         x[1] = x[1] / modx
 #         x[2] = x[2] / modx
-    
+
         proj = _scalar([orient2[0], orient2[1], orient2[2]], [x[0], x[1], x[2]], rlattice)
-    
+
         y = orient2 - x * proj
 #         y[0] = y[0] - x[0, :] * proj
 #         y[1] = y[1, :] - x[1, :] * proj
 #         y[2] = y[2, :] - x[2, :] * proj
-    
+
         mody = _modvec([y[0], y[1], y[2]], rlattice)
-    
+
         if len(np.where(mody <= 0)[0]) > 0:
             raise ValueError('??? Fatal error: Orienting vectors are colinear!')
-    
+
         y /= mody
 #         y[0, :] = y[0, :] / mody  # Second unit basis vector
 #         y[1, :] = y[1, :] / mody
 #         y[2, :] = y[2, :] / mody
-    
+
         z = np.zeros(3, dtype=np.float64)
         z[0] = x[1] * y[2] - y[1] * x[2]
         z[1] = x[2] * y[0] - y[2] * x[0]
         z[2] = -x[1] * y[0] + y[1] * x[0]
-    
+
         proj = _scalar([z[0], z[1], z[2]], [x[0], x[1], x[2]], rlattice)
-        
+
         z = z - x * proj
 #         z[0, :] = z[0, :] - x[0, :] * proj
 #         z[1, :] = z[1, :] - x[1, :] * proj
 #         z[2, :] = z[2, :] - x[2, :] * proj
-    
+
         proj = _scalar([z[0], z[1], z[2]], [y[0], y[1], y[2]], rlattice)
-    
+
         z = z - y * proj
 #         z[0, :] = z[0, :] - y[0, :] * proj
 #         z[1, :] = z[1, :] - y[1, :] * proj
 #         z[2, :] = z[2, :] - y[2, :] * proj
-    
+
         modz = _modvec([z[0], z[1], z[2]], rlattice)
-        
+
         z /= modz
 #         z[0, :] = z[0, :] / modz  # Third unit basis vector
 #         z[1, :] = z[1, :] / modz
 #         z[2, :] = z[2, :] / modz
-    
+
         return [x, y, z, lattice, rlattice]
 
     def calc_resolution_in_Q_coords(self, Q, W):
@@ -1324,9 +1330,9 @@ class Instrument(object):
         '''
         CONVERT1 = 0.4246609 * np.pi / 60. / 180.
         CONVERT2 = 2.072
-                
+
         [length, Q, W] = _CleanArgs(Q, W)
-    
+
         RM = np.zeros((4, 4, length), dtype=np.float64)
         R0 = np.zeros(length, dtype=np.float64)
         RM_ = np.zeros((4, 4), dtype=np.float64)  # @UnusedVariable
@@ -1398,7 +1404,7 @@ class Instrument(object):
         monorh = 1.e6
         anarv = 1.e6
         anarh = 1.e6
-        
+
         if hasattr(self, 'beam'):
             beam = self.beam
             if hasattr(beam, 'width'):
@@ -1487,7 +1493,7 @@ class Instrument(object):
         em = 1
         if hasattr(self, 'mondir'):
             em = self.mondir
-    
+
         for ind in range(length):
             sshape = sshapes[ind]
             # Calculate angles and energies
@@ -1501,16 +1507,16 @@ class Instrument(object):
                 ei = efixed + w
             ki = np.sqrt(ei / CONVERT2)
             kf = np.sqrt(ef / CONVERT2)
-    
+
             thetam = np.arcsin(taum / (2. * ki)) * np.sign(epm) * np.sign(em)  # sm  # added sign(em) K.P.
             thetaa = np.arcsin(taua / (2. * kf)) * np.sign(ep) * np.sign(em)  # sa
             s2theta = -np.arccos((ki ** 2 + kf ** 2 - q ** 2) / (2. * ki * kf)) * np.sign(em)  # ss  # 2theta sample @IgnorePep8
             if np.iscomplex(s2theta):
                 raise ValueError(': KI,KF,Q triangle will not close (kinematic equations). Change the value of KFIX,FX,QH,QK or QL.')
-    
+
             thetas = s2theta / 2.
             phi = np.arctan2(np.sign(em) * (-kf * np.sin(s2theta)), np.sign(em) * (ki - kf * np.cos(s2theta)))
-    
+
             # Calculate beam divergences defined by neutron guides
             if alpha[0] < 0:
                 alpha[0] = -alpha[0] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
@@ -1520,7 +1526,7 @@ class Instrument(object):
                 alpha[2] = -alpha[2] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
             if alpha[3] < 0:
                 alpha[3] = -alpha[3] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-            
+
             if beta[0] < 0:
                 beta[0] = -beta[0] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
             if beta[1] < 0:
@@ -1529,7 +1535,7 @@ class Instrument(object):
                 beta[2] = -beta[2] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
             if beta[3] < 0:
                 beta[3] = -beta[3] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-    
+
             # Redefine sample geometry
             psi = thetas - phi  # Angle from sample geometry X axis to Q
             rot = np.matrix(np.zeros((3, 3), dtype=np.float64))
@@ -1538,18 +1544,18 @@ class Instrument(object):
             rot[0, 1] = np.sin(psi)
             rot[1, 0] = -np.sin(psi)
             rot[2, 2] = 1.
-    
+
             # sshape=rot'*sshape*rot
             sshape = np.matrix(rot) * np.matrix(sshape) * np.matrix(rot).H
-    
+
             # Definition of matrix G
             G = 1. / np.array([alpha[0], alpha[1], beta[0], beta[1], alpha[2], alpha[3], beta[2], beta[3]], dtype=np.float64) ** 2
             G = np.matrix(np.diag(G))
-    
+
             # Definition of matrix F
             F = 1. / np.array([etam, etamv, etaa, etaav], dtype=np.float64) ** 2
             F = np.matrix(np.diag(F))
-    
+
             # Definition of matrix A
             A[0, 0] = ki / 2. / np.tan(thetam)
             A[0, 1] = -A[0, 0]
@@ -1559,7 +1565,7 @@ class Instrument(object):
             A[2, 3] = ki
             A[4, 4] = kf
             A[5, 6] = kf
-    
+
             # Definition of matrix C
             C[0, 0] = 1. / 2.
             C[0, 1] = 1. / 2.
@@ -1569,7 +1575,7 @@ class Instrument(object):
             C[1, 3] = -C[1, 2]  # mistake in paper
             C[3, 6] = 1. / (2. * np.sin(thetaa))
             C[3, 7] = -C[3, 6]
-    
+
             # Definition of matrix B
             B[0, 0] = np.cos(phi)
             B[0, 1] = np.sin(phi)
@@ -1583,11 +1589,11 @@ class Instrument(object):
             B[2, 5] = -1.
             B[3, 0] = 2. * CONVERT2 * ki
             B[3, 3] = -2. * CONVERT2 * kf
-    
+
             # Definition of matrix S
             Sinv = np.matrix(blkdiag(np.array(bshape, dtype=np.float32), mshape, sshape, ashape, dshape))  # S-1 matrix
             S = Sinv.I
-    
+
             # Definition of matrix T
             T[0, 0] = -1. / (2. * L0)  # mistake in paper
             T[0, 2] = np.cos(thetam) * (1. / L1 - 1. / L0) / 2.
@@ -1605,7 +1611,7 @@ class Instrument(object):
             T[3, 7] = -1. / (2. * L2 * np.sin(thetaa))
             T[3, 10] = (1. / L2 + 1. / L3 - 2. * np.sin(thetaa) / anarv) / (2. * np.sin(thetaa))
             T[3, 12] = -1. / (2. * L3 * np.sin(thetaa))
-    
+
             # Definition of matrix D
             # Lots of index mistakes in paper for matrix D
             D[0, 0] = -1. / L0
@@ -1630,7 +1636,7 @@ class Instrument(object):
             D[5, 11] = 1. / L3
             D[7, 10] = -D[5, 11]
             D[7, 12] = D[5, 11]
-    
+
             # Definition of resolution matrix M
             if method == 1 or method == 'popovici':
                 Minv = np.matrix(B) * np.matrix(A) * np.linalg.inv(np.linalg.inv(np.matrix(D) * np.linalg.inv(np.matrix(S) + np.matrix(T).H * np.matrix(F) * np.matrix(T)) * np.matrix(D).H) + np.matrix(G)) * np.matrix(A).H * np.matrix(B).H
@@ -1641,11 +1647,11 @@ class Instrument(object):
                     HF = np.linalg.inv(HF)
                     HF[4, 4] = (1 / (kf * alpha[2])) ** 2
                     HF[4, 3] = 0
-                    HF[3, 4] = 0 
+                    HF[3, 4] = 0
                     HF[3, 3] = (np.tan(thetaa) / (etaa * kf)) ** 2
                     HF = np.linalg.inv(HF)
                 Minv = np.matrix(B) * np.matrix(HF) * np.matrix(B).H
-    
+
             M = np.linalg.inv(Minv)
             # TODO: rows-columns 3-4 swapped for ResPlot to work.
             # Inactivate as we want M=[x,y,z,E]
@@ -1653,23 +1659,23 @@ class Instrument(object):
             RM_[1, 0] = M[1, 0]
             RM_[0, 1] = M[0, 1]
             RM_[1, 1] = M[1, 1]
-    
+
             RM_[0, 2] = M[0, 3]
             RM_[2, 0] = M[3, 0]
             RM_[2, 2] = M[3, 3]
             RM_[2, 1] = M[3, 1]
             RM_[1, 2] = M[1, 3]
-    
+
             RM_[0, 3] = M[0, 2]
             RM_[3, 0] = M[2, 0]
             RM_[3, 3] = M[2, 2]
             RM_[3, 1] = M[2, 1]
             RM_[1, 3] = M[1, 2]
-                
+
             # Calculation of prefactor, normalized to source
             Rm = ki ** 3 / np.tan(thetam)
             Ra = kf ** 3 / np.tan(thetaa)
-    
+
             if method == 1 or method == 'popovici':
                 # Popovici
                 R0_ = Rm * Ra * (2. * np.pi) ** 4 / (64. * np.pi ** 2 * np.sin(thetam) * np.sin(thetaa)) * np.sqrt(np.linalg.det(F) / np.linalg.det(np.linalg.inv(np.matrix(D) * np.linalg.inv(np.matrix(S) + np.matrix(T).H * np.matrix(F) * np.matrix(T)) * np.matrix(D).H) + np.matrix(G)))
@@ -1677,7 +1683,7 @@ class Instrument(object):
                 # Cooper-Nathans (popovici Eq 5 and 9)
     #             R0_ = R0_ * np.sqrt(np.linalg.det(np.matrix(F)) / np.linalg.det(np.matrix(H)))
                 R0_ = Rm * Ra * (2. * np.pi) ** 4 / (64. * np.pi ** 2 * np.sin(thetam) * np.sin(thetaa)) * np.sqrt(np.linalg.det(np.matrix(F)) / np.linalg.det(np.matrix(G) + np.matrix(C).H * np.matrix(F) * np.matrix(C)))
-                
+
             # Normalization to flux on monitor
             if moncor == 1:
                 g = G[0:4, 0:4]
@@ -1703,24 +1709,24 @@ class Instrument(object):
                 d[3, 4] = -1. / L1mon
                 if method == 1 or method == 'popovici':
                     # Popovici
-                    Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * 
-                            np.sqrt(np.linalg.det(f) / np.linalg.det((np.matrix(d) * 
-                                                                      (np.matrix(s) + np.matrix(t).H * np.matrix(f) * np.matrix(t)).I * 
+                    Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) *
+                            np.sqrt(np.linalg.det(f) / np.linalg.det((np.matrix(d) *
+                                                                      (np.matrix(s) + np.matrix(t).H * np.matrix(f) * np.matrix(t)).I *
                                                                       np.matrix(d).H).I + np.matrix(g))))
                 else:
                     # Cooper-Nathans
-                    Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * 
+                    Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) *
                             np.sqrt(np.linalg.det(f) / np.linalg.det(np.matrix(g) + np.matrix(c).H * np.matrix(f) * np.matrix(c))))
-    
+
                 R0_ = R0_ / Rmon
                 R0_ = R0_ * ki  # 1/ki monitor efficiency
-    
+
             # Transform prefactor to Chesser-Axe normalization
             R0_ = R0_ / (2. * np.pi) ** 2 * np.sqrt(np.linalg.det(RM_))
-    
+
             # Include kf/ki part of cross section
             R0_ = R0_ * kf / ki
-    
+
             # Take care of sample mosaic if needed
             # [S. A. Werner & R. Pynn, J. Appl. Phys. 42, 4736, (1971), eq 19]
             if hasattr(sample, 'mosaic'):
@@ -1728,13 +1734,13 @@ class Instrument(object):
                 etasv = np.copy(etas)
                 if hasattr(sample, 'vmosaic'):
                     etasv = sample.vmosaic * CONVERT1
-    
+
                 R0_ = R0_ / np.sqrt((1 + (q * etas) ** 2 * RM_[3, 3]) * (1 + (q * etasv) ** 2 * RM_[1, 1]))
                 Minv = np.linalg.inv(RM_)
                 Minv[1, 1] = Minv[1, 1] + q ** 2 * etas ** 2
                 Minv[3, 3] = Minv[3, 3] + q ** 2 * etasv ** 2
                 RM_ = np.linalg.inv(Minv)
-    
+
             # Take care of analyzer reflectivity if needed [I. Zaliznyak, BNL]
             if hasattr(ana, 'thickness') and hasattr(ana, 'Q'):
                 KQ = ana.Q
@@ -1750,12 +1756,12 @@ class Instrument(object):
                 rdth = 1. / (1 + 1. / sdth)
                 reflec = sum(rdth) / sum(wdth)
                 R0_ = R0_ * reflec
-    
+
             R0[ind] = R0_
             RM[:, :, ind] = np.copy(RM_[:, :])
-    
+
         return [R0, RM]
-    
+
     def calc_resolution(self, hkle):
         r'''For a scattering vector (H,K,L) and  energy transfers W, given
         experimental conditions specified in EXP, calculates the Cooper-Nathans
@@ -1782,7 +1788,7 @@ class Instrument(object):
         self.H, self.K, self.L, self.W = H, K, L, W
 
         [x, y, z, sample, rsample] = self._StandardSystem()
-        
+
         Q = _modvec([H, K, L], rsample)
         uq0 = H / Q  # Unit vector along Q
         uq1 = K / Q
@@ -1805,7 +1811,7 @@ class Instrument(object):
         rot = np.zeros((3, 3), dtype=np.float64)
 
         # Sample shape matrix in coordinate system defined by scattering vector
-        
+
         sample = self.sample
         if hasattr(sample, 'shape'):
             samples = []
@@ -1835,7 +1841,7 @@ class Instrument(object):
                     R0[i] = R0[i] / np.sqrt(np.linalg.det(np.matrix(e) / np.matrix(RMS[:, :, i]))) * np.sqrt(np.linalg.det(np.matrix(e) / np.matrix(mul) + np.matrix(e) / np.matrix(RMS[:, :, i])))
                     RMS[:, :, i] = np.matrix(e) / (np.matrix(e) / np.matrix(mul) + np.matrix(e) / np.matrix(RMS[:, :, i]))
 
-        self.R0, self.RMS, self.RM = R0, RMS, RM
+        self.R0, self.RMS, self.RM = [np.squeeze(item) for item in (R0, RMS, RM)]
 
     def calc_projections(self, hkle, npts=36):
         r'''Calculates the resolution ellipses for projections and slices from the resolution matrix.
@@ -1869,7 +1875,7 @@ class Instrument(object):
             R0 = self.R0
 
         const = 1.17741  # half width factor
-        
+
         [length, H, K, L, W] = _CleanArgs(H, K, L, W)
         hkle = [H, K, L, W]
 
@@ -1879,23 +1885,23 @@ class Instrument(object):
                             'QxWSlice': np.zeros((2, npts, NP.shape[-1])),
                             'QyW': np.zeros((2, npts, NP.shape[-1])),
                             'QyWSlice': np.zeros((2, npts, NP.shape[-1]))}
-        
+
         [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
-        
+
         o1 = self.orient1
         o2 = self.orient2
         pr = _scalar([o2[0], o2[1], o2[2]], [yvec[0], yvec[1], yvec[2]], rsample)
         o2[0] = yvec[0] * pr
         o2[1] = yvec[1] * pr
         o2[2] = yvec[2] * pr
-        
+
         if np.abs(o2[0]) < 1e-5:
             o2[0] = 0
         if np.abs(o2[1]) < 1e-5:
             o2[1] = 0
         if np.abs(o2[2]) < 1e-5:
             o2[2] = 0
-        
+
         if np.abs(o1[0]) < 1e-5:
             o1[0] = 0
         if np.abs(o1[1]) < 1e-5:
@@ -1903,7 +1909,7 @@ class Instrument(object):
         if np.abs(o1[2]) < 1e-5:
             o1[2] = 0
         frame = '[Q1,Q2,E]'
-        
+
         A = NP
 
         for ind in range(A.shape[-1]):
@@ -2008,7 +2014,12 @@ class Instrument(object):
             Parameters for the resolution gaussian
 
         '''
-        A = self.RMS
+
+        try:
+            A = self.RMS
+        except:
+            self.calc_resolution(hkle)
+            A = self.RMS
 
         ind = np.where((self.H == hkle[0]) & (self.K == hkle[1]) & (self.L == hkle[2]) & (self.W == hkle[3]))
         if len(ind[0]) == 0:
@@ -2025,7 +2036,7 @@ class Instrument(object):
             if mode == 'project':
                 # Projection into Qx, Qy plane
                 R0 = np.sqrt(2 * np.pi / B[2, 2]) * self.R0[ind]
-                MP = project_into_plane(B, 2)
+                MP = project_into_plane(2, self.R0[ind], B)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qx,Qy plane
@@ -2036,7 +2047,7 @@ class Instrument(object):
             if mode == 'project':
                 # Projection into Qx, W plane
                 R0 = np.sqrt(2 * np.pi / B[1, 1]) * self.R0[ind]
-                MP = project_into_plane(B, 1)
+                MP = project_into_plane(1, self.R0[ind], B)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qx,W plane
@@ -2047,7 +2058,7 @@ class Instrument(object):
             if mode == 'project':
                 # Projections into Qy, W plane
                 R0 = np.sqrt(2 * np.pi / B[0, 0]) * self.R0
-                MP = project_into_plane(B, 0)
+                MP = project_into_plane(0, self.R0[ind], B)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qy,W plane
@@ -2105,14 +2116,14 @@ class Instrument(object):
         Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
         Oak Ridge National Laboratory
 
-        '''        
+        '''
         self.calc_resolution(hkle)
         [R0, RMS] = [np.copy(self.R0), np.copy(self.RMS)]
-        
+
         H, K, L, W = hkle
         [length, H, K, L, W] = _CleanArgs(H, K, L, W)
         [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
-    
+
         Mzz = RMS[3, 3, :]
         Mww = RMS[2, 2, :]
         Mxx = RMS[0, 0, :]
@@ -2120,14 +2131,14 @@ class Instrument(object):
         Mxw = RMS[0, 2, :]
         Myy = RMS[1, 1, :]
         Myw = RMS[1, 2, :]
-        
+
         Mxx = Mxx - Mxw ** 2. / Mww
         Mxy = Mxy - Mxw * Myw / Mww
         Myy = Myy - Myw ** 2. / Mww
         MMxx = Mxx - Mxy ** 2. / Myy
-    
+
         detM = MMxx * Myy * Mzz * Mww
-    
+
         tqz = 1. / np.sqrt(Mzz)
         tqx = 1. / np.sqrt(MMxx)
         tqyy = 1. / np.sqrt(Myy)
@@ -2135,10 +2146,10 @@ class Instrument(object):
         tqww = 1. / np.sqrt(Mww)
         tqwy = -Myw / Mww / np.sqrt(Myy)
         tqwx = -(Mxw / Mww - Myw / Mww * Mxy / Myy) / np.sqrt(MMxx)
-    
+
         inte = sqw(H, K, L, W, p)
         [modes, points] = inte.shape
-    
+
         if pref is None:
             prefactor = np.ones((modes, points))
             bgr = 0
@@ -2148,9 +2159,9 @@ class Instrument(object):
             elif nargout == 1:
                 prefactor = pref(H, K, L, self, p)
                 bgr = 0
-            else: 
-                raise ValueError('Invalid number or output arguments in prefactor function, pref')           
-    
+            else:
+                raise ValueError('Invalid number or output arguments in prefactor function, pref')
+
         found = 0
         if METHOD == 'fix':
             found = 1
@@ -2166,11 +2177,11 @@ class Instrument(object):
             [cw, cx, cy] = np.meshgrid(dd1, dd1, dd1, indexing='ij')
             tx = np.tan(cx)
             ty = np.tan(cy)
-            tw = np.tan(cw) 
+            tw = np.tan(cw)
             tz = np.tan(dd2)
             norm = np.exp(-0.5 * (tx ** 2 + ty ** 2)) * (1 + tx ** 2) * (1 + ty ** 2) * np.exp(-0.5 * (tw ** 2)) * (1 + tw ** 2)
             normz = np.exp(-0.5 * (tz ** 2)) * (1 + tz ** 2)
-            
+
             for iz in range(len(tz)):
                 for i in range(length):
                     dQ1 = tqx[i] * tx
@@ -2185,20 +2196,20 @@ class Instrument(object):
                     for j in range(modes):
                         add = inte[j, :] * norm * normz[iz]
                         convs[j, i] = convs[j, i] + np.sum(add)
-                        
+
                     conv[i] = np.sum(convs[:, i] * prefactor[:, i])
-        
+
             conv = conv * step1 ** 3 * step2 / np.sqrt(detM)
             if M[1] == 0:
                 conv = conv * 0.79788
             if M[0] == 0:
                 conv = conv * 0.79788 ** 3
-        
+
         if METHOD == 'mc':
             found = 1
             if ACCURACY is None:
                 ACCURACY = 10
-        
+
             M = ACCURACY
             convs = np.zeros((modes, length))
             conv = np.zeros(length)
@@ -2226,19 +2237,19 @@ class Instrument(object):
                     for j in range(modes):
                         add = inte[j, :] * norm
                         convs[j, i] = convs[j, i] + np.sum(add)
-            
+
                     conv[i] = np.sum(convs[:, i] * prefactor[:, i])
-        
-            conv = conv / M / 1000 * np.pi ** 4. / np.sqrt(detM) 
-        
+
+            conv = conv / M / 1000 * np.pi ** 4. / np.sqrt(detM)
+
         if found == 0:
             raise ValueError('Unknown convolution METHOD. Valid options are: "fix",  "mc".')
-               
+
         conv = conv * R0
         conv = conv + bgr
 
         return conv
-    
+
     def resolution_convolution_SMA(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None):
         r'''Numerically calculate the convolution of a user-defined single-mode
         cross-section function with the resolution function for a 3-axis
@@ -2290,23 +2301,23 @@ class Instrument(object):
         Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
         Oak Ridge National Laboratory
         
-        '''        
+        '''
         self.calc_resolution(hkle)
         [R0, RMS] = [np.copy(self.R0), np.copy(self.RMS)]
-        
+
         H, K, L, W = hkle
         [length, H, K, L, W] = _CleanArgs(H, K, L, W);
-        
-        [xvec, yvec, zvec, sample, rsample] = self._StandardSystem();        
-        
+
+        [xvec, yvec, zvec, sample, rsample] = self._StandardSystem();
+
         Mww = RMS[2, 2, :]
         Mxw = RMS[0, 2, :]
         Myw = RMS[1, 2, :]
-        
+
         GammaFactor = np.sqrt(Mww / 2)
         OmegaFactorx = Mxw / np.sqrt(2 * Mww)
         OmegaFactory = Myw / np.sqrt(2 * Mww)
-        
+
         Mzz = RMS[3, 3, :]
         Mxx = RMS[0, 0, :]
         Mxx = Mxx - Mxw ** 2 / Mww
@@ -2314,10 +2325,10 @@ class Instrument(object):
         Myy = Myy - Myw ** 2 / Mww
         Mxy = RMS[0, 1, :]
         Mxy = Mxy - Mxw * Myw / Mww
-        
+
         detxy = np.sqrt(Mxx * Myy - Mxy ** 2)
         detz = np.sqrt(Mzz)
-        
+
         tqz = 1. / detz
         tqy = np.sqrt(Mxx) / detxy
         tqxx = 1. / np.sqrt(Mxx)
@@ -2325,7 +2336,7 @@ class Instrument(object):
 
         [disp, inte, WL0] = sqw(H, K, L, p)
         [modes, points] = disp.shape
-        
+
         if pref is None:
             prefactor = np.ones(modes, points)
             bgr = 0
@@ -2336,10 +2347,10 @@ class Instrument(object):
                 prefactor = pref(H, K, L, self, p)
                 bgr = 0
             else:
-                ValueError('Fata error: invalid number or output arguments in prefactor function')         
-        
+                ValueError('Fata error: invalid number or output arguments in prefactor function')
+
         found = 0
-        if METHOD == 'mc': 
+        if METHOD == 'mc':
             found = 1
             if ACCURACY is None:
                 ACCURACY = 10
@@ -2410,18 +2421,18 @@ class Instrument(object):
                     conv[i] = np.sum(convs[:, i] * prefactor[:, i])
 
             conv = conv * step1 ** 2 * step2
-            
+
             if M[1] == 0:
                 conv = conv * 0.79788
             if M[0] == 0:
                 conv = conv * 0.79788 ** 2
 
-        if found==0:
+        if found == 0:
             ValueError('??? Error in ConvRes: Unknown convolution method! Valid options are: "fix" or "mc".')
-        
-        conv=conv*R0
-        conv=conv+bgr
-        
+
+        conv = conv * R0
+        conv = conv + bgr
+
         return conv
 
     def plot_projections(self, hkle, npts=36):
@@ -2441,36 +2452,36 @@ class Instrument(object):
         except AttributeError:
             self.calc_projections(hkle, npts)
             projections = self.projections
-        
+
         import matplotlib.pyplot as plt
         plt.rc('font', **{'family': 'serif', 'serif': 'Times New Roman', 'size': 12})
         plt.rc('lines', markersize=3, linewidth=0.5)
 
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, facecolor='w', edgecolor='k')
         fig.subplots_adjust(bottom=0.175, left=0.15, right=0.85, top=0.95, wspace=0.35, hspace=0.25)
-        
+
         for i in range(self.RMS.shape[-1]):
             ax1.plot(projections['QxQy'][0, :, i], projections['QxQy'][1, :, i])
             ax1.plot(projections['QxQySlice'][0, :, i], projections['QxQySlice'][1, :, i])
 
             ax2.plot(projections['QyW'][0, :, i], projections['QxW'][1, :, i])
             ax2.plot(projections['QyWSlice'][0, :, i], projections['QxWSlice'][1, :, i])
-             
+
             ax3.plot(projections['QxW'][0, :, i], projections['QyW'][1, :, i])
             ax3.plot(projections['QxWSlice'][0, :, i], projections['QyWSlice'][1, :, i])
-        
+
         ax1.set_xlabel('$\mathbf{Q}_x$ (r.l.u.)')
         ax1.set_ylabel('$\mathbf{Q}_y$ (r.l.u.)')
         ax1.locator_params(nbins=4)
-        
+
         ax2.set_xlabel('$\mathbf{Q}_y$ (r.l.u.)')
         ax2.set_ylabel('$E$ (meV)')
         ax2.locator_params(nbins=4)
-        
+
         ax3.set_xlabel('$\mathbf{Q}_x$ (r.l.u.)')
         ax3.set_ylabel('$E$ (meV)')
         ax3.locator_params(nbins=4)
-        
+
         ax4.axis('off')
-        
+
         plt.show()
