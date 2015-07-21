@@ -125,13 +125,16 @@ class Data(object):
         except AttributeError:
             raise AttributeError('Data types cannot be combined')
 
-#     def __sub__(self, right):
-#         try:
-#             output = {'Q': right.Q, 'detector': np.negative(right.detector),
-#                       'monitor': right.monitor, 'time': right.time}
-#             return self.combine_data(output, ret=True)
-#         except AttributeError:
-#             raise AttributeError('Data types cannot be combined')
+    def __sub__(self, right):
+        try:
+            monitor = self.monitor
+            detector = self.monitor
+
+            output = {'Q': right.Q, 'detector': np.negative(right.detector),
+                      'monitor': right.monitor, 'time': right.time}
+            return self.combine_data(output, ret=True)
+        except AttributeError:
+            raise AttributeError('Data types cannot be combined')
 
     def __mul__(self, right):
         self.detector *= right
@@ -289,7 +292,7 @@ class Data(object):
         '''
         if isinstance(value, numbers.Number):
             value = np.array([value] * self.detector.shape[0])
-        
+
         if value.shape != self.detector.shape:
             raise ValueError('''Input value must have the shape ({0},) or be \
                                 a float.'''.format(self.detector.shape[0]))
@@ -311,7 +314,7 @@ class Data(object):
 
         '''
 
-        return 1. - np.exp(-np.abs(self.Q[:, 3]) / BOLTZMANN_IN_MEV_K / self.temp)
+        return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
 
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
@@ -342,7 +345,7 @@ class Data(object):
                 tols = np.array(kwargs['tols'])
         except KeyError:
             pass
-        
+
         for arg in args:
             combine = []
             for i in range(arg['Q'].shape[0]):
@@ -375,6 +378,26 @@ class Data(object):
             self.detector = detector[order]
             self.monitor = monitor[order]
             self.time = time[order]
+
+    def subtract_background(self, background_data, ret=True):
+        r'''Subtract background data.
+        
+        Parameters
+        ----------
+        background_data : Data object
+            Data object containing the data wishing to be subtracted
+        
+        ret : bool, optional
+            Set False if background should be subtracted in place. Default: True.
+            
+        Returns
+        -------
+        data : Data object 
+            Data object contained subtracted data
+        
+        '''
+        pass
+
 
     def estimate_background(self, bg_params):
         r'''Estimate the background according to ``type`` specified.
@@ -769,10 +792,10 @@ class Data(object):
 #                            np.ma.masked_where(z <= 0, z))
                 X, Y = np.meshgrid(np.linspace(x.min(), x.max(), np.around(np.abs(np.unique(x) - np.roll(np.unique(x), 1))[1], decimals=4)),
                                    np.linspace(y.min(), y.max(), np.around(np.abs(np.unique(y) - np.roll(np.unique(y), 1))[1], decimals=4)))
-                
+
                 from scipy.interpolate import griddata
                 Z = griddata((x, y), z, (X, Y))
-                
+
                 plt.pcolormesh(X, Y, Z, **plot_options)
             except KeyError:
                 raise
@@ -899,6 +922,7 @@ def load(files, filetype='auto', tols=1e-4):
                     if 'Columns' in line:
                         args = line.split()
                         headers = [head for head in args[1:]]
+                        break
 
             args = np.genfromtxt(filename, usecols=(0, 1, 2, 3, 4, 5, 6, 7, 8),
                                  unpack=True, comments="#", dtype=np.float64)
@@ -918,11 +942,28 @@ def load(files, filetype='auto', tols=1e-4):
                     if 'Q(x)' in line:
                         args = line.split()
                         headers = [head for head in args]
+                        break
 
             args = np.genfromtxt(filename, unpack=True, dtype=np.float64, skip_header=12)
 
             raw_data['monitor'] = np.empty(args[0].shape)
             raw_data['monitor'].fill(_m0 * _prf)
+
+        elif filetype == 'MAD':
+            data_keys = {'detector': 'CNTS', 'time': 'TIME', 'monitor': 'M1'}
+            Q_keys = {'h': 'QH', 'k': 'QK', 'l': 'QL', 'e': 'EN', 'temp': 'TT'}
+            raw_data = {}
+            _t0 = 60
+
+            with open(filename) as f:
+                for i, line in enumerate(f):
+                    if 'DATA_:' in line:
+                        args = next(f).split()
+                        headers = [head for head in args]
+                        skip_lines = i + 2
+                        break
+            
+            args = np.genfromtxt(filename, unpack=True, dtype=np.float64, skip_header=skip_lines, skip_footer=1)
 
         else:
             raise ValueError('Filetype not supported.')
@@ -971,7 +1012,7 @@ def save(obj, filename, format='ascii', **kwargs):
         human-readable format, `'binary'` format, or `'nexus'` format.
     '''
     output = np.hstack((obj.Q, obj.detector, obj.monitor, obj.time))
-    
+
     if format == 'ascii':
         np.savetxt(filename, output, **kwargs)
     elif format == 'binary':
@@ -1031,6 +1072,8 @@ def detect_filetype(file):
                 return 'SPICE'
             elif 'Filename' in second_line:
                 return 'ICP'
+            elif 'RRR' in first_line or 'AAA' in first_line or 'VVV' in first_line:
+                return 'MAD'
             else:
                 raise ValueError('Unknown filetype.')
 
@@ -1062,7 +1105,7 @@ class Energy():
     '''
     def __init__(self, energy=None, wavelength=None, velocity=None,
                  wavevector=None, temperature=None, frequency=None):
-        
+
         self._update_values(energy, wavelength, velocity,
                  wavevector, temperature, frequency)
 
@@ -1093,15 +1136,15 @@ class Energy():
             raise AttributeError('''You must define at least one of the \
                                     following: energy, wavelength, velocity, \
                                     wavevector, temperature, frequency''')
-    
+
     @property
     def energy(self):
         return self.en
-    
+
     @energy.setter
     def energy(self, value):
         self._update_values(energy=value)
-    
+
     @property
     def wavelength(self):
         return self.wavelen
@@ -1109,15 +1152,15 @@ class Energy():
     @wavelength.setter
     def wavelength(self, value):
         self._update_values(wavelength=value)
-    
+
     @property
     def wavevector(self):
         return self.wavevec
-    
+
     @wavevector.setter
     def wavevector(self, value):
         self._update_values(wavevector=value)
-    
+
     @property
     def temperature(self):
         return self.temp
@@ -1125,7 +1168,7 @@ class Energy():
     @temperature.setter
     def temperature(self, value):
         self._update_values(temperature=value)
-    
+
     @property
     def frequency(self):
         return self.freq
@@ -1133,11 +1176,11 @@ class Energy():
     @frequency.setter
     def frequency(self, value):
         self._update_values(frequency=value)
-    
+
     @property
     def velocity(self):
         return self.vel
-    
+
     @velocity.setter
     def velocity(self, value):
         self._update_values(velocity=value)
