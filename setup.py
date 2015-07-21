@@ -79,7 +79,7 @@ def setup_package():
                     url='https://github.com/neutronpy/neutronpy',
                     license='MIT',
                     platforms=["Windows", "Linux", "Mac OS X", "Unix"],
-                    install_requires=['numpy>=1.8.0', 'scipy>=0.13.0', 'matplotlib>=1.3.0', 'cython>=0.20.0'],
+                    install_requires=['numpy', 'scipy', 'matplotlib', 'cython'],
                     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
                     test_suite='nose.collector',
                     cmdclass=cmdclass,
