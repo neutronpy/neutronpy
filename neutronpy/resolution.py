@@ -2065,7 +2065,7 @@ class Instrument(object):
                 MP = np.array([[A[1, 1, ind], A[1, 3, ind]], [A[3, 1, ind], A[3, 3, ind]]])
                 return (self.R0[ind][0], MP[0, 0], MP[1, 1], MP[0, 1])
 
-    def resolution_convolution(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None):
+    def resolution_convolution(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None, seed=None):
         r'''Numerically calculate the convolution of a user-defined cross-section 
         function with the resolution function for a 3-axis neutron scattering 
         experiment.
@@ -2215,6 +2215,8 @@ class Instrument(object):
             conv = np.zeros(length)
             for i in range(length):
                 for MonteCarlo in range(M):
+                    if seed is not None:
+                        np.random.seed(seed)
                     r = np.random.randn(4, 1000) * np.pi - np.pi / 2
                     cx = r[0, :]
                     cy = r[1, :]
@@ -2250,7 +2252,7 @@ class Instrument(object):
 
         return conv
 
-    def resolution_convolution_SMA(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None):
+    def resolution_convolution_SMA(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None, seed=None):
         r'''Numerically calculate the convolution of a user-defined single-mode
         cross-section function with the resolution function for a 3-axis
         neutron scattering experiment.
@@ -2359,6 +2361,8 @@ class Instrument(object):
             conv = np.zeros(length)
             for i in range(length):
                 for MonteCarlo in range(M[0]):
+                    if seed is not None:
+                        np.random.seed(seed)
                     r = np.random.randn(3, 1000) * np.pi - np.pi / 2
                     cx = r[0, :]
                     cy = r[1, :]
