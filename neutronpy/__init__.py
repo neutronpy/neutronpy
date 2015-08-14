@@ -11,6 +11,8 @@ from . import resolution
 from . import form_facs
 from . import functions
 from . import models
+from . import spurion
+from . import lattice
 from .core import *  # pylint: disable=wildcard-import
 
 try:
