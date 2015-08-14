@@ -538,6 +538,7 @@ class Data(object):
         Q_chunks = [Q[n * Q.shape[0] // nprocs:(n + 1) * Q.shape[0] // nprocs] for n in range(nprocs)]
         pool = Pool(processes=nprocs)  # pylint: disable=not-callable
         outputs = pool.map(_call_bin_parallel, zip([self] * len(Q_chunks), Q_chunks))
+        pool.close()
 
         monitor, detector, time, error = (np.concatenate(arg) for arg in zip(*outputs))
 
