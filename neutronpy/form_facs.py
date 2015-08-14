@@ -1,6 +1,8 @@
 import neutronpy.constants as const
 import numpy as np
 from numbers import Number
+from .lattice import Lattice
+from .core import Energy
 
 
 class _Atom(object):
@@ -26,15 +28,16 @@ class _Atom(object):
         Atom object defining an individual atom in a unit cell of a single crystal
 
     '''
-    def __init__(self, ion, pos, dpos=None, occupancy=1., Mcell=None, massNorm=False):
+    def __init__(self, ion, pos, occupancy=1., Mcell=None, massNorm=False, Uiso=0, Uaniso=None):
         self.ion = ion
-        self.pos = pos
-        if dpos is None:
-            self.dpos = [0., 0., 0.]
-        else:
-            self.dpos = dpos
+        self.pos = np.array(pos)
         self.occupancy = occupancy
         self.Mcell = Mcell
+        self.Uiso = Uiso
+        if Uaniso is None:
+            self.Uaniso = np.matrix(np.zeros((3, 3)))
+        else:
+            self.Uaniso = np.matrix(Uaniso)
 
         if massNorm is True:
             self.mass = const.periodic_table()[ion]['mass']
@@ -43,10 +46,14 @@ class _Atom(object):
                       * self.Mcell
                       / np.sqrt(self.mass))
         else:
-            self.b = const.scattering_lengths()[ion]['Coh b'] * self.occupancy
+            self.b = const.scattering_lengths()[ion]['Coh b'] / 10.
+
+        self.coh_xs = const.scattering_lengths()[ion]['Coh xs']
+        self.inc_xs = const.scattering_lengths()[ion]['Inc xs']
+        self.abs_xs = const.scattering_lengths()[ion]['Abs xs']
 
 
-class Material(object):
+class Material(Lattice):
     r'''Class for the Material being supplied for the structure factor calculation
 
     Parameters
@@ -63,12 +70,13 @@ class Material(object):
             {'name': str,
              'composition': [{'ion': str,
                               'pos': [float, float, float],
-                              'dpos': [float, float, float],
+                              'Uiso': float,
+                              'Uaniso': matrix(3,3)
                               'occupancy': float}],
-             'debye-waller': bool,
              'massNorm': bool,
              'formulaUnits': float,
-             'lattice': [float, float, float]}
+             'lattice': {'abc': [float, float, float],
+                         'abg': [float, float, float]}
              
     The following are valid options for the data dictionary:
     
@@ -90,27 +98,40 @@ class Material(object):
             'occupancy' : float
                 Occupancy of the site, e.g. if atoms only partially occupy this site
         
-    'debye-waller' : bool
-        Include Debye-Waller in calculation
-        
+    'Uiso' : bool
+        Include Debye-Waller in calculation with isotropic U
+    
+    'Uaniso' : bool
+        Include Debye-Waller in calculation with anisotropic U
+    
     'massNorm' : bool
         Normalize calculations to mass of atoms
             
     'formulaUnits': float
         Number of formula units to use in the calculation
         
-    'lattice' : list of 3 floats
-        lattice parameters of unit cell
+    'lattice' : dict
+        'abc': lattice constants of unit cell
+        'abg': lattice angles of unit cell
 
     Returns
     -------
     output : object
         Material Object defining a single crystal.
         
+    Attributes
+    ----------
+    volume
+    
     Methods
     -------
     calc_str_fac
+    calc_optimal_thickness
     plot_unit_cell
+    get_angle_between_planes
+    get_d_spacing
+    get_q
+    get_two_theta
     N_atoms
     
 
@@ -121,33 +142,37 @@ class Material(object):
             crystal['formulaUnits'] = 1.
 
         self.muCell = 0.
-        for value in crystal['composition']:
-            if 'occupancy' not in value:
-                value['occupancy'] = 1.
-            self.muCell += const.periodic_table()[value['ion']]['mass'] * value['occupancy']
+        for item in crystal['composition']:
+            if 'occupancy' not in item:
+                item['occupancy'] = 1.
+            self.muCell += const.periodic_table()[item['ion']]['mass'] * item['occupancy']
 
-        self.Mcell = crystal['formulaUnits'] * self.muCell
+        self.Mcell = self.muCell * crystal['formulaUnits']
 
         if 'lattice' in crystal:
-            self.abc = crystal['lattice']
-            self.abcs = np.array([2. * np.pi / a for a in self.abc])
+            self.abc = crystal['lattice']['abc']
+            self.abg = crystal['lattice']['abg']
+
+        if 'wavelength' in crystal:
+            self.wavelength = crystal['wavelength']
+        else:
+            self.wavelength = 2.359
 
         self.atoms = []
-        for value in crystal['composition']:
-            if 'dpos' not in value:
-                value['dpos'] = np.zeros(3)
-            if crystal['debye-waller'] and np.all(value['dpos'] == np.zeros(3)) and self.abc:
-                # If debye-waller should be included, but no dpos is provided, use value
-                # for bulk copper (1/17.38) / abc (in \AA^-1)
-                value['dpos'] = np.array([1 / 17.38] * 3) / self.abc
-            if 'occupancy' not in value:
-                value['occupancy'] = 1.
-            self.atoms.append(_Atom(value['ion'],
-                                    value['pos'],
-                                    value['dpos'],
-                                    value['occupancy'],
+        for item in crystal['composition']:
+            if 'Uiso' not in item:
+                item['Uiso'] = 0
+            if 'Uaniso' not in item:
+                item['Uaniso'] = np.matrix(np.zeros((3, 3)))
+            if 'occupancy' not in item:
+                item['occupancy'] = 1.
+            self.atoms.append(_Atom(item['ion'],
+                                    item['pos'],
+                                    item['occupancy'],
                                     self.Mcell,
-                                    crystal['massNorm']))
+                                    crystal['massNorm'],
+                                    item['Uiso'],
+                                    item['Uaniso']))
 
     def calc_str_fac(self, hkl):
         r'''Calculates the structural form factor of the material.
@@ -166,7 +191,7 @@ class Material(object):
         '''
 
         h, k, l = hkl
- 
+
         # Ensures input arrays are complex ndarrays
         if isinstance(h, (np.ndarray, list, tuple)):
             h = np.array(h).astype(complex)
@@ -184,8 +209,9 @@ class Material(object):
 
         # construct structure factor
         for atom in self.atoms:
-            FQ += atom.b * np.exp(1j * 2. * np.pi * (h * atom.pos[0] + k * atom.pos[1] + l * atom.pos[2])) * \
-                  np.exp(-(2. * np.pi * (h * atom.dpos[0] + k * atom.dpos[1] + l * atom.dpos[2])) ** 2)
+            FQ += atom.occupancy * atom.b * np.exp(1j * 2. * np.pi * (h * atom.pos[0] + k * atom.pos[1] + l * atom.pos[2])) * \
+                np.exp(-8 * np.pi ** 2 * atom.Uiso * np.sin(np.deg2rad(self.get_two_theta(atom.pos, self.wavelength) / 2.)) ** 2 / self.wavelength ** 2) * \
+                np.exp(-np.float(np.dot(np.dot(atom.pos, atom.Uaniso), atom.pos)))
 
         return FQ
 
@@ -193,14 +219,14 @@ class Material(object):
         r'''Plots the unit cell and atoms of the material.
         
         '''
-        
+
         import matplotlib.pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
         from itertools import product, combinations
-        
+
         fig = plt.figure()
         ax = fig.gca(projection='3d')
-        
+
         # draw unit cell
         for s, e in combinations(np.array(list(product([0, self.abc[0]], [0, self.abc[1]], [0, self.abc[2]]))), 2):
             if np.sum(np.abs(s - e)) in self.abc:
@@ -215,11 +241,11 @@ class Material(object):
             m.append(item.mass)
 
         ax.scatter(x, y, z, s=m)
-        
+
         plt.axis('scaled')
         plt.axis('off')
-        
-        plt.show()  
+
+        plt.show()
 
     def N_atoms(self, mass):
         r'''Number of atoms in the defined Material, given the mass of the sample.
@@ -235,9 +261,63 @@ class Material(object):
             The number of atoms of the material based on the mass of the sample.
         
         '''
-        
         return const.N_A * mass / self.muCell
+
+    def calc_optimal_thickness(self, energy=25.3, transmission=1 / np.exp(1)):
+        r'''Calculates the optimal sample thickess to avoid problems with
+        extinction, multiple coherent scattering and absorption.
         
+        Parameters
+        ----------
+        energy : float, optional
+            The energy of the incident beam in meV. Default: 25.3 meV.
+        
+        transmission: float, optional
+            The transmission through the material in decimal percentage,
+            :math:`0 < T < 1.0`. Default: :math:`1/e`.
+        
+        Returns
+        -------
+        thickness : float
+            Returns the optimal thickness of the sample in cm
+
+        Notes
+        -----
+        The total transmission of neutrons through a material is defined as
+        
+        .. math:: T = \frac{I}{I_0} = e^{-\Sigma_T d},
+        
+        where :math:`\Sigma_T` is the total scattering cross-section, *i.e.*
+        
+        .. math:: \Sigma_T = \Sigma_{coh} + \Sigma_{inc} + \Sigma_{abs},
+        
+        and :math:`d` is the thickness in cm.
+        
+        Scattered intensity is thus defined to be
+        
+        .. math:: I_s \propto dT\left(\frac{d\Sigma_{coh}}{d\Omega}\right) \propto d e^{-\Sigma_T d}.
+        
+        :math:`I_s` is therefore a maximum when :math:`d=1/\Sigma_T`, resulting
+        a transmission of approximately :math:`T=37\%`. This is valid when the
+        coherent cross-section is much less than the total cross-section, *i.e.*
+        
+        .. math:: \Sigma_{coh} \ll \Sigma_T \approx \Sigma_{inc} + \Sigma{abs}.
+        
+        However, if the coherent cross-section of the material is the dominant
+        part of the total scattering cross-section, *i.e.*
+        :math:`\Sigma_T \approx \Sigma_{coh}`, then :math:`d = 1/\Sigma_T` is
+        too large and there will be a problem with multiple scattering.
+        Therefore a transmission of :math:`T\geq90\%` is desirable.
+
+        '''
+
+        sigma_coh = np.sum([atom.occupancy * atom.coh_xs for atom in self.atoms])
+        sigma_inc = np.sum([atom.occupancy * atom.inc_xs for atom in self.atoms])
+        sigma_abs = np.sum([atom.occupancy * atom.abs_xs for atom in self.atoms])
+
+        sigma_T = (sigma_coh + sigma_inc + sigma_abs * np.sqrt(25.3 / energy)) / self.volume
+
+        return -np.log(transmission) / sigma_T
 
 class Ion(object):
     r'''Class defining a magnetic ion.

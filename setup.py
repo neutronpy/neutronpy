@@ -65,6 +65,10 @@ def setup_package():
     except ImportError:
         kmpfit_loc = "src/kmpfit.c"
 
+    modules = [Extension("kmpfit", [kmpfit_loc, "src/mpfit.c"], include_dirs=include_dirs)]
+    for e in modules:
+        e.cython_directives = {"embedsignature" : True}
+        
     metadata = dict(name='neutronpy',
                     version=__version__,
                     description=DOCLINES[0],
@@ -75,12 +79,12 @@ def setup_package():
                     url='https://github.com/neutronpy/neutronpy',
                     license='MIT',
                     platforms=["Windows", "Linux", "Mac OS X", "Unix"],
-                    install_requires=['numpy>=1.8.0', 'scipy>=0.13.0', 'matplotlib>=1.3.0', 'cython>=0.20.0'],
+                    install_requires=['numpy', 'scipy', 'matplotlib', 'cython'],
                     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
                     test_suite='nose.collector',
                     cmdclass=cmdclass,
                     ext_package='neutronpy',
-                    ext_modules=[Extension("kmpfit", [kmpfit_loc, "src/mpfit.c"], include_dirs=include_dirs)],
+                    ext_modules=modules,
                     package_data={'neutronpy': ['database/*.json']},
                     packages=['neutronpy'],)
 

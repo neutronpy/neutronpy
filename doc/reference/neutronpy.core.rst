@@ -6,9 +6,9 @@ neutronpy.core module
 .. autosummary::
     :toctree: generated/
 
+    Fitter
     Data
     Energy
-    Fitter
     build_Q
     load
     save
