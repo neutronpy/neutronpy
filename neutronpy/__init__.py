@@ -3,7 +3,7 @@ r'''NeutronPy: open source python library for neutron scattering data analysis
 '''
 from __future__ import absolute_import
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 from . import constants
 from . import core as tools
