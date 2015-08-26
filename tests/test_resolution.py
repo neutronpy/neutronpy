@@ -1,6 +1,7 @@
 from neutronpy import resolution
 import numpy as np
 import unittest
+from copy import deepcopy
 
 
 def angle2(x, y, z, h, k, l, lattice):
@@ -84,66 +85,132 @@ class ResolutionTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(ResolutionTest, self).__init__(*args, **kwargs)
 
-        self.sumI11 = 2551.51194680064
-        self.sumI12 = 2466.94158939588
-        self.sumI13 = 2480.92389914159
-        self.sumI14 = 2477.64921252374
-        self.sumI15 = 2468.68169056761
+        self.sumIavg = 1654.37911333
+        self.sumIstd = 0.5
+
+        instr = resolution.Instrument()
+        
+        instr.method = 0
+        instr.moncor = 0
+        instr.mono.d = 3.3542
+        instr.mono.mosaic = 30
+        instr.mono.vmosaic = 30
+        instr.mono.tau = 1.87322917750271
+        instr.mono.dir = 1
+        instr.mono.width = 20
+        instr.mono.height = 20
+        instr.mono.depth = 0.2
+        instr.mono.rv = np.Inf
+        instr.mono.rh = np.Inf
+        instr.ana.d = 3.3542
+        instr.ana.mosaic = 30
+        instr.ana.vmosaic = 30
+        instr.ana.tau = 1.87322917750271
+        instr.ana.dir = 1
+        instr.ana.width = 26
+        instr.ana.height = 15
+        instr.ana.depth = 0.2
+        instr.ana.rv = np.Inf
+        instr.ana.rh = np.Inf
+        instr.sample.a = 6.3496
+        instr.sample.b = 6.3496
+        instr.sample.c = 6.3496
+        instr.sample.alpha = 90
+        instr.sample.beta = 90
+        instr.sample.gamma = 90
+        instr.sample.mosaic = 120
+        instr.sample.vmosaic = 60
+        instr.sample.dir = -1
+        instr.sample.width = 1
+        instr.sample.height = 5
+        instr.sample.depth = 1
+        instr.sample.shape = np.array([0.0833333333333333, 0, 0, 0, 0.0833333333333333, 0, 0, 0, 2.08333333333333]).reshape((3, 3))
+        instr.QH = 1
+        instr.QK = 0
+        instr.QL = 0
+        instr.W = 0
+        instr.efixed = 14.7
+        instr.Kfixed = 2.6635
+        instr.Lfixed = 2.359
+        instr.infin = -1
+        instr.fx = 2
+        instr.ki = 2.6635
+        instr.kf = 2.6635
+        instr.hcol = [40, 40, 40, 40]
+        instr.vcol = [103.008910873516, 120, 120, 120]
+        instr.mondir = 1
+        instr.dir1 = 1
+        instr.dir2 = -1
+        instr.orient1 = [1, 0, 0]
+        instr.orient2 = [0, 1, 0]
+        instr.horifoc = -1
+        instr.beam.width = 10
+        instr.beam.height = 10
+        instr.detector.width = 7.62
+        instr.detector.height = 10
+        instr.monitor.width = 15.24
+        instr.monitor.heigth = 20
+        instr.arms = [500, 300, 50, 30, 350]
+
+        self.EXP_coopernathans = deepcopy(instr)
+        instr.method = 1
+        self.EXP_popovici = deepcopy(instr)
 
     def test_cooper_nathans(self):
-        R0 = 1799.58795290577
-        RM = np.array([[6612.20619533415, 1.19238109481724e-11, 1.61862681767924e-12, 0],
-                        [4.70281555083552e-11, 94579.1213987331, 11782.2595636634, 0],
-                        [6.01386133616247e-12, 11782.2595636634, 1471.46842759222, 0],
-                        [0, 0, 0, 634.724632931705]])
-        ResVol0 = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(RM)) * (2. / 1.e-5)
+        R0 = 6.94779763040916
+        RMS = np.array([[7704.09949328100, -9.88393415334086e-13, 0, -1.38669411526679e-13],
+                       [-5.08591738494551e-13, 4580.29596138020, 0, 436.695604327330],
+                       [0, 0, 656.947677005883, 0],
+                       [-7.96943969325523e-14, 436.695604327330, 0, 48.3215129295908]])
+        ResVol0 = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(RMS)) * 2
+        angles0 = np.array([20.5881505640666, 41.1763011281331, 79.2945896002357, -21.4108207995286, 20.5881505640666, 41.1763011281331])
+        BraggWidths0 = np.array([0.0268285241530978, 0.0347945283058185, 0.0918739382960465, 0.910699501593323, 0.338756363632532])
 
-        sample = resolution.Sample(6, 7, 8, 90, 90, 90)
-        sample.u = [1, 0, 0]
-        sample.v = [0, 0, 1]
-        EXP = resolution.Instrument(14.7, sample, hcol=[80, 40, 40, 80], vcol=[120, 120, 120, 120], mono='pg(002)', ana='pg(002)')
-
-        hkle = [1., 1., 0., 0.]
+        EXP = self.EXP_coopernathans
+        hkle = [1., 0., 0., 0.]
 
         EXP.calc_resolution(hkle)
 
         NP = EXP.RMS
         R = EXP.R0
+        BraggWidths = resolution.get_bragg_widths(NP)
+        [angles, Q] = self.EXP_popovici.get_angles_and_Q(hkle)
 
-        ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * (2. / 1.e-5)
+        ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * 2
 
-
-        self.assertAlmostEqual(np.sum(NP), np.sum(RM), 6)
+        self.assertTrue(np.all(np.abs((RMS - NP) / 1e4) < 0.1))
         self.assertAlmostEqual(R, R0, 6)
-        self.assertAlmostEqual(ResVol, ResVol0, 6)
+        self.assertAlmostEqual(ResVol, ResVol0, 5)
+        self.assertTrue(np.all(np.abs((BraggWidths - BraggWidths0)) < 0.1))
+        self.assertTrue(np.all(np.abs((angles0 - angles)) < 0.1))
 
     def test_popovici(self):
-        R0 = 1920.87188227816
-        RMS = np.array([[7564.48470203361, 1.40133282636945e-11, 1.91484370090147e-12, 0],
-                       [1.26749364029288e-10, 131741.994875255, 16416.2315817137, 0],
-                       [1.59709520917375e-11, 16416.2315817137, 2050.87837885871, 0],
-                       [0, 0, 0, 2705.71659797677]])
-        ResVol0 = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(RMS)) * (2. / 1.e-5)
-
-        sample = resolution.Sample(6, 7, 8, 90, 90, 90)
-        sample.u = [1, 0, 0]
-        sample.v = [0, 0, 1]
-        EXP = resolution.Instrument(14.7, sample, hcol=[80, 40, 40, 80], vcol=[120, 120, 120, 120], mono='pg(002)', ana='pg(002)')
-        EXP.arms = [150, 150, 150, 150]
-        EXP.method = 1
-
-        hkle = [1., 1., 0., 0.]
+        R0 = 0.606073170538832
+        RMS = np.array([[13345.4692403195, 243.723718839983, 0, -135.337640133673],
+                        [243.723718839986, 4601.50955686524, 0, 435.034707352025],
+                        [0, 0, 1471.72079937374, 0],
+                        [-135.337640133673, 435.034707352025, 0, 55.9932251087576]])
+        ResVol0 = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(RMS)) * 2
+        angles0 = np.array([20.5881505640666, 41.1763011281331, 79.2945896002357, -21.4108207995286, 20.5881505640666, 41.1763011281331])
+        BraggWidths0 = np.array([0.0203840651963459, 0.0347142318605472, 0.0613825618619098, 0.653540314401238, 0.314695101371670])
+        
+        EXP = self.EXP_popovici
+        hkle = [1, 0, 0, 0]
 
         EXP.calc_resolution(hkle)
+        
+        NP = self.EXP_popovici.RMS
+        R = self.EXP_popovici.R0
+        BraggWidths = resolution.get_bragg_widths(NP)
+        [angles, Q] = self.EXP_popovici.get_angles_and_Q(hkle)
 
-        NP = EXP.RMS
-        R = EXP.R0
+        ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * 2
 
-        ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * (2. / 1.e-5)
-
-        self.assertAlmostEqual(np.sum(NP), np.sum(RMS), 6)
-        self.assertAlmostEqual(R, R0, 6)
-        self.assertAlmostEqual(ResVol, ResVol0, 6)
+        self.assertTrue(np.all(np.abs((RMS - NP) / 1e4) < 0.1))
+        self.assertAlmostEqual(R, R0, 5)
+        self.assertAlmostEqual(ResVol, ResVol0, 5)
+        self.assertTrue(np.all(np.abs((BraggWidths - BraggWidths0)) < 0.1))
+        self.assertTrue(np.all(np.abs((angles0 - angles)) < 1e-3))
 
     def test_4d_conv(self):
         sample = resolution.Sample(6, 7, 8, 90, 90, 90)
@@ -160,9 +227,9 @@ class ResolutionTest(unittest.TestCase):
 
         sumI11, sumI12, sumI13 = np.sum(I11), np.sum(I12), np.sum(I13)
 
-        self.assertTrue(np.abs(self.sumI11 - sumI11) < 13.298)
-        self.assertTrue(np.abs(self.sumI12 - sumI12) < 22.671)
-        self.assertTrue(np.abs(self.sumI13 - sumI13) < 44.958)
+        self.assertTrue(np.abs(self.sumIavg - sumI11) < self.sumIstd)
+        self.assertTrue(np.abs(self.sumIavg - sumI12) < self.sumIstd)
+        self.assertTrue(np.abs(self.sumIavg - sumI13) < self.sumIstd)
 
     def test_sma_conv(self):
         sample = resolution.Sample(6, 7, 8, 90, 90, 90)
@@ -178,8 +245,8 @@ class ResolutionTest(unittest.TestCase):
 
         sumI14, sumI15 = np.sum(I14), np.sum(I15)
 
-        self.assertTrue(np.abs(self.sumI14 - sumI14) < 3e-7)
-        self.assertTrue(np.abs(self.sumI15 - sumI15) < 12.164)
+        self.assertTrue(np.abs(self.sumIavg - sumI14) < self.sumIstd)
+        self.assertTrue(np.abs(self.sumIavg - sumI15) < self.sumIstd)
 
 
 if __name__ == '__main__':
