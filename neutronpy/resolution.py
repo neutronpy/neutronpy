@@ -812,6 +812,28 @@ def get_phonon_width(r0, M, C):
     return [rp, fwhm]
 
 
+def fproject(mat, i):
+    if (i == 0):
+        v = 2
+        j = 1
+    if (i == 1):
+        v = 0
+        j = 2
+    if (i == 2):
+        v = 0
+        j = 1
+    [a, b, c] = mat.shape
+    proj = np.zeros((2, 2, c))
+    proj[0, 0, :] = mat[i, i, :] - mat[i, v, :] ** 2 / mat[v, v, :]
+    proj[0, 1, :] = mat[i, j, :] - mat[i, v, :] * mat[j, v, :] / mat[v, v, :]
+    proj[1, 0, :] = mat[j, i, :] - mat[j, v, :] * mat[i, v, :] / mat[v, v, :]
+    proj[1, 1, :] = mat[j, j, :] - mat[j, v, :] ** 2 / mat[v, v, :]
+    hwhm = proj[0, 0, :] - proj[0, 1, :] ** 2 / proj[1, 1, :]
+    hwhm = np.sqrt(2. * np.log(2.)) / np.sqrt(hwhm)
+
+    return hwhm
+
+
 class Instrument(object):
     u'''An object that represents a Triple Axis Spectrometer (TAS) instrument
     experimental configuration, including a sample.
@@ -1612,8 +1634,8 @@ class Instrument(object):
             B[3, 3] = -2. * CONVERT2 * kf
 
             # Definition of matrix S
-            Sinv = np.matrix(blkdiag(np.array(bshape,dtype=np.float64), mshape, sshape, ashape, dshape))  # S-1 matrix
-            S = Sinv.I            
+            Sinv = np.matrix(blkdiag(np.array(bshape, dtype=np.float64), mshape, sshape, ashape, dshape))  # S-1 matrix
+            S = Sinv.I
 
             # Definition of matrix T
             T[0, 0] = -1. / (2. * L0)  # mistake in paper
@@ -2544,7 +2566,8 @@ class Instrument(object):
             projections = self.projections
 
         import matplotlib.pyplot as plt
-        plt.rc('font', **{'family': 'Bitstream Vera Sans', 'serif': 'cm10', 'size': 8})
+
+        plt.rc('font', **{'family': 'Bitstream Vera Sans', 'serif': 'cm10', 'size': 6})
         plt.rc('lines', markersize=3, linewidth=1)
 
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, facecolor='w', edgecolor='k', dpi=dpi)
@@ -2611,29 +2634,262 @@ class Instrument(object):
 
         text_format = ['Method: {0}'.format(method),
                        'Position HKLE [{0}]'.format(dt.datetime.now().strftime('%d-%b-%Y %T')),
-                       ' [QH, QK, QL, E] = {0} '.format(self.HKLE),
+                       '',
+                       ' [$Q_H$, $Q_K$, $Q_L$, $E$] = {0} '.format(self.HKLE),
+                       '',
                        'Resolution Matrix M in {0} (M/10^4):'.format(frame),
-                       '{0}'.format(NP / 1.0e4),
-                       'Resolution volume:   V0={0:.6f} meV/A^3'.format(2 * ResVol),
-                       'Intensity prefactor: R0={0:.3f}'.format(R0),
-                       'Bragg width in [Q1,Q2,E] (FWHM):',
-                       ' dQ1={0:.3f} dQ2={1:.3f} [A-1] dE={2:.3f} [meV]'.format(bragg_widths[0], bragg_widths[1], bragg_widths[4]),
-                       ' dQz={0:.3f} Vanadium width V={1:.3f} [meV]'.format(*bragg_widths[2:4]),
+                       '[[{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 0] / 1.0e4),
+                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 1] / 1.0e4),
+                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 2] / 1.0e4),
+                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]]'.format(*NP[:, 3] / 1.0e4),
+                       '',
+                       'Resolution volume:   $V_0=${0:.6f} meV/A^3'.format(2 * ResVol),
+                       'Intensity prefactor: $R_0=${0:.3f}'.format(R0),
+                       'Bragg width in [$Q_1$,$Q_2$,$E$] (FWHM):',
+                       ' $\delta Q_1$={0:.3f} $\delta Q_2$={1:.3f} [A-1] $\delta E$={2:.3f} [meV]'.format(bragg_widths[0], bragg_widths[1], bragg_widths[4]),
+                       ' $\delta Q_z$={0:.3f} Vanadium width $V$={1:.3f} [meV]'.format(*bragg_widths[2:4]),
                        'Instrument parameters:',
                        ' DM  =  {0:.3f} ETAM= {1:.3f} SM={2}'.format(self.mono.d, self.mono.mosaic, self.mono.dir),
                        ' KFIX=  {0:.3f} FX  = {1} SS={2}'.format(Energy(energy=self.efixed).wavevector, FX, self.sample.dir),
                        ' DA  =  {0:.3f} ETAA= {1:.3f} SA={2}'.format(self.ana.d, self.ana.mosaic, self.ana.dir),
                        ' A1= {0:.2f} A2={1:.2f} A3={2:.2f} A4={3:.2f} A5={4:.2f} A6={5:.2f} [deg]'.format(*angles),
                        'Collimation [arcmin]:',
-                       ' ALF1={0} ALF2={1} ALF3={2} ALF4={3}'.format(*self.hcol),
-                       ' BET1={0} BET2={1} BET3={2} BET4={3}'.format(*self.vcol),
+                       ' Horizontal: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.hcol),
+                       ' Vertical: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.vcol),
                        'Sample:',
-                       ' AS  =  {0} BS  =  {1} CS  =  {2} [Angs]'.format(self.sample.a, self.sample.b, self.sample.c),
-                       ' AA  =  {0} BB  =  {1} CC  =  {2} [deg]'.format(self.sample.alpha, self.sample.beta, self.sample.gamma),
-                       ' AX  =  {0} AY  =  {1} AZ  =  {2} [rlu]'.format(*self.orient1),
-                       ' BX  =  {0} BY  =  {1} BZ  =  {2} [rlu]'.format(*self.orient2)]
+                       ' a, b, c  =  [{0}, {1}, {2}] [Angs]'.format(self.sample.a, self.sample.b, self.sample.c),
+                       ' Alpha, Beta, Gamma  =  [{0}, {1}, {2}] [deg]'.format(self.sample.alpha, self.sample.beta, self.sample.gamma),
+                       ' U  =  {0} [rlu]\tV  =  {0} [rlu]'.format(self.orient1, self.orient2)]
 
         ax4.axis('off')
         ax4.text(0, 1, '\n'.join(text_format), transform=ax4.transAxes, horizontalalignment='left', verticalalignment='top')
 
         plt.show()
+
+    def plot_ellipsoid(self, hkle, dpi=100):
+        '''Plots the resolution ellipsoid in Qx, Qy, W Coordinates
+        
+        '''
+        from vispy import app, scene, visuals
+        import sys
+
+        [H, K, L, W] = hkle
+        try:
+            if np.all(H == self.H) and np.all(K == self.K) and np.all(L == self.L) and np.all(W == self.W):
+                NP = np.array(self.RMS)
+                R0 = self.R0
+            else:
+                self.calc_resolution(hkle)
+                NP = np.array(self.RMS)
+                R0 = self.R0
+        except AttributeError:
+            self.calc_resolution(hkle)
+            NP = np.array(self.RMS)
+            R0 = self.R0
+
+        if NP.shape == (4, 4):
+            NP = NP[np.newaxis].reshape((4, 4, 1))
+            R0 = [R0]
+
+        # Create a canvas with a 3D viewport
+        canvas = scene.SceneCanvas(keys='interactive', bgcolor='white')
+        view = canvas.central_widget.add_view()
+
+        surface = []
+
+        for ind in range(NP.shape[-1]):
+            # for this plot to work, we need to remove row-column 3 of RMS
+            A = np.copy(NP)
+            RMS = np.delete(np.delete(A, 2, axis=0), 2, axis=1)[:, :, ind]
+
+#             [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
+            qx = [0]  # _scalar([xvec[0], xvec[1], xvec[2]], [self.H[ind], self.K[ind], self.L[ind]], rsample)
+            qy = [0]  # _scalar([yvec[0], yvec[1], yvec[2]], [self.H[ind], self.K[ind], self.L[ind]], rsample)
+            qw = [0]  # [self.W[ind]]
+
+            # Q vectors on figure axes
+#             o1 = np.copy(self.orient1)
+#             o2 = np.copy(self.orient2)
+#             pr = _scalar([o2[0], o2[1], o2[2]], [yvec[0], yvec[1], yvec[2]], rsample)
+
+#             o2[0] = yvec[0] * pr
+#             o2[1] = yvec[1] * pr
+#             o2[2] = yvec[2] * pr
+#
+#             if np.abs(o2[0]) < 1e-5:
+#                 o2[0] = 0
+#             if np.abs(o2[1]) < 1e-5:
+#                 o2[1] = 0
+#             if np.abs(o2[2]) < 1e-5:
+#                 o2[2] = 0
+#
+#             if np.abs(o1[0]) < 1e-5:
+#                 o1[0] = 0
+#             if np.abs(o1[1]) < 1e-5:
+#                 o1[1] = 0
+#             if np.abs(o1[2]) < 1e-5:
+#                 o1[2] = 0
+
+#             frame = '[Q1,Q2,E]'
+
+#             SMAGridPoints = 40
+            EllipsoidGridPoints = 100
+
+            def fn(r0, rms, q1, q2, q3, qx0, qy0, qw0):
+                ee = rms[0, 0] * (q1 - qx0[0]) ** 2 + rms[1, 1] * (q2 - qy0[0]) ** 2 + rms[2, 2] * (q3 - qw0[0]) ** 2 + \
+                   2 * rms[0, 1] * (q1 - qx0[0]) * (q2 - qy0[0]) + \
+                   2 * rms[0, 2] * (q1 - qx0[0]) * (q3 - qw0[0]) + \
+                   2 * rms[2, 1] * (q3 - qw0[0]) * (q2 - qy0[0])
+                return ee
+
+            # plot ellipsoids
+            wx = fproject(RMS.reshape((3, 3, 1)), 0)
+            wy = fproject(RMS.reshape((3, 3, 1)), 1)
+            ww = fproject(RMS.reshape((3, 3, 1)), 2)
+
+
+            surface = []
+            x = np.linspace(-wx[0] * 1.5, wx[0] * 1.5, EllipsoidGridPoints) + qx[0]
+            y = np.linspace(-wy[0] * 1.5, wy[0] * 1.5, EllipsoidGridPoints) + qy[0]
+            z = np.linspace(-ww[0] * 1.5, ww[0] * 1.5, EllipsoidGridPoints) + qw[0]
+            [xg, yg, zg] = np.meshgrid(x, y, z)
+
+            data = fn(R0[ind], RMS, xg, yg, zg, qx, qy, qw)
+
+            # Create isosurface visual
+            surface.append(scene.visuals.Isosurface(data, level=2. * np.log(2.), color=(0.5, 0.6, 1, 1), shading='smooth', parent=view.scene))
+
+        for surf in surface:
+            [nx, ny, nz] = data.shape
+            center = scene.transforms.STTransform(translate=(-nx / 2., -ny / 2., -nz / 2.))
+            surf.transform = center
+
+        frame = scene.visuals.Cube(size=(EllipsoidGridPoints * 5, EllipsoidGridPoints * 5, EllipsoidGridPoints * 5), color='white', edge_color=(0., 0., 0., 1.), parent=view.scene)
+        grid = scene.visuals.GridLines(color=(0 , 0, 0, 0.5), parent=view.scene)
+        grid.set_gl_state('translucent')
+
+        # Add a 3D axis to keep us oriented
+        axis = scene.visuals.XYZAxis(parent=view.scene)
+
+        # Use a 3D camera
+        # Manual bounds; Mesh visual does not provide bounds yet
+        # Note how you can set bounds before assigning the camera to the viewbox
+        cam = scene.TurntableCamera()
+        cam.azimuth = 135
+        cam.elevation = 30
+        cam.fov = 60
+        cam.distance = 1.2 * EllipsoidGridPoints
+        cam.center = (0, 0, 0)
+        view.camera = cam
+
+        canvas.show()
+        if sys.flags.interactive == 0:
+            app.run()
+
+    def plot_instrument(self, hkle):
+        '''Plots the instrument configuration for a given position in Q and energy transfer
+        '''
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+
+        fig = plt.figure(edgecolor='k', facecolor='w', figsize=plt.figaspect(0.4) * 1.25)
+        ax = fig.gca(projection='3d')
+
+        angles, q = self.get_angles_and_Q(hkle)
+        distances = self.arms
+
+        angles = np.deg2rad(angles)
+        A1, A2, A3, A4, A5, A6 = -angles
+        x, y, direction = 0, 0, 0
+
+
+        x0, y0 = x, y
+        # plot the Source --------------------------------------------------------------
+        translate = 0
+        rotate = 0 * (np.pi / 180)
+        direction = direction + rotate
+        x = x + translate * np.sin(direction)
+        y = y + translate * np.cos(direction)
+
+        # create a square source
+        X = np.array([ -self.beam.width / 2, -self.beam.width / 2, self.beam.width / 2, self.beam.width / 2, -self.beam.width / 2])
+        Z = np.array([  self.beam.height / 2, -self.beam.height / 2, -self.beam.height / 2, self.beam.height / 2, self.beam.height / 2])
+        Y = np.zeros(5)
+        l = ax.plot(X + x, Y + y, zs=Z, color='b')
+        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Beam/Source', color='b')
+
+        x0 = x
+        y0 = y
+        # plot the Monochromator -------------------------------------------------------
+        translate = distances[0]
+        rotate = 0
+        direction = direction + rotate
+        x = x + translate * np.sin(direction)
+        y = y + translate * np.cos(direction)
+        l = ax.plot([x, x0 ], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+
+        # create a square Monochromator
+        X = np.array([ -self.mono.width / 2, -self.mono.width / 2, self.mono.width / 2, self.mono.width / 2, -self.mono.width / 2]) * np.sin(A1)
+        Z = np.array([  self.mono.height / 2 , -self.mono.height / 2, -self.mono.height / 2, self.mono.height / 2, self.mono.height / 2])
+        Y = X * np.cos(A1)
+        l = ax.plot(X + x, Y + y, zs=Z, color='r')
+        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Monochromator', color='r')
+
+        x0 = x
+        y0 = y
+        # plot the Sample --------------------------------------------------------------
+        translate = distances[1]
+        rotate = A2
+        direction = direction + rotate
+        x = x + translate * np.sin(direction)
+        y = y + translate * np.cos(direction)
+        l = ax.plot([x, x0 ], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+
+        # create a rotated square Sample
+        X = np.array([ -self.sample.width / 2, -self.sample.width / 2, self.sample.width / 2, self.sample.width / 2, -self.sample.width / 2]) * np.sin(A3)
+        Z = np.array([  self.sample.height / 2, -self.sample.height / 2, -self.sample.height / 2, self.sample.height / 2, self.sample.height / 2])
+        Y = X * np.cos(A3)
+        l1 = ax.plot(X + x, Y + y, zs=Z, color='g')
+        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Sample', color='g')
+        X = np.array([ -self.sample.depth / 2, -self.sample.depth / 2, self.sample.depth / 2, self.sample.depth / 2, -self.sample.depth / 2]) * np.sin(A3 + np.pi / 2)
+        Z = np.array([  self.sample.height / 2, -self.sample.height / 2, -self.sample.height / 2, self.sample.height / 2, self.sample.height / 2])
+        Y = X * np.cos(A3 + np.pi / 2)
+        l2 = ax.plot(X + x, Y + y, zs=Z, color='g')
+
+        x0 = x
+        y0 = y
+        # plot the Analyzer ------------------------------------------------------------
+        translate = distances[2]
+        rotate = A4
+        direction = direction + rotate
+        x = x + translate * np.sin(direction)
+        y = y + translate * np.cos(direction)
+        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+
+        # create a square
+        X = np.array([ -self.ana.width / 2, -self.ana.width / 2, self.ana.width / 2, self.ana.width / 2, -self.ana.width / 2]) * np.sin(A5)
+        Z = np.array([  self.ana.height / 2, -self.ana.height / 2, -self.ana.height / 2, self.ana.height / 2, self.ana.height / 2])
+        Y = X * np.cos(A5)
+        l = ax.plot(X + x, Y + y, zs=Z, color='magenta')
+        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Analyzer', color='magenta')
+
+        x0 = x
+        y0 = y
+        # plot the Detector ------------------------------------------------------------
+        translate = distances[3]
+        rotate = A6
+        direction = direction + rotate
+        x = x + translate * np.sin(direction)
+        y = y + translate * np.cos(direction)
+        l = ax.plot([ x, x0 ], [y, y0], zs=[ 0, 0 ], color='cyan', linestyle='--')
+
+        # create a square
+        X = np.array([ -self.detector.width / 2, -self.detector.width / 2, self.detector.width / 2, self.detector.width / 2, -self.detector.width / 2])
+        Z = np.array([  self.detector.height / 2, -self.detector.height / 2, -self.detector.height / 2, self.detector.height / 2, self.detector.height / 2])
+        Y = np.zeros(5)
+        l = ax.plot(X + x, Y + y, zs=Z, color='k')
+        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Detector', color='k')
+
+        ax.set_zlim3d(getattr(ax, 'get_zlim')()[0], getattr(ax, 'get_zlim')()[1] * 10)
+        plt.show()
+
