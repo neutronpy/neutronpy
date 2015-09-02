@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* :release:`v0.3.2 <2015-09-02>`
+* :feature:`34` Added method :py:meth:`.Instrument.plot_ellipsoid`
+* :bug:`33` Fixed error in :py:meth:`.Instrument.calc_projections` where only giving one point would generate an error
+* :feature:`24` Added plotting of Instrument setup diagram with :py:meth`.Instrument.plot_instrument`
+
 * :release:`v0.3.1 <2015-08-14>`
 * :feature:`32` Added a Aluminum spurion calculator
 * :feature:`31` Beginnings of a :py:class:`.Goniometer` class added for future ability for crystal alignment

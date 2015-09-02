@@ -904,6 +904,8 @@ class Instrument(object):
     get_lattice
     get_resolution_params
     plot_projections
+    plot_ellipsoid
+    plot_instrument
     resolution_convolution
     resolution_convolution_SMA
     
@@ -2667,7 +2669,12 @@ class Instrument(object):
         plt.show()
 
     def plot_ellipsoid(self, hkle, dpi=100):
-        '''Plots the resolution ellipsoid in Qx, Qy, W Coordinates
+        r'''Plots the resolution ellipsoid in the $Q_x$, $Q_y$, $W$ zone
+        
+        Parameters
+        ----------
+        hkle : tup
+            A tuple of intergers or arrays of H, K, L, and W (energy transfer) values at which resolution ellipsoid are desired to be plotted
         
         '''
         from vispy import app, scene, visuals
@@ -2787,7 +2794,13 @@ class Instrument(object):
             app.run()
 
     def plot_instrument(self, hkle):
-        '''Plots the instrument configuration for a given position in Q and energy transfer
+        '''Plots the instrument configuration using angles for a given position in Q and energy transfer
+        
+        Parameters
+        ----------
+        hkle : tup
+            A tuple of intergers or arrays of H, K, L, and W (energy transfer) values at which the instrument setup should be plotted
+
         '''
         import matplotlib.pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
