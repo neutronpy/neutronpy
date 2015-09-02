@@ -174,6 +174,13 @@ class Material(Lattice):
                                     item['Uiso'],
                                     item['Uaniso']))
 
+    @property
+    def total_scattering_cross_section(self):
+        total = 0
+        for atom in self.atoms:
+            total += (atom.coh_xs + atom.inc_xs)
+        return total
+
     def calc_str_fac(self, hkl):
         r'''Calculates the structural form factor of the material.
 

@@ -316,6 +316,15 @@ class Data(object):
 
         return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
 
+    def scattering_function(self, material, ei):
+        ki = Energy(energy=ei).wavevector
+        kf = Energy(energy=ei-self.e).wavevector
+        
+        return 4 * np.pi / (material.total_scattering_cross_section) * ki / kf * self.counts
+    
+    def dynamic_susceptibility(self, material, ei):
+        return self.scattering_fucntion(material, ei) * self.detailed_balance_factor
+    
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
 
@@ -397,8 +406,7 @@ class Data(object):
         
         '''
         pass
-
-
+    
     def estimate_background(self, bg_params):
         r'''Estimate the background according to ``type`` specified.
 

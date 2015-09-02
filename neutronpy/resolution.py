@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.linalg import block_diag as blkdiag
 from .core import Energy
+import datetime as dt
 
 
 def load(parfile, cfgfile):
@@ -408,6 +409,7 @@ class _Monochromator():
         self.tau = tau
         self.mosaic = mosaic
         self.dir = direct
+        self.d = 2 * np.pi / GetTau(tau)
 
 
 class _dummy():
@@ -729,8 +731,8 @@ def ellipse(saxis1, saxis2, phi=0, origin=None, npts=31):
 
     theta = np.linspace(0., 2. * np.pi, npts)
 
-    x = np.array(saxis1 * np.cos(theta) * np.cos(phi) - saxis2 * np.sin(theta) * np.sin(phi) + origin[0])
-    y = np.array(saxis1 * np.cos(theta) * np.sin(phi) + saxis2 * np.sin(theta) * np.cos(phi) + origin[1])
+    x = np.array(saxis1 * np.cos(theta) * np.cos(phi) - saxis2 * np.sin(theta) * np.sin(phi)) + origin[0]
+    y = np.array(saxis1 * np.cos(theta) * np.sin(phi) + saxis2 * np.sin(theta) * np.cos(phi)) + origin[1]
     return np.vstack((x, y))
 
 
@@ -785,6 +787,51 @@ def _voigt(x, a):
 
     y = np.real(y)
     return y
+
+
+def get_bragg_widths(RM):
+    bragg = [np.sqrt(8 * np.log(2)) / np.sqrt(RM[0, 0]),
+             np.sqrt(8 * np.log(2)) / np.sqrt(RM[1, 1]),
+             np.sqrt(8 * np.log(2)) / np.sqrt(RM[2, 2]),
+             get_phonon_width(0, RM, [0, 0, 0, 1])[1],
+             np.sqrt(8 * np.log(2)) / np.sqrt(RM[3, 3])]
+
+    return bragg
+
+
+def get_phonon_width(r0, M, C):
+    T = np.diag(np.ones(4))
+    T[3, :] = np.array(C)
+    S = np.matrix(np.linalg.inv(T))
+    MP = S.H * M * S
+    [rp, MP] = project_into_plane(0, r0, MP)
+    [rp, MP] = project_into_plane(0, rp, MP)
+    [rp, MP] = project_into_plane(0, rp, MP)
+    fwhm = np.sqrt(8 * np.log(2)) / np.sqrt(MP[0, 0])
+
+    return [rp, fwhm]
+
+
+def fproject(mat, i):
+    if (i == 0):
+        v = 2
+        j = 1
+    if (i == 1):
+        v = 0
+        j = 2
+    if (i == 2):
+        v = 0
+        j = 1
+    [a, b, c] = mat.shape
+    proj = np.zeros((2, 2, c))
+    proj[0, 0, :] = mat[i, i, :] - mat[i, v, :] ** 2 / mat[v, v, :]
+    proj[0, 1, :] = mat[i, j, :] - mat[i, v, :] * mat[j, v, :] / mat[v, v, :]
+    proj[1, 0, :] = mat[j, i, :] - mat[j, v, :] * mat[i, v, :] / mat[v, v, :]
+    proj[1, 1, :] = mat[j, j, :] - mat[j, v, :] ** 2 / mat[v, v, :]
+    hwhm = proj[0, 0, :] - proj[0, 1, :] ** 2 / proj[1, 1, :]
+    hwhm = np.sqrt(2. * np.log(2.)) / np.sqrt(hwhm)
+
+    return hwhm
 
 
 class Instrument(object):
@@ -857,6 +904,8 @@ class Instrument(object):
     get_lattice
     get_resolution_params
     plot_projections
+    plot_ellipsoid
+    plot_instrument
     resolution_convolution
     resolution_convolution_SMA
     
@@ -1328,7 +1377,7 @@ class Instrument(object):
         Oak Ridge National Laboratory
     
         '''
-        CONVERT1 = 0.4246609 * np.pi / 60. / 180.
+        CONVERT1 = np.pi / 60. / 180.
         CONVERT2 = 2.072
 
         [length, Q, W] = _CleanArgs(Q, W)
@@ -1350,7 +1399,7 @@ class Instrument(object):
             method = self.method
 
         # Assign default values and decode parameters
-        moncor = 1
+        moncor = 0
         if hasattr(self, 'moncor'):
             moncor = self.moncor
 
@@ -1394,7 +1443,7 @@ class Instrument(object):
         anad = 1.
         detectorw = 1.
         detectorh = 1.
-        sshapes = [np.identity(3)] * length
+        sshapes = np.repeat(np.eye(3, dtype=np.float64)[np.newaxis].reshape((3, 3, 1)), length, axis=2)
         L0 = 1.
         L1 = 1.
         L1mon = 1.
@@ -1408,57 +1457,59 @@ class Instrument(object):
         if hasattr(self, 'beam'):
             beam = self.beam
             if hasattr(beam, 'width'):
-                beamw = beam.width ** 2
+                beamw = beam.width ** 2 / 12.
 
             if hasattr(beam, 'height'):
-                beamh = beam.height ** 2
+                beamh = beam.height ** 2 / 12.
 
         bshape = np.diag([beamw, beamh])
         if hasattr(self, 'monitor'):
             monitor = self.monitor
             if hasattr(monitor, 'width'):
-                monitorw = monitor.width ** 2
+                monitorw = monitor.width ** 2 / 12.
 
             monitorh = monitorw
             if hasattr(monitor, 'height'):
-                monitorh = monitor.height ** 2
+                monitorh = monitor.height ** 2 / 12.
 
         monitorshape = np.diag([monitorw, monitorh])
         if hasattr(self, 'detector'):
             detector = self.detector
             if hasattr(detector, 'width'):
-                detectorw = detector.width ** 2
+                detectorw = detector.width ** 2 / 12.
 
             if hasattr(detector, 'height'):
-                detectorh = detector.height ** 2
+                detectorh = detector.height ** 2 / 12.
 
         dshape = np.diag([detectorw, detectorh])
         if hasattr(mono, 'width'):
-            monow = mono.width ** 2
+            monow = mono.width ** 2 / 12.
 
         if hasattr(mono, 'height'):
-            monoh = mono.height ** 2
+            monoh = mono.height ** 2 / 12.
 
         if hasattr(mono, 'depth'):
-            monod = mono.depth ** 2
+            monod = mono.depth ** 2 / 12.
 
         mshape = np.diag([monod, monow, monoh])
         if hasattr(ana, 'width'):
-            anaw = ana.width ** 2
+            anaw = ana.width ** 2 / 12.
 
         if hasattr(ana, 'height'):
-            anah = ana.height ** 2
+            anah = ana.height ** 2 / 12.
 
         if hasattr(ana, 'depth'):
-            anad = ana.depth ** 2
+            anad = ana.depth ** 2 / 12.
 
         ashape = np.diag([anad, anaw, anah])
         if hasattr(sample, 'width') and hasattr(sample, 'depth') and hasattr(sample, 'height'):
-            sshape = np.diag([sample.depth, sample.width, sample.height]) ** 2
+            _sshape = np.diag([sample.depth, sample.width, sample.height]).astype(np.float64) ** 2 / 12.
+            sshapes = np.repeat(_sshape[np.newaxis].reshape((3, 3, 1)), length, axis=2)
         elif hasattr(sample, 'shape'):
-            sshapes = sample.shape
+            _sshape = sample.shape.astype(np.float64) / 12.
+            sshapes = np.repeat(_sshape[np.newaxis].reshape((3, 3, 1)), length, axis=2)
 
-        if hasattr(self, 'arms'):
+        if hasattr(self, 'arms') and method == 1:
             arms = self.arms
             L0 = arms[0]
             L1 = arms[1]
@@ -1488,14 +1539,18 @@ class Instrument(object):
             horifoc = self.horifoc
 
         if horifoc == 1:
-            alpha[2] = alpha[2] * np.sqrt(8 * np.log(2) / 12.)
+            alpha[2] = alpha[2] * np.sqrt(8. * np.log(2.) / 12.)
 
-        em = 1
+        em = 1.
         if hasattr(self, 'mondir'):
             em = self.mondir
 
+        sm = self.mono.dir
+        ss = self.sample.dir
+        sa = self.ana.dir
+
         for ind in range(length):
-            sshape = sshapes[ind]
+            sshape = sshapes[:, :, ind]
             # Calculate angles and energies
             w = W[ind]
             q = Q[ind]
@@ -1508,33 +1563,23 @@ class Instrument(object):
             ki = np.sqrt(ei / CONVERT2)
             kf = np.sqrt(ef / CONVERT2)
 
-            thetam = np.arcsin(taum / (2. * ki)) * np.sign(epm) * np.sign(em)  # sm  # added sign(em) K.P.
-            thetaa = np.arcsin(taua / (2. * kf)) * np.sign(ep) * np.sign(em)  # sa
-            s2theta = -np.arccos((ki ** 2 + kf ** 2 - q ** 2) / (2. * ki * kf)) * np.sign(em)  # ss  # 2theta sample @IgnorePep8
+            thetam = np.arcsin(taum / (2. * ki)) * sm  # * np.sign(epm) * np.sign(em)  # sm  # added sign(em) K.P.
+            thetaa = np.arcsin(taua / (2. * kf)) * sa  # * np.sign(ep) * np.sign(em)  # sa
+            s2theta = np.arccos((ki ** 2 + kf ** 2 - q ** 2) / (2. * ki * kf)) * ss  # * np.sign(em)  # ss  # 2theta sample @IgnorePep8
             if np.iscomplex(s2theta):
                 raise ValueError(': KI,KF,Q triangle will not close (kinematic equations). Change the value of KFIX,FX,QH,QK or QL.')
 
             thetas = s2theta / 2.
-            phi = np.arctan2(np.sign(em) * (-kf * np.sin(s2theta)), np.sign(em) * (ki - kf * np.cos(s2theta)))
+            phi = np.arctan2(-kf * np.sin(s2theta), ki - kf * np.cos(s2theta))
 
             # Calculate beam divergences defined by neutron guides
-            if alpha[0] < 0:
-                alpha[0] = -alpha[0] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-            if alpha[1] < 0:
-                alpha[1] = -alpha[1] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-            if alpha[2] < 0:
-                alpha[2] = -alpha[2] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-            if alpha[3] < 0:
-                alpha[3] = -alpha[3] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
+            for i, ang in enumerate(alpha):
+                if ang < 0:
+                    alpha[i] = -alpha[i] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
 
-            if beta[0] < 0:
-                beta[0] = -beta[0] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-            if beta[1] < 0:
-                beta[1] = -beta[1] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-            if beta[2] < 0:
-                beta[2] = -beta[2] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
-            if beta[3] < 0:
-                beta[3] = -beta[3] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
+            for i, ang, in enumerate(beta):
+                if ang < 0:
+                    beta[i] = -beta[i] * 0.1 * 60. * (2. * np.pi / ki) / 0.427 / np.sqrt(3.)
 
             # Redefine sample geometry
             psi = thetas - phi  # Angle from sample geometry X axis to Q
@@ -1591,7 +1636,7 @@ class Instrument(object):
             B[3, 3] = -2. * CONVERT2 * kf
 
             # Definition of matrix S
-            Sinv = np.matrix(blkdiag(np.array(bshape, dtype=np.float32), mshape, sshape, ashape, dshape))  # S-1 matrix
+            Sinv = np.matrix(blkdiag(np.array(bshape, dtype=np.float64), mshape, sshape, ashape, dshape))  # S-1 matrix
             S = Sinv.I
 
             # Definition of matrix T
@@ -1639,50 +1684,39 @@ class Instrument(object):
 
             # Definition of resolution matrix M
             if method == 1 or method == 'popovici':
-                Minv = np.matrix(B) * np.matrix(A) * np.linalg.inv(np.linalg.inv(np.matrix(D) * np.linalg.inv(np.matrix(S) + np.matrix(T).H * np.matrix(F) * np.matrix(T)) * np.matrix(D).H) + np.matrix(G)) * np.matrix(A).H * np.matrix(B).H
+                K = S + T.H * F * T
+                H = np.linalg.inv(D * np.linalg.inv(K) * D.H)
+                Ninv = A * np.linalg.inv(H + G) * A.H
             else:
-                HF = np.matrix(A) * np.linalg.inv(np.matrix(G) + np.matrix(C).H * np.matrix(F) * np.matrix(C)) * np.matrix(A).H
+                H = G + C.H * F * C
+                Ninv = A * np.linalg.inv(H) * A.H
                 # Horizontally focusing analyzer if needed
                 if horifoc > 0:
-                    HF = np.linalg.inv(HF)
-                    HF[4, 4] = (1 / (kf * alpha[2])) ** 2
-                    HF[4, 3] = 0
-                    HF[3, 4] = 0
-                    HF[3, 3] = (np.tan(thetaa) / (etaa * kf)) ** 2
-                    HF = np.linalg.inv(HF)
-                Minv = np.matrix(B) * np.matrix(HF) * np.matrix(B).H
+                    Ninv = np.linalg.inv(Ninv)
+                    Ninv[4, 4] = (1 / (kf * alpha[3])) ** 2
+                    Ninv[4, 3] = 0
+                    Ninv[3, 4] = 0
+                    Ninv[3, 3] = (np.tan(thetaa) / (etaa * kf)) ** 2
+                    Ninv = np.linalg.inv(Ninv)
 
-            M = np.linalg.inv(Minv)
+            Minv = B * Ninv * B.H
+
+            M = 8 * np.log(2) * np.linalg.inv(Minv)
             # TODO: rows-columns 3-4 swapped for ResPlot to work.
             # Inactivate as we want M=[x,y,z,E]
-            RM_[0, 0] = M[0, 0]
-            RM_[1, 0] = M[1, 0]
-            RM_[0, 1] = M[0, 1]
-            RM_[1, 1] = M[1, 1]
-
-            RM_[0, 2] = M[0, 3]
-            RM_[2, 0] = M[3, 0]
-            RM_[2, 2] = M[3, 3]
-            RM_[2, 1] = M[3, 1]
-            RM_[1, 2] = M[1, 3]
-
-            RM_[0, 3] = M[0, 2]
-            RM_[3, 0] = M[2, 0]
-            RM_[3, 3] = M[2, 2]
-            RM_[3, 1] = M[2, 1]
-            RM_[1, 3] = M[1, 2]
+            RM_ = np.copy(M)
 
             # Calculation of prefactor, normalized to source
             Rm = ki ** 3 / np.tan(thetam)
             Ra = kf ** 3 / np.tan(thetaa)
+            R0_ = Rm * Ra * (2. * np.pi) ** 4 / (64. * np.pi ** 2 * np.sin(thetam) * np.sin(thetaa))
 
             if method == 1 or method == 'popovici':
                 # Popovici
-                R0_ = Rm * Ra * (2. * np.pi) ** 4 / (64. * np.pi ** 2 * np.sin(thetam) * np.sin(thetaa)) * np.sqrt(np.linalg.det(F) / np.linalg.det(np.linalg.inv(np.matrix(D) * np.linalg.inv(np.matrix(S) + np.matrix(T).H * np.matrix(F) * np.matrix(T)) * np.matrix(D).H) + np.matrix(G)))
+                R0_ = R0_ * np.sqrt(np.linalg.det(F) / np.linalg.det(H + G))
             else:
                 # Cooper-Nathans (popovici Eq 5 and 9)
-    #             R0_ = R0_ * np.sqrt(np.linalg.det(np.matrix(F)) / np.linalg.det(np.matrix(H)))
-                R0_ = Rm * Ra * (2. * np.pi) ** 4 / (64. * np.pi ** 2 * np.sin(thetam) * np.sin(thetaa)) * np.sqrt(np.linalg.det(np.matrix(F)) / np.linalg.det(np.matrix(G) + np.matrix(C).H * np.matrix(F) * np.matrix(C)))
+                R0_ = R0_ * np.sqrt(np.linalg.det(F) / np.linalg.det(H))
 
             # Normalization to flux on monitor
             if moncor == 1:
@@ -1695,7 +1729,7 @@ class Instrument(object):
                 t[0, 6] = 1. / (2. * L1mon)
                 t[1, 1] = -1. / (2. * L0 * np.sin(thetam))
                 t[1, 4] = (1. / L0 + 1. / L1mon - 2. * np.sin(thetam) / monorv) / (2. * np.sin(thetam))
-                sinv = blkdiag(np.array(bshape, dtype=np.float32), mshape, monitorshape)  # S-1 matrix
+                sinv = blkdiag(np.array(bshape, dtype=np.float64), mshape, monitorshape)  # S-1 matrix
                 s = np.linalg.inv(sinv)
                 d[0, 0] = -1. / L0
                 d[0, 2] = -np.cos(thetam) / L0
@@ -1709,14 +1743,10 @@ class Instrument(object):
                 d[3, 4] = -1. / L1mon
                 if method == 1 or method == 'popovici':
                     # Popovici
-                    Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) *
-                            np.sqrt(np.linalg.det(f) / np.linalg.det((np.matrix(d) *
-                                                                      (np.matrix(s) + np.matrix(t).H * np.matrix(f) * np.matrix(t)).I *
-                                                                      np.matrix(d).H).I + np.matrix(g))))
+                    Rmon = Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * np.sqrt(np.linalg.det(f) / np.linalg.det(np.linalg.inv(d * np.linalg.inv(s + t.H * f * t) * d.H) + g))
                 else:
                     # Cooper-Nathans
-                    Rmon = (Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) *
-                            np.sqrt(np.linalg.det(f) / np.linalg.det(np.matrix(g) + np.matrix(c).H * np.matrix(f) * np.matrix(c))))
+                    Rmon = Rm * (2 * np.pi) ** 2 / (8 * np.pi * np.sin(thetam)) * np.sqrt(np.linalg.det(f) / np.linalg.det(g + c.H * f * c))
 
                 R0_ = R0_ / Rmon
                 R0_ = R0_ * ki  # 1/ki monitor efficiency
@@ -1735,11 +1765,10 @@ class Instrument(object):
                 if hasattr(sample, 'vmosaic'):
                     etasv = sample.vmosaic * CONVERT1
 
-                R0_ = R0_ / np.sqrt((1 + (q * etas) ** 2 * RM_[3, 3]) * (1 + (q * etasv) ** 2 * RM_[1, 1]))
-                Minv = np.linalg.inv(RM_)
+                R0_ = R0_ / np.sqrt((1 + (q * etas) ** 2 * RM_[1, 1]) * (1 + (q * etasv) ** 2 * RM_[2, 2]))
                 Minv[1, 1] = Minv[1, 1] + q ** 2 * etas ** 2
                 Minv[3, 3] = Minv[3, 3] + q ** 2 * etasv ** 2
-                RM_ = np.linalg.inv(Minv)
+                RM_ = 8 * np.log(2) * np.linalg.inv(Minv)
 
             # Take care of analyzer reflectivity if needed [I. Zaliznyak, BNL]
             if hasattr(ana, 'thickness') and hasattr(ana, 'Q'):
@@ -1782,6 +1811,7 @@ class Instrument(object):
             Translated from ResLib, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
 
         '''
+        self.HKLE = hkle
         [H, K, L, W] = hkle
 
         [length, H, K, L, W] = _CleanArgs(H, K, L, W)
@@ -1811,7 +1841,6 @@ class Instrument(object):
         rot = np.zeros((3, 3), dtype=np.float64)
 
         # Sample shape matrix in coordinate system defined by scattering vector
-
         sample = self.sample
         if hasattr(sample, 'shape'):
             samples = []
@@ -1821,7 +1850,7 @@ class Instrument(object):
                 rot[0, 1] = tmat[0, 1, i]
                 rot[1, 1] = tmat[1, 1, i]
                 rot[2, 2] = tmat[2, 2, i]
-                samples.append(np.matrix(rot) * np.matrix(sample.shape) * np.matrix(rot.T))
+                samples.append(np.matrix(rot) * np.matrix(sample.shape) * np.matrix(rot).H)
             self.sample.shape = samples
 
         [R0, RM] = self.calc_resolution_in_Q_coords(Q, W)
@@ -1888,8 +1917,8 @@ class Instrument(object):
 
         [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
 
-        o1 = self.orient1
-        o2 = self.orient2
+        o1 = np.copy(self.orient1)
+        o2 = np.copy(self.orient2)
         pr = _scalar([o2[0], o2[1], o2[2]], [yvec[0], yvec[1], yvec[2]], rsample)
         o2[0] = yvec[0] * pr
         o2[1] = yvec[1] * pr
@@ -1910,14 +1939,18 @@ class Instrument(object):
             o1[2] = 0
         frame = '[Q1,Q2,E]'
 
-        A = NP
+        A = np.copy(NP)
+
+        if A.shape == (4, 4):
+            A = A.reshape((4, 4, 1))
+            R0 = R0[np.newaxis]
 
         for ind in range(A.shape[-1]):
             # Remove the vertical component from the matrix.
-            B = A[:3, :3, ind]
+            B = np.matrix([np.concatenate((A[0, 0:2, ind], [A[0, 3, ind]])), np.concatenate((A[1, 0:2, ind], [A[1, 3, ind]])), np.concatenate((A[3, 0:2, ind], [A[3, 3, ind]]))])
 
             # Projection into Qx, Qy plane
-            [R0P, MP] = project_into_plane(2, R0, B)
+            [R0P, MP] = project_into_plane(2, R0[ind], B)
             theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
             S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
 
@@ -1953,7 +1986,7 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
-            self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[3][ind]], npts=npts)
+            self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
             # Slice through Qx,W plane
             MP = np.array([[A[0, 0, ind], A[0, 3, ind]], [A[3, 0, ind], A[3, 3, ind]]])
@@ -1966,7 +1999,7 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
-            self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[0][ind], hkle[3][ind]], npts=npts)
+            self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
             # Projections into Qy, W plane
             [R0P, MP] = project_into_plane(0, R0, B)
@@ -1979,7 +2012,7 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
-            self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1][ind], hkle[3][ind]], npts=npts)
+            self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
             # Slice through Qy,W plane
             MP = np.array([[A[1, 1, ind], A[1, 3, ind]], [A[3, 1, ind], A[3, 3, ind]]])
@@ -1992,7 +2025,84 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
-            self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [hkle[1][ind], hkle[3][ind]], npts=npts)
+            self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
+
+    def get_angles_and_Q(self, hkle):
+        # compute all TAS angles (in plane)
+
+        h, k, l, w = hkle
+        # compute angles
+        try:
+            fx = 2 * int(self.infin == -1) + int(self.infin == 1)
+        except AttributeError:
+            fx = 2
+
+        kfix = Energy(energy=self.efixed).wavevector
+        f = 0.4826  # f converts from energy units into k^2, f=0.4826 for meV
+        ki = np.sqrt(kfix ** 2 + (fx - 1) * f * w)  # kinematical equations.
+        kf = np.sqrt(kfix ** 2 - (2 - fx) * f * w)
+
+        # compute the transversal Q component, and A3 (sample rotation)
+        # from McStas templateTAS.instr and TAS MAD ILL
+        a = np.array([ self.sample.a, self.sample.b, self.sample.c ]) / (2 * np.pi)
+        alpha = np.deg2rad([ self.sample.alpha, self.sample.beta, self.sample.gamma ])
+        cosa = np.cos(alpha)
+        sina = np.sin(alpha)
+        cc = np.sum(cosa * cosa)
+        cc = 1 + 2 * np.product(cosa) - cc
+        cc = np.sqrt(cc)
+        b = sina / (a * cc)
+        c1 = np.roll(cosa[np.newaxis].T, -1)
+        c2 = np.roll(c1, -1)
+        s1 = np.roll(sina[np.newaxis].T, -1)
+        s2 = np.roll(s1, -1)
+        cosb = (c1 * c2 - cosa[np.newaxis].T) / (s1 * s2);
+        sinb = np.sqrt(1 - cosb * cosb)
+
+        bb = np.array([[b[0], 0, 0 ],
+                       [b[1] * cosb[2], b[1] * sinb[2], 0 ],
+                       [b[2] * cosb[1], -b[2] * sinb[1] * cosa[0], 1 / a[2]]])
+        bb = bb.T
+
+        aspv = np.hstack((self.orient1[np.newaxis].T, self.orient2[np.newaxis].T))
+
+        vv = np.zeros((3, 3))
+        vv[0:2, :] = np.transpose(np.dot(bb, aspv))
+        for m in range(2, 0, -1):
+            vt = np.roll(np.roll(vv, -1, axis=0), -1, axis=1) * np.roll(np.roll(vv, -2, axis=0), -2, axis=1) - np.roll(np.roll(vv, -1, axis=0), -2, axis=1) * np.roll(np.roll(vv, -2, axis=0), -1, axis=1)
+            vv[m, :] = vt[m, :]
+
+        c = np.sqrt(np.sum(vv * vv, axis=0))
+
+        vv = vv / np.tile(c, (3, 1))
+        s = vv.T * bb
+
+        qt = np.squeeze(np.dot(np.array([h, k, l]).T, s.T))
+
+        qs = np.sum(qt ** 2)
+        Q = np.sqrt(qs)
+
+        sm = self.mono.dir
+        ss = self.sample.dir
+        sa = self.ana.dir
+        dm = 2 * np.pi / GetTau(self.mono.tau)
+        da = 2 * np.pi / GetTau(self.ana.tau)
+        thetaa = sa * np.arcsin(np.pi / (da * kf))  # theta angles for analyser
+        thetam = sm * np.arcsin(np.pi / (dm * ki))  # and monochromator.
+        thetas = ss * 0.5 * np.arccos((ki ** 2 + kf ** 2 - Q ** 2) / (2 * ki * kf))  # scattering angle from sample.
+
+        A3 = -np.arctan2(qt[1], qt[0]) - np.arccos((np.dot(kf, kf) - np.dot(Q, Q) - np.dot(ki, ki)) / (-2 * np.dot(Q, ki)))
+        A3 = ss * A3
+
+        A1 = thetam
+        A2 = 2 * A1
+        A4 = 2 * thetas
+        A5 = thetaa
+        A6 = 2 * A5
+
+        A = np.squeeze(np.rad2deg([A1, A2, A3, A4, A5, A6]))
+
+        return [A, Q]
 
     def get_resolution_params(self, hkle, plane, mode='project'):
         r'''Returns parameters for the resolution gaussian.
@@ -2439,7 +2549,7 @@ class Instrument(object):
 
         return conv
 
-    def plot_projections(self, hkle, npts=36):
+    def plot_projections(self, hkle, npts=36, dpi=100):
         r'''Plots resolution ellipses in the QxQy, QxW, and QyW zones
         
         Parameters
@@ -2458,34 +2568,341 @@ class Instrument(object):
             projections = self.projections
 
         import matplotlib.pyplot as plt
-        plt.rc('font', **{'family': 'serif', 'serif': 'Times New Roman', 'size': 12})
-        plt.rc('lines', markersize=3, linewidth=0.5)
 
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, facecolor='w', edgecolor='k')
+        plt.rc('font', **{'family': 'Bitstream Vera Sans', 'serif': 'cm10', 'size': 6})
+        plt.rc('lines', markersize=3, linewidth=1)
+
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, facecolor='w', edgecolor='k', dpi=dpi)
         fig.subplots_adjust(bottom=0.175, left=0.15, right=0.85, top=0.95, wspace=0.35, hspace=0.25)
 
+        ax1_dQ1, ax1_dQ2, ax2_dQ1, ax2_dE, ax3_dQ2, ax3_dE = [], [], [], [], [], []
         for i in range(self.RMS.shape[-1]):
-            ax1.plot(projections['QxQy'][0, :, i], projections['QxQy'][1, :, i])
-            ax1.plot(projections['QxQySlice'][0, :, i], projections['QxQySlice'][1, :, i])
+            ax1.fill(projections['QxQy'][0, :, i], projections['QxQy'][1, :, i], zorder=i, alpha=0.5, edgecolor='none')
+            ax1.plot(projections['QxQySlice'][0, :, i], projections['QxQySlice'][1, :, i], zorder=i + 3)
+            ax1_dQ1.append(np.max(projections['QxQy'][0, :, i]) - np.min(projections['QxQy'][0, :, i]))
+            ax1_dQ2.append(np.max(projections['QxQy'][1, :, i]) - np.min(projections['QxQy'][1, :, i]))
 
-            ax2.plot(projections['QyW'][0, :, i], projections['QxW'][1, :, i])
-            ax2.plot(projections['QyWSlice'][0, :, i], projections['QxWSlice'][1, :, i])
+            ax2.fill(projections['QxW'][0, :, i], projections['QxW'][1, :, i], zorder=i + 1, alpha=0.5, edgecolor='none')
+            ax2.plot(projections['QxWSlice'][0, :, i], projections['QxWSlice'][1, :, i], zorder=i + 4)
+            ax2_dQ1.append(np.max(projections['QxW'][0, :, i]) - np.min(projections['QxW'][0, :, i]))
+            ax2_dE.append(np.max(projections['QxW'][1, :, i]) - np.min(projections['QxW'][1, :, i]))
 
-            ax3.plot(projections['QxW'][0, :, i], projections['QyW'][1, :, i])
-            ax3.plot(projections['QxWSlice'][0, :, i], projections['QyWSlice'][1, :, i])
+            ax3.fill(projections['QyW'][0, :, i], projections['QyW'][1, :, i], zorder=i + 2, alpha=0.5, edgecolor='none')
+            ax3.plot(projections['QyWSlice'][0, :, i], projections['QyWSlice'][1, :, i], zorder=i + 5)
+            ax3_dQ2.append(np.max(projections['QyW'][0, :, i]) - np.min(projections['QyW'][0, :, i]))
+            ax3_dE.append(np.max(projections['QyW'][1, :, i]) - np.min(projections['QyW'][1, :, i]))
 
-        ax1.set_xlabel('$\mathbf{Q}_x$ (r.l.u.)')
-        ax1.set_ylabel('$\mathbf{Q}_y$ (r.l.u.)')
+        ax1_dQ1, ax1_dQ2, ax2_dQ1, ax2_dE, ax3_dQ2, ax3_dE = [np.max(item) for item in [ax1_dQ1, ax1_dQ2, ax2_dQ1, ax2_dE, ax3_dQ2, ax3_dE]]
+        ax1.set_xlabel('$\mathbf{Q}_1$ (along ' + str(self.orient1) + ') (r.l.u.)' + ', $\delta Q_1={0:.3f}$'.format(ax1_dQ1))
+        ax1.set_ylabel('$\mathbf{Q}_2$ (along ' + str(self.orient2) + ') (r.l.u.)' + ', $\delta Q_2={0:.3f}$'.format(ax1_dQ2))
+        ax1.set_autoscale_on(False)
         ax1.locator_params(nbins=4)
+        ax1.axis('equal')
 
-        ax2.set_xlabel('$\mathbf{Q}_y$ (r.l.u.)')
-        ax2.set_ylabel('$E$ (meV)')
+        ax2.set_xlabel('$\mathbf{Q}_{1}$ (along ' + str(self.orient1) + ') (r.l.u.)' + ', $\delta Q_1={0:.3f}$'.format(ax2_dQ1))
+        ax2.set_ylabel('$\hbar \omega$ (meV)' + ', $\delta E={0:.3f}$'.format(ax2_dE))
+        ax2.set_autoscale_on(False)
         ax2.locator_params(nbins=4)
+        ax2.set_xlim(ax3.get_xlim())
 
-        ax3.set_xlabel('$\mathbf{Q}_x$ (r.l.u.)')
-        ax3.set_ylabel('$E$ (meV)')
+        ax3.set_xlabel('$\mathbf{Q}_2$ (along ' + str(self.orient2) + ') (r.l.u.)' + ', $\delta Q_2={0:.3f}$'.format(ax3_dQ2))
+        ax3.set_ylabel('$\hbar \omega$ (meV)' + ', $\delta E={0:.3f}$'.format(ax3_dE))
+        ax3.set_autoscale_on(False)
         ax3.locator_params(nbins=4)
 
+        try:
+            method = ['Cooper-Nathans', 'Popovici'][self.method]
+        except AttributeError:
+            method = 'Cooper-Nathans'
+        frame = '[Q1,Q2,Qz,E]'
+
+        try:
+            FX = 2 * int(self.infin == -1) + int(self.infin == 1)
+        except AttributeError:
+            FX = 2
+
+        if self.RMS.shape == (4, 4):
+            NP = self.RMS
+            R0 = float(self.R0)
+            hkle = self.HKLE
+        else:
+            NP = self.RMS[:, :, 0]
+            R0 = self.R0[0]
+            hkle = [self.H[0], self.K[0], self.L[0], self.W[0]]
+
+        ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP))
+        bragg_widths = get_bragg_widths(NP)
+        angles, Q = self.get_angles_and_Q(hkle)
+
+        text_format = ['Method: {0}'.format(method),
+                       'Position HKLE [{0}]'.format(dt.datetime.now().strftime('%d-%b-%Y %T')),
+                       '',
+                       ' [$Q_H$, $Q_K$, $Q_L$, $E$] = {0} '.format(self.HKLE),
+                       '',
+                       'Resolution Matrix M in {0} (M/10^4):'.format(frame),
+                       '[[{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 0] / 1.0e4),
+                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 1] / 1.0e4),
+                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 2] / 1.0e4),
+                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]]'.format(*NP[:, 3] / 1.0e4),
+                       '',
+                       'Resolution volume:   $V_0=${0:.6f} meV/A^3'.format(2 * ResVol),
+                       'Intensity prefactor: $R_0=${0:.3f}'.format(R0),
+                       'Bragg width in [$Q_1$,$Q_2$,$E$] (FWHM):',
+                       ' $\delta Q_1$={0:.3f} $\delta Q_2$={1:.3f} [A-1] $\delta E$={2:.3f} [meV]'.format(bragg_widths[0], bragg_widths[1], bragg_widths[4]),
+                       ' $\delta Q_z$={0:.3f} Vanadium width $V$={1:.3f} [meV]'.format(*bragg_widths[2:4]),
+                       'Instrument parameters:',
+                       ' DM  =  {0:.3f} ETAM= {1:.3f} SM={2}'.format(self.mono.d, self.mono.mosaic, self.mono.dir),
+                       ' KFIX=  {0:.3f} FX  = {1} SS={2}'.format(Energy(energy=self.efixed).wavevector, FX, self.sample.dir),
+                       ' DA  =  {0:.3f} ETAA= {1:.3f} SA={2}'.format(self.ana.d, self.ana.mosaic, self.ana.dir),
+                       ' A1= {0:.2f} A2={1:.2f} A3={2:.2f} A4={3:.2f} A5={4:.2f} A6={5:.2f} [deg]'.format(*angles),
+                       'Collimation [arcmin]:',
+                       ' Horizontal: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.hcol),
+                       ' Vertical: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.vcol),
+                       'Sample:',
+                       ' a, b, c  =  [{0}, {1}, {2}] [Angs]'.format(self.sample.a, self.sample.b, self.sample.c),
+                       ' Alpha, Beta, Gamma  =  [{0}, {1}, {2}] [deg]'.format(self.sample.alpha, self.sample.beta, self.sample.gamma),
+                       ' U  =  {0} [rlu]\tV  =  {0} [rlu]'.format(self.orient1, self.orient2)]
+
         ax4.axis('off')
+        ax4.text(0, 1, '\n'.join(text_format), transform=ax4.transAxes, horizontalalignment='left', verticalalignment='top')
 
         plt.show()
+
+    def plot_ellipsoid(self, hkle, dpi=100):
+        r'''Plots the resolution ellipsoid in the $Q_x$, $Q_y$, $W$ zone
+        
+        Parameters
+        ----------
+        hkle : tup
+            A tuple of intergers or arrays of H, K, L, and W (energy transfer) values at which resolution ellipsoid are desired to be plotted
+        
+        '''
+        from vispy import app, scene, visuals
+        import sys
+
+        [H, K, L, W] = hkle
+        try:
+            if np.all(H == self.H) and np.all(K == self.K) and np.all(L == self.L) and np.all(W == self.W):
+                NP = np.array(self.RMS)
+                R0 = self.R0
+            else:
+                self.calc_resolution(hkle)
+                NP = np.array(self.RMS)
+                R0 = self.R0
+        except AttributeError:
+            self.calc_resolution(hkle)
+            NP = np.array(self.RMS)
+            R0 = self.R0
+
+        if NP.shape == (4, 4):
+            NP = NP[np.newaxis].reshape((4, 4, 1))
+            R0 = [R0]
+
+        # Create a canvas with a 3D viewport
+        canvas = scene.SceneCanvas(keys='interactive', bgcolor='white')
+        view = canvas.central_widget.add_view()
+
+        surface = []
+
+        for ind in range(NP.shape[-1]):
+            # for this plot to work, we need to remove row-column 3 of RMS
+            A = np.copy(NP)
+            RMS = np.delete(np.delete(A, 2, axis=0), 2, axis=1)[:, :, ind]
+
+#             [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
+            qx = [0]  # _scalar([xvec[0], xvec[1], xvec[2]], [self.H[ind], self.K[ind], self.L[ind]], rsample)
+            qy = [0]  # _scalar([yvec[0], yvec[1], yvec[2]], [self.H[ind], self.K[ind], self.L[ind]], rsample)
+            qw = [0]  # [self.W[ind]]
+
+            # Q vectors on figure axes
+#             o1 = np.copy(self.orient1)
+#             o2 = np.copy(self.orient2)
+#             pr = _scalar([o2[0], o2[1], o2[2]], [yvec[0], yvec[1], yvec[2]], rsample)
+
+#             o2[0] = yvec[0] * pr
+#             o2[1] = yvec[1] * pr
+#             o2[2] = yvec[2] * pr
+#
+#             if np.abs(o2[0]) < 1e-5:
+#                 o2[0] = 0
+#             if np.abs(o2[1]) < 1e-5:
+#                 o2[1] = 0
+#             if np.abs(o2[2]) < 1e-5:
+#                 o2[2] = 0
+#
+#             if np.abs(o1[0]) < 1e-5:
+#                 o1[0] = 0
+#             if np.abs(o1[1]) < 1e-5:
+#                 o1[1] = 0
+#             if np.abs(o1[2]) < 1e-5:
+#                 o1[2] = 0
+
+#             frame = '[Q1,Q2,E]'
+
+#             SMAGridPoints = 40
+            EllipsoidGridPoints = 100
+
+            def fn(r0, rms, q1, q2, q3, qx0, qy0, qw0):
+                ee = rms[0, 0] * (q1 - qx0[0]) ** 2 + rms[1, 1] * (q2 - qy0[0]) ** 2 + rms[2, 2] * (q3 - qw0[0]) ** 2 + \
+                   2 * rms[0, 1] * (q1 - qx0[0]) * (q2 - qy0[0]) + \
+                   2 * rms[0, 2] * (q1 - qx0[0]) * (q3 - qw0[0]) + \
+                   2 * rms[2, 1] * (q3 - qw0[0]) * (q2 - qy0[0])
+                return ee
+
+            # plot ellipsoids
+            wx = fproject(RMS.reshape((3, 3, 1)), 0)
+            wy = fproject(RMS.reshape((3, 3, 1)), 1)
+            ww = fproject(RMS.reshape((3, 3, 1)), 2)
+
+
+            surface = []
+            x = np.linspace(-wx[0] * 1.5, wx[0] * 1.5, EllipsoidGridPoints) + qx[0]
+            y = np.linspace(-wy[0] * 1.5, wy[0] * 1.5, EllipsoidGridPoints) + qy[0]
+            z = np.linspace(-ww[0] * 1.5, ww[0] * 1.5, EllipsoidGridPoints) + qw[0]
+            [xg, yg, zg] = np.meshgrid(x, y, z)
+
+            data = fn(R0[ind], RMS, xg, yg, zg, qx, qy, qw)
+
+            # Create isosurface visual
+            surface.append(scene.visuals.Isosurface(data, level=2. * np.log(2.), color=(0.5, 0.6, 1, 1), shading='smooth', parent=view.scene))
+
+        for surf in surface:
+            [nx, ny, nz] = data.shape
+            center = scene.transforms.STTransform(translate=(-nx / 2., -ny / 2., -nz / 2.))
+            surf.transform = center
+
+        frame = scene.visuals.Cube(size=(EllipsoidGridPoints * 5, EllipsoidGridPoints * 5, EllipsoidGridPoints * 5), color='white', edge_color=(0., 0., 0., 1.), parent=view.scene)
+        grid = scene.visuals.GridLines(color=(0 , 0, 0, 0.5), parent=view.scene)
+        grid.set_gl_state('translucent')
+
+        # Add a 3D axis to keep us oriented
+        axis = scene.visuals.XYZAxis(parent=view.scene)
+
+        # Use a 3D camera
+        # Manual bounds; Mesh visual does not provide bounds yet
+        # Note how you can set bounds before assigning the camera to the viewbox
+        cam = scene.TurntableCamera()
+        cam.azimuth = 135
+        cam.elevation = 30
+        cam.fov = 60
+        cam.distance = 1.2 * EllipsoidGridPoints
+        cam.center = (0, 0, 0)
+        view.camera = cam
+
+        canvas.show()
+        if sys.flags.interactive == 0:
+            app.run()
+
+    def plot_instrument(self, hkle):
+        '''Plots the instrument configuration using angles for a given position in Q and energy transfer
+        
+        Parameters
+        ----------
+        hkle : tup
+            A tuple of intergers or arrays of H, K, L, and W (energy transfer) values at which the instrument setup should be plotted
+
+        '''
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+
+        fig = plt.figure(edgecolor='k', facecolor='w', figsize=plt.figaspect(0.4) * 1.25)
+        ax = fig.gca(projection='3d')
+
+        angles, q = self.get_angles_and_Q(hkle)
+        distances = self.arms
+
+        angles = np.deg2rad(angles)
+        A1, A2, A3, A4, A5, A6 = -angles
+        x, y, direction = 0, 0, 0
+
+
+        x0, y0 = x, y
+        # plot the Source --------------------------------------------------------------
+        translate = 0
+        rotate = 0 * (np.pi / 180)
+        direction = direction + rotate
+        x = x + translate * np.sin(direction)
+        y = y + translate * np.cos(direction)
+
+        # create a square source
+        X = np.array([ -self.beam.width / 2, -self.beam.width / 2, self.beam.width / 2, self.beam.width / 2, -self.beam.width / 2])
+        Z = np.array([  self.beam.height / 2, -self.beam.height / 2, -self.beam.height / 2, self.beam.height / 2, self.beam.height / 2])
+        Y = np.zeros(5)
+        l = ax.plot(X + x, Y + y, zs=Z, color='b')
+        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Beam/Source', color='b')
+
+        x0 = x
+        y0 = y
+        # plot the Monochromator -------------------------------------------------------
+        translate = distances[0]
+        rotate = 0
+        direction = direction + rotate
+        x = x + translate * np.sin(direction)
+        y = y + translate * np.cos(direction)
+        l = ax.plot([x, x0 ], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+
+        # create a square Monochromator
+        X = np.array([ -self.mono.width / 2, -self.mono.width / 2, self.mono.width / 2, self.mono.width / 2, -self.mono.width / 2]) * np.sin(A1)
+        Z = np.array([  self.mono.height / 2 , -self.mono.height / 2, -self.mono.height / 2, self.mono.height / 2, self.mono.height / 2])
+        Y = X * np.cos(A1)
+        l = ax.plot(X + x, Y + y, zs=Z, color='r')
+        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Monochromator', color='r')
+
+        x0 = x
+        y0 = y
+        # plot the Sample --------------------------------------------------------------
+        translate = distances[1]
+        rotate = A2
+        direction = direction + rotate
+        x = x + translate * np.sin(direction)
+        y = y + translate * np.cos(direction)
+        l = ax.plot([x, x0 ], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+
+        # create a rotated square Sample
+        X = np.array([ -self.sample.width / 2, -self.sample.width / 2, self.sample.width / 2, self.sample.width / 2, -self.sample.width / 2]) * np.sin(A3)
+        Z = np.array([  self.sample.height / 2, -self.sample.height / 2, -self.sample.height / 2, self.sample.height / 2, self.sample.height / 2])
+        Y = X * np.cos(A3)
+        l1 = ax.plot(X + x, Y + y, zs=Z, color='g')
+        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Sample', color='g')
+        X = np.array([ -self.sample.depth / 2, -self.sample.depth / 2, self.sample.depth / 2, self.sample.depth / 2, -self.sample.depth / 2]) * np.sin(A3 + np.pi / 2)
+        Z = np.array([  self.sample.height / 2, -self.sample.height / 2, -self.sample.height / 2, self.sample.height / 2, self.sample.height / 2])
+        Y = X * np.cos(A3 + np.pi / 2)
+        l2 = ax.plot(X + x, Y + y, zs=Z, color='g')
+
+        x0 = x
+        y0 = y
+        # plot the Analyzer ------------------------------------------------------------
+        translate = distances[2]
+        rotate = A4
+        direction = direction + rotate
+        x = x + translate * np.sin(direction)
+        y = y + translate * np.cos(direction)
+        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+
+        # create a square
+        X = np.array([ -self.ana.width / 2, -self.ana.width / 2, self.ana.width / 2, self.ana.width / 2, -self.ana.width / 2]) * np.sin(A5)
+        Z = np.array([  self.ana.height / 2, -self.ana.height / 2, -self.ana.height / 2, self.ana.height / 2, self.ana.height / 2])
+        Y = X * np.cos(A5)
+        l = ax.plot(X + x, Y + y, zs=Z, color='magenta')
+        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Analyzer', color='magenta')
+
+        x0 = x
+        y0 = y
+        # plot the Detector ------------------------------------------------------------
+        translate = distances[3]
+        rotate = A6
+        direction = direction + rotate
+        x = x + translate * np.sin(direction)
+        y = y + translate * np.cos(direction)
+        l = ax.plot([ x, x0 ], [y, y0], zs=[ 0, 0 ], color='cyan', linestyle='--')
+
+        # create a square
+        X = np.array([ -self.detector.width / 2, -self.detector.width / 2, self.detector.width / 2, self.detector.width / 2, -self.detector.width / 2])
+        Z = np.array([  self.detector.height / 2, -self.detector.height / 2, -self.detector.height / 2, self.detector.height / 2, self.detector.height / 2])
+        Y = np.zeros(5)
+        l = ax.plot(X + x, Y + y, zs=Z, color='k')
+        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Detector', color='k')
+
+        ax.set_zlim3d(getattr(ax, 'get_zlim')()[0], getattr(ax, 'get_zlim')()[1] * 10)
+        plt.show()
+

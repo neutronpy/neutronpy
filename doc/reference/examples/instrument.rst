@@ -215,7 +215,7 @@ The following is an example of a resolution calculation using the Popovici metho
 
 Simple Plotting of Resolution Ellipses
 --------------------------------------
-To see a simple plot of the resolution ellipses in the :math:`Q_x Q_y`, :math:`Q_x W` and :math:`Q_y W` zones the :py:meth:`.plot_projections` method may be used.
+To see a simple plot of the resolution ellipses in the :math:`Q_x Q_y`, :math:`Q_x W` and :math:`Q_y W` zones the :py:meth:`.plot_projections` method may be used. This will also display instrument setup parameters and other useful information such as Bragg widths.
 
 A very simple plot for the default instrument, containing resolution ellipses for several different energies at may be obtained with these commands
 
@@ -230,3 +230,17 @@ A very simple plot for the default instrument, containing resolution ellipses fo
 
     EXP = Instrument()
     EXP.plot_projections([1., 1., 0., linspace(0, 15, 7)])
+
+Simple Plotting of the 3D Resolution Ellipsoid
+----------------------------------------------
+To see a simple plot of the resolution ellipsoid in the :math:`Q_x Q_y W` zone the :py:meth:`.plot_ellipsoid` method can be used.
+
+>>> EXP = Instrument()
+>>> EXP.plot_ellipsoid([1,0,0,0])
+
+Plotting of the Instrument setup for a given (Q,W)
+--------------------------------------------------
+To see a plot of the instrument setup using the angles required for a given :math:`(Q, W)` the :py:meth:`.plot_instrument` method can be used.
+
+>>> EXP = Instrument()
+>>> EXP.plot_instrument([1,0,0,0])
