@@ -1,9 +1,10 @@
 language: python
 env:
   - PYTHON_VERSION=2.6 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 USE_CYTHON=TRUE
-  - PYTHON_VERSION=2.7 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 USE_CYTHON=TRUE
+  - PYTHON_VERSION=2.7 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 USE_CYTHON=TRUE
   - PYTHON_VERSION=3.3 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 USE_CYTHON=TRUE
-  - PYTHON_VERSION=3.4 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 USE_CYTHON=TRUE 
+  - PYTHON_VERSION=3.4 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 USE_CYTHON=TRUE
+  - PYTHON_VERSION=3.5 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 USE_CYTHON=TRUE 
 install:
   - sudo apt-get update
   # You may want to periodically update this, although the conda update
@@ -11,9 +12,9 @@ install:
   # conditionally because it saves us some downloading if the version is
   # the same.
   - if [[ "$PYTHON_VERSION" == "2.7" ]] || [[ "$PYTHON_VERSION" == "2.6" ]]; then
-      wget http://repo.continuum.io/miniconda/Miniconda-3.7.3-Linux-x86_64.sh -O miniconda.sh;
+      wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
     else
-      wget http://repo.continuum.io/miniconda/Miniconda3-3.7.3-Linux-x86_64.sh -O miniconda.sh;
+      wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
     fi
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"

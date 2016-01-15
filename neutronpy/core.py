@@ -429,11 +429,11 @@ class Data(object):
             return bg_params['value']
 
         elif bg_params['type'] == 'percent':
-            with self.intensity[self.intensity >= 0.] as inten:
-                Npts = inten.size * (bg_params['value'] / 100.)
-                min_vals = inten[np.argsort(inten)[:Npts]]
-                background = np.average(min_vals)
-                return background
+            inten = self.intensity[self.intensity >= 0.]
+            Npts = inten.size * (bg_params['value'] / 100.)
+            min_vals = inten[np.argsort(inten)[:Npts]]
+            background = np.average(min_vals)
+            return background
 
         elif bg_params['type'] == 'minimum':
             return min(self.intensity)
@@ -569,7 +569,7 @@ class Data(object):
 
         '''
         if background is not None:
-            background = self.estimate_background(kwargs['background'])
+            background = self.estimate_background(background)
         else:
             background = 0
 
@@ -601,7 +601,7 @@ class Data(object):
 
         '''
         if background is not None:
-            background = self.estimate_background(kwargs['background'])
+            background = self.estimate_background(background)
         else:
             background = 0
 
@@ -641,7 +641,7 @@ class Data(object):
 
         '''
         if background is not None:
-            background = self.estimate_background(kwargs['background'])
+            background = self.estimate_background(background)
         else:
             background = 0
 

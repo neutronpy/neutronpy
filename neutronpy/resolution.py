@@ -1443,7 +1443,7 @@ class Instrument(object):
         anad = 1.
         detectorw = 1.
         detectorh = 1.
-        sshapes = np.repeat(np.eye(3, dtype=np.float64)[np.newaxis].reshape((3, 3, 1)), length, axis=2)
+        sshapes = np.repeat(np.eye(3, dtype=np.float64)[np.newaxis].reshape((1, 3, 3)), length, axis=0)
         L0 = 1.
         L1 = 1.
         L1mon = 1.
@@ -1504,10 +1504,12 @@ class Instrument(object):
         ashape = np.diag([anad, anaw, anah])
         if hasattr(sample, 'width') and hasattr(sample, 'depth') and hasattr(sample, 'height'):
             _sshape = np.diag([sample.depth, sample.width, sample.height]).astype(np.float64) ** 2 / 12.
-            sshapes = np.repeat(_sshape[np.newaxis].reshape((3, 3, 1)), length, axis=2)
+            sshapes = np.repeat(_sshape[np.newaxis].reshape((1, 3, 3)), length, axis=0)
         elif hasattr(sample, 'shape'):
             _sshape = sample.shape.astype(np.float64) / 12.
-            sshapes = np.repeat(_sshape[np.newaxis].reshape((3, 3, 1)), length, axis=2)
+            if len(_sshape.shape) == 2:
+                sshapes = np.repeat(_sshape[np.newaxis].reshape((1, 3, 3)), length, axis=0)
+            else: sshapes = _sshape
 
         if hasattr(self, 'arms') and method == 1:
             arms = self.arms
@@ -1550,7 +1552,7 @@ class Instrument(object):
         sa = self.ana.dir
 
         for ind in range(length):
-            sshape = sshapes[:, :, ind]
+            sshape = sshapes[ind, :, :]
             # Calculate angles and energies
             w = W[ind]
             q = Q[ind]
@@ -1851,7 +1853,7 @@ class Instrument(object):
                 rot[1, 1] = tmat[1, 1, i]
                 rot[2, 2] = tmat[2, 2, i]
                 samples.append(np.matrix(rot) * np.matrix(sample.shape) * np.matrix(rot).H)
-            self.sample.shape = samples
+            self.sample.shape = np.array(samples)
 
         [R0, RM] = self.calc_resolution_in_Q_coords(Q, W)
 
@@ -1913,7 +1915,14 @@ class Instrument(object):
                             'QxW': np.zeros((2, npts, NP.shape[-1])),
                             'QxWSlice': np.zeros((2, npts, NP.shape[-1])),
                             'QyW': np.zeros((2, npts, NP.shape[-1])),
-                            'QyWSlice': np.zeros((2, npts, NP.shape[-1]))}
+                            'QyWSlice': np.zeros((2, npts, NP.shape[-1])),
+                            'QxQy_fwhm': np.zeros((2, NP.shape[-1])),
+                            'QxQySlice_fwhm': np.zeros((2, NP.shape[-1])),
+                            'QxW_fwhm': np.zeros((2, NP.shape[-1])),
+                            'QxWSlice_fwhm': np.zeros((2, NP.shape[-1])),
+                            'QyW_fwhm': np.zeros((2, NP.shape[-1])),
+                            'QyWSlice_fwhm': np.zeros((2, NP.shape[-1])),
+                            }
 
         [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
 
@@ -1958,6 +1967,9 @@ class Instrument(object):
 
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
+            
+            self.projections['QxQy_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QxQy_fwhm'][1, ind] = 2 * hwhm_yp
 
             self.projections['QxQy'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, npts=npts)
 
@@ -1971,6 +1983,9 @@ class Instrument(object):
 
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
+
+            self.projections['QxQySlice_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QxQySlice_fwhm'][1, ind] = 2 * hwhm_yp
 
             self.projections['QxQySlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, npts=npts)
 
@@ -1986,6 +2001,9 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
+            self.projections['QxW_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QxW_fwhm'][1, ind] = 2 * hwhm_yp
+
             self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
             # Slice through Qx,W plane
@@ -1998,6 +2016,9 @@ class Instrument(object):
 
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
+
+            self.projections['QxWSlice_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QxWSlice_fwhm'][1, ind] = 2 * hwhm_yp
 
             self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
@@ -2012,6 +2033,9 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
+            self.projections['QyW_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QyW_fwhm'][1, ind] = 2 * hwhm_yp
+
             self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
             # Slice through Qy,W plane
@@ -2024,6 +2048,9 @@ class Instrument(object):
 
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
+
+            self.projections['QyWSlice_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QyWSlice_fwhm'][1, ind] = 2 * hwhm_yp
 
             self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
@@ -2137,43 +2164,47 @@ class Instrument(object):
 
         ind = ind[0][0]
 
+        if len(A.shape) != 3:
+            A = A.reshape((A.shape[0], A.shape[1], 1))
+            selfR0 = self.R0[np.newaxis]
+
         # Remove the vertical component from the matrix
         B = np.vstack((np.hstack((A[0, :2:1, ind], A[0, 3, ind])),
                        np.hstack((A[1, :2:1, ind], A[1, 3, ind])),
                        np.hstack((A[3, :2:1, ind], A[3, 3, ind]))))
 
         if plane == 'QxQy':
+            R0 = np.sqrt(2 * np.pi / B[2, 2]) * selfR0[ind]
             if mode == 'project':
                 # Projection into Qx, Qy plane
-                R0 = np.sqrt(2 * np.pi / B[2, 2]) * self.R0[ind]
-                MP = project_into_plane(2, self.R0[ind], B)
+                R0, MP = project_into_plane(2, R0, B)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qx,Qy plane
                 MP = np.array(A[:2:1, :2:1, ind])
-                return (self.R0[ind], MP[0, 0], MP[1, 1], MP[0, 1])
+                return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
 
         if plane == 'QxW':
+            R0 = np.sqrt(2 * np.pi / B[1, 1]) * selfR0[ind]
             if mode == 'project':
                 # Projection into Qx, W plane
-                R0 = np.sqrt(2 * np.pi / B[1, 1]) * self.R0[ind]
-                MP = project_into_plane(1, self.R0[ind], B)
+                R0, MP = project_into_plane(1, R0, B)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qx,W plane
                 MP = np.array([[A[0, 0, ind], A[0, 3, ind]], [A[3, 0, ind], A[3, 3, ind]]])
-                return (self.R0[ind][0], MP[0, 0], MP[1, 1], MP[0, 1])
+                return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
 
         if plane == 'QyW':
+            R0 = np.sqrt(2 * np.pi / B[0, 0]) * selfR0[ind]
             if mode == 'project':
                 # Projections into Qy, W plane
-                R0 = np.sqrt(2 * np.pi / B[0, 0]) * self.R0
-                MP = project_into_plane(0, self.R0[ind], B)
+                R0, MP = project_into_plane(0, R0, B)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qy,W plane
                 MP = np.array([[A[1, 1, ind], A[1, 3, ind]], [A[3, 1, ind], A[3, 3, ind]]])
-                return (self.R0[ind][0], MP[0, 0], MP[1, 1], MP[0, 1])
+                return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
 
     def resolution_convolution(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None, seed=None):
         r'''Numerically calculate the convolution of a user-defined cross-section 
@@ -2906,3 +2937,123 @@ class Instrument(object):
         ax.set_zlim3d(getattr(ax, 'get_zlim')()[0], getattr(ax, 'get_zlim')()[1] * 10)
         plt.show()
 
+    def interactive_plot_projections(self):
+        import matplotlib.pyplot as plt
+
+        plt.rc('font', **{'family': 'Bitstream Vera Sans', 'serif': 'cm10', 'size': 6})
+        plt.rc('lines', markersize=3, linewidth=1)
+
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, facecolor='w', edgecolor='k', dpi=100)
+        fig.subplots_adjust(bottom=0.175, left=0.15, right=0.85, top=0.95, wspace=0.35, hspace=0.25)
+
+        self.interactive = 'on'
+        self._hkle = None
+
+        self.calc_projections(self.hkle)
+        projections = self.projections
+        plt.show(block=False)
+        
+#         plt.ion()
+
+        while self.interactive == 'on':
+            if np.all(self._hkle != self.hkle):
+                plt.cla()
+                
+                self.calc_projections(self.hkle)
+                projections = self.projections
+                self._hkle = np.copy(self.hkle)
+    
+                ax1_dQ1, ax1_dQ2, ax2_dQ1, ax2_dE, ax3_dQ2, ax3_dE = [], [], [], [], [], []
+                for i in range(self.RMS.shape[-1]):
+                    ax1.fill(projections['QxQy'][0, :, i], projections['QxQy'][1, :, i], zorder=i, alpha=0.5, edgecolor='none')
+                    ax1.plot(projections['QxQySlice'][0, :, i], projections['QxQySlice'][1, :, i], zorder=i + 3)
+                    ax1_dQ1.append(np.max(projections['QxQy'][0, :, i]) - np.min(projections['QxQy'][0, :, i]))
+                    ax1_dQ2.append(np.max(projections['QxQy'][1, :, i]) - np.min(projections['QxQy'][1, :, i]))
+    
+                    ax2.fill(projections['QxW'][0, :, i], projections['QxW'][1, :, i], zorder=i + 1, alpha=0.5, edgecolor='none')
+                    ax2.plot(projections['QxWSlice'][0, :, i], projections['QxWSlice'][1, :, i], zorder=i + 4)
+                    ax2_dQ1.append(np.max(projections['QxW'][0, :, i]) - np.min(projections['QxW'][0, :, i]))
+                    ax2_dE.append(np.max(projections['QxW'][1, :, i]) - np.min(projections['QxW'][1, :, i]))
+    
+                    ax3.fill(projections['QyW'][0, :, i], projections['QyW'][1, :, i], zorder=i + 2, alpha=0.5, edgecolor='none')
+                    ax3.plot(projections['QyWSlice'][0, :, i], projections['QyWSlice'][1, :, i], zorder=i + 5)
+                    ax3_dQ2.append(np.max(projections['QyW'][0, :, i]) - np.min(projections['QyW'][0, :, i]))
+                    ax3_dE.append(np.max(projections['QyW'][1, :, i]) - np.min(projections['QyW'][1, :, i]))
+    
+                ax1_dQ1, ax1_dQ2, ax2_dQ1, ax2_dE, ax3_dQ2, ax3_dE = [np.max(item) for item in [ax1_dQ1, ax1_dQ2, ax2_dQ1, ax2_dE, ax3_dQ2, ax3_dE]]
+                ax1.set_xlabel('$\mathbf{Q}_1$ (along ' + str(self.orient1) + ') (r.l.u.)' + ', $\delta Q_1={0:.3f}$'.format(ax1_dQ1))
+                ax1.set_ylabel('$\mathbf{Q}_2$ (along ' + str(self.orient2) + ') (r.l.u.)' + ', $\delta Q_2={0:.3f}$'.format(ax1_dQ2))
+                ax1.set_autoscale_on(False)
+                ax1.locator_params(nbins=4)
+                ax1.axis('equal')
+    
+                ax2.set_xlabel('$\mathbf{Q}_{1}$ (along ' + str(self.orient1) + ') (r.l.u.)' + ', $\delta Q_1={0:.3f}$'.format(ax2_dQ1))
+                ax2.set_ylabel('$\hbar \omega$ (meV)' + ', $\delta E={0:.3f}$'.format(ax2_dE))
+                ax2.set_autoscale_on(False)
+                ax2.locator_params(nbins=4)
+                ax2.set_xlim(ax3.get_xlim())
+    
+                ax3.set_xlabel('$\mathbf{Q}_2$ (along ' + str(self.orient2) + ') (r.l.u.)' + ', $\delta Q_2={0:.3f}$'.format(ax3_dQ2))
+                ax3.set_ylabel('$\hbar \omega$ (meV)' + ', $\delta E={0:.3f}$'.format(ax3_dE))
+                ax3.set_autoscale_on(False)
+                ax3.locator_params(nbins=4)
+    
+                try:
+                    method = ['Cooper-Nathans', 'Popovici'][self.method]
+                except AttributeError:
+                    method = 'Cooper-Nathans'
+                frame = '[Q1,Q2,Qz,E]'
+    
+                try:
+                    FX = 2 * int(self.infin == -1) + int(self.infin == 1)
+                except AttributeError:
+                    FX = 2
+    
+                if self.RMS.shape == (4, 4):
+                    NP = self.RMS
+                    R0 = float(self.R0)
+                    hkle = self.HKLE
+                else:
+                    NP = self.RMS[:, :, 0]
+                    R0 = self.R0[0]
+                    hkle = [self.H[0], self.K[0], self.L[0], self.W[0]]
+    
+                ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP))
+                bragg_widths = get_bragg_widths(NP)
+                angles, Q = self.get_angles_and_Q(hkle)
+    
+                text_format = ['Method: {0}'.format(method),
+                               'Position HKLE [{0}]'.format(dt.datetime.now().strftime('%d-%b-%Y %T')),
+                               '',
+                               ' [$Q_H$, $Q_K$, $Q_L$, $E$] = {0} '.format(self.HKLE),
+                               '',
+                               'Resolution Matrix M in {0} (M/10^4):'.format(frame),
+                               '[[{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 0] / 1.0e4),
+                               ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 1] / 1.0e4),
+                               ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 2] / 1.0e4),
+                               ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]]'.format(*NP[:, 3] / 1.0e4),
+                               '',
+                               'Resolution volume:   $V_0=${0:.6f} meV/A^3'.format(2 * ResVol),
+                               'Intensity prefactor: $R_0=${0:.3f}'.format(R0),
+                               'Bragg width in [$Q_1$,$Q_2$,$E$] (FWHM):',
+                               ' $\delta Q_1$={0:.3f} $\delta Q_2$={1:.3f} [A-1] $\delta E$={2:.3f} [meV]'.format(bragg_widths[0], bragg_widths[1], bragg_widths[4]),
+                               ' $\delta Q_z$={0:.3f} Vanadium width $V$={1:.3f} [meV]'.format(*bragg_widths[2:4]),
+                               'Instrument parameters:',
+                               ' DM  =  {0:.3f} ETAM= {1:.3f} SM={2}'.format(self.mono.d, self.mono.mosaic, self.mono.dir),
+                               ' KFIX=  {0:.3f} FX  = {1} SS={2}'.format(Energy(energy=self.efixed).wavevector, FX, self.sample.dir),
+                               ' DA  =  {0:.3f} ETAA= {1:.3f} SA={2}'.format(self.ana.d, self.ana.mosaic, self.ana.dir),
+                               ' A1= {0:.2f} A2={1:.2f} A3={2:.2f} A4={3:.2f} A5={4:.2f} A6={5:.2f} [deg]'.format(*angles),
+                               'Collimation [arcmin]:',
+                               ' Horizontal: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.hcol),
+                               ' Vertical: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.vcol),
+                               'Sample:',
+                               ' a, b, c  =  [{0}, {1}, {2}] [Angs]'.format(self.sample.a, self.sample.b, self.sample.c),
+                               ' Alpha, Beta, Gamma  =  [{0}, {1}, {2}] [deg]'.format(self.sample.alpha, self.sample.beta, self.sample.gamma),
+                               ' U  =  {0} [rlu]\tV  =  {0} [rlu]'.format(self.orient1, self.orient2)]
+    
+                ax4.axis('off')
+                ax4.text(0, 1, '\n'.join(text_format), transform=ax4.transAxes, horizontalalignment='left', verticalalignment='top')
+
+                plt.draw()
+
+        plt.ioff()
