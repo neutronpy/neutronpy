@@ -1915,7 +1915,14 @@ class Instrument(object):
                             'QxW': np.zeros((2, npts, NP.shape[-1])),
                             'QxWSlice': np.zeros((2, npts, NP.shape[-1])),
                             'QyW': np.zeros((2, npts, NP.shape[-1])),
-                            'QyWSlice': np.zeros((2, npts, NP.shape[-1]))}
+                            'QyWSlice': np.zeros((2, npts, NP.shape[-1])),
+                            'QxQy_fwhm': np.zeros((2, NP.shape[-1])),
+                            'QxQySlice_fwhm': np.zeros((2, NP.shape[-1])),
+                            'QxW_fwhm': np.zeros((2, NP.shape[-1])),
+                            'QxWSlice_fwhm': np.zeros((2, NP.shape[-1])),
+                            'QyW_fwhm': np.zeros((2, NP.shape[-1])),
+                            'QyWSlice_fwhm': np.zeros((2, NP.shape[-1])),
+                            }
 
         [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
 
@@ -1960,6 +1967,9 @@ class Instrument(object):
 
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
+            
+            self.projections['QxQy_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QxQy_fwhm'][1, ind] = 2 * hwhm_yp
 
             self.projections['QxQy'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, npts=npts)
 
@@ -1973,6 +1983,9 @@ class Instrument(object):
 
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
+
+            self.projections['QxQySlice_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QxQySlice_fwhm'][1, ind] = 2 * hwhm_yp
 
             self.projections['QxQySlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, npts=npts)
 
@@ -1988,6 +2001,9 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
+            self.projections['QxW_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QxW_fwhm'][1, ind] = 2 * hwhm_yp
+
             self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
             # Slice through Qx,W plane
@@ -2000,6 +2016,9 @@ class Instrument(object):
 
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
+
+            self.projections['QxWSlice_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QxWSlice_fwhm'][1, ind] = 2 * hwhm_yp
 
             self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
@@ -2014,6 +2033,9 @@ class Instrument(object):
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
 
+            self.projections['QyW_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QyW_fwhm'][1, ind] = 2 * hwhm_yp
+
             self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
             # Slice through Qy,W plane
@@ -2026,6 +2048,9 @@ class Instrument(object):
 
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
+
+            self.projections['QyWSlice_fwhm'][0, ind] = 2 * hwhm_xp
+            self.projections['QyWSlice_fwhm'][1, ind] = 2 * hwhm_yp
 
             self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
@@ -2149,37 +2174,37 @@ class Instrument(object):
                        np.hstack((A[3, :2:1, ind], A[3, 3, ind]))))
 
         if plane == 'QxQy':
+            R0 = np.sqrt(2 * np.pi / B[2, 2]) * selfR0[ind]
             if mode == 'project':
                 # Projection into Qx, Qy plane
-                R0 = np.sqrt(2 * np.pi / B[2, 2]) * selfR0[ind]
                 R0, MP = project_into_plane(2, R0, B)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qx,Qy plane
                 MP = np.array(A[:2:1, :2:1, ind])
-                return (R0[ind], MP[0, 0], MP[1, 1], MP[0, 1])
+                return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
 
         if plane == 'QxW':
+            R0 = np.sqrt(2 * np.pi / B[1, 1]) * selfR0[ind]
             if mode == 'project':
                 # Projection into Qx, W plane
-                R0 = np.sqrt(2 * np.pi / B[1, 1]) * selfR0[ind]
                 R0, MP = project_into_plane(1, R0, B)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qx,W plane
                 MP = np.array([[A[0, 0, ind], A[0, 3, ind]], [A[3, 0, ind], A[3, 3, ind]]])
-                return (R0[ind], MP[0, 0], MP[1, 1], MP[0, 1])
+                return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
 
         if plane == 'QyW':
+            R0 = np.sqrt(2 * np.pi / B[0, 0]) * selfR0[ind]
             if mode == 'project':
                 # Projections into Qy, W plane
-                R0 = np.sqrt(2 * np.pi / B[0, 0]) * selfR0[ind]
                 R0, MP = project_into_plane(0, R0, B)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qy,W plane
                 MP = np.array([[A[1, 1, ind], A[1, 3, ind]], [A[3, 1, ind], A[3, 3, ind]]])
-                return (R0[ind], MP[0, 0], MP[1, 1], MP[0, 1])
+                return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
 
     def resolution_convolution(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None, seed=None):
         r'''Numerically calculate the convolution of a user-defined cross-section 
