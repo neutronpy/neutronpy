@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* :release:`v0.3.3 <2016-01-15>`
+* :support:`37` Updated example documentation for :py:class:`.Material`
+* :bug:`38` Fixed problem with Sample Shape matrix being the wrong shape upon initialization generating error in :py:meth:`.Instrument.calc_resolution_in_Q_coords`
+* :support:`39` Updated TravisCI test environments to include Python 3.5 and latest versions of numpy and scipy
+
 * :release:`v0.3.2 <2015-09-02>`
 * :feature:`34` Added method :py:meth:`.Instrument.plot_ellipsoid`
 * :bug:`33` Fixed error in :py:meth:`.Instrument.calc_projections` where only giving one point would generate an error
