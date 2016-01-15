@@ -1443,7 +1443,7 @@ class Instrument(object):
         anad = 1.
         detectorw = 1.
         detectorh = 1.
-        sshapes = np.repeat(np.eye(3, dtype=np.float64)[np.newaxis].reshape((3, 3, 1)), length, axis=2)
+        sshapes = np.repeat(np.eye(3, dtype=np.float64)[np.newaxis].reshape((1, 3, 3)), length, axis=0)
         L0 = 1.
         L1 = 1.
         L1mon = 1.
