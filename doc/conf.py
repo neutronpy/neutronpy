@@ -99,14 +99,14 @@ add_function_parentheses = False
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx_rtd_theme.support.LightStyle'
+pygments_style = 'sphinx_rtd_theme_custom.support.LightStyle'
 
 # -----------------------------------------------------------------------------
 # HTML output
 # -----------------------------------------------------------------------------
 
 import sphinx_rtd_theme_custom
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_rtd_theme_custom"
 html_theme_path = [sphinx_rtd_theme_custom.get_html_theme_path()]
 
 html_static_path = [os.path.join('.', '_static')]
