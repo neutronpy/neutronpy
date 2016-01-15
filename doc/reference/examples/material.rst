@@ -21,7 +21,9 @@ For this example we will use Fe\ :sub:`1.1`\ Te, a high-temperature tetragonal :
                                 {'ion': 'Fe', 'pos': [0.75, 0.75, -0.721], 'occupancy': 0.1}],
                 'debye-waller': False,
                 'massNorm': True,
-                'lattice': [3.81, 3.81, 6.25]}
+                'lattice': {'abc': [3.81, 3.81, 6.25],
+                            'abg': [90, 90, 90]}
+               }
 
 Initializing the Material class
 -------------------------------
@@ -62,7 +64,8 @@ The resulting plot of this structure factor would look like the following figure
                                 {'ion': 'Fe', 'pos': [0.75, 0.75, -0.721], 'occupancy': 0.1}],
                 'debye-waller': False,
                 'massNorm': True,
-                'lattice': [3.81, 3.81, 6.25]}
+                'lattice': {'abc': [3.81, 3.81, 6.25],
+                            'abg': [90, 90, 90]}}
     FeTe = Material(def_FeTe)
     str_fac = 0.25 * (np.abs(FeTe.calc_str_fac((h, k, 0))) ** 2 +
                       np.abs(FeTe.calc_str_fac((-h, k, 0))) ** 2 +
