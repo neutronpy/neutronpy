@@ -2,21 +2,21 @@
 Changelog
 =========
 
-* :release:`v0.3.3 <2016-01-15>`
+* :release:`v0.3.3 <2016-01-15>` 37, 38, 39
 * :support:`37` Updated example documentation for :py:class:`.Material`
 * :bug:`38` Fixed problem with Sample Shape matrix being the wrong shape upon initialization generating error in :py:meth:`.Instrument.calc_resolution_in_Q_coords`
 * :support:`39` Updated TravisCI test environments to include Python 3.5 and latest versions of numpy and scipy
 
-* :release:`v0.3.2 <2015-09-02>`
+* :release:`v0.3.2 <2015-09-02>` 24, 33, 34
 * :feature:`34` Added method :py:meth:`.Instrument.plot_ellipsoid`
 * :bug:`33` Fixed error in :py:meth:`.Instrument.calc_projections` where only giving one point would generate an error
 * :feature:`24` Added plotting of Instrument setup diagram with :py:meth`.Instrument.plot_instrument`
 
-* :release:`v0.3.1 <2015-08-14>`
+* :release:`v0.3.1 <2015-08-14>` 27, 29, 30, 31, 32
 * :feature:`32` Added a Aluminum spurion calculator
 * :feature:`31` Beginnings of a :py:class:`.Goniometer` class added for future ability for crystal alignment
 * :bug:`30` Added ability to specify seed for Monte Carlo technique in :py:meth:`.Instrument.resolution_convolution`
-* :bug:`29 major` Fixed problem with forked processes not closing after completing
+* :bug:`29` Fixed problem with forked processes not closing after completing
 * :feature:`27` Added proper error handling to :py:meth:`.Data.bin`
 
 * :release:`v0.3.0 <2015-03-31>`
@@ -33,19 +33,19 @@ Changelog
 * :support:`16` Documentation for Material and Instrument classes updated
 * :feature:`15` Data class rewrite. Data is now loaded with :py:meth:`.load` method, not using :py:class:`.Data` class.
 
-* :release:`v0.1.3 <2014-12-30>`
+* :release:`v0.1.3 <2014-12-30>` 18
 * :bug:`18` Update :py:meth:`.Material.calc_str_fac` to include better checking of input hkl tuple
 
-* :release:`0.1.2 <2014-09-22>`
+* :release:`v0.1.2 <2014-09-22>` 11, 12
 * :support:`12` Major overhaul of documentation, including new theme based on ReadTheDocs style
 * :feature:`11` tools package has been changed to core package and package contents are accessible from root level ``neutronpy.``
 
-* :release:`v0.1.1 <2014-09-12>`
-* :bug:`7 major` Added tolerances to :py:meth:`.Data.combine_data` so that small differences in Q will be ignored
+* :release:`v0.1.1 <2014-09-12>` 5, 6, 7
+* :bug:`7` Added tolerances to :py:meth:`.Data.combine_data` so that small differences in Q will be ignored
 * :feature:`6` Added time to :py:class:`.Data` for normalization purposes
-* :bug:`5 major` Update :py:meth:`.Data.bin` to use binary search algorithm for speed increase
+* :bug:`5` Update :py:meth:`.Data.bin` to use binary search algorithm for speed increase
 
-* :release:`v0.1 <2014-09-09>`
+* :release:`v0.1.0 <2014-09-09>`
 * :support:`4` Added examples for :py:class:`.Data` to documentation
 * :support:`3` Added examples for :py:class:`.Fitter` to documentation
 * :feature:`2` Added fitting to :py:meth:`.Data.plot` with ``fit_options`` argument

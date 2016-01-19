@@ -22,9 +22,10 @@ needs_sphinx = '1.0'
 # -----------------------------------------------------------------------------
 # releases (changelog) configuration
 # -----------------------------------------------------------------------------
-releases_issue_uri = "https://github.com/neutronpy/neutronpy/issues/%s"
-releases_release_uri = "https://github.com/neutronpy/neutronpy/tree/%s"
+#releases_issue_uri = "https://github.com/neutronpy/neutronpy/issues/%s"
+#releases_release_uri = "https://github.com/neutronpy/neutronpy/tree/%s"
 releases_github_path = "neutronpy/neutronpy"
+releases_debug = False
 
 # -----------------------------------------------------------------------------
 # General configuration
@@ -61,7 +62,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'neutronpy'
-copyright = '2014, David M Fobes'
+copyright = '2016, David M Fobes'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -126,9 +127,9 @@ html_theme_options = {'logo': 'logo.png',
                       }
 
 # Sister-site links to API docs
-# html_theme_options['extra_nav_links'] = {
-#     "NeutronPy Docs": 'http://neutronpy.github.io/reference',
-# }
+html_theme_options['extra_nav_links'] = {
+     "NeutronPy Docs": 'http://neutronpy.github.io/reference',
+}
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
