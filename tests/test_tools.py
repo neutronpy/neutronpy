@@ -40,21 +40,21 @@ class DataTest(unittest.TestCase):
                       os.path.join(os.path.dirname(__file__), 'scan0002.dat')))
         data2 = load((os.path.join(os.path.dirname(__file__), 'scan0003.ng5')))
         data3 = load((os.path.join(os.path.dirname(__file__), 'scan0004.bt7')))
-
+ 
     def test_save_file(self):
         pass
-    
+     
     def test_filetype_detection(self):
         self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0001.dat')) == 'SPICE')
         self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0003.ng5')) == 'ICP')
         self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0004.bt7')) == 'ICE')
-    
+     
     def test_combine_data(self):
         data1 = self.build_data(clean=True)
         data2 = self.build_data(clean=False)
-
+ 
         data = data1 + data2
-
+ 
         self.assertTrue((data.monitor == data1.monitor + data2.monitor).all())
         self.assertTrue((data.detector == data1.detector + data2.detector).all())
         self.assertTrue((data.Q == data1.Q).all() & (data.Q == data2.Q).all())
@@ -62,17 +62,17 @@ class DataTest(unittest.TestCase):
     def test_rebin(self):
         data = self.build_data(clean=True)
         data_bin = data.bin(dict(h=[-1, 1., 41], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[3.5, 4.5, 1], temp=[-300, 900, 1]))
-
+ 
         self.assertEqual(data_bin.Q.shape[0], 41)
         self.assertEqual(data_bin.monitor.shape[0], 41)
         self.assertEqual(data_bin.detector.shape[0], 41)
-
+ 
         self.assertEqual(np.average(data_bin.monitor), np.average(data.monitor))
         self.assertTrue(abs(simps(data_bin.detector, data_bin.Q[:, 0]) - simps(data.detector, data.Q[:, 0])) <= 0.1)
 
     def test_analysis(self):
         data = self.build_data(clean=True)
-        
+         
         self.assertAlmostEqual(data.integrate(), 45.8424794006, 6)
         self.assertTrue((data.position()[0] < 1e-15))
         self.assertAlmostEqual(data.width()[0], 0.3, 2)

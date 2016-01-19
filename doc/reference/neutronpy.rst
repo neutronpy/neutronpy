@@ -24,11 +24,9 @@ Submodules
    neutronpy.constants
    neutronpy.form_facs
    neutronpy.functions
-   neutronpy.kmpfit
    neutronpy.lattice
    neutronpy.models
    neutronpy.resolution
-   neutronpy.tools
 
 Module contents
 ---------------

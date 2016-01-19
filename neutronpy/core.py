@@ -68,7 +68,7 @@ class Data(object):
     intensity
     error
     detailed_balance_factor
-
+    
     Methods
     -------
     bin
@@ -77,7 +77,12 @@ class Data(object):
     width
     load_file
     plot
-
+    estimate_background
+    subtract_background
+    dynamic_susceptibility
+    scattering_function
+    combine_data
+    
     '''
     def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0.,
                  detector=0., monitor=0., error=0., time=0., time_norm=False, **kwargs):
@@ -317,14 +322,44 @@ class Data(object):
         return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
 
     def scattering_function(self, material, ei):
-        ki = Energy(energy=ei).wavevector
-        kf = Energy(energy=ei-self.e).wavevector
+        r'''Returns the neutron scattering function, i.e. the detector counts scaled by :math:`4 \pi / \sigma_{\mathrm{tot}} * k_i/k_f`. 
         
+        Parameters
+        ----------
+        material : object
+            Definition of the material given by the :py:class:`.Material` class
+        
+        ei : float
+            Incident energy in meV
+        
+        Returns
+        -------
+        counts : ndarray
+            The detector counts scaled by the total scattering cross section and ki/kf
+        '''
+        ki = Energy(energy=ei).wavevector
+        kf = Energy(energy=ei - self.e).wavevector
+
         return 4 * np.pi / (material.total_scattering_cross_section) * ki / kf * self.counts
-    
+
     def dynamic_susceptibility(self, material, ei):
-        return self.scattering_fucntion(material, ei) * self.detailed_balance_factor
-    
+        r'''Returns the dynamic susceptibility :math:`\chi^{\prime\prime}(\mathbf{Q},\hbar\omega)`
+        
+        Parameters
+        ----------
+        material : object
+            Definition of the material given by the :py:class:`.Material` class
+                
+        ei : float
+            Incident energy in meV
+        
+        Returns
+        -------
+        counts : ndarray
+            The detector counts turned into the scattering function multiplied by the detailed balance factor
+        '''
+        return self.scattering_function(material, ei) * self.detailed_balance_factor
+
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
 
@@ -333,15 +368,12 @@ class Data(object):
         args : dictionary of ndarrays
             A dictionary (or multiple) of the data that will be added to the
             current data, with keys:
+            
                 * Q : ndarray : [h, k, l, e] with shape (N, 4,)
                 * monitor : ndarray : shape (N,)
                 * detector : ndarray : shape (N,)
                 * temps : ndarray : shape (N,)
-
-        Returns
-        -------
-        None
-
+        
         '''
         Q = self.Q.copy()
         detector = self.detector.copy()  # pylint: disable=access-member-before-definition
@@ -369,7 +401,7 @@ class Data(object):
 
             if len(combine) > 0:
                 for key in ['Q', 'monitor', 'detector', 'time']:
-                    arg[key] = np.delete(arg[key], (np.array(combine)[:, 0],), 0)
+                    arg[key] = np.delete(arg[key], (np.array(combine, dtype=np.int64)[:, 0],), 0)
 
             Q = np.concatenate((Q, arg['Q']))
             detector = np.concatenate((detector, arg['detector']))
@@ -406,7 +438,7 @@ class Data(object):
         
         '''
         pass
-    
+
     def estimate_background(self, bg_params):
         r'''Estimate the background according to ``type`` specified.
 
@@ -971,7 +1003,7 @@ def load(files, filetype='auto', tols=1e-4):
                         headers = [head for head in args]
                         skip_lines = i + 2
                         break
-            
+
             args = np.genfromtxt(filename, unpack=True, dtype=np.float64, skip_header=skip_lines, skip_footer=1)
 
         else:
@@ -1111,6 +1143,19 @@ class Energy():
     -------
     Energy object
         The energy object containing the properties of the neutron beam
+        
+    Attributes
+    ----------
+    energy
+    wavelength
+    wavevector
+    velocity
+    temperature
+    frequency
+    
+    Methods
+    -------
+    values
     '''
     def __init__(self, energy=None, wavelength=None, velocity=None,
                  wavevector=None, temperature=None, frequency=None):
@@ -1148,6 +1193,7 @@ class Energy():
 
     @property
     def energy(self):
+        r'''Energy of the neutron in meV'''
         return self.en
 
     @energy.setter
@@ -1156,6 +1202,7 @@ class Energy():
 
     @property
     def wavelength(self):
+        r'''Wavelength of the neutron in Å'''
         return self.wavelen
 
     @wavelength.setter
@@ -1164,6 +1211,7 @@ class Energy():
 
     @property
     def wavevector(self):
+        u'''Wavevector k of the neutron in 1/Å'''
         return self.wavevec
 
     @wavevector.setter
@@ -1172,6 +1220,7 @@ class Energy():
 
     @property
     def temperature(self):
+        r'''Temperature of the neutron in Kelvin'''
         return self.temp
 
     @temperature.setter
@@ -1180,6 +1229,7 @@ class Energy():
 
     @property
     def frequency(self):
+        r'''Frequency of the neutron in THz'''
         return self.freq
 
     @frequency.setter
@@ -1188,16 +1238,16 @@ class Energy():
 
     @property
     def velocity(self):
+        r'''Velocity of the neutron in m/s'''
         return self.vel
 
     @velocity.setter
     def velocity(self, value):
         self._update_values(velocity=value)
 
-
     @property
     def values(self):
-        '''Prints all of the properties of the Neutron beam
+        r'''Prints all of the properties of the Neutron beam
 
         Parameters
         ----------

@@ -47,10 +47,11 @@ Pass pre-loaded data
 ^^^^^^^^^^^^^^^^^^^^
 Assuming that your data is in a format that is not supported by :py:meth:`.Data.load_file` you will need to load the data yourself and pass it to the :py:class:`.Data` class and build ``Data.Q`` using :py:meth:`.Data.build_Q`. To build ``Data.Q`` you must have defined ``h``, ``k``, ``l``, ``e``, and ``temp``.
 
->>> data = Data(h=h, k=k, l=l, e=e, temp=temp, detector=detector, monitor=monitor, time=time)
+>>> data = Data(h=h, k=k, l=l, e=e, temp=temp, detector=detector,
+                monitor=monitor, time=time)
 
 ``Data`` properties
----------------
+-------------------
 Below I outline some of the most common properties that you will want of the :py:class:`.Data` class.
 
 Intensity and error
@@ -107,14 +108,16 @@ Often you will want to know the integrated intensity, peak position, and mean-sq
 
 It is possible to specify the bounds inside which you want to perform these analyses by forming a boolean expression. For example, below is the definition of the bounds of a 1x1 square around (100) at 4 meV:
 
->>> bounds = ((np.abs(data.h - 1) <= 0.5) & (np.abs(data.k) <= 0.5) & (np.abs(data.e - 4) <= 0.25))
+>>> bounds = ((np.abs(data.h - 1) <= 0.5) & (np.abs(data.k) <= 0.5) &
+              (np.abs(data.e - 4) <= 0.25))
 >>> int_inten = data.integrate(bounds=bounds)
 
 Binning data
 ------------
 Often data is on an irregular grid with some arbitrary step-size, but you will want to regularly grid your data in some way. You can do this using :py:meth:`.Data.bin`. First you need to define the bin parameters as a dictionary of lists in the form ``[start, end, bins]``. Let's say that we want to bin our data so that we have a ``hk0-e`` volume with 0.025 r.l.u. step size in ``h`` and ``k`` between -2 and 2 r.l.u., and 0.25 meV in ``e`` between -10 and 10 meV, at 300 K for a relatively stable temperature. We would form the bin parameters as follows:
 
->>> to_bin = {'h': [-2, 2, 161], 'k': [-2, 2, 161], 'l': [-0.2, 0.2, 1], 'e': [-10, 10, 81], 'temp': [290, 310, 1]}
+>>> to_bin = {'h': [-2, 2, 161], 'k': [-2, 2, 161], 'l': [-0.2, 0.2, 1],
+              'e': [-10, 10, 81], 'temp': [290, 310, 1]}
 >>> binned_data = data.bin(to_bin)
 
 The output is a new :py:class:`.Data` object, so that your original data is still maintained in the original `data` object variable.
@@ -141,7 +144,8 @@ Binning
 """""""
 Binning can be achieved by passing the ``bin`` dictionary, as defined in the manner described above in the binning section. For example,
 
->>> to_bin = {'h': [0.5, 1.5, 41], 'k': [-0.1, 0.1, 1], 'l': [-0.1, 0.1, 1], 'e': [3.5, 4.5, 1], 'temp': [290, 310, 1]}
+>>> to_bin = {'h': [0.5, 1.5, 41], 'k': [-0.1, 0.1, 1], 'l': [-0.1, 0.1, 1],
+              'e': [3.5, 4.5, 1], 'temp': [290, 310, 1]}
 >>> data.plot('h', 'intensity', bin=to_bin)
 
 If ``bin`` is not defined, then the raw data is plotted, meaning that if you have multidimensional data that you are trying to plot as a line scan, all of the data will be projected onto the line you want to plot.
@@ -151,7 +155,8 @@ Fitting
 Fitting to arbitrary functions, only applicable for line scan plots, can be performed by passing the ``fit_options`` dictionary. At a minimum, the initial parameters ``p`` and the ``function`` must be defined. Additionally, if holding a parameter fixed is desired, ``fixp`` must be defined as a ``list`` of the same length as ``p`` where ``1`` indicates fixed and ``0`` indicates released. For example,
 
 >>> from neutronpy.functions import gaussian
->>> data.plot('h', 'intensity', fit_options={'p': [0, 0, 1, 0.9, 0.06], 'function': gaussian, 'fixp': [1, 1, 0, 0, 0]})
+>>> data.plot('h', 'intensity', fit_options={'p': [0, 0, 1, 0.9, 0.06],
+              'function': gaussian, 'fixp': [1, 1, 0, 0, 0]})
 
 Smoothing
 """""""""

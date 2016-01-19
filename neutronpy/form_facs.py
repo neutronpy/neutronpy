@@ -122,6 +122,35 @@ class Material(Lattice):
     Attributes
     ----------
     volume
+    total_scattering_cross_section
+    a
+    b
+    c
+    astar
+    bstar
+    cstar
+    alpha
+    beta
+    gamma
+    alpha_rad
+    beta_rad
+    gamma_rad
+    alphastar
+    betastar
+    gammastar
+    alphastar_rad
+    betastar_rad
+    gammastar_rad
+    abg_rad
+    reciprocal_abc
+    reciprocal_abg
+    reciprocal_abg_rad
+    lattice_type
+    volume
+    reciprocal_volume
+    G
+    Gstar
+    Bmatrix
     
     Methods
     -------
@@ -133,7 +162,6 @@ class Material(Lattice):
     get_q
     get_two_theta
     N_atoms
-    
 
     '''
 
@@ -176,6 +204,8 @@ class Material(Lattice):
 
     @property
     def total_scattering_cross_section(self):
+        r'''Returns total scattering cross-section of unit cell
+        '''
         total = 0
         for atom in self.atoms:
             total += (atom.coh_xs + atom.inc_xs)

@@ -901,6 +901,7 @@ class Instrument(object):
     calc_resolution
     calc_resolution_in_Q_coords
     calc_projections
+    get_angles_and_Q
     get_lattice
     get_resolution_params
     plot_projections
@@ -1025,6 +1026,7 @@ class Instrument(object):
             analyzer, as seen from the sample position. If the field is unassigned or equal to
             -1, a flat analyzer is assumed. Note that this option is only available with the
             Cooper-Nathans method.
+            
         '''
         return self._ana
 
@@ -1059,12 +1061,12 @@ class Instrument(object):
 
     @property
     def hcol(self):
-        ''' The horizontal Soller collimations in minutes of arc (FWHM beam
+        r''' The horizontal Soller collimations in minutes of arc (FWHM beam
         divergence) starting from the in-pile collimator. In case of a horizontally-focusing
-        analyzer ``hcol[2] is the angular size of the analyzer, as seen from the sample
+        analyzer ``hcol[2]`` is the angular size of the analyzer, as seen from the sample
         position. If the beam divergence is limited by a neutron guide, the corresponding
         element of :attr:`hcol` is the negative of the guide’s *m*-value. For example, for a 58-Ni
-        guide (*m*=1.2) before the monochromator, `hcol[0]` should be -1.2.
+        guide ( *m* = 1.2 ) before the monochromator, ``hcol[0]`` should be -1.2.
         '''
         return self._hcol
 
@@ -1077,7 +1079,7 @@ class Instrument(object):
         '''The vertical Soller collimations in minutes of arc (FWHM beam
         divergence) starting from the in-pile collimator. If the beam divergence is limited
         by a neutron guide, the corresponding element of :attr:`vcol` is the negative of the
-        guide’s *m*-value. For example, for a 58-Ni guide (*m*=1.2) before the monochromator,
+        guide’s *m*-value. For example, for a 58-Ni guide ( *m* = 1.2 ) before the monochromator,
         ``vcol[0]`` should be -1.2.
         '''
         return self._vcol
@@ -1115,11 +1117,12 @@ class Instrument(object):
         It contains the following fields:
         
         * EXP.sample.mosaic is the FWHM sample mosaic in the scattering plane in minutes
-        of arc. If this field is left unassigned, no sample mosaic corrections (section
-        II E) are performed.
+          of arc. If this field is left unassigned, no sample mosaic corrections (section
+          II E) are performed.
 
         * ``sample.vmosaic`` is the vertical sample mosaic in minutes of arc. If this field
-        is left unassigned, isotropic mosaic is assumed.
+          is left unassigned, isotropic mosaic is assumed.
+        
         '''
         return self._sample
 
@@ -1234,14 +1237,15 @@ class Instrument(object):
         field unassigned if you don’t want this correction done.
         
         * ``Smooth.E`` is the smoothing FWHM in energy (meV). A small number means
-        “no smoothing along this direction”.
+          “no smoothing along this direction”.
         
         * ``Smooth.X`` is the smoothing FWHM along the first orienting vector (x0 axis)
-        in Å\ :sup:`-1`.
+          in Å\ :sup:`-1`.
         
         * ``Smooth.Y`` is the smoothing FWHM along the y axis in Å\ :sup:`-1`.
         
         * ``Smooth.Z`` is the smoothing FWHM along the vertical direction in Å\ :sup:`-1`.
+        
         '''
         return self._Smooth
 
@@ -1391,7 +1395,7 @@ class Instrument(object):
         t = np.matrix(np.zeros((2, 7), dtype=np.float64))
         A = np.matrix(np.zeros((6, 8), dtype=np.float64))
         C = np.matrix(np.zeros((4, 8), dtype=np.float64))
-        B = np.matrix(np.zeros((4, 6), dtype=np.float64))
+        Bmatrix = np.matrix(np.zeros((4, 6), dtype=np.float64))
 
         # the method to use
         method = 0
@@ -1623,19 +1627,19 @@ class Instrument(object):
             C[3, 6] = 1. / (2. * np.sin(thetaa))
             C[3, 7] = -C[3, 6]
 
-            # Definition of matrix B
-            B[0, 0] = np.cos(phi)
-            B[0, 1] = np.sin(phi)
-            B[0, 3] = -np.cos(phi - s2theta)
-            B[0, 4] = -np.sin(phi - s2theta)
-            B[1, 0] = -B[0, 1]
-            B[1, 1] = B[0, 0]
-            B[1, 3] = -B[0, 4]
-            B[1, 4] = B[0, 3]
-            B[2, 2] = 1.
-            B[2, 5] = -1.
-            B[3, 0] = 2. * CONVERT2 * ki
-            B[3, 3] = -2. * CONVERT2 * kf
+            # Definition of matrix Bmatrix
+            Bmatrix[0, 0] = np.cos(phi)
+            Bmatrix[0, 1] = np.sin(phi)
+            Bmatrix[0, 3] = -np.cos(phi - s2theta)
+            Bmatrix[0, 4] = -np.sin(phi - s2theta)
+            Bmatrix[1, 0] = -Bmatrix[0, 1]
+            Bmatrix[1, 1] = Bmatrix[0, 0]
+            Bmatrix[1, 3] = -Bmatrix[0, 4]
+            Bmatrix[1, 4] = Bmatrix[0, 3]
+            Bmatrix[2, 2] = 1.
+            Bmatrix[2, 5] = -1.
+            Bmatrix[3, 0] = 2. * CONVERT2 * ki
+            Bmatrix[3, 3] = -2. * CONVERT2 * kf
 
             # Definition of matrix S
             Sinv = np.matrix(blkdiag(np.array(bshape, dtype=np.float64), mshape, sshape, ashape, dshape))  # S-1 matrix
@@ -1701,7 +1705,7 @@ class Instrument(object):
                     Ninv[3, 3] = (np.tan(thetaa) / (etaa * kf)) ** 2
                     Ninv = np.linalg.inv(Ninv)
 
-            Minv = B * Ninv * B.H
+            Minv = Bmatrix * Ninv * Bmatrix.H
 
             M = 8 * np.log(2) * np.linalg.inv(Minv)
             # TODO: rows-columns 3-4 swapped for ResPlot to work.
@@ -1956,10 +1960,10 @@ class Instrument(object):
 
         for ind in range(A.shape[-1]):
             # Remove the vertical component from the matrix.
-            B = np.matrix([np.concatenate((A[0, 0:2, ind], [A[0, 3, ind]])), np.concatenate((A[1, 0:2, ind], [A[1, 3, ind]])), np.concatenate((A[3, 0:2, ind], [A[3, 3, ind]]))])
+            Bmatrix = np.matrix([np.concatenate((A[0, 0:2, ind], [A[0, 3, ind]])), np.concatenate((A[1, 0:2, ind], [A[1, 3, ind]])), np.concatenate((A[3, 0:2, ind], [A[3, 3, ind]]))])
 
             # Projection into Qx, Qy plane
-            [R0P, MP] = project_into_plane(2, R0[ind], B)
+            [R0P, MP] = project_into_plane(2, R0[ind], Bmatrix)
             theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
             S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
 
@@ -1991,7 +1995,7 @@ class Instrument(object):
 
             # Projection into Qx, W plane
 
-            [R0P, MP] = project_into_plane(1, R0, B)
+            [R0P, MP] = project_into_plane(1, R0, Bmatrix)
 
             theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
             S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
@@ -2023,7 +2027,7 @@ class Instrument(object):
             self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
             # Projections into Qy, W plane
-            [R0P, MP] = project_into_plane(0, R0, B)
+            [R0P, MP] = project_into_plane(0, R0, Bmatrix)
 
             theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
             S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
@@ -2055,6 +2059,20 @@ class Instrument(object):
             self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
     def get_angles_and_Q(self, hkle):
+        r'''Returns the Triple Axis Spectrometer angles and Q-vector given position in reciprocal space
+        
+        Parameters
+        ----------
+        hkle : list
+            Array of the scattering vector and energy transfer at which the
+            calculation should be performed
+            
+        Returns
+        -------
+        [A, Q] : list
+            The angles A (A1 -- A5 in a list of floats) and Q (ndarray)
+            
+        '''
         # compute all TAS angles (in plane)
 
         h, k, l, w = hkle
@@ -2169,15 +2187,15 @@ class Instrument(object):
             selfR0 = self.R0[np.newaxis]
 
         # Remove the vertical component from the matrix
-        B = np.vstack((np.hstack((A[0, :2:1, ind], A[0, 3, ind])),
+        Bmatrix = np.vstack((np.hstack((A[0, :2:1, ind], A[0, 3, ind])),
                        np.hstack((A[1, :2:1, ind], A[1, 3, ind])),
                        np.hstack((A[3, :2:1, ind], A[3, 3, ind]))))
 
         if plane == 'QxQy':
-            R0 = np.sqrt(2 * np.pi / B[2, 2]) * selfR0[ind]
+            R0 = np.sqrt(2 * np.pi / Bmatrix[2, 2]) * selfR0[ind]
             if mode == 'project':
                 # Projection into Qx, Qy plane
-                R0, MP = project_into_plane(2, R0, B)
+                R0, MP = project_into_plane(2, R0, Bmatrix)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qx,Qy plane
@@ -2185,10 +2203,10 @@ class Instrument(object):
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
 
         if plane == 'QxW':
-            R0 = np.sqrt(2 * np.pi / B[1, 1]) * selfR0[ind]
+            R0 = np.sqrt(2 * np.pi / Bmatrix[1, 1]) * selfR0[ind]
             if mode == 'project':
                 # Projection into Qx, W plane
-                R0, MP = project_into_plane(1, R0, B)
+                R0, MP = project_into_plane(1, R0, Bmatrix)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qx,W plane
@@ -2196,10 +2214,10 @@ class Instrument(object):
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
 
         if plane == 'QyW':
-            R0 = np.sqrt(2 * np.pi / B[0, 0]) * selfR0[ind]
+            R0 = np.sqrt(2 * np.pi / Bmatrix[0, 0]) * selfR0[ind]
             if mode == 'project':
                 # Projections into Qy, W plane
-                R0, MP = project_into_plane(0, R0, B)
+                R0, MP = project_into_plane(0, R0, Bmatrix)
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
             if mode == 'slice':
                 # Slice through Qy,W plane
@@ -2803,7 +2821,7 @@ class Instrument(object):
             surf.transform = center
 
         frame = scene.visuals.Cube(size=(EllipsoidGridPoints * 5, EllipsoidGridPoints * 5, EllipsoidGridPoints * 5), color='white', edge_color=(0., 0., 0., 1.), parent=view.scene)
-        grid = scene.visuals.GridLines(color=(0 , 0, 0, 0.5), parent=view.scene)
+        grid = scene.visuals.GridLines(parent=view.scene)
         grid.set_gl_state('translucent')
 
         # Add a 3D axis to keep us oriented
@@ -2839,13 +2857,66 @@ class Instrument(object):
         fig = plt.figure(edgecolor='k', facecolor='w', figsize=plt.figaspect(0.4) * 1.25)
         ax = fig.gca(projection='3d')
 
+        if hasattr(self.beam, 'width'):
+            beam_width = self.beam.width
+        else:
+            beam_width = 1
+        if hasattr(self.beam, 'height'):
+            beam_height = self.beam.height
+        else:
+            beam_height = 1
+
+        if hasattr(self.mono, 'width'):
+            mono_width = self.mono.width
+        else:
+            mono_width = 1
+        if hasattr(self.mono, 'height'):
+            mono_height = self.mono.height
+        else:
+            mono_height = 1
+        
+        if hasattr(self.sample, 'width'):
+            sample_width = self.sample.width
+        else:
+            sample_width = 1
+        if hasattr(self.sample, 'height'):
+            sample_height = self.sample.height
+        else:
+            sample_height = 1
+        if hasattr(self.sample, 'depth'):
+            sample_depth = self.sample.depth
+        else:
+            sample_depth = 1
+        
+        if hasattr(self.ana, 'width'):
+            ana_width = self.ana.width
+        else:
+            ana_width = 1
+        if hasattr(self.ana, 'height'):
+            ana_height = self.ana.height
+        else:
+            ana_height = 1
+        
+        if hasattr(self.detector, 'width'):
+            detector_width = self.detector.width
+        else:
+            detector_width = 1
+        if hasattr(self.detector, 'height'):
+            detector_height = self.detector.height
+        else:
+            detector_height = 1
+
+        if hasattr(self, 'arms'):
+            arms = self.arms
+        else:
+            arms = [10, 10, 10, 10]
+
         angles, q = self.get_angles_and_Q(hkle)
-        distances = self.arms
+        distances = arms
 
         angles = np.deg2rad(angles)
         A1, A2, A3, A4, A5, A6 = -angles
         x, y, direction = 0, 0, 0
-
 
         x0, y0 = x, y
         # plot the Source --------------------------------------------------------------
@@ -2856,8 +2927,8 @@ class Instrument(object):
         y = y + translate * np.cos(direction)
 
         # create a square source
-        X = np.array([ -self.beam.width / 2, -self.beam.width / 2, self.beam.width / 2, self.beam.width / 2, -self.beam.width / 2])
-        Z = np.array([  self.beam.height / 2, -self.beam.height / 2, -self.beam.height / 2, self.beam.height / 2, self.beam.height / 2])
+        X = np.array([ -beam_width / 2, -beam_width / 2, beam_width / 2, beam_width / 2, -beam_width / 2])
+        Z = np.array([  beam_height / 2, -beam_height / 2, -beam_height / 2, beam_height / 2, beam_height / 2])
         Y = np.zeros(5)
         l = ax.plot(X + x, Y + y, zs=Z, color='b')
         t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Beam/Source', color='b')
@@ -2873,8 +2944,8 @@ class Instrument(object):
         l = ax.plot([x, x0 ], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
 
         # create a square Monochromator
-        X = np.array([ -self.mono.width / 2, -self.mono.width / 2, self.mono.width / 2, self.mono.width / 2, -self.mono.width / 2]) * np.sin(A1)
-        Z = np.array([  self.mono.height / 2 , -self.mono.height / 2, -self.mono.height / 2, self.mono.height / 2, self.mono.height / 2])
+        X = np.array([ -mono_width / 2, -mono_width / 2, mono_width / 2, mono_width / 2, -mono_width / 2]) * np.sin(A1)
+        Z = np.array([  mono_height / 2 , -mono_height / 2, -mono_height / 2, mono_height / 2, mono_height / 2])
         Y = X * np.cos(A1)
         l = ax.plot(X + x, Y + y, zs=Z, color='r')
         t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Monochromator', color='r')
@@ -2890,13 +2961,13 @@ class Instrument(object):
         l = ax.plot([x, x0 ], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
 
         # create a rotated square Sample
-        X = np.array([ -self.sample.width / 2, -self.sample.width / 2, self.sample.width / 2, self.sample.width / 2, -self.sample.width / 2]) * np.sin(A3)
-        Z = np.array([  self.sample.height / 2, -self.sample.height / 2, -self.sample.height / 2, self.sample.height / 2, self.sample.height / 2])
+        X = np.array([ -sample_width / 2, -sample_width / 2, sample_width / 2, sample_width / 2, -sample_width / 2]) * np.sin(A3)
+        Z = np.array([  sample_height / 2, -sample_height / 2, -sample_height / 2, sample_height / 2, sample_height / 2])
         Y = X * np.cos(A3)
         l1 = ax.plot(X + x, Y + y, zs=Z, color='g')
         t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Sample', color='g')
-        X = np.array([ -self.sample.depth / 2, -self.sample.depth / 2, self.sample.depth / 2, self.sample.depth / 2, -self.sample.depth / 2]) * np.sin(A3 + np.pi / 2)
-        Z = np.array([  self.sample.height / 2, -self.sample.height / 2, -self.sample.height / 2, self.sample.height / 2, self.sample.height / 2])
+        X = np.array([ -sample_depth / 2, -sample_depth / 2, sample_depth / 2, sample_depth / 2, -sample_depth / 2]) * np.sin(A3 + np.pi / 2)
+        Z = np.array([  sample_height / 2, -sample_height / 2, -sample_height / 2, sample_height / 2, sample_height / 2])
         Y = X * np.cos(A3 + np.pi / 2)
         l2 = ax.plot(X + x, Y + y, zs=Z, color='g')
 
@@ -2911,8 +2982,8 @@ class Instrument(object):
         l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
 
         # create a square
-        X = np.array([ -self.ana.width / 2, -self.ana.width / 2, self.ana.width / 2, self.ana.width / 2, -self.ana.width / 2]) * np.sin(A5)
-        Z = np.array([  self.ana.height / 2, -self.ana.height / 2, -self.ana.height / 2, self.ana.height / 2, self.ana.height / 2])
+        X = np.array([ -ana_width / 2, -ana_width / 2, ana_width / 2, ana_width / 2, -ana_width / 2]) * np.sin(A5)
+        Z = np.array([  ana_height / 2, -ana_height / 2, -ana_height / 2, ana_height / 2, ana_height / 2])
         Y = X * np.cos(A5)
         l = ax.plot(X + x, Y + y, zs=Z, color='magenta')
         t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Analyzer', color='magenta')
@@ -2928,8 +2999,8 @@ class Instrument(object):
         l = ax.plot([ x, x0 ], [y, y0], zs=[ 0, 0 ], color='cyan', linestyle='--')
 
         # create a square
-        X = np.array([ -self.detector.width / 2, -self.detector.width / 2, self.detector.width / 2, self.detector.width / 2, -self.detector.width / 2])
-        Z = np.array([  self.detector.height / 2, -self.detector.height / 2, -self.detector.height / 2, self.detector.height / 2, self.detector.height / 2])
+        X = np.array([ -detector_width / 2, -detector_width / 2, detector_width / 2, detector_width / 2, -detector_width / 2])
+        Z = np.array([  detector_height / 2, -detector_height / 2, -detector_height / 2, detector_height / 2, detector_height / 2])
         Y = np.zeros(5)
         l = ax.plot(X + x, Y + y, zs=Z, color='k')
         t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Detector', color='k')
@@ -2937,7 +3008,7 @@ class Instrument(object):
         ax.set_zlim3d(getattr(ax, 'get_zlim')()[0], getattr(ax, 'get_zlim')()[1] * 10)
         plt.show()
 
-    def interactive_plot_projections(self):
+    def _interactive_plot_projections(self):
         import matplotlib.pyplot as plt
 
         plt.rc('font', **{'family': 'Bitstream Vera Sans', 'serif': 'cm10', 'size': 6})

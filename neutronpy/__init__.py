@@ -14,8 +14,3 @@ from . import models
 from . import spurion
 from . import lattice
 from .core import *  # pylint: disable=wildcard-import
-
-try:
-    from .kmpfit import Fitter
-except ImportError:
-    print(ImportError(u'Fitter module is not loaded.'))

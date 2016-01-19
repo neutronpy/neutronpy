@@ -32,7 +32,7 @@ Once the problem is defined, we can initialize our object using :py:class:`.Fitt
 >>> fitobj = Fitter(residuals=residuals, data=(x, y, err))
 
 Initial parameters and Constraints
---------------------------
+----------------------------------
 The parameters and constraints will obviously depend on the specific problem. Initial parameters can be defined as a list; in this example we will define a single gaussian peak with no background:
 
 >>> params = [0, 0, 1, 0, 0.1]

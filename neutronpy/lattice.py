@@ -30,6 +30,9 @@ class Lattice(object):
     alpha
     beta
     gamma
+    alpha_rad
+    beta_rad
+    gamma_rad
     alphastar
     betastar
     gammastar
@@ -45,7 +48,7 @@ class Lattice(object):
     reciprocal_volume
     G
     Gstar
-    B
+    Bmatrix
     
     Methods
     -------
@@ -62,94 +65,135 @@ class Lattice(object):
 
     @property
     def a(self):
+        r'''First lattice constant in Angstrom
+        '''
         return self.abc[0]
 
     @property
     def b(self):
+        r'''Second lattice constant in Angstrom
+        
+        '''
         return self.abc[1]
 
     @property
     def c(self):
+        r'''Third lattice constant in Angstrom
+        '''
         return self.abc[2]
 
     @property
     def alpha(self):
+        r'''First lattice angle in degrees
+        '''
         return self.abg[0]
 
     @property
     def beta(self):
+        r'''Second lattice angle in degrees
+        '''
         return self.abg[1]
 
     @property
     def gamma(self):
+        r'''Third lattice angle in degrees
+        '''
         return self.abg[2]
 
     @property
     def alpha_rad(self):
+        r'''First lattice angle in radians
+        '''
         return self.abg_rad[0]
 
     @property
     def beta_rad(self):
+        r'''Second lattice angle in radians
+        '''
         return self.abg_rad[1]
 
     @property
     def gamma_rad(self):
+        r'''Third lattice angle in radians
+        '''
         return self.abg_rad[2]
 
     @property
     def astar(self):
+        r'''First inverse lattice constant in inverse Angstrom
+        '''
         return self.b * self.c * np.sin(self.alpha_rad) / self.volume
 
     @property
     def bstar(self):
+        r'''Second inverse lattice constant in inverse Angstrom
+        '''
         return self.a * self.c * np.sin(self.beta_rad) / self.volume
 
     @property
     def cstar(self):
+        r'''Third inverse lattice constant in inverse Angstrom
+        '''
         return self.a * self.b * np.sin(self.gamma) / self.volume
 
     @property
     def alphastar_rad(self):
+        r'''First inverse lattice angle in radians
+        '''
         return np.arccos((np.cos(self.beta_rad) * np.cos(self.gamma_rad) - np.cos(self.alpha_rad)) / (np.sin(self.beta_rad) * np.sin(self.gamma_rad)))
 
     @property
     def betastar_rad(self):
+        r'''Second inverse lattice angle in radians
+        '''
         return np.arccos((np.cos(self.alpha_rad) * np.cos(self.gamma_rad) - np.cos(self.beta_rad)) / (np.sin(self.alpha_rad) * np.sin(self.gamma_rad)))
 
     @property
     def gammastar_rad(self):
+        r'''Third inverse lattice angle in radians
+        '''
         return np.arccos((np.cos(self.alpha_rad) * np.cos(self.beta_rad) - np.cos(self.gamma_rad)) / (np.sin(self.alpha_rad) * np.sin(self.beta_rad)))
 
     @property
     def alphastar(self):
+        r'''First inverse lattice angle in degrees
+        '''
         return np.rad2deg(self.alphastar_rad)
 
     @property
     def betastar(self):
+        r'''First inverse lattice angle in degrees
+        '''
         return np.rad2deg(self.betastar_rad)
 
     @property
     def gammastar(self):
+        r'''First inverse lattice angle in degrees
+        '''
         return  np.rad2deg(self.gammastar_rad)
 
     @property
     def reciprocal_abc(self):
+        r'''Reciprocal lattice constants in inverse Angstrom returned in list
+        '''
         return [self.astar, self.bstar, self.cstar]
 
     @property
     def reciprocal_abg(self):
+        r'''Reciprocal lattice angles in degrees returned in list
+        '''
         return [self.alphastar, self.betastar, self.gammastar]
 
     @property
     def reciprocal_abg_rad(self):
+        r'''Reciprocal lattice angles in radians returned in list
+        '''
         return [self.alphastar_rad, self.betastar_rad, self.gammastar_rad]
 
     @property
     def abg_rad(self):
-        r'''Lattice angles in radians
-        
+        r'''Lattice angles in radians returned in list
         '''
-
         return np.deg2rad(self.abg)
 
     @property
@@ -212,8 +256,8 @@ class Lattice(object):
 
 
     @property
-    def B(self):
-        r'''Cartesian basis matrix in reciprocal units such that B*B.T = Gstar
+    def Bmatrix(self):
+        r'''Cartesian basis matrix in reciprocal units such that Bmatrix*Bmatrix.T = Gstar
         
         '''
 
