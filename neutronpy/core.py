@@ -2,7 +2,7 @@
 r'''Tools Module
 '''
 from .constants import BOLTZMANN_IN_MEV_K, JOULES_TO_MEV
-from multiprocessing import cpu_count, Pool  # pylint: disable=no-name-in-module
+from multiprocessing import cpu_count, Pool  # pylint: disable=no-name-in-module @UnresolvedImport
 import numbers
 import numpy as np
 import re
@@ -133,7 +133,7 @@ class Data(object):
     def __sub__(self, right):
         try:
             monitor = self.monitor
-            detector = self.monitor
+            detector = self.detector
 
             output = {'Q': right.Q, 'detector': np.negative(right.detector),
                       'monitor': right.monitor, 'time': right.time}
@@ -142,11 +142,19 @@ class Data(object):
             raise AttributeError('Data types cannot be combined')
 
     def __mul__(self, right):
-        self.detector *= right
+        self.detector = self.detector * right
         return self
 
     def __div__(self, right):
-        self.detector /= right
+        self.detector = self.detector / right
+        return self
+
+    def __truediv__(self, right):
+        self.detector = self.detector / right
+        return self
+
+    def __floordiv__(self, right):
+        self.detector = self.detector // right
         return self
 
     def __pow__(self, right):
@@ -340,7 +348,7 @@ class Data(object):
         ki = Energy(energy=ei).wavevector
         kf = Energy(energy=ei - self.e).wavevector
 
-        return 4 * np.pi / (material.total_scattering_cross_section) * ki / kf * self.counts
+        return 4 * np.pi / (material.total_scattering_cross_section) * ki / kf * self.detector
 
     def dynamic_susceptibility(self, material, ei):
         r'''Returns the dynamic susceptibility :math:`\chi^{\prime\prime}(\mathbf{Q},\hbar\omega)`
@@ -813,7 +821,7 @@ class Data(object):
                               np.ma.masked_where(w <= 0, z),
                               np.ma.masked_where(w <= 0, w))
 
-                from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-variable
+                from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-variable @UnresolvedImport @UnusedImport
 
                 fig = plt.figure()
                 axis = fig.add_subplot(111, projection='3d')
@@ -827,12 +835,12 @@ class Data(object):
         elif z is not None and w is None:
             try:
                 z = dims[args['z']]
-
-#                 x, y, z = (np.ma.masked_where(z <= 0, x),
-#                            np.ma.masked_where(z <= 0, y),
-#                            np.ma.masked_where(z <= 0, z))
-                X, Y = np.meshgrid(np.linspace(x.min(), x.max(), np.around(np.abs(np.unique(x) - np.roll(np.unique(x), 1))[1], decimals=4)),
-                                   np.linspace(y.min(), y.max(), np.around(np.abs(np.unique(y) - np.roll(np.unique(y), 1))[1], decimals=4)))
+                
+                x_step = np.around(np.abs(np.unique(x) - np.roll(np.unique(x), 1))[1], decimals=4)
+                y_step = np.around(np.abs(np.unique(y) - np.roll(np.unique(y), 1))[1], decimals=4)
+                x_sparse = np.linspace(x.min(), x.max(), (x.max() - x.min()) / x_step + 1)
+                y_sparse = np.linspace(y.min(), y.max(), (y.max() - y.min()) / y_step + 1)
+                X, Y = np.meshgrid(x_sparse, y_sparse)
 
                 from scipy.interpolate import griddata
                 Z = griddata((x, y), z, (X, Y))
@@ -851,11 +859,6 @@ class Data(object):
                 plt.errorbar(x, y, **plot_options)
 
             if fit_options:
-                try:
-                    from .kmpfit import Fitter
-                except ImportError:
-                    raise
-
                 def residuals(params, data):
                     funct, x, y, err = data
 
@@ -1030,14 +1033,14 @@ def load(files, filetype='auto', tols=1e-4):
         del _Q_dict, args
 
         try:
-            _data_object.combine_data(raw_data, tols=tols)
+            _data_object.combine_data(raw_data, tols=tols)  # @UndefinedVariable
         except (NameError, UnboundLocalError):
             _data_object = Data(**raw_data)
 
     return _data_object
 
 
-def save(obj, filename, format='ascii', **kwargs):
+def save(obj, filename, fileformat='ascii', **kwargs):
     '''Saves a given object to a file in a specified format.
     
     Parameters
@@ -1048,30 +1051,40 @@ def save(obj, filename, format='ascii', **kwargs):
     filename : str
         Path to file where data will be saved
     
-    format : str
+    fileformat : str
         Default: `'ascii'`. Data can either be saved in `'ascii'`,
-        human-readable format, `'binary'` format, or `'nexus'` format.
+        human-readable format, binary `'hdf5'` format, or binary
+        `'pickle'` format.
     '''
-    output = np.hstack((obj.Q, obj.detector, obj.monitor, obj.time))
+    output = np.hstack((obj.Q, obj.detector.reshape(obj.detector.shape[0], 1),
+                        obj.monitor.reshape(obj.monitor.shape[0], 1),
+                        obj.time.reshape(obj.time.shape[0], 1)))
 
-    if format == 'ascii':
+    if fileformat == 'ascii':
         np.savetxt(filename, output, **kwargs)
-    elif format == 'binary':
-        pass
-    elif format == 'nexus':
-        pass
+    elif fileformat == 'hdf5':
+        import h5py
+        with h5py.File(filename, 'w') as f:
+            dset = f.create_dataset('data', output.shape,
+                                    maxshape=(None, output.shape[1]),
+                                    dtype='float64')
+            dset = output
+    elif fileformat == 'pickle':
+        import pickle
+        with open(filename, 'wb') as f:
+            pickle.dump(output, f)
     else:
         raise ValueError("""Format not supported. Please use 'ascii', \
-                            'binary', 'pickle' or 'nexus'""")
+                            'hdf5', or 'pickle'""")
 
 
-def build_Q(vars, **kwargs):
+def build_Q(args, **kwargs):
     u'''Method for constructing **Q**\ (*q*, ℏω, temp) from h, k, l,
     energy, and temperature
 
     Parameters
     ----------
-    vars : dict
+    args : dict
         A dictionary of the `h`, `k`, `l`, `e` and `temp` arrays to form into
         a column oriented array
 
@@ -1082,7 +1095,7 @@ def build_Q(vars, **kwargs):
         array.
 
     '''
-    return np.vstack((vars[i].flatten() for i in
+    return np.vstack((args[i].flatten() for i in
                       ['h', 'k', 'l', 'e', 'temp'])).T
 
 
