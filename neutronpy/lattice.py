@@ -244,7 +244,7 @@ class Lattice(object):
 
         return np.matrix([[a ** 2, a * b * np.cos(gamma), a * c * np.cos(beta)],
                           [a * b * np.cos(gamma), b ** 2, b * c * np.cos(alpha)],
-                          [a * c * np.cos(beta), b * c * np.cos(alpha), c ** 2]])
+                          [a * c * np.cos(beta), b * c * np.cos(alpha), c ** 2]], dtype=float)
 
     @property
     def Gstar(self):
@@ -263,7 +263,7 @@ class Lattice(object):
 
         return np.matrix([[self.astar, self.bstar * np.cos(self.gammastar_rad), self.cstar * np.cos(self.betastar_rad)],
                           [0, self.bstar * np.sin(self.gammastar_rad), -self.cstar * np.sin(self.betastar_rad) * np.cos(self.alpha_rad)],
-                          [0, 0, 1. / self.c]])
+                          [0, 0, 1. / self.c]], dtype=float)
 
     def get_d_spacing(self, hkl):
         u'''Returns the d-spacing of a given reciprocal lattice vector.
@@ -435,20 +435,3 @@ class Goniometer(object):
         return [np.cos(omega) * np.cos(chi) * np.cos(phi) - np.sin(omega) * np.sin(phi),
                 np.cos(omega) * np.cos(chi) * np.sin(phi) + np.sin(omega) * np.cos(phi),
                 np.cos(omega) * np.sin(chi)]
-
-
-if __name__ == "__main__":
-    abc = [6.3496, 6.3496, 6.3496]
-    abg = [90., 90., 90.]
-    v1 = np.cross([1, 0, 0], [1, 1, 0])
-    v2 = np.cross([2, 2, 1], [2, 2, -1])
-
-    lattice = Lattice(abc, abg)
-    print(v1, v2)
-
-    print(lattice.volume)
-    print(lattice.reciprocal_volume)
-    print(lattice.get_angle_between_planes([1, 0, 0], [1, 1, 0]))
-    print(lattice.get_two_theta([1, 1, 0], 2.35))
-    print(lattice.get_d_spacing([1, 1, 0]))
-    print(lattice.get_q([1, 1, 0]))
