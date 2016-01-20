@@ -875,7 +875,7 @@ class Instrument(object):
     Attributes
     ----------
     method
-    moncar
+    moncor
     mono
     ana
     hcol
