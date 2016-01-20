@@ -4,8 +4,20 @@ from .core import Energy
 
 
 def aluminum(energy=14.7):
+    r'''Returns the positions of aluminum rings given a fixed energy
+    
+    Parameters
+    ----------
+    energy : float
+        Fixed energy in meV
+        
+    Returns
+    -------
+    rings : str
+        Prints a list of the positions in 2theta of the aluminum rings 
+    '''
     e = Energy(energy=energy)
-    struct = {'name': 'Co8Zn8Mn4',
+    struct = {'name': 'Al',
               'composition': [],
               'debye-waller': False,
               'massNorm': False,
@@ -14,7 +26,7 @@ def aluminum(energy=14.7):
               'wavelength': e.wavelength,
               }
 
-    def fm3m_wykoff(x, y, z):
+    def _fm3m_wykoff(x, y, z):
         return [[x, y, z], [x, 1 / 2 + y, 1 / 2 + z], [1 / 2 + x, y, 1 / 2 + z], [1 / 2 + x, 1 / 2 + y, z],
                 [z, -x, y], [z, 1 / 2 - x, 1 / 2 + y], [1 / 2 + z, -x, 1 / 2 + y], [1 / 2 + z, 1 / 2 - x, y],
                 [-y, z, -x], [-y, 1 / 2 + z, 1 / 2 - x], [1 / 2 - y, z, 1 / 2 - x], [1 / 2 - y, 1 / 2 + z, -x],
@@ -64,7 +76,7 @@ def aluminum(energy=14.7):
                 [z, x, y], [z, 1 / 2 + x, 1 / 2 + y], [1 / 2 + z, x, 1 / 2 + y], [1 / 2 + z, 1 / 2 + x, y],
                 [-y, -z, -x], [-y, 1 / 2 - z, 1 / 2 - x], [1 / 2 - y, -z, 1 / 2 - x], [1 / 2 - y, 1 / 2 - z, -x]]
 
-    for pos in fm3m_wykoff(0, 0, 0):
+    for pos in _fm3m_wykoff(0, 0, 0):
         struct['composition'].append(dict(pos=list(pos), ion='Al', occupancy=1))
 
     reflections = ([1, 1, 1], [2, 0, 0], [2, 2, 0], [3, 1, 1])

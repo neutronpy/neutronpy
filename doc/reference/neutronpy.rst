@@ -27,6 +27,7 @@ Submodules
    neutronpy.lattice
    neutronpy.models
    neutronpy.resolution
+   neutronpy.spurion
 
 Module contents
 ---------------
