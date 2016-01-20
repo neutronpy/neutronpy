@@ -1,0 +1,42 @@
+   3.354	%DM (Cu111 2.09)
+   3.354 	%DA (PG002)
+  40.000 	%ETAM
+  40.000 	%ETAA
+  30.000 	%ETAS
+  -1.000 	%SM
+  -1.000 	%SS
+  -1.000 	%SA
+   1.20  	%K \AA-1
+   1.0	 	%KFIX
+16000.000 	%ALPHA1
+   20.000 	%ALPHA2
+   20.000 	%ALPHA3
+   40.000 	%ALPHA4
+  800.000 	%BETA1
+  800.000 	%BETA2
+  800.000 	%BETA3
+  800.000 	%BETA4
+  4.5580 	%AS
+  4.5580 	%BS
+  4.5580 	%CS
+  90.000 	%AA
+  90.000 	%BB
+  90.000 	%CC
+   1.000 	%AX
+   1.000 	%AY
+   0.000 	%AZ
+   0.000 	%BX
+   0.000 	%BY
+   1.000 	%BZ
+   1.016 	%QX
+   1.016 	%QY
+   1.000 	%QZ
+   2.000 	%EN
+   0.020 	%dqx (step of scan in qx to calculate phonon width)
+   0.020 	%dqy (  "             qy  ...)
+   0.000 	%dqz (  "             qz  ...)
+   0.000 	%de  (  "             en  ...)
+  40.000 	%gh  (gradient)
+  40.000 	%gk
+   0.000 	%gl
+   1.000 	%gmod (slope meV/A-1)
