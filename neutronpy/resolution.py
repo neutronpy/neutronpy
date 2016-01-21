@@ -580,7 +580,7 @@ def GetTau(x, getlabel=False):
 
     Notes
     -----
-    Tau is defined as :math:`\tau = 2\pi/d`, where d is the d-spacing of the crystal in Angstroms.
+    Tau is defined as :math:`\\tau = 2\\pi/d`, where d is the d-spacing of the crystal in Angstroms.
 
     Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
 
