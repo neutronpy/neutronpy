@@ -317,6 +317,8 @@ cdef class Fitter(object):
     version
     status
     message
+    residuals
+    nofinitecheck
 
     Methods
     -------
@@ -387,31 +389,31 @@ cdef class Fitter(object):
          limits or  None, which indicates that the parameter is not bounded on
          this side. Default: no limits.
         
-         ``'step'``: the step size to be used in calculating the numerical
-                     derivatives.
-         Default: step size is computed automatically.
+         ``'step'``: the step size to be used in calculating the numerical 
+         derivatives. Default: step size is computed automatically.
         
          ``'side'``: the sidedness of the finite difference when computing
          numerical derivatives.  This item can take four values:
         
-          0 - one-sided derivative computed automatically (default)
+            * 0 - one-sided derivative computed automatically (default)
         
-          1 - one-sided derivative :math:`(f(x+h) - f(x)  )/h`
+            * 1 - one-sided derivative :math:`(f(x+h) - f(x)  )/h`
         
-          -1 - one-sided derivative :math:`(f(x)   - f(x-h))/h`
+            * -1 - one-sided derivative :math:`(f(x)   - f(x-h))/h`
         
-          2 - two-sided derivative :math:`(f(x+h) - f(x-h))/2h`
+            * 2 - two-sided derivative :math:`(f(x+h) - f(x-h))/2h`
         
-          3 - user-computed explicit derivatives
+            * 3 - user-computed explicit derivatives
         
-         where :math:`h` is the value of the parameter ``'step'``
-         described above.
-         The "automatic" one-sided derivative method will chose a
-         direction for the finite difference which does not
-         violate any constraints.  The other methods do not
-         perform this check.  The two-sided method is in
-         principle more precise, but requires twice as many
-         function evaluations.  Default: 0.
+            where :math:`h` is the value of the parameter ``'step'``
+            described above.
+         
+            The "automatic" one-sided derivative method will chose a
+            direction for the finite difference which does not
+            violate any constraints.  The other methods do not
+            perform this check.  The two-sided method is in
+            principle more precise, but requires twice as many
+            function evaluations.  Default: 0.
         
          ``'deriv_debug'``: boolean to specify console debug logging of
          user-computed derivatives. True: enable debugging.
@@ -425,6 +427,7 @@ cdef class Fitter(object):
         derivatives should be used. In this case, ``parinfo`` should have the value
         ``[{'fixed': True}, None, {'side': 3}, None]`` or
         ``[{'fixed': True}, {}, {'side': 3}, {}]``.
+        
         """
         def __get__(self):
             return self._parinfo
@@ -582,6 +585,8 @@ cdef class Fitter(object):
             self.config.maxiter = 0
 
     property nofinitecheck:
+        r'''Does not check for finite values. Default: None
+        '''
         def __get__(self):
             return self.config.nofinitecheck
 

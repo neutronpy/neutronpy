@@ -128,7 +128,7 @@ Resolution ellipses
 ^^^^^^^^^^^^^^^^^^^
 The resolution ellipses are calculated when :py:meth:`.calc_projections` is called, and can be accessed using :py:meth:`.calc_projections`, which is a dictionary with the keys ``QxQy``, ``QxQySlice``, ``QxW``, ``QxWSlice``, ``QyW``, and ``QyWSlice``, providing ``x`` and ``y`` values.
 
-The following is an example of a resolution calculation using the Cooper-Nathans method (for a slice in the :math:`Q_x Q_y` plane), with resolution ellipses (projection (filled) and slice (dashed)) overlaid, using the settings we have used in this example.
+The following is an example of a resolution calculation using the Cooper-Nathans method (for a projection in the :math:`Q_x Q_y` plane), with resolution ellipses (projection (filled) and slice (dashed)) overlaid, using the settings we have used in this example.
 
 .. plot::
 
@@ -140,13 +140,13 @@ The following is an example of a resolution calculation using the Cooper-Nathans
 
     EXP = Instrument()
 
-    hkle = [1., 1., 0., 0.]
+    hkle = [1., 1., 0., 5.]
     EXP.calc_projections(hkle)
 
-    x, y = np.meshgrid(np.linspace(hkle[0] - 0.05, hkle[0] + 0.05, 101), np.linspace(hkle[1] - 0.05, hkle[1] + 0.05, 101), sparse=True)
+    x, y = np.meshgrid(np.linspace(-0.05, 0.05, 101), np.linspace(-0.05, 0.05, 101), sparse=True)
 
-    R0, RMxx, RMyy, RMxy = EXP.get_resolution_params(hkle, 'QxQy', mode='slice')
-    p = np.array([0., 0., 1., hkle[0], hkle[1], R0, RMxx, RMyy, RMxy])
+    R0, RMxx, RMyy, RMxy = EXP.get_resolution_params(hkle, 'QxQy', mode='project')
+    p = np.array([0., 0., 1., 0, 0, R0, RMxx, RMyy, RMxy])
     z = resolution(p, (x, y))
 
     fig = plt.figure(facecolor='w', edgecolor='k')
@@ -154,12 +154,12 @@ The following is an example of a resolution calculation using the Cooper-Nathans
     plt.pcolormesh(x, y, z, cmap=cm.jet)
 
     [x1, y1] = EXP.projections['QxQy'][:, :, 0]
-    plt.fill(x1 + 1, y1 + 1, 'r', alpha=0.25)
+    plt.fill(x1, y1, 'r', alpha=0.25)
     [x1, y1] = EXP.projections['QxQySlice'][:, :, 0]
-    plt.plot(x1 + 1, y1 + 1, 'w--')
+    plt.plot(x1, y1, 'w--')
 
-    plt.xlim(hkle[0] - 0.05, hkle[0] + 0.05)
-    plt.ylim(hkle[1] - 0.05, hkle[1] + 0.05)
+    plt.xlim(-0.05, 0.05)
+    plt.ylim(-0.05, 0.05)
 
     plt.show()
 
@@ -178,7 +178,7 @@ Once this variable is set we can enable the Popovici method and recalculate the 
 
     Like with the Cooper-Nathans method above, many of these settings have default values, that don't need to be changed for the resolution calculation to function, but will provide more accuracy if assigned appropriate values.
 
-The following is an example of a resolution calculation using the Popovici method (for a slice in the :math:`Q_x Q_y` plane), with resolution ellipses (projection (filled) and slice (dashed)) overlaid, using the settings used in this example.
+The following is an example of a resolution calculation using the Popovici method (for a projection in the :math:`Q_x Q_y` plane), with resolution ellipses (projection (filled) and slice (dashed)) overlaid, using the settings used in this example.
 
 .. plot::
 
@@ -188,15 +188,19 @@ The following is an example of a resolution calculation using the Popovici metho
     from neutronpy.resolution import Instrument, Sample
     from neutronpy.functions import resolution
 
-    EXP = Instrument(arms=[1560, 600, 260, 300], method=1)
+    EXP = Instrument()
+    EXP.arms = [1560, 600, 260, 300]
+    EXP.method = 1
 
-    hkle = [1., 1., 0., 0.]
+    hkle = [1., 1., 0., 5.]
+    EXP.sample.u = [1,0,0]
+    EXP.sample.v = [0,1,0]
     EXP.calc_projections(hkle)
 
-    x, y = np.meshgrid(np.linspace(hkle[0] - 0.05, hkle[0] + 0.05, 101), np.linspace(hkle[1] - 0.05, hkle[1] + 0.05, 101), sparse=True)
+    x, y = np.meshgrid(np.linspace(-0.05, 0.05, 101), np.linspace(-0.05, 0.05, 101), sparse=True)
 
-    R0, RMxx, RMyy, RMxy = EXP.get_resolution_params(hkle, 'QxQy', mode='slice')
-    p = np.array([0., 0., 1., hkle[0], hkle[1], R0, RMxx, RMyy, RMxy])
+    R0, RMxx, RMyy, RMxy = EXP.get_resolution_params(hkle, 'QxQy', mode='project')
+    p = np.array([0., 0., 1., 0, 0, R0, RMxx, RMyy, RMxy])
     z = resolution(p, (x, y))
 
     fig = plt.figure(facecolor='w', edgecolor='k')
@@ -204,12 +208,12 @@ The following is an example of a resolution calculation using the Popovici metho
     plt.pcolormesh(x, y, z, cmap=cm.jet)
 
     [x1, y1] = EXP.projections['QxQy'][:, :, 0]
-    plt.fill(x1 + 1, y1 + 1, 'r', alpha=0.25)
+    plt.fill(x1, y1, 'r', alpha=0.25)
     [x1, y1] = EXP.projections['QxQySlice'][:, :, 0]
-    plt.plot(x1 + 1, y1 + 1, 'w--')
+    plt.plot(x1, y1, 'w--')
 
-    plt.xlim(hkle[0] - 0.05, hkle[0] + 0.05)
-    plt.ylim(hkle[1] - 0.05, hkle[1] + 0.05)
+    plt.xlim(-0.05, 0.05)
+    plt.ylim(-0.05, 0.05)
 
     plt.show()
 
@@ -236,11 +240,20 @@ Simple Plotting of the 3D Resolution Ellipsoid
 To see a simple plot of the resolution ellipsoid in the :math:`Q_x Q_y W` zone the :py:meth:`.plot_ellipsoid` method can be used.
 
 >>> EXP = Instrument()
->>> EXP.plot_ellipsoid([1,0,0,0])
+>>> EXP.plot_ellipsoid([1,1,0,0])
+
 
 Plotting of the Instrument setup for a given (Q,W)
 --------------------------------------------------
 To see a plot of the instrument setup using the angles required for a given :math:`(Q, W)` the :py:meth:`.plot_instrument` method can be used.
 
 >>> EXP = Instrument()
->>> EXP.plot_instrument([1,0,0,0])
+>>> EXP.plot_instrument([1,1,0,0])
+
+.. plot::
+
+    from neutronpy.resolution import Instrument
+
+    EXP = Instrument()
+    EXP.arms = [1560, 600, 260, 300]
+    EXP.plot_instrument([1,1,0,0])

@@ -22,7 +22,7 @@ New releases will be pushed to the package index. If you wish to install the dev
 
 Installation from Source
 ------------------------
-To install from source, either download the `source from Github <https://github.com/neutronpy/neutronpy/archive/master.zip>`_ or clone the repository::
+To install from source, either download the `master branch source from Github <https://github.com/neutronpy/neutronpy/archive/master.zip>`_ or clone the repository::
 
     git clone https://github.com/neutronpy/neutronpy.git
 
@@ -30,7 +30,7 @@ From inside of the neutronpy directory install the package using::
 
     python setup.py install
 
-If you want to install the development version, you can either download the `source from Github <https://github.com/neutronpy/neutronpy/archive/develop.zip>`_, as above, after switch to the ``develop`` branch, or clone the repository and checkout the branch and install::
+If you want to install the development version, you can either download the `development branch source from Github <https://github.com/neutronpy/neutronpy/archive/develop.zip>`_, as above, after switch to the ``develop`` branch, or clone the repository and checkout the branch and install::
 
     git clone https://github.com/neutronpy/neutronpy.git
     git fetch

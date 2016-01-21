@@ -2,7 +2,7 @@
 r'''Tools Module
 '''
 from .constants import BOLTZMANN_IN_MEV_K, JOULES_TO_MEV
-from multiprocessing import cpu_count, Pool  # pylint: disable=no-name-in-module
+from multiprocessing import cpu_count, Pool  # pylint: disable=no-name-in-module @UnresolvedImport
 import numbers
 import numpy as np
 import re
@@ -68,7 +68,7 @@ class Data(object):
     intensity
     error
     detailed_balance_factor
-
+    
     Methods
     -------
     bin
@@ -77,7 +77,12 @@ class Data(object):
     width
     load_file
     plot
-
+    estimate_background
+    subtract_background
+    dynamic_susceptibility
+    scattering_function
+    combine_data
+    
     '''
     def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0.,
                  detector=0., monitor=0., error=0., time=0., time_norm=False, **kwargs):
@@ -128,7 +133,7 @@ class Data(object):
     def __sub__(self, right):
         try:
             monitor = self.monitor
-            detector = self.monitor
+            detector = self.detector
 
             output = {'Q': right.Q, 'detector': np.negative(right.detector),
                       'monitor': right.monitor, 'time': right.time}
@@ -137,11 +142,19 @@ class Data(object):
             raise AttributeError('Data types cannot be combined')
 
     def __mul__(self, right):
-        self.detector *= right
+        self.detector = self.detector * right
         return self
 
     def __div__(self, right):
-        self.detector /= right
+        self.detector = self.detector / right
+        return self
+
+    def __truediv__(self, right):
+        self.detector = self.detector / right
+        return self
+
+    def __floordiv__(self, right):
+        self.detector = self.detector // right
         return self
 
     def __pow__(self, right):
@@ -317,14 +330,44 @@ class Data(object):
         return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
 
     def scattering_function(self, material, ei):
-        ki = Energy(energy=ei).wavevector
-        kf = Energy(energy=ei-self.e).wavevector
+        r'''Returns the neutron scattering function, i.e. the detector counts scaled by :math:`4 \pi / \sigma_{\mathrm{tot}} * k_i/k_f`. 
         
-        return 4 * np.pi / (material.total_scattering_cross_section) * ki / kf * self.counts
-    
+        Parameters
+        ----------
+        material : object
+            Definition of the material given by the :py:class:`.Material` class
+        
+        ei : float
+            Incident energy in meV
+        
+        Returns
+        -------
+        counts : ndarray
+            The detector counts scaled by the total scattering cross section and ki/kf
+        '''
+        ki = Energy(energy=ei).wavevector
+        kf = Energy(energy=ei - self.e).wavevector
+
+        return 4 * np.pi / (material.total_scattering_cross_section) * ki / kf * self.detector
+
     def dynamic_susceptibility(self, material, ei):
-        return self.scattering_fucntion(material, ei) * self.detailed_balance_factor
-    
+        r'''Returns the dynamic susceptibility :math:`\chi^{\prime\prime}(\mathbf{Q},\hbar\omega)`
+        
+        Parameters
+        ----------
+        material : object
+            Definition of the material given by the :py:class:`.Material` class
+                
+        ei : float
+            Incident energy in meV
+        
+        Returns
+        -------
+        counts : ndarray
+            The detector counts turned into the scattering function multiplied by the detailed balance factor
+        '''
+        return self.scattering_function(material, ei) * self.detailed_balance_factor
+
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
 
@@ -333,15 +376,12 @@ class Data(object):
         args : dictionary of ndarrays
             A dictionary (or multiple) of the data that will be added to the
             current data, with keys:
+            
                 * Q : ndarray : [h, k, l, e] with shape (N, 4,)
                 * monitor : ndarray : shape (N,)
                 * detector : ndarray : shape (N,)
                 * temps : ndarray : shape (N,)
-
-        Returns
-        -------
-        None
-
+        
         '''
         Q = self.Q.copy()
         detector = self.detector.copy()  # pylint: disable=access-member-before-definition
@@ -369,7 +409,7 @@ class Data(object):
 
             if len(combine) > 0:
                 for key in ['Q', 'monitor', 'detector', 'time']:
-                    arg[key] = np.delete(arg[key], (np.array(combine)[:, 0],), 0)
+                    arg[key] = np.delete(arg[key], (np.array(combine, dtype=np.int64)[:, 0],), 0)
 
             Q = np.concatenate((Q, arg['Q']))
             detector = np.concatenate((detector, arg['detector']))
@@ -406,7 +446,7 @@ class Data(object):
         
         '''
         pass
-    
+
     def estimate_background(self, bg_params):
         r'''Estimate the background according to ``type`` specified.
 
@@ -781,7 +821,7 @@ class Data(object):
                               np.ma.masked_where(w <= 0, z),
                               np.ma.masked_where(w <= 0, w))
 
-                from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-variable
+                from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-variable @UnresolvedImport @UnusedImport
 
                 fig = plt.figure()
                 axis = fig.add_subplot(111, projection='3d')
@@ -795,12 +835,12 @@ class Data(object):
         elif z is not None and w is None:
             try:
                 z = dims[args['z']]
-
-#                 x, y, z = (np.ma.masked_where(z <= 0, x),
-#                            np.ma.masked_where(z <= 0, y),
-#                            np.ma.masked_where(z <= 0, z))
-                X, Y = np.meshgrid(np.linspace(x.min(), x.max(), np.around(np.abs(np.unique(x) - np.roll(np.unique(x), 1))[1], decimals=4)),
-                                   np.linspace(y.min(), y.max(), np.around(np.abs(np.unique(y) - np.roll(np.unique(y), 1))[1], decimals=4)))
+                
+                x_step = np.around(np.abs(np.unique(x) - np.roll(np.unique(x), 1))[1], decimals=4)
+                y_step = np.around(np.abs(np.unique(y) - np.roll(np.unique(y), 1))[1], decimals=4)
+                x_sparse = np.linspace(x.min(), x.max(), (x.max() - x.min()) / x_step + 1)
+                y_sparse = np.linspace(y.min(), y.max(), (y.max() - y.min()) / y_step + 1)
+                X, Y = np.meshgrid(x_sparse, y_sparse)
 
                 from scipy.interpolate import griddata
                 Z = griddata((x, y), z, (X, Y))
@@ -819,11 +859,6 @@ class Data(object):
                 plt.errorbar(x, y, **plot_options)
 
             if fit_options:
-                try:
-                    from .kmpfit import Fitter
-                except ImportError:
-                    raise
-
                 def residuals(params, data):
                     funct, x, y, err = data
 
@@ -971,7 +1006,7 @@ def load(files, filetype='auto', tols=1e-4):
                         headers = [head for head in args]
                         skip_lines = i + 2
                         break
-            
+
             args = np.genfromtxt(filename, unpack=True, dtype=np.float64, skip_header=skip_lines, skip_footer=1)
 
         else:
@@ -998,14 +1033,14 @@ def load(files, filetype='auto', tols=1e-4):
         del _Q_dict, args
 
         try:
-            _data_object.combine_data(raw_data, tols=tols)
+            _data_object.combine_data(raw_data, tols=tols)  # @UndefinedVariable
         except (NameError, UnboundLocalError):
             _data_object = Data(**raw_data)
 
     return _data_object
 
 
-def save(obj, filename, format='ascii', **kwargs):
+def save(obj, filename, fileformat='ascii', **kwargs):
     '''Saves a given object to a file in a specified format.
     
     Parameters
@@ -1016,30 +1051,40 @@ def save(obj, filename, format='ascii', **kwargs):
     filename : str
         Path to file where data will be saved
     
-    format : str
+    fileformat : str
         Default: `'ascii'`. Data can either be saved in `'ascii'`,
-        human-readable format, `'binary'` format, or `'nexus'` format.
+        human-readable format, binary `'hdf5'` format, or binary
+        `'pickle'` format.
     '''
-    output = np.hstack((obj.Q, obj.detector, obj.monitor, obj.time))
+    output = np.hstack((obj.Q, obj.detector.reshape(obj.detector.shape[0], 1),
+                        obj.monitor.reshape(obj.monitor.shape[0], 1),
+                        obj.time.reshape(obj.time.shape[0], 1)))
 
-    if format == 'ascii':
+    if fileformat == 'ascii':
         np.savetxt(filename, output, **kwargs)
-    elif format == 'binary':
-        pass
-    elif format == 'nexus':
-        pass
+    elif fileformat == 'hdf5':
+        import h5py
+        with h5py.File(filename, 'w') as f:
+            dset = f.create_dataset('data', output.shape,
+                                    maxshape=(None, output.shape[1]),
+                                    dtype='float64')
+            dset = output
+    elif fileformat == 'pickle':
+        import pickle
+        with open(filename, 'wb') as f:
+            pickle.dump(output, f)
     else:
         raise ValueError("""Format not supported. Please use 'ascii', \
-                            'binary', 'pickle' or 'nexus'""")
+                            'hdf5', or 'pickle'""")
 
 
-def build_Q(vars, **kwargs):
+def build_Q(args, **kwargs):
     u'''Method for constructing **Q**\ (*q*, ℏω, temp) from h, k, l,
     energy, and temperature
 
     Parameters
     ----------
-    vars : dict
+    args : dict
         A dictionary of the `h`, `k`, `l`, `e` and `temp` arrays to form into
         a column oriented array
 
@@ -1050,7 +1095,7 @@ def build_Q(vars, **kwargs):
         array.
 
     '''
-    return np.vstack((vars[i].flatten() for i in
+    return np.vstack((args[i].flatten() for i in
                       ['h', 'k', 'l', 'e', 'temp'])).T
 
 
@@ -1087,7 +1132,7 @@ def detect_filetype(file):
                 raise ValueError('Unknown filetype.')
 
 
-class Energy():
+class Energy(object):
     u'''Class containing the most commonly used properties of a neutron beam
     given some initial input, e.g. energy, wavelength, velocity, wavevector,
     temperature, or frequency. At least one input must be supplied.
@@ -1111,6 +1156,19 @@ class Energy():
     -------
     Energy object
         The energy object containing the properties of the neutron beam
+        
+    Attributes
+    ----------
+    energy
+    wavelength
+    wavevector
+    velocity
+    temperature
+    frequency
+    
+    Methods
+    -------
+    values
     '''
     def __init__(self, energy=None, wavelength=None, velocity=None,
                  wavevector=None, temperature=None, frequency=None):
@@ -1123,7 +1181,7 @@ class Energy():
         try:
             if energy is None:
                 if wavelength is not None:
-                    self.en = constants.h ** 2 / (2. * constants.m_n * (wavelength / 1.e10) ** 2) * JOULES_TO_MEV
+                    self.en = constants.h ** 2. / (2. * constants.m_n * (wavelength / 1.0e10) ** 2.) * JOULES_TO_MEV
                 elif velocity is not None:
                     self.en = 1. / 2. * constants.m_n * velocity ** 2 * JOULES_TO_MEV
                 elif wavevector is not None:
@@ -1148,6 +1206,7 @@ class Energy():
 
     @property
     def energy(self):
+        r'''Energy of the neutron in meV'''
         return self.en
 
     @energy.setter
@@ -1156,6 +1215,7 @@ class Energy():
 
     @property
     def wavelength(self):
+        r'''Wavelength of the neutron in Å'''
         return self.wavelen
 
     @wavelength.setter
@@ -1164,6 +1224,7 @@ class Energy():
 
     @property
     def wavevector(self):
+        u'''Wavevector k of the neutron in 1/Å'''
         return self.wavevec
 
     @wavevector.setter
@@ -1172,6 +1233,7 @@ class Energy():
 
     @property
     def temperature(self):
+        r'''Temperature of the neutron in Kelvin'''
         return self.temp
 
     @temperature.setter
@@ -1180,6 +1242,7 @@ class Energy():
 
     @property
     def frequency(self):
+        r'''Frequency of the neutron in THz'''
         return self.freq
 
     @frequency.setter
@@ -1188,16 +1251,16 @@ class Energy():
 
     @property
     def velocity(self):
+        r'''Velocity of the neutron in m/s'''
         return self.vel
 
     @velocity.setter
     def velocity(self, value):
         self._update_values(velocity=value)
 
-
     @property
     def values(self):
-        '''Prints all of the properties of the Neutron beam
+        r'''Prints all of the properties of the Neutron beam
 
         Parameters
         ----------

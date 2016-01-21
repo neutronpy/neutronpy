@@ -1,0 +1,50 @@
+RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+  054323      1      0
+ILL TAS data in the new ASCII format follow after the line VV...V
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	   80      0
+FLEX  mcewen      09-Jul-15 23:23:37
+VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+INSTR: FLEX
+EXPNO: 
+USER_: mcewen
+LOCAL: Diana
+FILE_: 054323
+DATE_: 09-Jul-15 23:23:37
+TITLE: 20141683-ST_UPd3
+COMND: BS QH 0.5  0   3   1.8   DQH 0 0 0 -0.1  NP 9  MN 10000000
+POSQE: QH=  0.5000, QK=  0.0000, QL=  3.0000, EN=   1.8000, UN=meV 
+STEPS: QH      =  0.0000, QK      =  0.0000, QL      =  0.0000
+STEPS: EN      = -0.1000
+PARAM: DM=   3.35500, DA=   3.35500, SM=-1., SS= 1., SA=-1.
+PARAM: FX= 2., KFIX=   1.54985
+PARAM: ALF1= 300.00, ALF2=  60.00,ALF3= 600.00, ALF4= 600.00
+PARAM: BET1= 600.00, BET2= 600.00,BET3= 600.00, BET4= 600.00
+PARAM: ETAM=    22.0, ETAA=    35.0
+PARAM: AS=   5.72930, BS=   5.72930, CS=   9.61770
+PARAM: AA= 90.0000, BB= 90.0000,CC=120.0000, ETAS=    30.0
+PARAM: AX=   1.000, AY=   0.000, AZ=   0.000
+PARAM: BX=   0.000, BY=   0.000, BZ=   1.000
+VARIA: A1      = -31.19, A2      = -62.36, A3      =-118.79, A4      =  75.21
+VARIA: A5      = -37.16, A6      = -74.34, GM      =   0.00, RA      = -50.76
+VARIA: XX      =   2.86, VG      =   2.00, VS      =  11.94, RMV     =  55.20
+VARIA: RMH     =  29.70
+ZEROS: A1      =   0.08, A2      =   0.59, A3      = 366.69, A4      =   0.45
+ZEROS: A5      =  -0.36, A6      =  -2.69, GM      =  -0.04, RA      =   0.00
+ZEROS: XX      =  12.25, VG      =  -2.00, VS      =   0.00, RMV     =   0.00
+ZEROS: RMH     =   0.00
+PARAM: MN=**********
+PARAM: TT=      1.88, RT=      1.90, TT2=      0.00, RT2=      0.00, MAG=      0.00
+FORMT: (I4,1X,F9.4,1X,F9.4,1X,F9.4,1X,F9.4,2(1X,F10.0),1X,F9.2,1x,,6(1X,F9.4))
+DATA_:
+  PNT      QH        QK        QL        EN        M1       M2      TIME     CNTS      A3        A4        KI        TT        TRT       MAG     
+   1    0.4997    0.0000    3.0002    1.8010  10000000.         0.   2948.94       238. -118.7900   75.2100    1.8087    1.8780    1.8982    0.0000
+   2    0.5001    0.0000    2.9991    1.7025  10000000.         0.   1481.93       341. -118.8900   75.5800    1.7955    1.8775    1.8980    0.0000
+   3    0.4999    0.0000    3.0001    1.6027  10000000.         0.    960.62       276. -119.0000   76.0100    1.7820    1.8782    1.8996    0.0000
+   4    0.4997    0.0000    3.0012    1.5017  10000000.         0.    820.86       240. -119.1100   76.4500    1.7683    1.8853    1.9034    0.0000
+   5    0.4997    0.0000    2.9992    1.4016  10000000.         0.    756.48       193. -119.2300   76.8100    1.7546    1.8852    1.9013    0.0000
+   6    0.4999    0.0000    3.0000    1.3007  10000000.         0.    763.79       175. -119.3200   77.2600    1.7406    1.8881    1.8994    0.0000
+   7    0.4995    0.0000    3.0012    1.2008  10000000.         0.    755.72       180. -119.4300   77.7100    1.7267    1.8883    1.9031    0.0000
+   8    0.5002    0.0000    2.9985    1.1003  10000000.         0.    745.76       188. -119.5200   78.0800    1.7126    1.8865    1.9027    0.0000
+   9    0.4994    0.0000    3.0014    1.0010  10000000.         0.    748.87       136. -119.6300   78.5800    1.6986    1.8859    1.9094    0.0000
+Finished at 10-Jul-15 02:12:05

@@ -22,9 +22,10 @@ needs_sphinx = '1.0'
 # -----------------------------------------------------------------------------
 # releases (changelog) configuration
 # -----------------------------------------------------------------------------
-releases_issue_uri = "https://github.com/neutronpy/neutronpy/issues/%s"
-releases_release_uri = "https://github.com/neutronpy/neutronpy/tree/%s"
+#releases_issue_uri = "https://github.com/neutronpy/neutronpy/issues/%s"
+#releases_release_uri = "https://github.com/neutronpy/neutronpy/tree/%s"
 releases_github_path = "neutronpy/neutronpy"
+releases_debug = False
 
 # -----------------------------------------------------------------------------
 # General configuration
@@ -61,7 +62,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'neutronpy'
-copyright = '2014, David M Fobes'
+copyright = '2016, David M Fobes'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -99,15 +100,15 @@ add_function_parentheses = False
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx_rtd_theme_custom.support.LightStyle'
+pygments_style = 'neutronpy_sphinx_rtd_theme.support.LightStyle'
 
 # -----------------------------------------------------------------------------
 # HTML output
 # -----------------------------------------------------------------------------
 
-import sphinx_rtd_theme_custom
-html_theme = "sphinx_rtd_theme_custom"
-html_theme_path = [sphinx_rtd_theme_custom.get_html_theme_path()]
+import neutronpy_sphinx_rtd_theme
+html_theme = "neutronpy_sphinx_rtd_theme"
+html_theme_path = [neutronpy_sphinx_rtd_theme.get_html_theme_path()]
 
 html_static_path = [os.path.join('.', '_static')]
 
@@ -126,9 +127,9 @@ html_theme_options = {'logo': 'logo.png',
                       }
 
 # Sister-site links to API docs
-# html_theme_options['extra_nav_links'] = {
-#     "NeutronPy Docs": 'http://neutronpy.github.io/reference',
-# }
+html_theme_options['extra_nav_links'] = {
+     "NeutronPy Docs": 'http://neutronpy.github.io/reference',
+}
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied

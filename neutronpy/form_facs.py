@@ -28,16 +28,13 @@ class _Atom(object):
         Atom object defining an individual atom in a unit cell of a single crystal
 
     '''
-    def __init__(self, ion, pos, occupancy=1., Mcell=None, massNorm=False, Uiso=0, Uaniso=None):
+    def __init__(self, ion, pos, occupancy=1., Mcell=None, massNorm=False, Uiso=0, Uaniso=np.zeros((3, 3))):
         self.ion = ion
         self.pos = np.array(pos)
         self.occupancy = occupancy
         self.Mcell = Mcell
         self.Uiso = Uiso
-        if Uaniso is None:
-            self.Uaniso = np.matrix(np.zeros((3, 3)))
-        else:
-            self.Uaniso = np.matrix(Uaniso)
+        self.Uaniso = np.matrix(Uaniso)
 
         if massNorm is True:
             self.mass = const.periodic_table()[ion]['mass']
@@ -122,6 +119,35 @@ class Material(Lattice):
     Attributes
     ----------
     volume
+    total_scattering_cross_section
+    a
+    b
+    c
+    astar
+    bstar
+    cstar
+    alpha
+    beta
+    gamma
+    alpha_rad
+    beta_rad
+    gamma_rad
+    alphastar
+    betastar
+    gammastar
+    alphastar_rad
+    betastar_rad
+    gammastar_rad
+    abg_rad
+    reciprocal_abc
+    reciprocal_abg
+    reciprocal_abg_rad
+    lattice_type
+    volume
+    reciprocal_volume
+    G
+    Gstar
+    Bmatrix
     
     Methods
     -------
@@ -133,7 +159,6 @@ class Material(Lattice):
     get_q
     get_two_theta
     N_atoms
-    
 
     '''
 
@@ -176,6 +201,8 @@ class Material(Lattice):
 
     @property
     def total_scattering_cross_section(self):
+        r'''Returns total scattering cross-section of unit cell
+        '''
         total = 0
         for atom in self.atoms:
             total += (atom.coh_xs + atom.inc_xs)
@@ -390,7 +417,7 @@ class Ion(object):
             if qrange is None:
                 q = np.linspace(0., 2., 2. / 0.025 + 1)
             else:
-                q = np.linspace(qrange[0], qrange[1], (qrange[1] - qrange[0]) / 0.025)
+                q = np.linspace(qrange[0], qrange[1], (qrange[1] - qrange[0]) / 0.025 + 1)
         if g is None:
             g = 2.
 

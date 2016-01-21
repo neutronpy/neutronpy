@@ -1,36 +1,35 @@
+sudo: false
 language: python
-env:
-  - PYTHON_VERSION=2.6 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 USE_CYTHON=TRUE
-  - PYTHON_VERSION=2.7 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 USE_CYTHON=TRUE
-  - PYTHON_VERSION=3.3 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 USE_CYTHON=TRUE
-  - PYTHON_VERSION=3.4 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 USE_CYTHON=TRUE
-  - PYTHON_VERSION=3.5 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 USE_CYTHON=TRUE 
-install:
-  - sudo apt-get update
-  # You may want to periodically update this, although the conda update
-  # conda line below will keep everything up-to-date.  We do this
-  # conditionally because it saves us some downloading if the version is
-  # the same.
-  - if [[ "$PYTHON_VERSION" == "2.7" ]] || [[ "$PYTHON_VERSION" == "2.6" ]]; then
-      wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
+matrix:
+    include:
+        - python: "2.6"
+          env: NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
+        - python: "2.7"
+          env: NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+        - python: "3.3"
+          env: NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
+        - python: "3.4"
+          env: NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+        - python: "3.5"
+          env: NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+cache: apt
+addons:
+  apt:
+    packages:
+    - libatlas-dev
+    - libatlas-base-dev
+    - liblapack-dev
+    - gfortran
+before_install:
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  # Useful for debugging any issues with conda
-  - conda info -a
-
-  # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$PYTHON_VERSION pip numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose pep8 Sphinx
-  - if [ ${USE_CYTHON} ]; then conda install --yes -n test-environment cython; fi
-  - source activate test-environment
+install:
+  - conda create --yes -q -n test_environment python=$TRAVIS_PYTHON_VERSION pip setuptools cython numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose matplotlib=$MATPLOTLIB_VERSION six mock h5py
+  - source activate test_environment
+  - pip install pep8 python-coveralls
   - pip install -e . -q --no-deps
-
 script:
-  - nosetests
+  - nosetests --with-coverage --cover-package=neutronpy --logging-level=INFO
 after_success:
   - coveralls
