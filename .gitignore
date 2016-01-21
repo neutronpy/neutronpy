@@ -23,6 +23,7 @@ _build
 *.egg-info/
 MANIFEST
 generated
+*.pyc
 
 # Virtual Env #
 ###############

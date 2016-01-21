@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from neutronpy import lattice
 import unittest
 import numpy as np
@@ -34,7 +35,7 @@ class LatticeTests(unittest.TestCase):
         self.assertTrue(np.all(self.unitcell.abg_rad == abg_rad))
         self.assertTrue(np.all(self.unitcell.abg_rad == np.deg2rad(abg)))
         self.assertEqual(np.round(self.unitcell.volume, 12), 4 ** 3)
-        self.assertEqual(np.round(self.unitcell.reciprocal_volume, 12), 1 / (4 ** 3))
+        self.assertEqual(np.round(self.unitcell.reciprocal_volume, 12), 1. / (4 ** 3))
         self.assertTrue(self.unitcell.astar == self.unitcell.b * self.unitcell.c * np.sin(self.unitcell.alpha_rad) / self.unitcell.volume)
         self.assertTrue(self.unitcell.bstar == self.unitcell.a * self.unitcell.c * np.sin(self.unitcell.beta_rad) / self.unitcell.volume)
         self.assertTrue(self.unitcell.cstar == self.unitcell.a * self.unitcell.b * np.sin(self.unitcell.gamma) / self.unitcell.volume)
@@ -70,8 +71,8 @@ class LatticeTests(unittest.TestCase):
         self.assertTrue(test_cell.lattice_type == 'triclinic')
 
         test_cell = lattice.Lattice([1, 1, 2], [90, 90, 150])
-        with self.assertRaises(ValueError):
-            test_cell.lattice_type
+        self.assertRaises(ValueError, getattr, test_cell, 'lattice_type')
+            
 
 
 class GoniometerTests(unittest.TestCase):

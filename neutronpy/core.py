@@ -1132,7 +1132,7 @@ def detect_filetype(file):
                 raise ValueError('Unknown filetype.')
 
 
-class Energy():
+class Energy(object):
     u'''Class containing the most commonly used properties of a neutron beam
     given some initial input, e.g. energy, wavelength, velocity, wavevector,
     temperature, or frequency. At least one input must be supplied.
@@ -1181,7 +1181,7 @@ class Energy():
         try:
             if energy is None:
                 if wavelength is not None:
-                    self.en = constants.h ** 2 / (2. * constants.m_n * (wavelength / 1.e10) ** 2) * JOULES_TO_MEV
+                    self.en = constants.h ** 2. / (2. * constants.m_n * (wavelength / 1.0e10) ** 2.) * JOULES_TO_MEV
                 elif velocity is not None:
                     self.en = 1. / 2. * constants.m_n * velocity ** 2 * JOULES_TO_MEV
                 elif wavevector is not None:

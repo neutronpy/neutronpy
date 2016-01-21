@@ -1,11 +1,15 @@
+# -*- coding: utf-8 -*-
+r'''Testing of the resolution library
+'''
 from neutronpy import resolution
 import numpy as np
 import unittest
 import os
 from copy import deepcopy
-from unittest.mock import patch
+from mock import patch
 from numpy import newaxis
-
+from matplotlib import use
+use('Agg')
 
 def angle2(x, y, z, h, k, l, lattice):
     [V, Vstar, latticestar] = resolution._star(lattice)
@@ -286,8 +290,7 @@ class ResolutionTest(unittest.TestCase):
         self.assertTrue(np.abs(self.sumIavg - sumI13) < self.sumIstd)
 
         EXP.resolution_convolution(SqwDemo, PrefDemo2, 1, (H1, K1, L1, W1), 'fix', None, p)
-        with self.assertRaises(ValueError):
-            EXP.resolution_convolution(SqwDemo, PrefDemo3, 0, (H1, K1, L1, W1), 'fix', [5, 0], p)
+        self.assertRaises(ValueError, EXP.resolution_convolution, SqwDemo, PrefDemo3, 0, (H1, K1, L1, W1), 'fix', [5, 0], p)
 
     def test_sma_conv(self):
         sample = resolution.Sample(6, 7, 8, 90, 90, 90)
@@ -307,8 +310,7 @@ class ResolutionTest(unittest.TestCase):
         self.assertTrue(np.abs(self.sumIavg - sumI15) < self.sumIstd)
 
         EXP.resolution_convolution_SMA(SMADemo, PrefDemo2, 1, (H1, K1, L1, W1), 'fix', None, p)
-        with self.assertRaises(ValueError):
-            EXP.resolution_convolution_SMA(SMADemo, PrefDemo3, 0, (H1, K1, L1, W1), 'fix', None, p)
+        self.assertRaises(ValueError, EXP.resolution_convolution_SMA, SMADemo, PrefDemo3, 0, (H1, K1, L1, W1), 'fix', None, p)
 
     @patch("matplotlib.pyplot.show")
     def test_plotting(self, mock_show):
@@ -355,8 +357,7 @@ class ResolutionTest(unittest.TestCase):
         self.assertTrue(resolution.GetTau(1.87325, getlabel=True) == 'pg(002)')
         self.assertTrue(resolution.GetTau(1.8, getlabel=True) == '')
         self.assertTrue(resolution.GetTau(10) == 10)
-        with self.assertRaises(KeyError):
-            resolution.GetTau('blah')
+        self.assertRaises(KeyError, resolution.GetTau, 'blah')
 
     def test_CleanArgs_err(self):
         pass
@@ -378,8 +379,7 @@ class ResolutionTest(unittest.TestCase):
         EXP = resolution.Instrument()
         EXP.sample.u = [1, 0, 0]
         EXP.sample.v = [2, 0, 0]
-        with self.assertRaises(ValueError):
-            EXP.calc_resolution([1, 1, 0, 0])
+        self.assertRaises(ValueError, EXP.calc_resolution, [1, 1, 0, 0])
 
     def test_calc_res_cases(self):
         EXP = resolution.Instrument()
@@ -414,8 +414,7 @@ class ResolutionTest(unittest.TestCase):
         EXP.calc_resolution([1, 0, 0, 0])
         EXP.calc_projections([0, 1, 0, 0])
         EXP.get_resolution_params([0, 1, 0, 0], 'QxQy', 'slice')
-        with self.assertRaises(ValueError):
-            EXP.get_resolution_params([1, 1, 0, 0], 'QxQy', 'slice')
+        self.assertRaises(ValueError, EXP.get_resolution_params, [1, 1, 0, 0], 'QxQy', 'slice')
 
         EXP = resolution.Instrument()
         EXP.get_resolution_params([1, 0, 0, 0], 'QxQy', 'slice')

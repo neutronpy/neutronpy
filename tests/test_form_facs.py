@@ -1,7 +1,11 @@
+# -*- coding: utf-8 -*-
 from neutronpy import form_facs
 import numpy as np
 import unittest
-from unittest.mock import patch
+from mock import patch
+from matplotlib import use
+use('Agg')
+
 
 class StructureFactor(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -62,7 +66,7 @@ class StructureFactor(unittest.TestCase):
     def test_plot(self, mock_show):
         structure = form_facs.Material(self.input)
         structure.plot_unit_cell()
-        
+
     def test_optimal_thickness(self):
         structure = form_facs.Material(self.input)
         self.assertEqual(structure.calc_optimal_thickness(), 1.9552936422413782)
@@ -73,15 +77,15 @@ class MagneticFormFactor(unittest.TestCase):
         ion = form_facs.Ion('Fe')
         formfac, _temp = ion.calc_mag_form_fac(q=1.)[0], ion.calc_mag_form_fac(q=1.)[1:]
         self.assertAlmostEqual(formfac, 0.932565, 6)
-        
+
     def test_mag_form_fac_case1(self):
         ion = form_facs.Ion('Fe')
         formfac, _temp = ion.calc_mag_form_fac()[0], ion.calc_mag_form_fac()[1:]
         self.assertAlmostEqual(np.sum(formfac), 74.155233575216599, 12)
-    
+
     def test_mag_form_fac_case2(self):
         ion = form_facs.Ion('Fe')
-        formfac, _temp = ion.calc_mag_form_fac(qrange=[0,2])[0], ion.calc_mag_form_fac(qrange=[0,2])[1:]
+        formfac, _temp = ion.calc_mag_form_fac(qrange=[0, 2])[0], ion.calc_mag_form_fac(qrange=[0, 2])[1:]
         self.assertAlmostEqual(np.sum(formfac), 74.155233575216599, 12)
 
 

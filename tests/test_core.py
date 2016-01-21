@@ -1,11 +1,16 @@
+# -*- coding: utf-8 -*-
+r'''Testing of core library
+'''
 from neutronpy import Energy, Data, load, save, detect_filetype, functions
 from neutronpy.constants import BOLTZMANN_IN_MEV_K
 import numpy as np
 from scipy.integrate import simps
 import os
 import unittest
-from unittest.mock import patch
+from mock import patch
 from copy import deepcopy
+from matplotlib import use
+use('Agg')
 
 
 class EnergyTest(unittest.TestCase):
@@ -18,31 +23,37 @@ class EnergyTest(unittest.TestCase):
         self.assertEqual(np.round(energy.temperature, 3), 290.113)
         self.assertEqual(np.round(energy.frequency, 3), 6.045)
 
-        stringtest = u'\nEnergy: {0:3.3f} meV'
-        stringtest += u'\nWavelength: {1:3.3f} Å'
-        stringtest += u'\nWavevector: {2:3.3f} 1/Å'
-        stringtest += u'\nVelocity: {3:3.3f} m/s'
-        stringtest += u'\nTemperature: {4:3.3f} K'
-        stringtest += u'\nFrequency: {5:3.3f} THz\n'
+        stringtest = u"\nEnergy: {0:3.3f} meV"
+        stringtest += u"\nWavelength: {1:3.3f} Å"
+        stringtest += u"\nWavevector: {2:3.3f} 1/Å"
+        stringtest += u"\nVelocity: {3:3.3f} m/s"
+        stringtest += u"\nTemperature: {4:3.3f} K"
+        stringtest += u"\nFrequency: {5:3.3f} THz\n"
         stringtest = stringtest.format(25.0, 1.8089, 3.473, 2186.967,
                                        290.113, 6.045)
 
         self.assertTrue(energy.values == stringtest)
 
     def test_energy_setters(self):
-        energy = Energy(energy=25.)
-        energy.energy = 25
-        self.assertEqual(np.round(energy.wavelength, 4), 1.8089)
-        energy.wavelength = 1.8
-        self.assertEqual(np.round(energy.energy, 1), 25.2)
-        energy.wavevector = 3.5
-        self.assertEqual(np.round(energy.energy, 1), 25.4)
-        energy.velocity = 2180
-        self.assertEqual(np.round(energy.energy, 1), 24.8)
-        energy.temperature = 290
-        self.assertEqual(np.round(energy.energy, 1), 25.0)
-        energy.frequency = 6
-        self.assertEqual(np.round(energy.energy, 1), 24.8)
+        e = Energy(energy=25.)
+
+        e.energy = 25
+        self.assertEqual(np.round(e.wavelength, 4), 1.8089)
+
+        e.wavevector = 3.5
+        self.assertEqual(np.round(e.energy, 1), 25.4)
+
+        e.velocity = 2180
+        self.assertEqual(np.round(e.energy, 1), 24.8)
+
+        e.temperature = 290
+        self.assertEqual(np.round(e.energy, 1), 25.0)
+
+        e.frequency = 6
+        self.assertEqual(np.round(e.energy, 1), 24.8)
+
+        e.wavelength = 1.9
+        self.assertEqual(np.round(e.energy, 1), 22.7)
 
 
 class DataTest(unittest.TestCase):
@@ -86,24 +97,21 @@ class DataTest(unittest.TestCase):
         data3 = load((os.path.join(os.path.dirname(__file__), 'scan0004.bt7')))
         data4 = load((os.path.join(os.path.dirname(__file__), 'scan0007.bt7')))
         data5 = load((os.path.join(os.path.dirname(__file__), 'scan0005')))
-        with self.assertRaises(ValueError):
-            load((os.path.join(os.path.dirname(__file__), 'scan0006.test')), filetype='blah')
+        self.assertRaises(ValueError, load, (os.path.join(os.path.dirname(__file__), 'scan0006.test')), filetype='blah')
 
     def test_save_file(self):
         data_out = self.build_data()
         save(data_out, 'test.out', fileformat='ascii')
         save(data_out, 'test.out', fileformat='hdf5')
         save(data_out, 'test.out', fileformat='pickle')
-        with self.assertRaises(ValueError):
-            save(data_out, 'test.out', fileformat='blah')
+        self.assertRaises(ValueError, save, data_out, 'test.out', fileformat='blah')
 
     def test_filetype_detection(self):
         self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0001.dat')) == 'SPICE')
         self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0003.ng5')) == 'ICP')
         self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0004.bt7')) == 'ICE')
         self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0005')) == 'MAD')
-        with self.assertRaises(ValueError):
-            detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0006.test'))
+        self.assertRaises(ValueError, detect_filetype, os.path.join(os.path.dirname(__file__), 'scan0006.test'))
 
     def test_combine_data(self):
         data1 = self.build_data(clean=True)
@@ -157,10 +165,15 @@ class DataTest(unittest.TestCase):
         data1 = Data()
         del data1.Q
         data2 = self.build_data()
-        with self.assertRaises(AttributeError):
-            data1 + data2
-        with self.assertRaises(AttributeError):
-            data1 - data2
+        
+        def _test(test):
+            if test == 'add':
+                data1 + data2
+            elif test == 'sub':
+                data1 - data2
+                
+        self.assertRaises(AttributeError, _test, 'add')
+        self.assertRaises(AttributeError, _test, 'sub')
 
     def test_mul_div_pow_data(self):
         data = self.build_data()
@@ -175,22 +188,28 @@ class DataTest(unittest.TestCase):
         self.assertTrue(np.all(data4.detector == data.detector ** 10))
 
     def test_setters(self):
-        data = self.build_data()
-        data.h = 3
-        with self.assertRaises(ValueError):
-            data.h = np.zeros(5)
-        data.k = 3
-        with self.assertRaises(ValueError):
-            data.k = np.zeros(5)
-        data.l = 3
-        with self.assertRaises(ValueError):
-            data.l = np.zeros(5)
-        data.e = 3
-        with self.assertRaises(ValueError):
-            data.e = np.zeros(5)
-        data.temp = 3
-        with self.assertRaises(ValueError):
-            data.temp = np.zeros(5)
+        def _test(test):
+            data = self.build_data()
+            if test == 'h':
+                data.h = 3
+                data.h = np.zeros(5)
+            elif test == 'k':
+                data.k = 3
+                data.k = np.zeros(5)
+            elif test == 'l':
+                data.l = 3
+                data.l = np.zeros(5)
+            elif test == 'e':
+                data.e = 3
+                data.e = np.zeros(5)
+            elif test == 'temp':
+                data.temp = 3
+                data.temp = np.zeros(5)
+        self.assertRaises(ValueError, _test, 'h')
+        self.assertRaises(ValueError, _test, 'k')
+        self.assertRaises(ValueError, _test, 'l')
+        self.assertRaises(ValueError, _test, 'e')
+        self.assertRaises(ValueError, _test, 'temp')
 
     def test_norms(self):
         data = self.build_data()
@@ -219,9 +238,12 @@ class DataTest(unittest.TestCase):
         del data._err
         self.assertTrue(np.all(data.error == np.sqrt(data.detector) / data.time * data.t0))
 
-        data.error = 10
-        with self.assertRaises(ValueError):
+        def _test(test):
+            data.error = 10
             data.error = np.zeros(5)
+        
+        self.assertRaises(ValueError, _test, None)
+            
 
     def test_detailed_balance(self):
         data = self.build_data()
@@ -284,10 +306,8 @@ class DataTest(unittest.TestCase):
         data.plot('h', 'intensity', to_bin=dict(h=[-1, 1., 41], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[3.5, 4.5, 1], temp=[-300, 900, 1]))
         data3d = self.build_3d_data()
         data3d.plot(x='h', y='k', z='intensity')
-        with self.assertRaises(KeyError):
-            data3d.plot('h', 'k', 'blah')
-        with self.assertRaises(KeyError):
-            data3d.plot('h', 'k', 'w', 'blah')
+        self.assertRaises(KeyError, data3d.plot, 'h', 'k', 'blah')
+        self.assertRaises(KeyError, data3d.plot, 'h', 'k', 'w', 'blah')
 
 if __name__ == '__main__':
     unittest.main()
