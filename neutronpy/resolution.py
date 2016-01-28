@@ -381,10 +381,26 @@ class Sample():
             self.mosaic = mosaic
         self.dir = direct
         if u is not None:
-            self.u = np.array(u)
+            self._u = np.array(u)
         if v is not None:
-            self.v = np.array(v)
+            self._v = np.array(v)
 
+    @property
+    def u(self):
+        return self._u
+    
+    @u.setter
+    def u(self, vec):
+        self._u = np.array(vec)
+        
+    @property
+    def v(self):
+        return self._v
+    
+    @v.setter
+    def v(self, vec):
+        self._v = np.array(vec)
+        
 
 class _Monochromator():
     u'''Private class containing monochromator information.
