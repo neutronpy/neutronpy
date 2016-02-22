@@ -2698,7 +2698,7 @@ class Instrument(object):
         angles, Q = self.get_angles_and_Q(hkle)
 
         text_format = ['Method: {0}'.format(method),
-                       'Position HKLE [{0}]'.format(dt.datetime.now().strftime('%d-%b-%Y %T')),
+                       'Position HKLE [{0}]'.format(dt.datetime.now().strftime('%d-%b-%Y %H:%M:%S')),
                        '',
                        ' [$Q_H$, $Q_K$, $Q_L$, $E$] = {0} '.format(self.HKLE),
                        '',
@@ -2724,7 +2724,7 @@ class Instrument(object):
                        'Sample:',
                        ' a, b, c  =  [{0}, {1}, {2}] [Angs]'.format(self.sample.a, self.sample.b, self.sample.c),
                        ' Alpha, Beta, Gamma  =  [{0}, {1}, {2}] [deg]'.format(self.sample.alpha, self.sample.beta, self.sample.gamma),
-                       ' U  =  {0} [rlu]\tV  =  {0} [rlu]'.format(self.orient1, self.orient2)]
+                       ' U  =  {0} [rlu]\tV  =  {1} [rlu]'.format(self.orient1, self.orient2)]
 
         ax4.axis('off')
         ax4.text(0, 1, '\n'.join(text_format), transform=ax4.transAxes, horizontalalignment='left', verticalalignment='top')
