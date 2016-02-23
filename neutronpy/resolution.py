@@ -354,7 +354,10 @@ class Sample():
         Angle between a and b in degrees
 
     mosaic : float, optional
-        Sample mosaic (FWHM) in arc minutes
+        Horizontal sample mosaic (FWHM) in arc minutes
+        
+    vmosaic : float, optional
+        Vertical sample mosaic (FWHM) in arc minutes
 
     direct : ±1, optional
         Direction of the crystal (left or right, -1 or +1, respectively)
@@ -370,7 +373,7 @@ class Sample():
     Sample : object
 
     '''
-    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=None, direct=1, u=None, v=None):
+    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=None, vmosaic=None, direct=1, u=None, v=None):
         self.a = a
         self.b = b
         self.c = c
@@ -379,6 +382,8 @@ class Sample():
         self.gamma = gamma
         if mosaic is not None:
             self.mosaic = mosaic
+        if vmosaic is not None:
+            self.vmosaic = vmosaic
         self.dir = direct
         if u is not None:
             self._u = np.array(u)
@@ -1417,7 +1422,7 @@ class Instrument(object):
             method = self.method
 
         # Assign default values and decode parameters
-        moncor = 0
+        moncor = 1
         if hasattr(self, 'moncor'):
             moncor = self.moncor
 
