@@ -1,4 +1,4 @@
-sudo: false
+sudo: required
 language: python
 matrix:
     include:
@@ -25,11 +25,12 @@ before_install:
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
 install:
-  - conda create --yes -q -n test_environment python=$TRAVIS_PYTHON_VERSION pip setuptools cython numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose matplotlib=$MATPLOTLIB_VERSION six mock h5py
+  - conda create --yes -q -n test_environment python=$TRAVIS_PYTHON_VERSION nomkl pip setuptools cython numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose matplotlib=$MATPLOTLIB_VERSION six mock h5py
   - source activate test_environment
-  - pip install pep8 python-coveralls
+  - pip install pep8 python-coveralls codecov
   - pip install -e . -q --no-deps
 script:
   - nosetests --with-coverage --cover-package=neutronpy --logging-level=INFO
 after_success:
+  - codecov
   - coveralls
