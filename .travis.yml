@@ -1,17 +1,17 @@
 sudo: required
 language: python
 matrix:
-    include:
-        - python: "2.6"
-          env: NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
-        - python: "2.7"
-          env: NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
-        - python: "3.3"
-          env: NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
-        - python: "3.4"
-          env: NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
-        - python: "3.5"
-          env: NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+  include:
+  - python: '2.6'
+    env: NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
+  - python: '2.7'
+    env: NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+  - python: '3.3'
+    env: NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
+  - python: '3.4'
+    env: NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+  - python: '3.5'
+    env: NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
 cache: apt
 addons:
   apt:
@@ -21,16 +21,29 @@ addons:
     - liblapack-dev
     - gfortran
 before_install:
-  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
+- wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+- bash miniconda.sh -b -p $HOME/miniconda
+- export PATH="$HOME/miniconda/bin:$PATH"
 install:
-  - conda create --yes -q -n test_environment python=$TRAVIS_PYTHON_VERSION nomkl pip setuptools cython numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose matplotlib=$MATPLOTLIB_VERSION six mock h5py
-  - source activate test_environment
-  - pip install pep8 python-coveralls codecov
-  - pip install -e . -q --no-deps
+- conda create --yes -q -n test_environment python=$TRAVIS_PYTHON_VERSION nomkl pip
+  setuptools cython numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose matplotlib=$MATPLOTLIB_VERSION
+  six mock h5py
+- source activate test_environment
+- pip install pep8 python-coveralls codecov
+- pip install -e . -q --no-deps
 script:
-  - nosetests --with-coverage --cover-package=neutronpy --logging-level=INFO
+- nosetests --with-coverage --cover-package=neutronpy --logging-level=INFO
 after_success:
-  - codecov
-  - coveralls
+- codecov
+- coveralls
+deploy:
+  provider: pypi
+  user: davidfobes
+  password:
+    secure: DdjBSsRSENkuRtzzbCJMEwhO2RXkER1RrBqKLdH+2TeC0w+CiYqUf3x/h2yWs5IdNjf6Q5UWx68vau7ylJpESiQbiP++MGeKguEHQOiLcFhUDz/wxZCk20GsWNsox00ISALVF02nH1eq3mcVkKqCzt8WzNZ/Ioey+aHJI1KwrtU=
+  on:
+    tags: true
+  distributions: sdist bdist_wheel
+notifications:
+  slack:
+    secure: qsq1keqgpaE8P2uziBCorm27rLwUet0FHsf4CKo92faxL9q4FfBYkGFBgcTvKuDsImNz7P3cvLRNDkCxoklKNBtSJmS8DPDLINJikDDm0Tll7oX3pXox+I/x487AkiwyI/xjRKoH7pO+v/iVLVfznL228ABeactMj8OTsccwO0Q=

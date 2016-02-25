@@ -5,7 +5,7 @@ NeutronPy
 
     v0.x.0 releases may not be backwards compatibile. This software is in a fluid state and undergoing rapid changes. The v1.0.0 release will indicate the start of backwards compatibile updates. Major number releases (x.0) may break backwards compatibility, but users will be notified in the changelog.
 
-**master** |master| :: **develop** |develop| :: **coverage** |coverage|
+**master** |master| :: **develop** |develop| :: **coverage** |coverage| :: **code analysis** |climate|
 
 .. |master| image:: https://travis-ci.org/neutronpy/neutronpy.svg?branch=master
       :target: https://travis-ci.org/neutronpy/neutronpy
@@ -15,6 +15,10 @@ NeutronPy
 
 .. |coverage| image:: https://codecov.io/github/neutronpy/neutronpy/coverage.svg?branch=develop
       :target: https://codecov.io/github/neutronpy/neutronpy?branch=develop
+
+.. |climate| image:: https://codeclimate.com/github/neutronpy/neutronpy/badges/gpa.svg
+   :target: https://codeclimate.com/github/neutronpy/neutronpy
+   :alt: Code Climate
 
 NeutronPy is a python library with commonly used tools for neutron scattering measurements, primarily for Triple Axis Spectrometer data, but easily applied to other types of data, including Time of Flight.
 
