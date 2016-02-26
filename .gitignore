@@ -32,3 +32,5 @@ venv*/*
 # Quick Tests #
 ###############
 main.py
+plot_test.pdf
+test.out

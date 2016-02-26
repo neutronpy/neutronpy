@@ -1,18 +1,17 @@
 r'''Useful constants for neutron scattering calculations, including:
 
-* ``magnetic_ion_j()`` : Magnetic Ion j-values
+* ``magnetic_form_factors()`` : Magnetic Ion j-values
 * ``periodic_table()`` : Periodic table values
 * ``scattering_lengths()`` : Neutron scattering lengths
+* ``symmetry()`` : Space group information
 * ``JOULES_TO_MEV`` : Joules-to-meV conversion factor
 * ``BOLTZMANN_IN_MEV_K`` : Boltzmann constant in meV/K
-
-Additional constants are available through scipy.constants.
+* ``N_A`` : Avogadro constant
 
 '''
 
 import os
 import json
-from scipy import constants as consts
 
 
 def magnetic_ion_j():
@@ -29,7 +28,7 @@ def magnetic_ion_j():
 
     '''
     with open(os.path.join(os.path.dirname(__file__),
-                           "database/mag_ion_j.json"), 'r') as infile:
+                           "database/magnetic_form_factors.json"), 'r') as infile:
         return json.load(infile)
 
 
@@ -68,11 +67,28 @@ def scattering_lengths():
 
     '''
     with open(os.path.join(os.path.dirname(__file__),
-                           "database/scat_len.json"), 'r') as infile:
+                           "database/scattering_lengths.json"), 'r') as infile:
         return json.load(infile)
 
-JOULES_TO_MEV = 1. / consts.physical_constants\
-    ['electron volt-joule relationship'][0] * 1.e3  # Joules to meV
-BOLTZMANN_IN_MEV_K = consts.physical_constants['Boltzmann constant in eV/K'][0]\
-                        * 1.e3  # Boltzmann constant in meV/K
-N_A = consts.N_A
+
+def symmetry():
+    r'''Loads crystal lattice space groups.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    lattice_space_groups : dict
+        Database of 230 crystal lattice space groups and their generators
+
+    '''
+    with open(os.path.join(os.path.dirname(__file__),
+                           "database/symmetry.json"), 'r') as infile:
+        return json.load(infile)
+
+
+JOULES_TO_MEV = 1. / 1.6021766208e-19 * 1.e3  # Joules to meV
+BOLTZMANN_IN_MEV_K = 8.6173303e-05 * 1.e3  # Boltzmann constant in meV/K
+N_A = 6.022140857e+23
