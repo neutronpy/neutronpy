@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`v0.3.5 <2016-02-26>` 48, 49, 50, 51
 * :support:`52` Updated License from BSD 3-Clause to MIT License
 * :bug:`51` Fixed default behavior of :py:attr:`.Instrument.moncor` variable in :py:class:`.Instrument` to coincide with documentation
 * :bug:`50` Explicitly defined vertical mosaic ``vmosaic`` in :py:class:`.Sample`
