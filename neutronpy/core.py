@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 r'''Tools Module
 '''
-from .constants import BOLTZMANN_IN_MEV_K, JOULES_TO_MEV
-from multiprocessing import cpu_count, Pool  # pylint: disable=no-name-in-module @UnresolvedImport
+from multiprocessing import cpu_count, Pool
 import numbers
-import numpy as np
 import re
+import numpy as np
 from scipy import constants
-
+from .constants import BOLTZMANN_IN_MEV_K, JOULES_TO_MEV
 try:
     from .kmpfit import Fitter
 except ImportError:
@@ -17,7 +16,7 @@ except ImportError:
 def _call_bin_parallel(arg, **kwarg):
     r'''Wrapper function to work around pickling problem in Python 2.7
     '''
-    return Data._bin_parallel(*arg, **kwarg)  # pylint: disable=protected-access
+    return Data._bin_parallel(*arg, **kwarg)
 
 
 class Data(object):
@@ -68,7 +67,7 @@ class Data(object):
     intensity
     error
     detailed_balance_factor
-    
+
     Methods
     -------
     bin
@@ -82,10 +81,11 @@ class Data(object):
     dynamic_susceptibility
     scattering_function
     combine_data
-    
+
     '''
     def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0.,
-                 detector=0., monitor=0., error=0., time=0., time_norm=False, **kwargs):
+                 detector=0., monitor=0., error=0., time=0., time_norm=False,
+                 **kwargs):
         if Q is None:
             try:
                 n_dim = max([len(item) for item in
@@ -330,16 +330,17 @@ class Data(object):
         return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
 
     def scattering_function(self, material, ei):
-        r'''Returns the neutron scattering function, i.e. the detector counts scaled by :math:`4 \pi / \sigma_{\mathrm{tot}} * k_i/k_f`. 
-        
+        r'''Returns the neutron scattering function, i.e. the detector counts
+        scaled by :math:`4 \pi / \sigma_{\mathrm{tot}} * k_i/k_f`. 
+
         Parameters
         ----------
         material : object
             Definition of the material given by the :py:class:`.Material` class
-        
+
         ei : float
             Incident energy in meV
-        
+
         Returns
         -------
         counts : ndarray
@@ -348,25 +349,27 @@ class Data(object):
         ki = Energy(energy=ei).wavevector
         kf = Energy(energy=ei - self.e).wavevector
 
-        return 4 * np.pi / (material.total_scattering_cross_section) * ki / kf * self.detector
+        return (4 * np.pi / (material.total_scattering_cross_section) * ki /
+                kf * self.detector)
 
     def dynamic_susceptibility(self, material, ei):
         r'''Returns the dynamic susceptibility :math:`\chi^{\prime\prime}(\mathbf{Q},\hbar\omega)`
-        
+
         Parameters
         ----------
         material : object
             Definition of the material given by the :py:class:`.Material` class
-                
+
         ei : float
             Incident energy in meV
-        
+
         Returns
         -------
         counts : ndarray
             The detector counts turned into the scattering function multiplied by the detailed balance factor
         '''
-        return self.scattering_function(material, ei) * self.detailed_balance_factor
+        return (self.scattering_function(material, ei) *
+                self.detailed_balance_factor)
 
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
@@ -376,17 +379,17 @@ class Data(object):
         args : dictionary of ndarrays
             A dictionary (or multiple) of the data that will be added to the
             current data, with keys:
-            
+
                 * Q : ndarray : [h, k, l, e] with shape (N, 4,)
                 * monitor : ndarray : shape (N,)
                 * detector : ndarray : shape (N,)
                 * temps : ndarray : shape (N,)
-        
+
         '''
         Q = self.Q.copy()
-        detector = self.detector.copy()  # pylint: disable=access-member-before-definition
-        monitor = self.monitor.copy()  # pylint: disable=access-member-before-definition
-        time = self.time.copy()  # pylint: disable=access-member-before-definition
+        detector = self.detector.copy()
+        monitor = self.monitor.copy()
+        time = self.time.copy()
 
         tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
         try:
@@ -409,7 +412,9 @@ class Data(object):
 
             if len(combine) > 0:
                 for key in ['Q', 'monitor', 'detector', 'time']:
-                    arg[key] = np.delete(arg[key], (np.array(combine, dtype=np.int64)[:, 0],), 0)
+                    arg[key] = np.delete(arg[key],
+                                         (np.array(combine,
+                                                   dtype=np.int64)[:, 0],), 0)
 
             Q = np.concatenate((Q, arg['Q']))
             detector = np.concatenate((detector, arg['detector']))
@@ -430,20 +435,20 @@ class Data(object):
 
     def subtract_background(self, background_data, ret=True):
         r'''Subtract background data.
-        
+
         Parameters
         ----------
         background_data : Data object
             Data object containing the data wishing to be subtracted
-        
+
         ret : bool, optional
-            Set False if background should be subtracted in place. Default: True.
-            
+            Set False if background should be subtracted in place. Default:True
+
         Returns
         -------
-        data : Data object 
+        data : Data object
             Data object contained subtracted data
-        
+
         '''
         pass
 
@@ -571,7 +576,8 @@ class Data(object):
         q, qstep = (), ()
         for arg in args:
             if arg[2] == 1:
-                _q, _qstep = (np.array([np.average(arg[:2])]), (arg[1] - arg[0]))
+                _q, _qstep = (np.array([np.average(arg[:2])]), 
+                              (arg[1] - arg[0]))
             else:
                 _q, _qstep = np.linspace(arg[0], arg[1], arg[2], retstep=True)
             q += _q,
@@ -821,7 +827,7 @@ class Data(object):
                               np.ma.masked_where(w <= 0, z),
                               np.ma.masked_where(w <= 0, w))
 
-                from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-variable @UnresolvedImport @UnusedImport
+                from mpl_toolkits.mplot3d import Axes3D
 
                 fig = plt.figure()
                 axis = fig.add_subplot(111, projection='3d')
@@ -835,7 +841,7 @@ class Data(object):
         elif z is not None and w is None:
             try:
                 z = dims[args['z']]
-                
+
                 x_step = np.around(np.abs(np.unique(x) - np.roll(np.unique(x), 1))[1], decimals=4)
                 y_step = np.around(np.abs(np.unique(y) - np.roll(np.unique(y), 1))[1], decimals=4)
                 x_sparse = np.linspace(x.min(), x.max(), (x.max() - x.min()) / x_step + 1)
@@ -1042,15 +1048,15 @@ def load(files, filetype='auto', tols=1e-4):
 
 def save(obj, filename, fileformat='ascii', **kwargs):
     '''Saves a given object to a file in a specified format.
-    
+
     Parameters
     ----------
     obj : :class:`Data`
         A :class:`Data` object to be saved to disk
-    
+
     filename : str
         Path to file where data will be saved
-    
+
     fileformat : str
         Default: `'ascii'`. Data can either be saved in `'ascii'`,
         human-readable format, binary `'hdf5'` format, or binary
@@ -1101,12 +1107,12 @@ def build_Q(args, **kwargs):
 
 def detect_filetype(file):
     u'''Simple method for quickly determining filetype of a given input file.
-    
+
     Parameters
     ----------
     file : str
         File path
-    
+
     Returns
     -------
     filetype : str
@@ -1156,7 +1162,7 @@ class Energy(object):
     -------
     Energy object
         The energy object containing the properties of the neutron beam
-        
+
     Attributes
     ----------
     energy
@@ -1165,7 +1171,7 @@ class Energy(object):
     velocity
     temperature
     frequency
-    
+
     Methods
     -------
     values
@@ -1174,10 +1180,10 @@ class Energy(object):
                  wavevector=None, temperature=None, frequency=None):
 
         self._update_values(energy, wavelength, velocity,
-                 wavevector, temperature, frequency)
+                            wavevector, temperature, frequency)
 
     def _update_values(self, energy=None, wavelength=None, velocity=None,
-                 wavevector=None, temperature=None, frequency=None):
+                       wavevector=None, temperature=None, frequency=None):
         try:
             if energy is None:
                 if wavelength is not None:

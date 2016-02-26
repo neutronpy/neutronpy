@@ -1,3 +1,5 @@
+r'''Calculates common spurions
+'''
 import numpy as np
 from .form_facs import Material
 from .core import Energy
@@ -5,16 +7,16 @@ from .core import Energy
 
 def aluminum(energy=14.7):
     r'''Returns the positions of aluminum rings given a fixed energy
-    
+
     Parameters
     ----------
     energy : float
         Fixed energy in meV
-        
+
     Returns
     -------
     rings : str
-        Prints a list of the positions in 2theta of the aluminum rings 
+        Prints a list of the positions in 2theta of the aluminum rings
     '''
     e = Energy(energy=energy)
     struct = {'name': 'Al',
@@ -23,8 +25,7 @@ def aluminum(energy=14.7):
               'massNorm': False,
               'lattice': dict(abc=[4.0495, 4.0495, 4.0495], abg=[90, 90, 90]),
               'formulaUnits': 1.,
-              'wavelength': e.wavelength,
-              }
+              'wavelength': e.wavelength}
 
     def _fm3m_wykoff(x, y, z):
         return [[x, y, z], [x, 1 / 2 + y, 1 / 2 + z], [1 / 2 + x, y, 1 / 2 + z], [1 / 2 + x, 1 / 2 + y, z],

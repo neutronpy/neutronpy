@@ -2,6 +2,12 @@
 Changelog
 =========
 
+* :support:`52` Updated License from BSD 3-Clause to MIT License
+* :bug:`51` Fixed default behavior of :py:attr:`.Instrument.moncor` variable in :py:class:`.Instrument` to coincide with documentation
+* :bug:`50` Explicitly defined vertical mosaic ``vmosaic`` in :py:class:`.Sample`
+* :bug:`49` Fixed incorrect usage of ``strftime`` in :py:meth:`.Instrument.plot_projections`
+* :bug:`48` Fixed error when ``u`` and ``v`` were defined at ``list`` types instead of ``ndarray`` in :py:class:`.Sample`
+
 * :release:`v0.3.4 <2016-01-21>` 40, 41, 42, 43, 44, 45, 46, 47
 * :support:`40` Added unittests for all libraries to increase code coverage
 * :support:`41` Added documentation for spurion library, corrected docs for resolution and core libraries

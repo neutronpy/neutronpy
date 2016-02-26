@@ -4,21 +4,21 @@ import numpy as np
 class Lattice(object):
     u'''Class to describe a generic lattice system defined by lattice six
     parameters, (three constants and three angles).
-    
+
     Parameters
     ----------
     abc : array_like
         List of lattice constants *a*, *b*, and *c* in \u212B
-    
+
     abg : array_like
         List of lattice angles \U0001D6FC, \U0001D6FD, and \U0001D6FE in
         degrees
-        
+
     Returns
     -------
     lattice : object
         Object containing lattice information
-        
+
     Attributes
     ----------
     a
@@ -49,14 +49,14 @@ class Lattice(object):
     G
     Gstar
     Bmatrix
-    
+
     Methods
     -------
     get_d_spacing
     get_q
     get_two_theta
     get_angle_between_planes
-    
+
     '''
 
     def __init__(self, abc, abg):
@@ -72,7 +72,7 @@ class Lattice(object):
     @property
     def b(self):
         r'''Second lattice constant in Angstrom
-        
+
         '''
         return self.abc[1]
 
@@ -140,19 +140,26 @@ class Lattice(object):
     def alphastar_rad(self):
         r'''First inverse lattice angle in radians
         '''
-        return np.arccos((np.cos(self.beta_rad) * np.cos(self.gamma_rad) - np.cos(self.alpha_rad)) / (np.sin(self.beta_rad) * np.sin(self.gamma_rad)))
+        return np.arccos((np.cos(self.beta_rad) * np.cos(self.gamma_rad) -
+                          np.cos(self.alpha_rad)) /
+                         (np.sin(self.beta_rad) * np.sin(self.gamma_rad)))
 
     @property
     def betastar_rad(self):
         r'''Second inverse lattice angle in radians
         '''
-        return np.arccos((np.cos(self.alpha_rad) * np.cos(self.gamma_rad) - np.cos(self.beta_rad)) / (np.sin(self.alpha_rad) * np.sin(self.gamma_rad)))
+        return np.arccos((np.cos(self.alpha_rad) *
+                          np.cos(self.gamma_rad) -
+                          np.cos(self.beta_rad)) /
+                         (np.sin(self.alpha_rad) * np.sin(self.gamma_rad)))
 
     @property
     def gammastar_rad(self):
         r'''Third inverse lattice angle in radians
         '''
-        return np.arccos((np.cos(self.alpha_rad) * np.cos(self.beta_rad) - np.cos(self.gamma_rad)) / (np.sin(self.alpha_rad) * np.sin(self.beta_rad)))
+        return np.arccos((np.cos(self.alpha_rad) * np.cos(self.beta_rad) -
+                          np.cos(self.gamma_rad)) /
+                         (np.sin(self.alpha_rad) * np.sin(self.beta_rad)))
 
     @property
     def alphastar(self):
@@ -170,7 +177,7 @@ class Lattice(object):
     def gammastar(self):
         r'''First inverse lattice angle in degrees
         '''
-        return  np.rad2deg(self.gammastar_rad)
+        return np.rad2deg(self.gammastar_rad)
 
     @property
     def reciprocal_abc(self):
@@ -199,7 +206,7 @@ class Lattice(object):
     @property
     def lattice_type(self):
         r'''Type of lattice determined by the provided lattice constants and angles
-        
+
         '''
 
         if len(np.unique(self.abc)) == 3 and len(np.unique(self.abg)) == 3:
@@ -222,21 +229,21 @@ class Lattice(object):
     @property
     def volume(self):
         u'''Volume of the unit cell in \u212B\ :sup:`3`
-        
+
         '''
         return np.sqrt(np.linalg.det(self.G))
 
     @property
     def reciprocal_volume(self):
         u'''Volume of the reciprocal unit cell in (\u212B\ :sup:`-1`\ )\ :sup:`3`
-        
+
         '''
         return np.sqrt(np.linalg.det(self.Gstar))
 
     @property
     def G(self):
         r'''Metric tensor of the real space lattice
-        
+
         '''
 
         a, b, c = self.abc
@@ -249,30 +256,30 @@ class Lattice(object):
     @property
     def Gstar(self):
         r'''Metric tensor of the reciprocal lattice
-        
+
         '''
 
         return np.linalg.inv(self.G)
 
-
     @property
     def Bmatrix(self):
-        r'''Cartesian basis matrix in reciprocal units such that Bmatrix*Bmatrix.T = Gstar
-        
+        r'''Cartesian basis matrix in reciprocal units such that
+        Bmatrix*Bmatrix.T = Gstar
+
         '''
 
         return np.matrix([[self.astar, self.bstar * np.cos(self.gammastar_rad), self.cstar * np.cos(self.betastar_rad)],
-                          [0, self.bstar * np.sin(self.gammastar_rad), -self.cstar * np.sin(self.betastar_rad) * np.cos(self.alpha_rad)],
+                          [0, self.bstar * np.sin(self.gammastar_rad), - self.cstar * np.sin(self.betastar_rad) * np.cos(self.alpha_rad)],
                           [0, 0, 1. / self.c]], dtype=float)
 
     def get_d_spacing(self, hkl):
         u'''Returns the d-spacing of a given reciprocal lattice vector.
-        
+
         Parameters
         ----------
         hkl : array_like
             Reciprocal lattice vector in r.l.u.
-        
+
         Returns
         -------
         d : float
@@ -286,20 +293,20 @@ class Lattice(object):
     def get_angle_between_planes(self, v1, v2):
         r'''Returns the angle :math:`\phi` between two reciprocal lattice
         vectors (or planes as defined by the vectors normal to the plane).
-        
+
         Parameters
         ----------
         v1 : array_like
             First reciprocal lattice vector in units r.l.u.
-        
+
         v2 : array_like
             Second reciprocal lattice vector in units r.l.u.
-            
+
         Returns
         -------
         phi : float
             The angle between v1 and v2 in degrees
-        
+
         '''
 
         v1, v2 = np.array(v1), np.array(v2)
@@ -311,33 +318,34 @@ class Lattice(object):
     def get_two_theta(self, hkl, wavelength):
         u'''Returns the detector angle 2\U0001D703 for a given reciprocal
         lattice vector and incident wavelength.
-        
+
         Parameters
         ----------
         hkl : array_like
             Reciprocal lattice vector in r.l.u.
-        
+
         wavelength : float
             Wavelength of the incident beam in \u212B
-        
+
         Returns
         -------
         two_theta : float
             The angle of the detector 2\U0001D703 in degrees
-        
+
         '''
 
-        return 2 * np.rad2deg(np.arcsin(wavelength / 2 / self.get_d_spacing(hkl)))
+        return 2 * np.rad2deg(np.arcsin(wavelength / 2 /
+                                        self.get_d_spacing(hkl)))
 
     def get_q(self, hkl):
         u'''Returns the magnitude of *Q* for a given reciprocal lattice
         vector in \u212B\ :sup:`-1`.
-        
+
         Parameters
         ----------
         hkl : array_like
             Reciprocal lattice vector in r.l.u.
-        
+
         Returns
         -------
         q : float
@@ -351,7 +359,7 @@ class Lattice(object):
 
 class Goniometer(object):
     r'''Defines a goniometer
-    
+
     '''
 
     def __init__(self, u, theta_u, v, theta_v, sgu, sgl, omega=0):
@@ -427,7 +435,7 @@ class Goniometer(object):
     @property
     def U(self):
         r'''Defines an orientation matrix based on supplied goniometer angles
-        
+
         '''
         return self.T_phi * np.linalg.inv(self.T_c)
 

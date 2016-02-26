@@ -275,6 +275,7 @@ class ResolutionTest(unittest.TestCase):
         sample.u = [1, 0, 0]
         sample.v = [0, 0, 1]
         EXP = resolution.Instrument(14.7, sample, hcol=[80, 40, 40, 80], vcol=[120, 120, 120, 120], mono='pg(002)', ana='pg(002)')
+        EXP.moncor = 0
 
         p = np.array([3, 3, 3, 30, 0.4, 6e4, 40])
         H1, K1, L1, W1 = 1.5, 0, 0.35, np.arange(20, -0.5, -0.5)
@@ -297,6 +298,7 @@ class ResolutionTest(unittest.TestCase):
         sample.u = [1, 0, 0]
         sample.v = [0, 0, 1]
         EXP = resolution.Instrument(14.7, sample, hcol=[80, 40, 40, 80], vcol=[120, 120, 120, 120], mono='pg(002)', ana='pg(002)')
+        EXP.moncor = 0
 
         p = np.array([3, 3, 3, 30, 0.4, 6e4, 40])
         H1, K1, L1, W1 = 1.5, 0, 0.35, np.arange(20, -0.5, -0.5)

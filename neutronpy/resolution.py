@@ -7,15 +7,15 @@ import datetime as dt
 
 def load(parfile, cfgfile):
     r'''Creates Instrument class using input par and cfg files.
-    
+
     Parameters
     ----------
     parfile : str
         Path to the .par file
-    
+
     cfgfile : str
         Path to the .cfg file
-        
+
     Returns
     -------
     setup : obj
@@ -27,7 +27,7 @@ def load(parfile, cfgfile):
     The format of the ``parfile`` consists of two tab-separated columns, the first
     column containing the values and the second column containing the value
     names preceded by a '%' character:
-        
+
     +-------+---------+---------------------------------------------------------------------------------+
     | Type  | Name    | Description                                                                     |
     +=======+=========+=================================================================================+
@@ -67,7 +67,7 @@ def load(parfile, cfgfile):
     +-------+---------+---------------------------------------------------------------------------------+
     | float | %AS     | Sample lattice constant a (Ang)                                                 |
     +-------+---------+---------------------------------------------------------------------------------+
-    | float | %BS     | Sample lattice constant b (Ang)                                                 |                       
+    | float | %BS     | Sample lattice constant b (Ang)                                                 |
     +-------+---------+---------------------------------------------------------------------------------+
     | float | %CS     | Sample lattice constant c (Ang)                                                 |
     +-------+---------+---------------------------------------------------------------------------------+
@@ -113,7 +113,7 @@ def load(parfile, cfgfile):
     +-------+---------+---------------------------------------------------------------------------------+
     | float | %gmod   |                                                                                 |
     +-------+---------+---------------------------------------------------------------------------------+
-    
+
     The format of the ``cfgfile`` (containing values necessary for Popovici type
     calculations) can consists of a single column of values, or two
     tab-separated columns, the first column containing the values and the
@@ -354,14 +354,17 @@ class Sample():
         Angle between a and b in degrees
 
     mosaic : float, optional
-        Sample mosaic (FWHM) in arc minutes
+        Horizontal sample mosaic (FWHM) in arc minutes
+
+    vmosaic : float, optional
+        Vertical sample mosaic (FWHM) in arc minutes
 
     direct : ±1, optional
         Direction of the crystal (left or right, -1 or +1, respectively)
-        
+
     u : array_like
         First orientation vector
-        
+
     v : array_like
         Second orientation vector
 
@@ -370,7 +373,7 @@ class Sample():
     Sample : object
 
     '''
-    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=None, direct=1, u=None, v=None):
+    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=None, vmosaic=None, direct=1, u=None, v=None):
         self.a = a
         self.b = b
         self.c = c
@@ -379,11 +382,29 @@ class Sample():
         self.gamma = gamma
         if mosaic is not None:
             self.mosaic = mosaic
+        if vmosaic is not None:
+            self.vmosaic = vmosaic
         self.dir = direct
         if u is not None:
-            self.u = np.array(u)
+            self._u = np.array(u)
         if v is not None:
-            self.v = np.array(v)
+            self._v = np.array(v)
+
+    @property
+    def u(self):
+        return self._u
+
+    @u.setter
+    def u(self, vec):
+        self._u = np.array(vec)
+
+    @property
+    def v(self):
+        return self._v
+
+    @v.setter
+    def v(self, vec):
+        self._v = np.array(vec)
 
 
 class _Monochromator():
@@ -670,7 +691,7 @@ def project_into_plane(index, r0, rm):
     ----------
     index : int
         Index of the axis that should be integrated out
-    
+
     r0 : float
         Resolution prefactor
 
@@ -736,17 +757,14 @@ def ellipse(saxis1, saxis2, phi=0, origin=None, npts=31):
 
 def _voigt(x, a):
     def _approx1(t):
-        return (t * 0.5641896) / (0.5 + t ** 2);
-
+        return (t * 0.5641896) / (0.5 + t ** 2)
 
     def _approx2(t, u):
         return (t * (1.410474 + u * 0.5641896)) / (0.75 + (u * (3. + u)))
 
-
     def _approx3(t):
         return (16.4955 + t * (20.20933 + t * (11.96482 + t * (3.778987 + 0.5642236 * t)))) \
             / (16.4955 + t * (38.82363 + t * (39.27121 + t * (21.69274 + t * (6.699398 + t)))))
-
 
     def _approx4(t, u):
         return (t * (36183.31 - u * (3321.99 - u * (1540.787 - u * (219.031 - u * (35.7668 - u * (1.320522 - u * 0.56419)))))) \
@@ -811,13 +829,13 @@ def get_phonon_width(r0, M, C):
 
 
 def fproject(mat, i):
-    if (i == 0):
+    if i == 0:
         v = 2
         j = 1
-    if (i == 1):
+    if i == 1:
         v = 0
         j = 2
-    if (i == 2):
+    if i == 2:
         v = 0
         j = 1
     [a, b, c] = mat.shape
@@ -907,9 +925,8 @@ class Instrument(object):
     plot_instrument
     resolution_convolution
     resolution_convolution_SMA
-    
-    '''
 
+    '''
     def __init__(self, efixed=14.7, sample=None, hcol=None, vcol=None, mono='PG(002)',
                  mono_mosaic=25, ana='PG(002)', ana_mosaic=25, **kwargs):
 
@@ -942,13 +959,14 @@ class Instrument(object):
     @property
     def mono(self):
         u'''A structure that describes the monochromator.
-        
+
         Parameters
         ----------
-        tau : str or float 
-            The monochromator reciprocal lattice vector in Å\ :sup:`-1`. Instead of
-            a numerical input one can use one of the following keyword strings:
-            
+        tau : str or float
+            The monochromator reciprocal lattice vector in Å\ :sup:`-1`.
+            Instead of a numerical input one can use one of the following
+            keyword strings:
+
                 +------------------+--------------+-----------+
                 | String           |     τ        |           |
                 +==================+==============+===========+
@@ -982,10 +1000,10 @@ class Instrument(object):
                 +------------------+--------------+-----------+
                 | Si(111)          | 2.00421      |           |
                 +------------------+--------------+-----------+
-        
+
         mosaic : int
             The monochromator mosaic in minutes of arc.
-        
+
         vmosaic : int
             The vertical mosaic of monochromator in minutes of arc. If
             this field is left unassigned, an isotropic mosaic is assumed.
@@ -998,33 +1016,37 @@ class Instrument(object):
 
     @property
     def ana(self):
-        u'''A structure that describes the analyzer and contains fields as in :attr:`mono`
-        plus optional fields.
-        
+        u'''A structure that describes the analyzer and contains fields as in
+        :attr:`mono` plus optional fields.
+
         Parameters
         ----------
-        thickness: float 
+        thickness: float
             The analyzer thickness in cm for ideal-crystal reflectivity
-            corrections (Section II C 3). If no reflectivity corrections are to be made, this field
-            should remain unassigned or set to a negative value.
-        
+            corrections (Section II C 3). If no reflectivity corrections are to
+            be made, this field should remain unassigned or set to a negative
+            value.
+
         Q : float
-            The kinematic reflectivity coefficient for this correction. It is given by 
-        
-            .. math::    Q = \\frac{4|F|**2}{V_0} \\frac{(2\\pi)**3}{\\tau**3}, 
-        
-            where V0 is the unit cell volume for the analyzer crystal, F is the structure factor of 
-            the analyzer reflection, and τ is the analyzer reciprocal lattice vector. 
-            For PG(002) Q = 0.1287. Leave this field unassigned or make it negative if you don’t
-            want the correction done.
-        
-        horifoc : bool 
+            The kinematic reflectivity coefficient for this correction. It is
+            given by
+
+            .. math::    Q = \\frac{4|F|**2}{V_0} \\frac{(2\\pi)**3}{\\tau**3},
+
+            where V0 is the unit cell volume for the analyzer crystal, F is the
+            structure factor of the analyzer reflection, and τ is the analyzer
+            reciprocal lattice vector. For PG(002) Q = 0.1287. Leave this field
+            unassigned or make it negative if you don’t want the correction
+            done.
+
+        horifoc : bool
             A flag that is set to 1 if a horizontally focusing analyzer is used
-            (Section II D). In this case ``hcol[2]`` (see below) is the angular size of the
-            analyzer, as seen from the sample position. If the field is unassigned or equal to
-            -1, a flat analyzer is assumed. Note that this option is only available with the
-            Cooper-Nathans method.
-            
+            (Section II D). In this case ``hcol[2]`` (see below) is the angular
+            size of the analyzer, as seen from the sample position. If the
+            field is unassigned or equal to -1, a flat analyzer is assumed.
+            Note that this option is only available with the Cooper-Nathans
+            method.
+
         '''
         return self._ana
 
@@ -1034,7 +1056,7 @@ class Instrument(object):
 
     @property
     def method(self):
-        '''Selects the computation method. 
+        '''Selects the computation method.
         If ``method=0`` or left undefined, a Cooper-Nathans calculation is
         performed. For a Popovici calculation set ``method=1``.
         '''
@@ -1046,10 +1068,11 @@ class Instrument(object):
 
     @property
     def moncor(self):
-        '''Selects the type of normalization used to calculate ``R0``. 
-        If ``moncor=1`` or left undefined, ``R0`` is calculated in normalization to monitor counts (Section
-        II C 2). 1/k\ :sub:`i` monitor efficiency correction is included automatically. To normalize
-        ``R0`` to source flux (Section II C 1), use ``moncor=0``.
+        '''Selects the type of normalization used to calculate ``R0``
+        If ``moncor=1`` or left undefined, ``R0`` is calculated in
+        normalization to monitor counts (Section II C 2). 1/k\ :sub:`i` monitor
+        efficiency correction is included automatically. To normalize ``R0`` to
+        source flux (Section II C 1), use ``moncor=0``.
         '''
         return self._moncar
 
@@ -1060,11 +1083,13 @@ class Instrument(object):
     @property
     def hcol(self):
         r''' The horizontal Soller collimations in minutes of arc (FWHM beam
-        divergence) starting from the in-pile collimator. In case of a horizontally-focusing
-        analyzer ``hcol[2]`` is the angular size of the analyzer, as seen from the sample
-        position. If the beam divergence is limited by a neutron guide, the corresponding
-        element of :attr:`hcol` is the negative of the guide’s *m*-value. For example, for a 58-Ni
-        guide ( *m* = 1.2 ) before the monochromator, ``hcol[0]`` should be -1.2.
+        divergence) starting from the in-pile collimator. In case of a
+        horizontally-focusing analyzer ``hcol[2]`` is the angular size of the
+        analyzer, as seen from the sample position. If the beam divergence is
+        limited by a neutron guide, the corresponding element of :attr:`hcol`
+        is the negative of the guide’s *m*-value. For example, for a 58-Ni
+        guide ( *m* = 1.2 ) before the monochromator, ``hcol[0]`` should be
+        -1.2.
         '''
         return self._hcol
 
@@ -1075,10 +1100,11 @@ class Instrument(object):
     @property
     def vcol(self):
         '''The vertical Soller collimations in minutes of arc (FWHM beam
-        divergence) starting from the in-pile collimator. If the beam divergence is limited
-        by a neutron guide, the corresponding element of :attr:`vcol` is the negative of the
-        guide’s *m*-value. For example, for a 58-Ni guide ( *m* = 1.2 ) before the monochromator,
-        ``vcol[0]`` should be -1.2.
+        divergence) starting from the in-pile collimator. If the beam
+        divergence is limited by a neutron guide, the corresponding element of
+        :attr:`vcol` is the negative of the guide’s *m*-value. For example, for
+        a 58-Ni guide ( *m* = 1.2 ) before the monochromator, ``vcol[0]``
+        should be -1.2.
         '''
         return self._vcol
 
@@ -1089,8 +1115,9 @@ class Instrument(object):
     @property
     def arms(self):
         '''distances between the source and monochromator, monochromator
-        and sample, sample and analyzer, analyzer and detector, and monochromator and
-        monitor, respectively. The 5th element is only needed if ``moncor=1``
+        and sample, sample and analyzer, analyzer and detector, and
+        monochromator and monitor, respectively. The 5th element is only needed
+        if ``moncor=1``
         '''
         return self._arms
 
@@ -1110,17 +1137,17 @@ class Instrument(object):
 
     @property
     def sample(self):
-        '''A structure that describes the sample. 
-        
-        It contains the following fields:
-        
-        * EXP.sample.mosaic is the FWHM sample mosaic in the scattering plane in minutes
-          of arc. If this field is left unassigned, no sample mosaic corrections (section
-          II E) are performed.
+        '''A structure that describes the sample.
 
-        * ``sample.vmosaic`` is the vertical sample mosaic in minutes of arc. If this field
-          is left unassigned, isotropic mosaic is assumed.
-        
+        It contains the following fields:
+
+        * EXP.sample.mosaic is the FWHM sample mosaic in the scattering plane
+          in minutes of arc. If this field is left unassigned, no sample
+          mosaic corrections (section II E) are performed.
+
+        * ``sample.vmosaic`` is the vertical sample mosaic in minutes of arc.
+          If this field is left unassigned, isotropic mosaic is assumed.
+
         '''
         return self._sample
 
@@ -1152,10 +1179,10 @@ class Instrument(object):
 
     @property
     def dir1(self):
-        '''defines the scattering direction in the monochromator. This field is equal
-        to 1 or left unassigned if the scattering direction in the monochromator is opposite to
-        that in the sample. Set this field to -1 if the sample and monochromator scattering
-        directions are the same.
+        '''defines the scattering direction in the monochromator. This field
+        is equal to 1 or left unassigned if the scattering direction in the
+        monochromator is opposite to that in the sample. Set this field to -1
+        if the sample and monochromator scattering directions are the same.
         '''
         return self._dir1
 
@@ -1165,10 +1192,10 @@ class Instrument(object):
 
     @property
     def dir2(self):
-        '''defines the scattering direction in the analyzer. This field is equal to 1 or
-        left unassigned if the scattering direction in the analyzer is opposite to that in the
-        sample. Set this field to -1 if the sample and analyzer scattering directions are the
-        same.
+        '''defines the scattering direction in the analyzer. This field is
+        equal to 1 or left unassigned if the scattering direction in the
+        analyzer is opposite to that in the sample. Set this field to -1 if the
+        sample and analyzer scattering directions are the same.
         '''
         return self._dir2
 
@@ -1179,8 +1206,8 @@ class Instrument(object):
     @property
     def mondir(self):
         '''defines the scattering angle in the monochromator which is positive
-        (counter-clockwise) if this field is absent or positive, and negative (clockwise) otherwise
-        [10].
+        (counter-clockwise) if this field is absent or positive, and negative
+        (clockwise) otherwise [10].
         '''
         return self._mondir
 
@@ -1190,8 +1217,8 @@ class Instrument(object):
 
     @property
     def infin(self):
-        '''a flag set to -1 or left unassigned if the final energy is fixed, or set to +1
-        in a fixed-incident setup.
+        '''a flag set to -1 or left unassigned if the final energy is fixed, or
+        set to +1 in a fixed-incident setup.
         '''
         return self._infin
 
@@ -1233,17 +1260,18 @@ class Instrument(object):
     def Smooth(self):
         u'''Defines the smoothing parameters as explained in Section II H. Leave this
         field unassigned if you don’t want this correction done.
-        
-        * ``Smooth.E`` is the smoothing FWHM in energy (meV). A small number means
-          “no smoothing along this direction”.
-        
-        * ``Smooth.X`` is the smoothing FWHM along the first orienting vector (x0 axis)
-          in Å\ :sup:`-1`.
-        
+
+        * ``Smooth.E`` is the smoothing FWHM in energy (meV). A small number
+          means “no smoothing along this direction”.
+
+        * ``Smooth.X`` is the smoothing FWHM along the first orienting vector
+          (x0 axis) in Å\ :sup:`-1`.
+
         * ``Smooth.Y`` is the smoothing FWHM along the y axis in Å\ :sup:`-1`.
-        
-        * ``Smooth.Z`` is the smoothing FWHM along the vertical direction in Å\ :sup:`-1`.
-        
+
+        * ``Smooth.Z`` is the smoothing FWHM along the vertical direction in
+          Å\ :sup:`-1`.
+
         '''
         return self._Smooth
 
@@ -1253,25 +1281,27 @@ class Instrument(object):
 
     def get_lattice(self):
         r'''Extracts lattice parameters from EXP and returns the direct and
-        reciprocal lattice parameters in the form used by _scalar.m, _star.m, etc.
-    
+        reciprocal lattice parameters in the form used by _scalar.m, _star.m,
+        etc.
+
         Returns
         -------
         [lattice, rlattice] : [class, class]
             Returns the direct and reciprocal lattice sample classes
-    
+
         Notes
         -----
-        Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
-    
+        Translated from ResLib 3.4c, originally authored by A. Zheludev,
+        1999-2007, Oak Ridge National Laboratory
+
         '''
         s = np.array([self.sample])
         lattice = Sample(np.array([item.a for item in s]),
-                          np.array([item.b for item in s]),
-                          np.array([item.c for item in s]),
-                          np.array([item.alpha for item in s]) * np.pi / 180,
-                          np.array([item.beta for item in s]) * np.pi / 180,
-                          np.array([item.gamma for item in s]) * np.pi / 180)
+                         np.array([item.b for item in s]),
+                         np.array([item.c for item in s]),
+                         np.array([item.alpha for item in s]) * np.pi / 180,
+                         np.array([item.beta for item in s]) * np.pi / 180,
+                         np.array([item.gamma for item in s]) * np.pi / 180)
         V, Vstar, rlattice = _star(lattice)  # @UnusedVariable
 
         return [lattice, rlattice]
@@ -1279,21 +1309,23 @@ class Instrument(object):
     def _StandardSystem(self):
         r'''Returns rotation matrices to calculate resolution in the sample view
         instead of the instrument view
-    
+
         Parameters
         ----------
         EXP : class
             Instrument class
-    
+
         Returns
         -------
-        [x, y, z, lattice, rlattice] : [ndarray, ndarray, ndarray, class, class]
-            Returns the rotation matrices and real and reciprocal lattice sample classes
-    
+        [x, y, z, lattice, rlattice] : [array, array, array, class, class]
+            Returns the rotation matrices and real and reciprocal lattice
+            sample classes
+
         Notes
         -----
-        Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
-    
+        Translated from ResLib 3.4c, originally authored by A. Zheludev,
+        1999-2007, Oak Ridge National Laboratory
+
         '''
         [lattice, rlattice] = self.get_lattice()
 
@@ -1303,16 +1335,10 @@ class Instrument(object):
         modx = _modvec([orient1[0], orient1[1], orient1[2]], rlattice)
 
         x = orient1 / modx
-#         x[0] = x[0] / modx  # First unit basis vector
-#         x[1] = x[1] / modx
-#         x[2] = x[2] / modx
 
         proj = _scalar([orient2[0], orient2[1], orient2[2]], [x[0], x[1], x[2]], rlattice)
 
         y = orient2 - x * proj
-#         y[0] = y[0] - x[0, :] * proj
-#         y[1] = y[1, :] - x[1, :] * proj
-#         y[2] = y[2, :] - x[2, :] * proj
 
         mody = _modvec([y[0], y[1], y[2]], rlattice)
 
@@ -1320,9 +1346,6 @@ class Instrument(object):
             raise ValueError('??? Fatal error: Orienting vectors are colinear!')
 
         y /= mody
-#         y[0, :] = y[0, :] / mody  # Second unit basis vector
-#         y[1, :] = y[1, :] / mody
-#         y[2, :] = y[2, :] / mody
 
         z = np.zeros(3, dtype=np.float64)
         z[0] = x[1] * y[2] - y[1] * x[2]
@@ -1332,23 +1355,14 @@ class Instrument(object):
         proj = _scalar([z[0], z[1], z[2]], [x[0], x[1], x[2]], rlattice)
 
         z = z - x * proj
-#         z[0, :] = z[0, :] - x[0, :] * proj
-#         z[1, :] = z[1, :] - x[1, :] * proj
-#         z[2, :] = z[2, :] - x[2, :] * proj
 
         proj = _scalar([z[0], z[1], z[2]], [y[0], y[1], y[2]], rlattice)
 
         z = z - y * proj
-#         z[0, :] = z[0, :] - y[0, :] * proj
-#         z[1, :] = z[1, :] - y[1, :] * proj
-#         z[2, :] = z[2, :] - y[2, :] * proj
 
         modz = _modvec([z[0], z[1], z[2]], rlattice)
 
         z /= modz
-#         z[0, :] = z[0, :] / modz  # Third unit basis vector
-#         z[1, :] = z[1, :] / modz
-#         z[2, :] = z[2, :] / modz
 
         return [x, y, z, lattice, rlattice]
 
@@ -1357,27 +1371,27 @@ class Instrument(object):
         conditions specified in EXP, calculates the Cooper-Nathans or Popovici
         resolution matrix RM and resolution prefactor R0 in the Q coordinate
         system (defined by the scattering vector and the scattering plane).
-    
+
         Parameters
         ----------
         Q : ndarray or list of ndarray
             The Q vectors in reciprocal space at which resolution should be
             calculated, in inverse angstroms
-    
+
         W : float or list of floats
             The energy transfers at which resolution should be calculated in meV
-    
+
         Returns
         -------
         [R0, RM] : list(float, ndarray)
             Resolution pre-factor (R0) and resolution matrix (RM) at the given
             reciprocal lattice vectors and energy transfers
-    
+
         Notes
         -----
-        Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
-        Oak Ridge National Laboratory
-    
+        Translated from ResLib 3.4c, originally authored by A. Zheludev,
+        1999-2007, Oak Ridge National Laboratory
+
         '''
         CONVERT1 = np.pi / 60. / 180.
         CONVERT2 = 2.072
@@ -1401,7 +1415,7 @@ class Instrument(object):
             method = self.method
 
         # Assign default values and decode parameters
-        moncor = 0
+        moncor = 1
         if hasattr(self, 'moncor'):
             moncor = self.moncor
 
@@ -1511,7 +1525,8 @@ class Instrument(object):
             _sshape = sample.shape.astype(np.float64) / 12.
             if len(_sshape.shape) == 2:
                 sshapes = np.repeat(_sshape[np.newaxis].reshape((1, 3, 3)), length, axis=0)
-            else: sshapes = _sshape
+            else:
+                sshapes = _sshape
 
         if hasattr(self, 'arms') and method == 1:
             arms = self.arms
@@ -1923,8 +1938,7 @@ class Instrument(object):
                             'QxW_fwhm': np.zeros((2, NP.shape[-1])),
                             'QxWSlice_fwhm': np.zeros((2, NP.shape[-1])),
                             'QyW_fwhm': np.zeros((2, NP.shape[-1])),
-                            'QyWSlice_fwhm': np.zeros((2, NP.shape[-1])),
-                            }
+                            'QyWSlice_fwhm': np.zeros((2, NP.shape[-1]))}
 
         [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
 
@@ -1969,7 +1983,7 @@ class Instrument(object):
 
             hwhm_xp = const / np.sqrt(MP[0, 0])
             hwhm_yp = const / np.sqrt(MP[1, 1])
-            
+
             self.projections['QxQy_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QxQy_fwhm'][1, ind] = 2 * hwhm_yp
 
@@ -2058,18 +2072,18 @@ class Instrument(object):
 
     def get_angles_and_Q(self, hkle):
         r'''Returns the Triple Axis Spectrometer angles and Q-vector given position in reciprocal space
-        
+
         Parameters
         ----------
         hkle : list
             Array of the scattering vector and energy transfer at which the
             calculation should be performed
-            
+
         Returns
         -------
         [A, Q] : list
             The angles A (A1 -- A5 in a list of floats) and Q (ndarray)
-            
+
         '''
         # compute all TAS angles (in plane)
 
@@ -2087,8 +2101,8 @@ class Instrument(object):
 
         # compute the transversal Q component, and A3 (sample rotation)
         # from McStas templateTAS.instr and TAS MAD ILL
-        a = np.array([ self.sample.a, self.sample.b, self.sample.c ]) / (2 * np.pi)
-        alpha = np.deg2rad([ self.sample.alpha, self.sample.beta, self.sample.gamma ])
+        a = np.array([self.sample.a, self.sample.b, self.sample.c]) / (2 * np.pi)
+        alpha = np.deg2rad([self.sample.alpha, self.sample.beta, self.sample.gamma])
         cosa = np.cos(alpha)
         sina = np.sin(alpha)
         cc = np.sum(cosa * cosa)
@@ -2099,11 +2113,11 @@ class Instrument(object):
         c2 = np.roll(c1, -1)
         s1 = np.roll(sina[np.newaxis].T, -1)
         s2 = np.roll(s1, -1)
-        cosb = (c1 * c2 - cosa[np.newaxis].T) / (s1 * s2);
+        cosb = (c1 * c2 - cosa[np.newaxis].T) / (s1 * s2)
         sinb = np.sqrt(1 - cosb * cosb)
 
-        bb = np.array([[b[0], 0, 0 ],
-                       [b[1] * cosb[2], b[1] * sinb[2], 0 ],
+        bb = np.array([[b[0], 0, 0],
+                       [b[1] * cosb[2], b[1] * sinb[2], 0],
                        [b[2] * cosb[1], -b[2] * sinb[1] * cosa[0], 1 / a[2]]])
         bb = bb.T
 
@@ -2186,8 +2200,8 @@ class Instrument(object):
 
         # Remove the vertical component from the matrix
         Bmatrix = np.vstack((np.hstack((A[0, :2:1, ind], A[0, 3, ind])),
-                       np.hstack((A[1, :2:1, ind], A[1, 3, ind])),
-                       np.hstack((A[3, :2:1, ind], A[3, 3, ind]))))
+                             np.hstack((A[1, :2:1, ind], A[1, 3, ind])),
+                             np.hstack((A[3, :2:1, ind], A[3, 3, ind]))))
 
         if plane == 'QxQy':
             R0 = np.sqrt(2 * np.pi / Bmatrix[2, 2]) * selfR0[ind]
@@ -2223,55 +2237,56 @@ class Instrument(object):
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
 
     def resolution_convolution(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None, seed=None):
-        r'''Numerically calculate the convolution of a user-defined cross-section 
-        function with the resolution function for a 3-axis neutron scattering 
+        r'''Numerically calculate the convolution of a user-defined cross-section
+        function with the resolution function for a 3-axis neutron scattering
         experiment.
-        
+
         Parameters
         ----------
         sqw : func
             User-supplied "fast" model cross section.
-        
+
         pref : func
-            User-supplied "slow" cross section prefactor and background function.
-        
+            User-supplied "slow" cross section prefactor and background
+            function.
+
         nargout : int
             Number of arguments returned by the pref function
-        
+
         hkle : tup
             Tuple of H, K, L, and W, specifying the wave vector and energy
-            transfers at which the convolution is to be calculated (i.e. 
-            define $\mathbf{Q}_0$). H, K, and L are given in reciprocal lattice 
-            units and W in meV.
-        
+            transfers at which the convolution is to be calculated (i.e.
+            define $\mathbf{Q}_0$). H, K, and L are given in reciprocal
+            lattice units and W in meV.
+
         EXP : obj
             Instrument object containing all information on experimental setup.
-        
+
         METHOD : str
-            Specifies which 4D-integration method to use. 'fix' (Default): sample
-            the cross section on a fixed grid of points uniformly distributed 
-            $\phi$-space. 2*ACCURACY[0]+1 points are sampled along $\phi_1$,
-            $\phi_2$, and $\phi_3$, and 2*ACCURACY[1]+1 along $\phi_4$ (vertical
-            direction). 'mc': 4D Monte Carlo integration. The cross section is
-            sampled in 1000*ACCURACY randomly chosen points, uniformly distributed
-            in $\phi$-space.
-        
+            Specifies which 4D-integration method to use. 'fix' (Default):
+            sample the cross section on a fixed grid of points uniformly
+            distributed $\phi$-space. 2*ACCURACY[0]+1 points are sampled
+            along $\phi_1$, $\phi_2$, and $\phi_3$, and 2*ACCURACY[1]+1
+            along $\phi_4$ (vertical direction). 'mc': 4D Monte Carlo
+            integration. The cross section is sampled in 1000*ACCURACY
+            randomly chosen points, uniformly distributed in $\phi$-space.
+
         ACCURACY : array(2) or int
             Determines the number of sampling points in the integration.
-        
+
         p : list
             A parameter that is passed on, without change to sqw and pref.
-            
+
         Returns
         -------
         conv : array
             Calculated value of the cross section, folded with the resolution
             function at the given $\mathbf{Q}_0$
-            
+
         Notes
         -----
-        Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
-        Oak Ridge National Laboratory
+        Translated from ResLib 3.4c, originally authored by A. Zheludev,
+        1999-2007, Oak Ridge National Laboratory
 
         '''
         self.calc_resolution(hkle)
@@ -2413,61 +2428,62 @@ class Instrument(object):
         r'''Numerically calculate the convolution of a user-defined single-mode
         cross-section function with the resolution function for a 3-axis
         neutron scattering experiment.
-        
+
         Parameters
         ----------
         sqw : func
             User-supplied "fast" model cross section.
-        
+
         pref : func
-            User-supplied "slow" cross section prefactor and background function.
-        
+            User-supplied "slow" cross section prefactor and background
+            function.
+
         nargout : int
             Number of arguments returned by the pref function
-        
+
         hkle : tup
             Tuple of H, K, L, and W, specifying the wave vector and energy
-            transfers at which the convolution is to be calculated (i.e. 
-            define $\mathbf{Q}_0$). H, K, and L are given in reciprocal lattice 
-            units and W in meV.
-        
+            transfers at which the convolution is to be calculated (i.e.
+            define $\mathbf{Q}_0$). H, K, and L are given in reciprocal
+            lattice units and W in meV.
+
         EXP : obj
             Instrument object containing all information on experimental setup.
-        
+
         METHOD : str
-            Specifies which 3D-integration method to use. 'fix' (Default): sample
-            the cross section on a fixed grid of points uniformly distributed 
-            $\phi$-space. 2*ACCURACY[0]+1 points are sampled along $\phi_1$,
-            and $\phi_2$, and 2*ACCURACY[1]+1 along $\phi_3$ (vertical
-            direction). 'mc': 3D Monte Carlo integration. The cross section is
-            sampled in 1000*ACCURACY randomly chosen points, uniformly distributed
-            in $\phi$-space.
-        
+            Specifies which 3D-integration method to use. 'fix' (Default):
+            sample the cross section on a fixed grid of points uniformly
+            distributed $\phi$-space. 2*ACCURACY[0]+1 points are sampled
+            along $\phi_1$, and $\phi_2$, and 2*ACCURACY[1]+1 along $\phi_3$
+            (vertical direction). 'mc': 3D Monte Carlo integration. The cross
+            section is sampled in 1000*ACCURACY randomly chosen points,
+            uniformly distributed in $\phi$-space.
+
         ACCURACY : array(2) or int
             Determines the number of sampling points in the integration.
-        
+
         p : list
             A parameter that is passed on, without change to sqw and pref.
-            
+
         Returns
         -------
         conv : array
             Calculated value of the cross section, folded with the resolution
             function at the given $\mathbf{Q}_0$
-            
+
         Notes
         -----
-        Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
-        Oak Ridge National Laboratory
-        
+        Translated from ResLib 3.4c, originally authored by A. Zheludev,
+        1999-2007, Oak Ridge National Laboratory
+
         '''
         self.calc_resolution(hkle)
         [R0, RMS] = [np.copy(self.R0), np.copy(self.RMS)]
 
         H, K, L, W = hkle
-        [length, H, K, L, W] = _CleanArgs(H, K, L, W);
+        [length, H, K, L, W] = _CleanArgs(H, K, L, W)
 
-        [xvec, yvec, zvec, sample, rsample] = self._StandardSystem();
+        [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
 
         Mww = RMS[2, 2, :]
         Mxw = RMS[0, 2, :]
@@ -2598,15 +2614,16 @@ class Instrument(object):
 
     def plot_projections(self, hkle, npts=36, dpi=100):
         r'''Plots resolution ellipses in the QxQy, QxW, and QyW zones
-        
+
         Parameters
         ----------
         hkle : tup
-            A tuple of intergers or arrays of H, K, L, and W (energy transfer) values at which resolution ellipses are desired to be plotted
-        
+            A tuple of intergers or arrays of H, K, L, and W (energy transfer)
+            values at which resolution ellipses are desired to be plotted
+
         npts : int, optional
             Number of points in an individual resolution ellipse. Default: 36
-                    
+
         '''
         try:
             projections = self.projections
@@ -2682,7 +2699,7 @@ class Instrument(object):
         angles, Q = self.get_angles_and_Q(hkle)
 
         text_format = ['Method: {0}'.format(method),
-                       'Position HKLE [{0}]'.format(dt.datetime.now().strftime('%d-%b-%Y %T')),
+                       'Position HKLE [{0}]'.format(dt.datetime.now().strftime('%d-%b-%Y %H:%M:%S')),
                        '',
                        ' [$Q_H$, $Q_K$, $Q_L$, $E$] = {0} '.format(self.HKLE),
                        '',
@@ -2708,7 +2725,7 @@ class Instrument(object):
                        'Sample:',
                        ' a, b, c  =  [{0}, {1}, {2}] [Angs]'.format(self.sample.a, self.sample.b, self.sample.c),
                        ' Alpha, Beta, Gamma  =  [{0}, {1}, {2}] [deg]'.format(self.sample.alpha, self.sample.beta, self.sample.gamma),
-                       ' U  =  {0} [rlu]\tV  =  {0} [rlu]'.format(self.orient1, self.orient2)]
+                       ' U  =  {0} [rlu]\tV  =  {1} [rlu]'.format(self.orient1, self.orient2)]
 
         ax4.axis('off')
         ax4.text(0, 1, '\n'.join(text_format), transform=ax4.transAxes, horizontalalignment='left', verticalalignment='top')
@@ -2717,12 +2734,12 @@ class Instrument(object):
 
     def plot_ellipsoid(self, hkle, dpi=100):
         r'''Plots the resolution ellipsoid in the $Q_x$, $Q_y$, $W$ zone
-        
+
         Parameters
         ----------
         hkle : tup
             A tuple of intergers or arrays of H, K, L, and W (energy transfer) values at which resolution ellipsoid are desired to be plotted
-        
+
         '''
         from vispy import app, scene, visuals
         import sys
@@ -2801,7 +2818,6 @@ class Instrument(object):
             wy = fproject(RMS.reshape((3, 3, 1)), 1)
             ww = fproject(RMS.reshape((3, 3, 1)), 2)
 
-
             surface = []
             x = np.linspace(-wx[0] * 1.5, wx[0] * 1.5, EllipsoidGridPoints) + qx[0]
             y = np.linspace(-wy[0] * 1.5, wy[0] * 1.5, EllipsoidGridPoints) + qy[0]
@@ -2841,12 +2857,14 @@ class Instrument(object):
             app.run()
 
     def plot_instrument(self, hkle):
-        '''Plots the instrument configuration using angles for a given position in Q and energy transfer
-        
+        '''Plots the instrument configuration using angles for a given position
+        in Q and energy transfer
+
         Parameters
         ----------
         hkle : tup
-            A tuple of intergers or arrays of H, K, L, and W (energy transfer) values at which the instrument setup should be plotted
+            A tuple of intergers or arrays of H, K, L, and W (energy transfer)
+            values at which the instrument setup should be plotted
 
         '''
         import matplotlib.pyplot as plt
@@ -2872,7 +2890,7 @@ class Instrument(object):
             mono_height = self.mono.height
         else:
             mono_height = 1
-        
+
         if hasattr(self.sample, 'width'):
             sample_width = self.sample.width
         else:
@@ -2885,7 +2903,7 @@ class Instrument(object):
             sample_depth = self.sample.depth
         else:
             sample_depth = 1
-        
+
         if hasattr(self.ana, 'width'):
             ana_width = self.ana.width
         else:
@@ -2894,7 +2912,7 @@ class Instrument(object):
             ana_height = self.ana.height
         else:
             ana_height = 1
-        
+
         if hasattr(self.detector, 'width'):
             detector_width = self.detector.width
         else:
@@ -2917,7 +2935,7 @@ class Instrument(object):
         x, y, direction = 0, 0, 0
 
         x0, y0 = x, y
-        # plot the Source --------------------------------------------------------------
+        # plot the Source -----------------------------------------------------
         translate = 0
         rotate = 0 * (np.pi / 180)
         direction = direction + rotate
@@ -2925,53 +2943,53 @@ class Instrument(object):
         y = y + translate * np.cos(direction)
 
         # create a square source
-        X = np.array([ -beam_width / 2, -beam_width / 2, beam_width / 2, beam_width / 2, -beam_width / 2])
-        Z = np.array([  beam_height / 2, -beam_height / 2, -beam_height / 2, beam_height / 2, beam_height / 2])
+        X = np.array([-beam_width / 2, -beam_width / 2, beam_width / 2, beam_width / 2, -beam_width / 2])
+        Z = np.array([beam_height / 2, -beam_height / 2, -beam_height / 2, beam_height / 2, beam_height / 2])
         Y = np.zeros(5)
         l = ax.plot(X + x, Y + y, zs=Z, color='b')
         t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Beam/Source', color='b')
 
         x0 = x
         y0 = y
-        # plot the Monochromator -------------------------------------------------------
+        # plot the Monochromator ----------------------------------------------
         translate = distances[0]
         rotate = 0
         direction = direction + rotate
         x = x + translate * np.sin(direction)
         y = y + translate * np.cos(direction)
-        l = ax.plot([x, x0 ], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
 
         # create a square Monochromator
-        X = np.array([ -mono_width / 2, -mono_width / 2, mono_width / 2, mono_width / 2, -mono_width / 2]) * np.sin(A1)
-        Z = np.array([  mono_height / 2 , -mono_height / 2, -mono_height / 2, mono_height / 2, mono_height / 2])
+        X = np.array([-mono_width / 2, -mono_width / 2, mono_width / 2, mono_width / 2, -mono_width / 2]) * np.sin(A1)
+        Z = np.array([mono_height / 2, -mono_height / 2, -mono_height / 2, mono_height / 2, mono_height / 2])
         Y = X * np.cos(A1)
         l = ax.plot(X + x, Y + y, zs=Z, color='r')
         t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Monochromator', color='r')
 
         x0 = x
         y0 = y
-        # plot the Sample --------------------------------------------------------------
+        # plot the Sample -----------------------------------------------------
         translate = distances[1]
         rotate = A2
         direction = direction + rotate
         x = x + translate * np.sin(direction)
         y = y + translate * np.cos(direction)
-        l = ax.plot([x, x0 ], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
 
         # create a rotated square Sample
-        X = np.array([ -sample_width / 2, -sample_width / 2, sample_width / 2, sample_width / 2, -sample_width / 2]) * np.sin(A3)
-        Z = np.array([  sample_height / 2, -sample_height / 2, -sample_height / 2, sample_height / 2, sample_height / 2])
+        X = np.array([-sample_width / 2, -sample_width / 2, sample_width / 2, sample_width / 2, -sample_width / 2]) * np.sin(A3)
+        Z = np.array([sample_height / 2, -sample_height / 2, -sample_height / 2, sample_height / 2, sample_height / 2])
         Y = X * np.cos(A3)
         l1 = ax.plot(X + x, Y + y, zs=Z, color='g')
         t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Sample', color='g')
-        X = np.array([ -sample_depth / 2, -sample_depth / 2, sample_depth / 2, sample_depth / 2, -sample_depth / 2]) * np.sin(A3 + np.pi / 2)
-        Z = np.array([  sample_height / 2, -sample_height / 2, -sample_height / 2, sample_height / 2, sample_height / 2])
+        X = np.array([-sample_depth / 2, -sample_depth / 2, sample_depth / 2, sample_depth / 2, -sample_depth / 2]) * np.sin(A3 + np.pi / 2)
+        Z = np.array([sample_height / 2, -sample_height / 2, -sample_height / 2, sample_height / 2, sample_height / 2])
         Y = X * np.cos(A3 + np.pi / 2)
         l2 = ax.plot(X + x, Y + y, zs=Z, color='g')
 
         x0 = x
         y0 = y
-        # plot the Analyzer ------------------------------------------------------------
+        # plot the Analyzer ---------------------------------------------------
         translate = distances[2]
         rotate = A4
         direction = direction + rotate
@@ -2980,25 +2998,25 @@ class Instrument(object):
         l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
 
         # create a square
-        X = np.array([ -ana_width / 2, -ana_width / 2, ana_width / 2, ana_width / 2, -ana_width / 2]) * np.sin(A5)
-        Z = np.array([  ana_height / 2, -ana_height / 2, -ana_height / 2, ana_height / 2, ana_height / 2])
+        X = np.array([-ana_width / 2, -ana_width / 2, ana_width / 2, ana_width / 2, -ana_width / 2]) * np.sin(A5)
+        Z = np.array([ana_height / 2, -ana_height / 2, -ana_height / 2, ana_height / 2, ana_height / 2])
         Y = X * np.cos(A5)
         l = ax.plot(X + x, Y + y, zs=Z, color='magenta')
         t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Analyzer', color='magenta')
 
         x0 = x
         y0 = y
-        # plot the Detector ------------------------------------------------------------
+        # plot the Detector ---------------------------------------------------
         translate = distances[3]
         rotate = A6
         direction = direction + rotate
         x = x + translate * np.sin(direction)
         y = y + translate * np.cos(direction)
-        l = ax.plot([ x, x0 ], [y, y0], zs=[ 0, 0 ], color='cyan', linestyle='--')
+        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
 
         # create a square
-        X = np.array([ -detector_width / 2, -detector_width / 2, detector_width / 2, detector_width / 2, -detector_width / 2])
-        Z = np.array([  detector_height / 2, -detector_height / 2, -detector_height / 2, detector_height / 2, detector_height / 2])
+        X = np.array([-detector_width / 2, -detector_width / 2, detector_width / 2, detector_width / 2, -detector_width / 2])
+        Z = np.array([detector_height / 2, -detector_height / 2, -detector_height / 2, detector_height / 2, detector_height / 2])
         Y = np.zeros(5)
         l = ax.plot(X + x, Y + y, zs=Z, color='k')
         t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Detector', color='k')
