@@ -741,7 +741,7 @@ class Data(object):
             and 'temp'
 
         show_err : bool, optional
-            Plot error bars. Only applies to xy scatter plots. Default: False
+            Plot error bars. Only applies to xy scatter plots. Default: True
 
         show_plot : bool, optional
             Execute `plt.show()` to show the plot. Incompatible with
@@ -863,7 +863,10 @@ class Data(object):
                 plt.errorbar(x, y, yerr=err, **plot_options)
             else:
                 plt.errorbar(x, y, **plot_options)
-
+            
+            #add axis labels
+            plt.xlabel(args['x'])
+            plt.ylabel(args['y'])
             if fit_options:
                 def residuals(params, data):
                     funct, x, y, err = data
