@@ -2,15 +2,17 @@ r'''NeutronPy: open source python library for neutron scattering data analysis
 
 '''
 from __future__ import absolute_import
-
-__version__ = '0.3.6_beta'
-
 from . import constants
-from . import core as tools
-from . import resolution
+from neutronpy import data as tools
+from . import instrument
 from . import form_facs
 from . import functions
 from . import models
 from . import spurion
 from . import lattice
-from .core import *  # pylint: disable=wildcard-import
+from . import io
+from . import instrument as resolution
+from .energy import Energy
+from .data import *
+
+__version__ = '1.0.0b1'

@@ -47,7 +47,7 @@ class StructureFactor(unittest.TestCase):
 
     def test_N_atoms(self):
         structure = form_facs.Material(self.input)
-        self.assertTrue(np.abs(structure.N_atoms(22.) - 3.611085294775001e+22) < 1)
+        self.assertTrue(structure.N_atoms(22) == 36110850351331465494528)
 
     def test_volume(self):
         structure = form_facs.Material(self.input)

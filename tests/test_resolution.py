@@ -2,14 +2,15 @@
 r'''Testing of the resolution library
 '''
 from neutronpy import resolution
+from neutronpy.io import load_instrument
 import numpy as np
 import unittest
 import os
 from copy import deepcopy
 from mock import patch
-from numpy import newaxis
 from matplotlib import use
 use('Agg')
+
 
 def angle2(x, y, z, h, k, l, lattice):
     [V, Vstar, latticestar] = resolution._star(lattice)
@@ -79,9 +80,9 @@ def PrefDemo(H, K, L, W, EXP, p):
     polz = np.sin(alphaz) ** 2
 
     prefactor = np.zeros((3, len(H)))
-    prefactor[0, :] = ff ** 2.*polx * p[5]
-    prefactor[1, :] = ff ** 2.*poly * p[5]
-    prefactor[2, :] = ff ** 2.*polz * p[5]
+    prefactor[0, :] = ff ** 2.0 * polx * p[5]
+    prefactor[1, :] = ff ** 2.0 * poly * p[5]
+    prefactor[2, :] = ff ** 2.0 * polz * p[5]
 
     bgr = np.ones(H.shape) * p[6]
 
@@ -105,9 +106,9 @@ def PrefDemo2(H, K, L, W, EXP, p):
     polz = np.sin(alphaz) ** 2
 
     prefactor = np.zeros((3, len(H)))
-    prefactor[0, :] = ff ** 2.*polx * p[5]
-    prefactor[1, :] = ff ** 2.*poly * p[5]
-    prefactor[2, :] = ff ** 2.*polz * p[5]
+    prefactor[0, :] = ff ** 2.0 * polx * p[5]
+    prefactor[1, :] = ff ** 2.0 * poly * p[5]
+    prefactor[2, :] = ff ** 2.0 * polz * p[5]
 
     bgr = np.ones(H.shape) * p[6]
 
@@ -131,13 +132,14 @@ def PrefDemo3(H, K, L, W, EXP, p):
     polz = np.sin(alphaz) ** 2
 
     prefactor = np.zeros((3, len(H)))
-    prefactor[0, :] = ff ** 2.*polx * p[5]
-    prefactor[1, :] = ff ** 2.*poly * p[5]
-    prefactor[2, :] = ff ** 2.*polz * p[5]
+    prefactor[0, :] = ff ** 2.0 * polx * p[5]
+    prefactor[1, :] = ff ** 2.0 * poly * p[5]
+    prefactor[2, :] = ff ** 2.0 * polz * p[5]
 
     bgr = np.ones(H.shape) * p[6]
 
     return
+
 
 class ResolutionTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -299,11 +301,11 @@ class ResolutionTest(unittest.TestCase):
     def test_load_par_cfg(self):
         parfile = os.path.join(os.path.dirname(__file__), 'test.par')
         cfgfile = os.path.join(os.path.dirname(__file__), 'test.cfg')
-        resolution.load(parfile, cfgfile)
+        load_instrument(parfile, cfgfile)
 
         parfile = os.path.join(os.path.dirname(__file__), 'test2.par')
         cfgfile = os.path.join(os.path.dirname(__file__), 'test2.cfg')
-        resolution.load(parfile, cfgfile)
+        load_instrument(parfile, cfgfile)
 
     def test_sample(self):
         sample = resolution.Sample(1, 1, 1, 90, 90, 90, mosaic=60, direct=-1, u=[1, 0, 0], v=[0, 1, 0])

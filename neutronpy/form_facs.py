@@ -1,5 +1,7 @@
 r'''Calculates lattice and magnetic structure/form factors
 
+
+DEPRECIATED
 '''
 from numbers import Number
 import numpy as np
@@ -358,6 +360,30 @@ class Material(Lattice):
         sigma_T = (sigma_coh + sigma_inc + sigma_abs * np.sqrt(25.3 / energy)) / self.volume
 
         return -np.log(transmission) / sigma_T
+
+    def calc_incoh_elas_xs(self, mass=None):
+        r'''Calculates the incoherent elastic cross section.
+
+        Parameters
+        ----------
+        mass : float (optional)
+            The mass of the sample in grams (Default: None)
+
+        Returns
+        -------
+        INC_XS : float
+            Incoherent Elastic Cross Section
+
+        '''
+
+        INC_XS = 0
+        for atom in self.atoms:
+            INC_XS += atom.inc_xs * np.exp(-8 * np.pi ** 2 * atom.Uiso * np.sin(np.deg2rad(self.get_two_theta(atom.pos, self.wavelength) / 2.)) ** 2 / self.wavelength ** 2)
+
+        if mass is not None:
+            return self.N_atoms(mass) / (4 * np.pi) * INC_XS
+        else:
+            return INC_XS / (4 * np.pi)
 
 
 class Ion(object):

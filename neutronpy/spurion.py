@@ -2,7 +2,7 @@ r'''Calculates common spurions
 '''
 import numpy as np
 from .form_facs import Material
-from .core import Energy
+from .energy import Energy
 
 
 def aluminum(energy=14.7):

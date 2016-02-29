@@ -1,6 +1,7 @@
 r'''Physical Models
 '''
 
+
 def harmonic_oscillator():
     r'''Standard equation for a harmonic oscillator
     '''

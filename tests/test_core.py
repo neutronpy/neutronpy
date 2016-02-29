@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 r'''Testing of core library
 '''
-from neutronpy import Energy, Data, load, save, detect_filetype, functions
+from neutronpy import Energy, Data, functions
+from neutronpy.io import load_data, save_data, detect_filetype
 from neutronpy.constants import BOLTZMANN_IN_MEV_K
 import numpy as np
 from scipy.integrate import simps
@@ -91,20 +92,20 @@ class DataTest(unittest.TestCase):
 
     @patch('sys.stdout')
     def test_load_files(self, mock_stdout):
-        data1 = load((os.path.join(os.path.dirname(__file__), 'scan0001.dat'),
+        data1 = load_data((os.path.join(os.path.dirname(__file__), 'scan0001.dat'),
                       os.path.join(os.path.dirname(__file__), 'scan0002.dat')))
-        data2 = load((os.path.join(os.path.dirname(__file__), 'scan0003.ng5')))
-        data3 = load((os.path.join(os.path.dirname(__file__), 'scan0004.bt7')))
-        data4 = load((os.path.join(os.path.dirname(__file__), 'scan0007.bt7')))
-        data5 = load((os.path.join(os.path.dirname(__file__), 'scan0005')))
-        self.assertRaises(ValueError, load, (os.path.join(os.path.dirname(__file__), 'scan0006.test')), filetype='blah')
+        data2 = load_data((os.path.join(os.path.dirname(__file__), 'scan0003.ng5')))
+        data3 = load_data((os.path.join(os.path.dirname(__file__), 'scan0004.bt7')))
+        data4 = load_data((os.path.join(os.path.dirname(__file__), 'scan0007.bt7')))
+        data5 = load_data((os.path.join(os.path.dirname(__file__), 'scan0005')))
+        self.assertRaises(ValueError, load_data, (os.path.join(os.path.dirname(__file__), 'scan0006.test')), filetype='blah')
 
     def test_save_file(self):
         data_out = self.build_data()
-        save(data_out, 'test.out', fileformat='ascii')
-        save(data_out, 'test.out', fileformat='hdf5')
-        save(data_out, 'test.out', fileformat='pickle')
-        self.assertRaises(ValueError, save, data_out, 'test.out', fileformat='blah')
+        save_data(data_out, 'test.out', fileformat='ascii')
+        save_data(data_out, 'test.out', fileformat='hdf5')
+        save_data(data_out, 'test.out', fileformat='pickle')
+        self.assertRaises(ValueError, save_data, data_out, 'test.out', fileformat='blah')
 
     def test_filetype_detection(self):
         self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0001.dat')) == 'SPICE')
@@ -165,13 +166,13 @@ class DataTest(unittest.TestCase):
         data1 = Data()
         del data1.Q
         data2 = self.build_data()
-        
+
         def _test(test):
             if test == 'add':
                 data1 + data2
             elif test == 'sub':
                 data1 - data2
-                
+
         self.assertRaises(AttributeError, _test, 'add')
         self.assertRaises(AttributeError, _test, 'sub')
 
@@ -241,9 +242,8 @@ class DataTest(unittest.TestCase):
         def _test(test):
             data.error = 10
             data.error = np.zeros(5)
-        
+
         self.assertRaises(ValueError, _test, None)
-            
 
     def test_detailed_balance(self):
         data = self.build_data()

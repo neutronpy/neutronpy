@@ -5,8 +5,8 @@ from multiprocessing import cpu_count, Pool
 import numbers
 import re
 import numpy as np
-from scipy import constants
-from .constants import BOLTZMANN_IN_MEV_K, JOULES_TO_MEV
+from .constants import BOLTZMANN_IN_MEV_K
+from .energy import Energy
 try:
     from .kmpfit import Fitter
 except ImportError:
@@ -84,7 +84,7 @@ class Data(object):
 
     '''
     def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0.,
-                 detector=0., monitor=0., error=0., time=0., time_norm=False,
+                 detector=0., monitor=0., error=None, time=0., time_norm=False,
                  **kwargs):
         if Q is None:
             try:
@@ -118,6 +118,9 @@ class Data(object):
         self.t0 = np.nanmax(self.time)
 
         self.time_norm = time_norm
+
+        if error is not None:
+            self.error = error
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -576,7 +579,7 @@ class Data(object):
         q, qstep = (), ()
         for arg in args:
             if arg[2] == 1:
-                _q, _qstep = (np.array([np.average(arg[:2])]), 
+                _q, _qstep = (np.array([np.average(arg[:2])]),
                               (arg[1] - arg[0]))
             else:
                 _q, _qstep = np.linspace(arg[0], arg[1], arg[2], retstep=True)
@@ -863,8 +866,8 @@ class Data(object):
                 plt.errorbar(x, y, yerr=err, **plot_options)
             else:
                 plt.errorbar(x, y, **plot_options)
-            
-            #add axis labels
+
+            # add axis labels
             plt.xlabel(args['x'])
             plt.ylabel(args['y'])
             if fit_options:
@@ -904,189 +907,6 @@ class Data(object):
             pass
 
 
-def load(files, filetype='auto', tols=1e-4):
-    r'''Loads one or more files and creates a :class:`Data` object with the
-    loaded data.
-
-    Parameters
-    ----------
-    files : str or tuple of str
-        A file or non-keyworded list of files containing data for input.
-
-    filetype : str, optional
-        Default: `'auto'`. Specify file type; Currently supported file types
-        are SPICE, ICE, and ICP. By default, the function will attempt to
-        determine the filetype automatically.
-
-    tols : float or array_like
-        Default: `1e-4`. A float or array of shape `(5,)` giving tolerances for
-        combining multiple files. If multiple points are within the given
-        tolerances then they will be combined into a single point. If a float
-        is given, tolerances will all be the same for all variables in **Q**.
-        If an array is given tolerances should be in the format
-        `[h, k, l, e, temp]`.
-
-    Returns
-    -------
-    Data : object
-        A :class:`Data` object populated with the data from the input file or
-        files.
-
-    '''
-    if isinstance(files, str):
-        files = (files,)
-
-    if isinstance(tols, numbers.Number):
-        tols = [tols for i in range(5)]
-
-    for filename in files:
-        if filetype == 'auto':
-            try:
-                filetype = detect_filetype(filename)
-            except ValueError:
-                raise
-
-        if filetype == 'SPICE':
-            data_keys = {'monitor': 'monitor', 'detector': 'detector',
-                         'time': 'time'}
-            Q_keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'temp': 'tvti'}
-            raw_data = {}
-
-            with open(filename) as f:
-                for line in f:
-                    if 'col_headers' in line:
-                        args = next(f).split()
-                        headers = [head for head in args[1:]]
-
-            args = np.genfromtxt(filename, unpack=True, dtype=np.float64)
-
-            _t0 = 60.
-
-        elif filetype == 'ICE':
-            data_keys = {'detector': 'Detector', 'monitor': 'Monitor',
-                         'time': 'Time'}
-            Q_keys = {'h': 'QX', 'k': 'QY', 'l': 'QZ', 'e': 'E',
-                      'temp': 'Temp'}
-            raw_data = {}
-            _t0 = 60.
-
-            with open(filename) as f:
-                for line in f:
-                    if 'Columns' in line:
-                        args = line.split()
-                        headers = [head for head in args[1:]]
-                        break
-
-            args = np.genfromtxt(filename, usecols=(0, 1, 2, 3, 4, 5, 6, 7, 8),
-                                 unpack=True, comments="#", dtype=np.float64)
-
-        elif filetype == 'ICP':
-            data_keys = {'detector': 'Counts', 'time': 'min'}
-            Q_keys = {'h': 'Q(x)', 'k': 'Q(y)', 'l': 'Q(z)', 'e': 'E',
-                      'temp': 'T-act'}
-            raw_data = {}
-            _t0 = 1.
-
-            with open(filename) as f:
-                for i, line in enumerate(f):
-                    if i == 0:
-                        _length = int(re.findall(r"(?='(.*?)')", line)[-2])
-                        [_m0, _prf] = [float(i) for i in re.findall(r"(?='(.*?)')", line)[-4].split()]
-                    if 'Q(x)' in line:
-                        args = line.split()
-                        headers = [head for head in args]
-                        break
-
-            args = np.genfromtxt(filename, unpack=True, dtype=np.float64, skip_header=12)
-
-            raw_data['monitor'] = np.empty(args[0].shape)
-            raw_data['monitor'].fill(_m0 * _prf)
-
-        elif filetype == 'MAD':
-            data_keys = {'detector': 'CNTS', 'time': 'TIME', 'monitor': 'M1'}
-            Q_keys = {'h': 'QH', 'k': 'QK', 'l': 'QL', 'e': 'EN', 'temp': 'TT'}
-            raw_data = {}
-            _t0 = 60
-
-            with open(filename) as f:
-                for i, line in enumerate(f):
-                    if 'DATA_:' in line:
-                        args = next(f).split()
-                        headers = [head for head in args]
-                        skip_lines = i + 2
-                        break
-
-            args = np.genfromtxt(filename, unpack=True, dtype=np.float64, skip_header=skip_lines, skip_footer=1)
-
-        else:
-            raise ValueError('Filetype not supported.')
-
-        for key, value in data_keys.items():
-            try:
-                raw_data[key] = args[headers.index(value)]
-            except ValueError:
-                print("ValueError: '{0}' is not in list.".format(value))
-                raw_data[key] = np.ones(args[0].shape)
-
-        _Q_dict = {}
-        for key, value in Q_keys.items():
-            try:
-                _Q_dict[key] = args[headers.index(value)]
-            except ValueError:
-                print("ValueError: '{0}' is not in list.".format(value))
-                _Q_dict[key] = np.ones(args[0].shape)
-
-        raw_data['time'] /= _t0
-        raw_data['Q'] = build_Q(_Q_dict)
-
-        del _Q_dict, args
-
-        try:
-            _data_object.combine_data(raw_data, tols=tols)  # @UndefinedVariable
-        except (NameError, UnboundLocalError):
-            _data_object = Data(**raw_data)
-
-    return _data_object
-
-
-def save(obj, filename, fileformat='ascii', **kwargs):
-    '''Saves a given object to a file in a specified format.
-
-    Parameters
-    ----------
-    obj : :class:`Data`
-        A :class:`Data` object to be saved to disk
-
-    filename : str
-        Path to file where data will be saved
-
-    fileformat : str
-        Default: `'ascii'`. Data can either be saved in `'ascii'`,
-        human-readable format, binary `'hdf5'` format, or binary
-        `'pickle'` format.
-    '''
-    output = np.hstack((obj.Q, obj.detector.reshape(obj.detector.shape[0], 1),
-                        obj.monitor.reshape(obj.monitor.shape[0], 1),
-                        obj.time.reshape(obj.time.shape[0], 1)))
-
-    if fileformat == 'ascii':
-        np.savetxt(filename, output, **kwargs)
-    elif fileformat == 'hdf5':
-        import h5py
-        with h5py.File(filename, 'w') as f:
-            dset = f.create_dataset('data', output.shape,
-                                    maxshape=(None, output.shape[1]),
-                                    dtype='float64')
-            dset = output
-    elif fileformat == 'pickle':
-        import pickle
-        with open(filename, 'wb') as f:
-            pickle.dump(output, f)
-    else:
-        raise ValueError("""Format not supported. Please use 'ascii', \
-                            'hdf5', or 'pickle'""")
-
-
 def build_Q(args, **kwargs):
     u'''Method for constructing **Q**\ (*q*, ℏω, temp) from h, k, l,
     energy, and temperature
@@ -1106,187 +926,3 @@ def build_Q(args, **kwargs):
     '''
     return np.vstack((args[i].flatten() for i in
                       ['h', 'k', 'l', 'e', 'temp'])).T
-
-
-def detect_filetype(file):
-    u'''Simple method for quickly determining filetype of a given input file.
-
-    Parameters
-    ----------
-    file : str
-        File path
-
-    Returns
-    -------
-    filetype : str
-        The filetype of the given input file
-    '''
-    if file[-3:] == 'nxs':
-        return 'nexus'
-    elif file[-4:] == 'iexy':
-        return 'iexy'
-    else:
-        with open(file) as f:
-            first_line = f.readline()
-            second_line = f.readline()
-            if '#ICE' in first_line:
-                return 'ICE'
-            elif '# scan' in first_line:
-                return 'SPICE'
-            elif 'Filename' in second_line:
-                return 'ICP'
-            elif 'RRR' in first_line or 'AAA' in first_line or 'VVV' in first_line:
-                return 'MAD'
-            else:
-                raise ValueError('Unknown filetype.')
-
-
-class Energy(object):
-    u'''Class containing the most commonly used properties of a neutron beam
-    given some initial input, e.g. energy, wavelength, velocity, wavevector,
-    temperature, or frequency. At least one input must be supplied.
-
-    Parameters
-    ----------
-    energy : float
-        Neutron energy in millielectron volts (meV)
-    wavelength : float
-        Neutron wavelength in angstroms (Å)
-    velocity : float
-        Neutron velocity in meters per second (m/s)
-    wavevector : float
-        Neutron wavevector k in inverse angstroms (1/Å)
-    temperature : float
-        Neutron temperature in kelvin (K)
-    frequency : float
-        Neutron frequency in terahertz (THz)
-
-    Returns
-    -------
-    Energy object
-        The energy object containing the properties of the neutron beam
-
-    Attributes
-    ----------
-    energy
-    wavelength
-    wavevector
-    velocity
-    temperature
-    frequency
-
-    Methods
-    -------
-    values
-    '''
-    def __init__(self, energy=None, wavelength=None, velocity=None,
-                 wavevector=None, temperature=None, frequency=None):
-
-        self._update_values(energy, wavelength, velocity,
-                            wavevector, temperature, frequency)
-
-    def _update_values(self, energy=None, wavelength=None, velocity=None,
-                       wavevector=None, temperature=None, frequency=None):
-        try:
-            if energy is None:
-                if wavelength is not None:
-                    self.en = constants.h ** 2. / (2. * constants.m_n * (wavelength / 1.0e10) ** 2.) * JOULES_TO_MEV
-                elif velocity is not None:
-                    self.en = 1. / 2. * constants.m_n * velocity ** 2 * JOULES_TO_MEV
-                elif wavevector is not None:
-                    self.en = (constants.h ** 2 / (2. * constants.m_n * ((2. * np.pi / wavevector) / 1.e10) ** 2) * JOULES_TO_MEV)
-                elif temperature is not None:
-                    self.en = constants.k * temperature * JOULES_TO_MEV
-                elif frequency is not None:
-                    self.en = (constants.hbar * frequency * 2. * np.pi * JOULES_TO_MEV * 1.e12)
-            else:
-                self.en = energy
-
-            self.wavelen = np.sqrt(constants.h ** 2 / (2. * constants.m_n * self.energy / JOULES_TO_MEV)) * 1.e10
-            self.vel = np.sqrt(2. * self.energy / JOULES_TO_MEV / constants.m_n)
-            self.wavevec = 2. * np.pi / self.wavelength
-            self.temp = self.energy / constants.k / JOULES_TO_MEV
-            self.freq = (self.energy / JOULES_TO_MEV / constants.hbar / 2. / np.pi / 1.e12)
-
-        except AttributeError:
-            raise AttributeError('''You must define at least one of the \
-                                    following: energy, wavelength, velocity, \
-                                    wavevector, temperature, frequency''')
-
-    @property
-    def energy(self):
-        r'''Energy of the neutron in meV'''
-        return self.en
-
-    @energy.setter
-    def energy(self, value):
-        self._update_values(energy=value)
-
-    @property
-    def wavelength(self):
-        r'''Wavelength of the neutron in Å'''
-        return self.wavelen
-
-    @wavelength.setter
-    def wavelength(self, value):
-        self._update_values(wavelength=value)
-
-    @property
-    def wavevector(self):
-        u'''Wavevector k of the neutron in 1/Å'''
-        return self.wavevec
-
-    @wavevector.setter
-    def wavevector(self, value):
-        self._update_values(wavevector=value)
-
-    @property
-    def temperature(self):
-        r'''Temperature of the neutron in Kelvin'''
-        return self.temp
-
-    @temperature.setter
-    def temperature(self, value):
-        self._update_values(temperature=value)
-
-    @property
-    def frequency(self):
-        r'''Frequency of the neutron in THz'''
-        return self.freq
-
-    @frequency.setter
-    def frequency(self, value):
-        self._update_values(frequency=value)
-
-    @property
-    def velocity(self):
-        r'''Velocity of the neutron in m/s'''
-        return self.vel
-
-    @velocity.setter
-    def velocity(self, value):
-        self._update_values(velocity=value)
-
-    @property
-    def values(self):
-        r'''Prints all of the properties of the Neutron beam
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        values : string
-            A string containing all the properties of the neutron including
-            respective units
-        '''
-        return u'''
-Energy: {0:3.3f} meV
-Wavelength: {1:3.3f} Å
-Wavevector: {2:3.3f} 1/Å
-Velocity: {3:3.3f} m/s
-Temperature: {4:3.3f} K
-Frequency: {5:3.3f} THz
-'''.format(self.energy, self.wavelength, self.wavevector, self.velocity,
-           self.temperature, self.frequency)
