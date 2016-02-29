@@ -10,8 +10,14 @@ engines:
     enabled: true
   pep8:
     enabled: true
+    checks:
+      E501:
+        enabled: false
 ratings:
   paths:
   - "**.py"
+  - "**.pyx"
+  - "**.pxd"
 exclude_paths:
 - tests/
+- doc/
