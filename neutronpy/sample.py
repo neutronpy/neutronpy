@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 r'''Sample class for i.e. Instrument class
 '''
 import numpy as np

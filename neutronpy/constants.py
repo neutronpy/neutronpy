@@ -9,7 +9,6 @@ r'''Useful constants for neutron scattering calculations, including:
 * ``N_A`` : Avogadro constant
 
 '''
-
 import os
 import json
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 r''' Class to calculate the energy of a neutron in various common units
 '''
 import numpy as np

@@ -3,7 +3,6 @@ r'''NeutronPy: open source python library for neutron scattering data analysis
 '''
 from __future__ import absolute_import
 from . import constants
-from neutronpy import data as tools
 from . import instrument
 from . import form_facs
 from . import functions
