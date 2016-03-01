@@ -15,55 +15,6 @@ from neutronpy.constants import BOLTZMANN_IN_MEV_K
 use('Agg')
 
 
-class EnergyTest(unittest.TestCase):
-    '''Unit tests for Energy conversion
-    '''
-    def test_energy(self):
-        '''Test that the output string is correct
-        '''
-        energy = Energy(energy=25.)
-        self.assertEqual(np.round(energy.energy), 25.0)
-        self.assertEqual(np.round(energy.wavelength, 4), 1.8089)
-        self.assertEqual(np.round(energy.wavevector, 3), 3.473)
-        self.assertEqual(np.round(energy.velocity, 3), 2186.967)
-        self.assertEqual(np.round(energy.temperature, 3), 290.113)
-        self.assertEqual(np.round(energy.frequency, 3), 6.045)
-
-        stringtest = u"\nEnergy: {0:3.3f} meV"
-        stringtest += u"\nWavelength: {1:3.3f} Å"
-        stringtest += u"\nWavevector: {2:3.3f} 1/Å"
-        stringtest += u"\nVelocity: {3:3.3f} m/s"
-        stringtest += u"\nTemperature: {4:3.3f} K"
-        stringtest += u"\nFrequency: {5:3.3f} THz\n"
-        stringtest = stringtest.format(25.0, 1.8089, 3.473, 2186.967,
-                                       290.113, 6.045)
-
-        self.assertTrue(energy.values == stringtest)
-
-    def test_energy_setters(self):
-        '''Tests the energy setters
-        '''
-        e = Energy(energy=25.)
-
-        e.energy = 25
-        self.assertEqual(np.round(e.wavelength, 4), 1.8089)
-
-        e.wavevector = 3.5
-        self.assertEqual(np.round(e.energy, 1), 25.4)
-
-        e.velocity = 2180
-        self.assertEqual(np.round(e.energy, 1), 24.8)
-
-        e.temperature = 290
-        self.assertEqual(np.round(e.energy, 1), 25.0)
-
-        e.frequency = 6
-        self.assertEqual(np.round(e.energy, 1), 24.8)
-
-        e.wavelength = 1.9
-        self.assertEqual(np.round(e.energy, 1), 22.7)
-
-
 def build_data(clean=True):
     '''Builds data object
     '''
@@ -105,40 +56,6 @@ def build_3d_data():
 class DataTest(unittest.TestCase):
     '''Unit tests for data object
     '''
-    @patch('sys.stdout')
-    def test_load_files(self, mock_stdout):
-        '''Tests file loading
-        '''
-        try:
-            load_data((os.path.join(os.path.dirname(__file__), 'scan0001.dat'),
-                       os.path.join(os.path.dirname(__file__), 'scan0002.dat')))
-            load_data((os.path.join(os.path.dirname(__file__), 'scan0003.ng5')))
-            load_data((os.path.join(os.path.dirname(__file__), 'scan0004.bt7')))
-            load_data((os.path.join(os.path.dirname(__file__), 'scan0007.bt7')))
-            load_data((os.path.join(os.path.dirname(__file__), 'scan0005')))
-        except:
-            self.fail('Data loading failed')
-
-        self.assertRaises(ValueError, load_data, (os.path.join(os.path.dirname(__file__), 'scan0006.test')), filetype='blah')
-
-    def test_save_file(self):
-        '''Tests file saving
-        '''
-        data_out = build_data()
-        save_data(data_out, 'test.out', fileformat='ascii')
-        save_data(data_out, 'test.out', fileformat='hdf5')
-        save_data(data_out, 'test.out', fileformat='pickle')
-        self.assertRaises(ValueError, save_data, data_out, 'test.out', fileformat='blah')
-
-    def test_filetype_detection(self):
-        '''Test filetype detection
-        '''
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0001.dat')) == 'SPICE')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0003.ng5')) == 'ICP')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0004.bt7')) == 'ICE')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0005')) == 'MAD')
-        self.assertRaises(ValueError, detect_filetype, os.path.join(os.path.dirname(__file__), 'scan0006.test'))
-
     def test_combine_data(self):
         '''Tests combining data
         '''
@@ -207,15 +124,9 @@ class DataTest(unittest.TestCase):
 
         def _test(test):
             if test == 'add':
-                try:
-                    data1 + data2
-                except:
-                    self.fail('Adding data objects failed')
+                data1 + data2
             elif test == 'sub':
-                try:
-                    data1 - data2
-                except:
-                    self.fail('Subtracting data objects failed')
+                data1 - data2
 
         self.assertRaises(AttributeError, _test, 'add')
         self.assertRaises(AttributeError, _test, 'sub')
@@ -306,7 +217,7 @@ class DataTest(unittest.TestCase):
     def test_scattering_function(self):
         '''Test scattering function
         '''
-        from neutronpy.form_facs import Material
+        from neutronpy.material import Material
         input_mat = {'name': 'FeTe',
                      'composition': [{'ion': 'Fe', 'pos': [0.75, 0.25, 0.]},
                                      {'ion': 'Fe', 'pos': [1. - 0.75, 1. - 0.25, 0.0]},
@@ -328,7 +239,7 @@ class DataTest(unittest.TestCase):
     def test_dynamic_susceptibility(self):
         '''Test dynamic susceptibility
         '''
-        from neutronpy.form_facs import Material
+        from neutronpy.material import Material
         input_mat = {'name': 'FeTe',
                      'composition': [{'ion': 'Fe', 'pos': [0.75, 0.25, 0.]},
                                      {'ion': 'Fe', 'pos': [1. - 0.75, 1. - 0.25, 0.0]},
