@@ -4,7 +4,8 @@ r'''NeutronPy: open source python library for neutron scattering data analysis
 from __future__ import absolute_import
 from . import constants
 from . import instrument
-from . import form_facs
+from . import material
+from . import structure_factors
 from . import functions
 from . import models
 from . import spurion

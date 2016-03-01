@@ -2,7 +2,7 @@ r'''Calculates common spurions
 
 '''
 import numpy as np
-from .form_facs import Material
+from .material import Material
 from .energy import Energy
 
 
@@ -97,7 +97,7 @@ def aluminum(energy=14.7):
             wavelength_fraction.append('lambda/{0:.0f}'.format(np.round(e.wavelength / wavelength)))
             hkl.append(str(pos))
             two_theta.append(struct_obj.get_two_theta(pos, wavelength))
-            str_fac.append(np.abs(struct_obj.calc_str_fac(pos)) ** 2)
+            str_fac.append(np.abs(struct_obj.calc_nuc_str_fac(pos)) ** 2)
     hkl = np.array(hkl)
     two_theta = np.array(two_theta)
     wavelength_fraction = np.array(wavelength_fraction)
@@ -106,4 +106,3 @@ def aluminum(energy=14.7):
     ind = two_theta.argsort()
     for pos, tt, i0, lam in zip(hkl[ind], two_theta[ind], str_fac[ind], wavelength_fraction[ind]):
         print(pos, '{0:.4f}'.format(tt), '{0:.0f}'.format(i0), lam)
-
