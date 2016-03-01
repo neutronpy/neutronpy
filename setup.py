@@ -40,6 +40,8 @@ DOCLINES = __doc__.split("\n")
 
 
 def setup_package():
+    r'''Setup package function
+    '''
     src_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     old_path = os.getcwd()
     os.chdir(src_path)
@@ -67,8 +69,8 @@ def setup_package():
 
     modules = [Extension("kmpfit", [kmpfit_loc, "src/mpfit.c"], include_dirs=include_dirs)]
     for e in modules:
-        e.cython_directives = {"embedsignature" : True}
-        
+        e.cython_directives = {"embedsignature": True}
+
     metadata = dict(name='neutronpy',
                     version=__version__,
                     description=DOCLINES[0],

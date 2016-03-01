@@ -1,4 +1,5 @@
 r'''Calculates common spurions
+
 '''
 import numpy as np
 from .form_facs import Material

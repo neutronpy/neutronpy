@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+r'''Define an instrument for resolution calculations
+
+'''
 import datetime as dt
 import numpy as np
 from scipy.linalg import block_diag as blkdiag

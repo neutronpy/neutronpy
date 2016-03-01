@@ -1,5 +1,9 @@
 r'''Structure Factors
 
+NuclearStructureFactor
+MagneticStructureFactor
+MagneticFormFactor
+
 '''
 
 

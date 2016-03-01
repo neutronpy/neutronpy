@@ -1,8 +1,10 @@
 import re
 TYPE_RE = re.compile(r'(?:int|char)(?:\s+*?\s|\s*?\s+)([a-zA-Z_].*)')
 
+
 def setup(app):
     app.connect('autodoc-process-signature', process_signature)
+
 
 def process_signature(app, what, name, obj, options, signature, return_annotation):
     # Some unused arguments

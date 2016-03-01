@@ -1,6 +1,5 @@
 r'''Calculates lattice and magnetic structure/form factors
 
-
 DEPRECIATED
 '''
 from numbers import Number

@@ -1,3 +1,6 @@
+r'''Handles lattice geometries to find rotations and transformations
+
+'''
 import numpy as np
 
 

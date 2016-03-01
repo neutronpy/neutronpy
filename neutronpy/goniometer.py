@@ -1,4 +1,5 @@
-r'''
+r'''Define Triple Axis goniometer
+
 '''
 import numpy as np
 

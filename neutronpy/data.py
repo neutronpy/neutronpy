@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-r'''Tools Module
+r'''Data handling
+
 '''
 from multiprocessing import cpu_count, Pool
 import numbers
-import re
 import numpy as np
 from .constants import BOLTZMANN_IN_MEV_K
 from .energy import Energy

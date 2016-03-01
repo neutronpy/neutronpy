@@ -3,9 +3,10 @@ r'''File IO
 import numbers
 import re
 import numpy as np
-from neutronpy.data import Data, build_Q
+from .data import Data, build_Q
 from .energy import Energy
-from neutronpy.instrument import Instrument, Sample
+from .instrument import Instrument
+from .sample import Sample
 
 
 def load_data(files, filetype='auto', tols=1e-4):
