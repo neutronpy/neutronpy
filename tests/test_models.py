@@ -16,12 +16,12 @@ class ModelTests(unittest.TestCase):
     def test_acoustic_phonon(self):
         '''Test acoustic phonon dispersion
         '''
-        models.acoustic_phonon()
+        models.acoustic_phonon_dispersion()
 
     def test_optical_phonon(self):
         '''Test optical phonon dispersion
         '''
-        models.optical_phonon()
+        models.optical_phonon_disperions()
 
 
 if __name__ == '__main__':
