@@ -12,7 +12,8 @@ from . import spurion
 from . import lattice
 from . import io
 from . import instrument as resolution
+from .kmpfit import Fitter
 from .energy import Energy
-from .data import *
+from .data import Data
 
 __version__ = '1.0.0b1'
