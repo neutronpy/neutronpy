@@ -1,12 +1,10 @@
-.. currentmodule:: neutronpy.resolution
+.. currentmodule:: neutronpy.instrument
 
-neutronpy.resolution module
+neutronpy.instrument module
 ===========================
 
 .. autosummary::
     :toctree: generated/
 
     Instrument
-    Sample
-    load
     GetTau

@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# pylint: skip-file
+r'''Sphinx Documentation builder
 
+'''
+from distutils.version import LooseVersion
+import glob
 import inspect
 from os.path import relpath, dirname
 import os
 import sys
+import sphinx
 import neutronpy_sphinx_rtd_theme
 try:
     import neutronpy
 except ImportError:
     raise RuntimeError('Cannot import neutronpy, it must be installed before building documentation. Please investigate.')
-
-from distutils.version import LooseVersion
-import sphinx
 if LooseVersion(sphinx.__version__) < LooseVersion('1'):
     raise RuntimeError('Need sphinx >= 1 for numpydoc to work correctly')
 
@@ -259,7 +259,6 @@ intersphinx_mapping = {'http://docs.python.org/dev': None}
 #
 # autodoc.add_documenter(DocsonlyMethodDocumenter)
 
-import glob
 numpydoc_show_class_members = False
 # autodoc_default_flags = ['members']
 autodoc_docstring_signature = True
