@@ -10,10 +10,10 @@ def simple_harmonic_oscillator(p, t):
     return p[0] + p[1] * np.cos(p[2] * t - p[3])
 
 
-def damped_harmonic_oscillator(p,t):
+def damped_harmonic_oscillator(p, t):
     r'''Standard equation for a damped harmonic oscillator
     '''
-    return np.exp(-p[4] * t / 2) * simple_harmonic_oscillator(p, t)
+    return p[0] + np.exp(-p[4] * t / 2.) * p[1] * np.cos(p[2] * t - p[3])
 
 
 def acoustic_phonon_dispersion(p, x):
