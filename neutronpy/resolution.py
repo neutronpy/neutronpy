@@ -419,7 +419,8 @@ class _Monochromator():
         Mosaic of the crystal in arc minutes
 
     dir : ±1, optional
-        Direction of the crystal (left or right, -1 or +1, respectively)
+        Direction of the crystal (left or right, -1 or +1, respectively).
+        Default: -1 (left-handed coordinate frame).
 
     Returns
     -------
@@ -903,9 +904,6 @@ class Instrument(object):
     sample
     orient1
     orient2
-    dir1
-    dir2
-    mondir
     infin
     beam
     detector
@@ -1007,6 +1005,10 @@ class Instrument(object):
         vmosaic : int
             The vertical mosaic of monochromator in minutes of arc. If
             this field is left unassigned, an isotropic mosaic is assumed.
+
+        dir : int
+            Direction of the crystal (left or right, -1 or +1, respectively).
+            Default: -1 (left-handed coordinate frame).
         '''
         return self._mono
 
@@ -1046,6 +1048,10 @@ class Instrument(object):
             field is unassigned or equal to -1, a flat analyzer is assumed.
             Note that this option is only available with the Cooper-Nathans
             method.
+
+        dir : int
+            Direction of the crystal (left or right, -1 or +1, respectively).
+            Default: -1 (left-handed coordinate frame).
 
         '''
         return self._ana
@@ -1139,14 +1145,20 @@ class Instrument(object):
     def sample(self):
         '''A structure that describes the sample.
 
-        It contains the following fields:
+        Parameters
+        ----------
+        mosaic
+            FWHM sample mosaic in the scattering plane
+            in minutes of arc. If left unassigned, no sample
+            mosaic corrections (section II E) are performed.
 
-        * EXP.sample.mosaic is the FWHM sample mosaic in the scattering plane
-          in minutes of arc. If this field is left unassigned, no sample
-          mosaic corrections (section II E) are performed.
+        vmosaic
+            The vertical sample mosaic in minutes of arc.
+            If left unassigned, isotropic mosaic is assumed.
 
-        * ``sample.vmosaic`` is the vertical sample mosaic in minutes of arc.
-          If this field is left unassigned, isotropic mosaic is assumed.
+        dir
+            The direction of the crystal (left or right, -1 or +1,
+            respectively). Default: -1 (left-handed coordinate frame).
 
         '''
         return self._sample
@@ -1176,44 +1188,6 @@ class Instrument(object):
     @orient2.setter
     def orient2(self, value):
         self._sample.v = np.array(value)
-
-    @property
-    def dir1(self):
-        '''defines the scattering direction in the monochromator. This field
-        is equal to 1 or left unassigned if the scattering direction in the
-        monochromator is opposite to that in the sample. Set this field to -1
-        if the sample and monochromator scattering directions are the same.
-        '''
-        return self._dir1
-
-    @dir1.setter
-    def dir1(self, value):
-        self._dir1 = value
-
-    @property
-    def dir2(self):
-        '''defines the scattering direction in the analyzer. This field is
-        equal to 1 or left unassigned if the scattering direction in the
-        analyzer is opposite to that in the sample. Set this field to -1 if the
-        sample and analyzer scattering directions are the same.
-        '''
-        return self._dir2
-
-    @dir2.setter
-    def dir2(self, value):
-        self._dir2 = value
-
-    @property
-    def mondir(self):
-        '''defines the scattering angle in the monochromator which is positive
-        (counter-clockwise) if this field is absent or positive, and negative
-        (clockwise) otherwise [10].
-        '''
-        return self._mondir
-
-    @mondir.setter
-    def mondir(self, value):
-        self._mondir = value
 
     @property
     def infin(self):
@@ -1439,13 +1413,6 @@ class Instrument(object):
             infin = self.infin
 
         efixed = self.efixed
-        epm = 1
-        if hasattr(self, 'dir1'):
-            epm = self.dir1
-
-        ep = 1
-        if hasattr(self, 'dir2'):
-            ep = self.dir2
 
         monitorw = 1.
         monitorh = 1.
@@ -1559,10 +1526,6 @@ class Instrument(object):
 
         if horifoc == 1:
             alpha[2] = alpha[2] * np.sqrt(8. * np.log(2.) / 12.)
-
-        em = 1.
-        if hasattr(self, 'mondir'):
-            em = self.mondir
 
         sm = self.mono.dir
         ss = self.sample.dir
