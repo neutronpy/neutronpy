@@ -11,7 +11,6 @@ from . import models
 from . import spurion
 from . import lattice
 from . import io
-from . import instrument as resolution
 from .kmpfit import Fitter
 from .energy import Energy
 from .data import Data

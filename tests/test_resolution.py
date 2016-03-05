@@ -8,7 +8,7 @@ import unittest
 from mock import patch
 from matplotlib import use
 import numpy as np
-from neutronpy import resolution
+from neutronpy import instrument
 from neutronpy.io import load_instrument
 from neutronpy.sample import Sample
 use('Agg')
@@ -17,9 +17,9 @@ use('Agg')
 def angle2(x, y, z, h, k, l, lattice):
     r'''Function necessary for Prefactor functions
     '''
-    latticestar = resolution._star(lattice)[-1]
+    latticestar = instrument._star(lattice)[-1]
 
-    return np.arccos(2 * np.pi * (h * x + k * y + l * z) / resolution._modvec([x, y, z], lattice) / resolution._modvec([h, k, l], latticestar))
+    return np.arccos(2 * np.pi * (h * x + k * y + l * z) / instrument._modvec([x, y, z], lattice) / instrument._modvec([h, k, l], latticestar))
 
 
 def SqwDemo(H, K, L, W, p):
@@ -78,7 +78,7 @@ def PrefDemo(H, K, L, W, EXP, p):
     '''
     [sample, rsample] = EXP.get_lattice()
 
-    q2 = resolution._modvec([H, K, L], rsample) ** 2
+    q2 = instrument._modvec([H, K, L], rsample) ** 2
 
     sd = q2 / (16 * np.pi ** 2)
     ff = 0.0163 * np.exp(-35.883 * sd) + 0.3916 * np.exp(-13.223 * sd) + 0.6052 * np.exp(-4.339 * sd) - 0.0133
@@ -109,7 +109,7 @@ def PrefDemo2(H, K, L, W, EXP, p):
     '''
     [sample, rsample] = EXP.get_lattice()
 
-    q2 = resolution._modvec([H, K, L], rsample) ** 2
+    q2 = instrument._modvec([H, K, L], rsample) ** 2
 
     sd = q2 / (16 * np.pi ** 2)
     ff = 0.0163 * np.exp(-35.883 * sd) + 0.3916 * np.exp(-13.223 * sd) + 0.6052 * np.exp(-4.339 * sd) - 0.0133
@@ -151,7 +151,7 @@ class ResolutionTest(unittest.TestCase):
         self.sumIavg = 1654.37911333
         self.sumIstd = 0.5
 
-        instr = resolution.Instrument(test=1)
+        instr = instrument.Instrument(test=1)
 
         instr.method = 0
         instr.mono.tau = 'PG(002)'
@@ -193,7 +193,7 @@ class ResolutionTest(unittest.TestCase):
 
         NP = EXP.RMS
         R = EXP.R0
-        BraggWidths = resolution.get_bragg_widths(NP)
+        BraggWidths = instrument.get_bragg_widths(NP)
         angles = self.EXP_popovici.get_angles_and_Q(hkle)[0]
         ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * 2
 
@@ -222,7 +222,7 @@ class ResolutionTest(unittest.TestCase):
 
         NP = self.EXP_popovici.RMS
         R = self.EXP_popovici.R0
-        BraggWidths = resolution.get_bragg_widths(NP)
+        BraggWidths = instrument.get_bragg_widths(NP)
         angles = self.EXP_popovici.get_angles_and_Q(hkle)[0]
 
         ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * 2
@@ -239,7 +239,7 @@ class ResolutionTest(unittest.TestCase):
         sample = Sample(6, 7, 8, 90, 90, 90)
         sample.u = [1, 0, 0]
         sample.v = [0, 0, 1]
-        EXP = resolution.Instrument(14.7, sample, hcol=[80, 40, 40, 80], vcol=[120, 120, 120, 120], mono='pg(002)', ana='pg(002)')
+        EXP = instrument.Instrument(14.7, sample, hcol=[80, 40, 40, 80], vcol=[120, 120, 120, 120], mono='pg(002)', ana='pg(002)')
         EXP.moncor = 0
 
         p = np.array([3, 3, 3, 30, 0.4, 6e4, 40])
@@ -264,7 +264,7 @@ class ResolutionTest(unittest.TestCase):
         sample = Sample(6, 7, 8, 90, 90, 90)
         sample.u = [1, 0, 0]
         sample.v = [0, 0, 1]
-        EXP = resolution.Instrument(14.7, sample, hcol=[80, 40, 40, 80], vcol=[120, 120, 120, 120], mono='pg(002)', ana='pg(002)')
+        EXP = instrument.Instrument(14.7, sample, hcol=[80, 40, 40, 80], vcol=[120, 120, 120, 120], mono='pg(002)', ana='pg(002)')
         EXP.moncor = 0
 
         p = np.array([3, 3, 3, 30, 0.4, 6e4, 40])
@@ -285,7 +285,7 @@ class ResolutionTest(unittest.TestCase):
     def test_plotting(self, mock_show):
         '''Test Plotting methods
         '''
-        EXP = resolution.Instrument()
+        EXP = instrument.Instrument()
         EXP.plot_instrument([1, 0, 0, 0])
         EXP.plot_projections([1, 0, 0, 0])
         EXP.calc_resolution([[1, 2], 0, 0, 0])
@@ -326,10 +326,10 @@ class ResolutionTest(unittest.TestCase):
     def test_GetTau(self):
         '''Test monochromator crystal tau value finder
         '''
-        self.assertTrue(resolution.GetTau(1.87325, getlabel=True) == 'pg(002)')
-        self.assertTrue(resolution.GetTau(1.8, getlabel=True) == '')
-        self.assertTrue(resolution.GetTau(10) == 10)
-        self.assertRaises(KeyError, resolution.GetTau, 'blah')
+        self.assertTrue(instrument.GetTau(1.87325, getlabel=True) == 'pg(002)')
+        self.assertTrue(instrument.GetTau(1.8, getlabel=True) == '')
+        self.assertTrue(instrument.GetTau(10) == 10)
+        self.assertRaises(KeyError, instrument.GetTau, 'blah')
 
     def test_CleanArgs_err(self):
         '''Test exception capture in CleanArgs
@@ -340,9 +340,9 @@ class ResolutionTest(unittest.TestCase):
         '''Test projection function
         '''
         x = np.ones((4, 4, 1))
-        resolution.fproject(x, 0)
-        resolution.fproject(x, 1)
-        resolution.fproject(x, 2)
+        instrument.fproject(x, 0)
+        instrument.fproject(x, 1)
+        instrument.fproject(x, 2)
 
     def test_constants(self):
         '''Test constants
@@ -353,7 +353,7 @@ class ResolutionTest(unittest.TestCase):
     def test_errors(self):
         '''Test exception handling
         '''
-        EXP = resolution.Instrument()
+        EXP = instrument.Instrument()
         EXP.sample.u = [1, 0, 0]
         EXP.sample.v = [2, 0, 0]
         self.assertRaises(ValueError, EXP.calc_resolution, [1, 1, 0, 0])
@@ -361,7 +361,7 @@ class ResolutionTest(unittest.TestCase):
     def test_calc_res_cases(self):
         '''Test different resolution cases
         '''
-        EXP = resolution.Instrument()
+        EXP = instrument.Instrument()
         EXP.sample.shape = np.eye(3)
         EXP.calc_resolution([1, 0, 0, 0])
 
@@ -381,7 +381,7 @@ class ResolutionTest(unittest.TestCase):
         EXP.ana.Q = 1.5
         EXP.calc_resolution([1, 0, 0, 0])
 
-        EXP.Smooth = resolution._dummy()
+        EXP.Smooth = instrument._dummy()
         EXP.Smooth.X = 1
         EXP.Smooth.Y = 1
         EXP.Smooth.Z = 1
@@ -391,13 +391,13 @@ class ResolutionTest(unittest.TestCase):
     def test_projection_calc(self):
         '''Test different cases of resolution ellipse slices/projections
         '''
-        EXP = resolution.Instrument()
+        EXP = instrument.Instrument()
         EXP.calc_resolution([1, 0, 0, 0])
         EXP.calc_projections([0, 1, 0, 0])
         EXP.get_resolution_params([0, 1, 0, 0], 'QxQy', 'slice')
         self.assertRaises(ValueError, EXP.get_resolution_params, [1, 1, 0, 0], 'QxQy', 'slice')
 
-        EXP = resolution.Instrument()
+        EXP = instrument.Instrument()
         EXP.get_resolution_params([1, 0, 0, 0], 'QxQy', 'slice')
         EXP.get_resolution_params([1, 0, 0, 0], 'QxQy', 'project')
         EXP.get_resolution_params([1, 0, 0, 0], 'QxW', 'slice')
