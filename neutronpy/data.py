@@ -17,6 +17,40 @@ def _call_bin_parallel(arg, **kwarg):
 
 
 class Analysis(object):
+    r'''Analysis subroutines for the Data class
+
+    Attributes
+    ----------
+    detailed_balance_factor
+
+    Methods
+    -------
+    integrate
+    position
+    width
+    scattering_function
+    dynamic_susceptibility
+    estimate_background
+
+    '''
+    @property
+    def detailed_balance_factor(self):
+        r'''Returns the detailed balance factor (sometimes called the Bose
+        factor)
+
+        Parameters
+        ----------
+            None
+
+        Returns
+        -------
+        dbf : ndarray
+            The detailed balance factor (temperature correction)
+
+        '''
+
+        return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
+
     def integrate(self, background=None, **kwargs):
         r'''Returns the integrated intensity within given bounds
 
@@ -42,10 +76,12 @@ class Analysis(object):
         if 'bounds' in kwargs:
             to_fit = np.where(kwargs['bounds'])
             for i in range(4):
-                result += np.trapz(self.intensity[to_fit] - background, x=self.Q[to_fit, i])
+                result += np.trapz(self.intensity[to_fit] - background,
+                                   x=self.Q[to_fit, i])
         else:
             for i in range(4):
-                result += np.trapz(self.intensity - background, x=self.Q[:, i])
+                result += np.trapz(self.intensity - background,
+                                   x=self.Q[:, i])
 
         return result
 
@@ -116,18 +152,101 @@ class Analysis(object):
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    y = (self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity[to_fit] - background)
+                    y = (self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * \
+                        (self.intensity[to_fit] - background)
                     _result += np.trapz(y, x=self.Q[to_fit, i]) / self.integrate(**kwargs)
                 result += (_result,)
         else:
             for j in range(4):
                 _result = 0
                 for i in range(4):
-                    y = (self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * (self.intensity - background)
+                    y = (self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * \
+                        (self.intensity - background)
                     _result += np.trapz(y, x=self.Q[:, i]) / self.integrate(**kwargs)
                 result += (_result,)
 
         return result
+
+    def scattering_function(self, material, ei):
+        r'''Returns the neutron scattering function, i.e. the detector counts
+        scaled by :math:`4 \pi / \sigma_{\mathrm{tot}} * k_i/k_f`.
+
+        Parameters
+        ----------
+        material : object
+            Definition of the material given by the :py:class:`.Material`
+            class
+
+        ei : float
+            Incident energy in meV
+
+        Returns
+        -------
+        counts : ndarray
+            The detector counts scaled by the total scattering cross section
+            and ki/kf
+        '''
+        ki = Energy(energy=ei).wavevector
+        kf = Energy(energy=ei - self.e).wavevector
+
+        return (4 * np.pi / (material.total_scattering_cross_section) * ki /
+                kf * self.detector)
+
+    def dynamic_susceptibility(self, material, ei):
+        r'''Returns the dynamic susceptibility
+        :math:`\chi^{\prime\prime}(\mathbf{Q},\hbar\omega)`
+
+        Parameters
+        ----------
+        material : object
+            Definition of the material given by the :py:class:`.Material`
+            class
+
+        ei : float
+            Incident energy in meV
+
+        Returns
+        -------
+        counts : ndarray
+            The detector counts turned into the scattering function multiplied
+            by the detailed balance factor
+        '''
+        return (self.scattering_function(material, ei) *
+                self.detailed_balance_factor)
+
+    def estimate_background(self, bg_params):
+        r'''Estimate the background according to ``type`` specified.
+
+        Parameters
+        ----------
+        bg_params : dict
+            Input dictionary has keys 'type' and 'value'. Types are
+                * 'constant' : background is the constant given by 'value'
+                * 'percent' : background is estimated by the bottom x%, where x
+                  is value
+                * 'minimum' : background is estimated as the detector counts
+
+        Returns
+        -------
+        background : float or ndarray
+            Value determined to be the background. Will return ndarray only if
+            `'type'` is `'constant'` and `'value'` is an ndarray
+        '''
+        if bg_params['type'] == 'constant':
+            return bg_params['value']
+
+        elif bg_params['type'] == 'percent':
+            inten = self.intensity[self.intensity >= 0.]
+            Npts = inten.size * (bg_params['value'] / 100.)
+            min_vals = inten[np.argsort(inten)[:Npts]]
+            background = np.average(min_vals)
+            return background
+
+        elif bg_params['type'] == 'minimum':
+            return min(self.intensity)
+
+        else:
+            return 0
 
 
 class Data(PlotData, Analysis):
@@ -182,16 +301,16 @@ class Data(PlotData, Analysis):
     Methods
     -------
     bin
+    combine_data
+    subtract_background
     integrate
     position
     width
-    load_file
-    plot
     estimate_background
     subtract_background
     dynamic_susceptibility
     scattering_function
-    combine_data
+    plot
 
     '''
     def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0.,
@@ -425,66 +544,6 @@ class Data(PlotData, Analysis):
                                 a float.'''.format(self.detector.shape[0]))
         self._err = value
 
-    @property
-    def detailed_balance_factor(self):
-        r'''Returns the detailed balance factor (sometimes called the Bose
-        factor)
-
-        Parameters
-        ----------
-            None
-
-        Returns
-        -------
-        dbf : ndarray
-            The detailed balance factor (temperature correction)
-
-        '''
-
-        return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
-
-    def scattering_function(self, material, ei):
-        r'''Returns the neutron scattering function, i.e. the detector counts
-        scaled by :math:`4 \pi / \sigma_{\mathrm{tot}} * k_i/k_f`. 
-
-        Parameters
-        ----------
-        material : object
-            Definition of the material given by the :py:class:`.Material` class
-
-        ei : float
-            Incident energy in meV
-
-        Returns
-        -------
-        counts : ndarray
-            The detector counts scaled by the total scattering cross section and ki/kf
-        '''
-        ki = Energy(energy=ei).wavevector
-        kf = Energy(energy=ei - self.e).wavevector
-
-        return (4 * np.pi / (material.total_scattering_cross_section) * ki /
-                kf * self.detector)
-
-    def dynamic_susceptibility(self, material, ei):
-        r'''Returns the dynamic susceptibility :math:`\chi^{\prime\prime}(\mathbf{Q},\hbar\omega)`
-
-        Parameters
-        ----------
-        material : object
-            Definition of the material given by the :py:class:`.Material` class
-
-        ei : float
-            Incident energy in meV
-
-        Returns
-        -------
-        counts : ndarray
-            The detector counts turned into the scattering function multiplied by the detailed balance factor
-        '''
-        return (self.scattering_function(material, ei) *
-                self.detailed_balance_factor)
-
     def combine_data(self, *args, **kwargs):
         r'''Combines multiple data sets
 
@@ -556,7 +615,8 @@ class Data(PlotData, Analysis):
             Data object containing the data wishing to be subtracted
 
         ret : bool, optional
-            Set False if background should be subtracted in place. Default:True
+            Set False if background should be subtracted in place.
+            Default: True
 
         Returns
         -------
@@ -565,40 +625,6 @@ class Data(PlotData, Analysis):
 
         '''
         pass
-
-    def estimate_background(self, bg_params):
-        r'''Estimate the background according to ``type`` specified.
-
-        Parameters
-        ----------
-        bg_params : dict
-            Input dictionary has keys 'type' and 'value'. Types are
-                * 'constant' : background is the constant given by 'value'
-                * 'percent' : background is estimated by the bottom x%, where x
-                  is value
-                * 'minimum' : background is estimated as the detector counts
-
-        Returns
-        -------
-        background : float or ndarray
-            Value determined to be the background. Will return ndarray only if
-            `'type'` is `'constant'` and `'value'` is an ndarray
-        '''
-        if bg_params['type'] == 'constant':
-            return bg_params['value']
-
-        elif bg_params['type'] == 'percent':
-            inten = self.intensity[self.intensity >= 0.]
-            Npts = inten.size * (bg_params['value'] / 100.)
-            min_vals = inten[np.argsort(inten)[:Npts]]
-            background = np.average(min_vals)
-            return background
-
-        elif bg_params['type'] == 'minimum':
-            return min(self.intensity)
-
-        else:
-            return 0
 
     def _bin_parallel(self, Q_chunk):
         r'''Performs binning by finding data chunks to bin together.
@@ -702,12 +728,14 @@ class Data(PlotData, Analysis):
         Q = np.meshgrid(*q)
         Q = np.vstack((item.flatten() for item in Q)).T
 
-        nprocs = cpu_count()  # @UndefinedVariable
-        Q_chunks = [Q[n * Q.shape[0] // nprocs:(n + 1) * Q.shape[0] // nprocs] for n in range(nprocs)]
-        pool = Pool(processes=nprocs)  # pylint: disable=not-callable
+        nprocs = cpu_count()
+        Q_chunks = [Q[n * Q.shape[0] // nprocs:(n + 1) * Q.shape[0] // nprocs]
+                    for n in range(nprocs)]
+        pool = Pool(processes=nprocs)
         outputs = pool.map(_call_bin_parallel, zip([self] * len(Q_chunks), Q_chunks))
         pool.close()
 
         monitor, detector, time, error = (np.concatenate(arg) for arg in zip(*outputs))
 
-        return Data(Q=Q, monitor=monitor, detector=detector, time=time, m0=self.m0, t0=self.t0, error=error)
+        return Data(Q=Q, monitor=monitor, detector=detector, time=time,
+                    m0=self.m0, t0=self.t0, error=error)

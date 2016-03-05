@@ -23,8 +23,8 @@ def build_Q(args, **kwargs):
     Returns
     -------
     Q : ndarray
-        Returns **Q**\ (h, k, l, e, temp) with shape (N, 5) in a column oriented
-        array.
+        Returns **Q**\ (h, k, l, e, temp) with shape (N, 5) in a column
+        oriented array.
 
     '''
     return np.vstack((args[i].flatten() for i in
@@ -46,8 +46,8 @@ def load_data(files, filetype='auto', tols=1e-4):
         determine the filetype automatically.
 
     tols : float or array_like
-        Default: `1e-4`. A float or array of shape `(5,)` giving tolerances for
-        combining multiple files. If multiple points are within the given
+        Default: `1e-4`. A float or array of shape `(5,)` giving tolerances
+        for combining multiple files. If multiple points are within the given
         tolerances then they will be combined into a single point. If a float
         is given, tolerances will all be the same for all variables in **Q**.
         If an array is given tolerances should be in the format
@@ -143,7 +143,8 @@ def load_data(files, filetype='auto', tols=1e-4):
                         skip_lines = i + 2
                         break
 
-            args = np.genfromtxt(filename, unpack=True, dtype=np.float64, skip_header=skip_lines, skip_footer=1)
+            args = np.genfromtxt(filename, unpack=True, dtype=np.float64,
+                                 skip_header=skip_lines, skip_footer=1)
 
         else:
             raise ValueError('Filetype not supported.')
