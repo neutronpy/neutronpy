@@ -1321,8 +1321,6 @@
       <set>Qt::AlignCenter</set>
      </property>
     </widget>
-    <zorder>sample_label</zorder>
-    <zorder>abc_label</zorder>
     <zorder>abc_input</zorder>
     <zorder>abg_input</zorder>
     <zorder>abg_label</zorder>
@@ -1340,8 +1338,8 @@
     <zorder>sample_depth_input</zorder>
     <zorder>sample_vmosaic_label</zorder>
     <zorder>sample_mosaic_input</zorder>
-    <zorder></zorder>
-    <zorder></zorder>
+    <zorder>sample_label</zorder>
+    <zorder>abc_label</zorder>
    </widget>
    <widget class="QFrame" name="ana_frame">
     <property name="geometry">
@@ -2687,82 +2685,6 @@
      </property>
     </widget>
    </widget>
-   <widget class="QGraphicsView" name="qx_w_plot">
-    <property name="geometry">
-     <rect>
-      <x>640</x>
-      <y>50</y>
-      <width>261</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>261</width>
-      <height>201</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QGraphicsView" name="qx_qy_plot">
-    <property name="geometry">
-     <rect>
-      <x>370</x>
-      <y>50</y>
-      <width>261</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>261</width>
-      <height>201</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QGraphicsView" name="qy_w_plot">
-    <property name="geometry">
-     <rect>
-      <x>640</x>
-      <y>260</y>
-      <width>261</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>261</width>
-      <height>201</height>
-     </size>
-    </property>
-    <property name="sizeIncrement">
-     <size>
-      <width>1</width>
-      <height>1</height>
-     </size>
-    </property>
-    <property name="baseSize">
-     <size>
-      <width>261</width>
-      <height>201</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QTextBrowser" name="text_output">
-    <property name="geometry">
-     <rect>
-      <x>370</x>
-      <y>260</y>
-      <width>261</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>261</width>
-      <height>201</height>
-     </size>
-    </property>
-   </widget>
    <widget class="QLabel" name="method_label">
     <property name="geometry">
      <rect>
@@ -2954,24 +2876,46 @@
      </property>
     </widget>
    </widget>
-   <zorder>energy_frame</zorder>
-   <zorder>mono_frame</zorder>
-   <zorder>sample_frame</zorder>
-   <zorder>ana_frame</zorder>
-   <zorder>dirs_frame</zorder>
-   <zorder>guide_detector_frame</zorder>
-   <zorder>coll_arms_frame</zorder>
-   <zorder>qx_w_plot</zorder>
-   <zorder>qx_qy_plot</zorder>
-   <zorder>qy_w_plot</zorder>
-   <zorder>text_output</zorder>
-   <zorder>method_label</zorder>
-   <zorder>q_input</zorder>
-   <zorder>title_label</zorder>
-   <zorder>method_dropdown</zorder>
-   <zorder>q_label</zorder>
-   <zorder>sample_label</zorder>
-   <zorder>misc_frame</zorder>
+   <widget class="QWidget" name="qx_qy_plot_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>50</y>
+      <width>261</width>
+      <height>201</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="qx_w_plot_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>50</y>
+      <width>261</width>
+      <height>201</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="text_plot_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>260</y>
+      <width>261</width>
+      <height>201</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="qy_w_plot_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>260</y>
+      <width>261</width>
+      <height>201</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

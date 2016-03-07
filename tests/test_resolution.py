@@ -11,6 +11,7 @@ import numpy as np
 from neutronpy import instrument
 from neutronpy.io import load_instrument
 from neutronpy.sample import Sample
+from neutronpy.instrument_tools import get_bragg_widths, fproject
 use('Agg')
 
 
@@ -193,7 +194,7 @@ class ResolutionTest(unittest.TestCase):
 
         NP = EXP.RMS
         R = EXP.R0
-        BraggWidths = instrument.get_bragg_widths(NP)
+        BraggWidths = get_bragg_widths(NP)
         angles = self.EXP_popovici.get_angles_and_Q(hkle)[0]
         ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * 2
 
@@ -222,7 +223,7 @@ class ResolutionTest(unittest.TestCase):
 
         NP = self.EXP_popovici.RMS
         R = self.EXP_popovici.R0
-        BraggWidths = instrument.get_bragg_widths(NP)
+        BraggWidths = get_bragg_widths(NP)
         angles = self.EXP_popovici.get_angles_and_Q(hkle)[0]
 
         ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * 2
@@ -340,9 +341,9 @@ class ResolutionTest(unittest.TestCase):
         '''Test projection function
         '''
         x = np.ones((4, 4, 1))
-        instrument.fproject(x, 0)
-        instrument.fproject(x, 1)
-        instrument.fproject(x, 2)
+        fproject(x, 0)
+        fproject(x, 1)
+        fproject(x, 2)
 
     def test_constants(self):
         '''Test constants
