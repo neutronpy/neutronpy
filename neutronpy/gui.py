@@ -14,18 +14,18 @@ matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-matplotlib.rc('font', **{'family': 'serif', 'serif': 'Times New Roman', 'size': 10})
+matplotlib.rc('font', **{'family': 'serif', 'serif': 'Times New Roman', 'size': 9})
 matplotlib.rc('lines', markersize=2, linewidth=0.5)
 
 
 class MyMplCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100, qslice='QxQy', projections=dict(), u=[1, 0, 0], v=[0, 1, 0]):
         fig = Figure(figsize=(width, height), dpi=dpi, facecolor='w', edgecolor='k')
-        fig.subplots_adjust(bottom=0.2, left=0.2)
+        fig.subplots_adjust(bottom=0.25, left=0.25)
         self.axes = fig.add_subplot(111)
 
         # We want the axes cleared every time plot() is called
-        self.axes.hold(False)
+        self.axes.hold(True)
 
         self.compute_initial_figure(qslice, projections, u, v)
 
@@ -40,8 +40,8 @@ class MyMplCanvas(FigureCanvas):
 
 
 class MyStaticMplCanvas(MyMplCanvas, PlotResolution):
-    def __init__(self, parent=None, width=5, height=4, dpi=100, qslice='QxQy', projections=dict(), u=[1, 0, 0], v=[0, 1, 0]):
-        super(MyStaticMplCanvas, self).__init__(parent, width, height, dpi, qslice, projections, u, v)
+    def __init__(self, *args, **kwargs):
+        super(MyStaticMplCanvas, self).__init__(*args, **kwargs)
 
     def compute_initial_figure(self, qslice, projections, u, v):
         self.plot_slice(qslice, projections, u, v)
@@ -55,6 +55,10 @@ class MainWindow(QMainWindow):
 
         uic.loadUi('ui/resolution.ui', self)
 
+        self.qxqyplot = QVBoxLayout(self.qx_qy_plot_widget)
+        self.qxwplot = QVBoxLayout(self.qx_w_plot_widget)
+        self.qywplot = QVBoxLayout(self.qy_w_plot_widget)
+
         self.dir_dict = {'Clockwise': 1, 'Counter-Clockwise':-1}
         self.infin_dict = {'ki': 1, 'kf':-1}
         self.edrop_dict = {'energy (meV)': float(self.energy_input.text()),
@@ -63,6 +67,11 @@ class MainWindow(QMainWindow):
         self.method_dict = {'Cooper-Nathans': 0, 'Popovici': 1}
         self.moncor_dict = {'On': 1, 'Off': 0}
 
+        self.load_instrument()
+
+        self.load_signals()
+
+    def load_instrument(self):
         self.instrument = Instrument()
 
         self.instrument.sample.a, self.instrument.sample.b, self.instrument.sample.c = [float(i) for i in self.abc_input.text().split(',')]
@@ -131,17 +140,76 @@ class MainWindow(QMainWindow):
         self.instrument.calc_projections(self.q)
 
         # TEST CODE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        l = QVBoxLayout(self.qx_qy_plot_widget)
+        try:
+            self.clearLayout(self.qxqyplot)
+            self.clearLayout(self.qxwplot)
+            self.clearLayout(self.qywplot)
+        except:
+            pass
+
         qxqy = MyStaticMplCanvas(self.qx_qy_plot_widget, width=5, height=4, dpi=100, qslice='QxQy', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
-        l.addWidget(qxqy)
+        self.qxqyplot.addWidget(qxqy)
 
-        l = QVBoxLayout(self.qx_w_plot_widget)
         qxw = MyStaticMplCanvas(self.qx_w_plot_widget, width=5, height=4, dpi=100, qslice='QxW', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
-        l.addWidget(qxw)
+        self.qxwplot.addWidget(qxw)
 
-        l = QVBoxLayout(self.qy_w_plot_widget)
         qyw = MyStaticMplCanvas(self.qy_w_plot_widget, width=5, height=4, dpi=100, qslice='QyW', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
-        l.addWidget(qyw)
+        self.qywplot.addWidget(qyw)
+
+    def load_signals(self):
+        self.method_dropdown.currentIndexChanged.connect(self.load_instrument)
+        self.mono_dir_select.currentIndexChanged.connect(self.load_instrument)
+        self.sample_dir_select.currentIndexChanged.connect(self.load_instrument)
+        self.ana_dir_select.currentIndexChanged.connect(self.load_instrument)
+        self.mono_select_dropdown.currentIndexChanged.connect(self.load_instrument)
+        self.ana_select_dropdown.currentIndexChanged.connect(self.load_instrument)
+        self.moncor_dropdown.currentIndexChanged.connect(self.load_instrument)
+        self.fixed_kikf_dropdown.currentIndexChanged.connect(self.load_instrument)
+
+        self.energy_input.editingFinished.connect(self.load_instrument)
+        self.mono_select_input.editingFinished.connect(self.load_instrument)
+        self.mono_mosaic_input.editingFinished.connect(self.load_instrument)
+        self.mono_vmosaic_input.editingFinished.connect(self.load_instrument)
+        self.mono_height_input.editingFinished.connect(self.load_instrument)
+        self.mono_width_input.editingFinished.connect(self.load_instrument)
+        self.mono_depth_input.editingFinished.connect(self.load_instrument)
+        self.mono_hcurve_input.editingFinished.connect(self.load_instrument)
+        self.mono_vcurve_input.editingFinished.connect(self.load_instrument)
+
+        self.ana_select_input.editingFinished.connect(self.load_instrument)
+        self.ana_mosaic_input.editingFinished.connect(self.load_instrument)
+        self.ana_vmosaic_input.editingFinished.connect(self.load_instrument)
+        self.ana_height_input.editingFinished.connect(self.load_instrument)
+        self.ana_width_input.editingFinished.connect(self.load_instrument)
+        self.ana_depth_input.editingFinished.connect(self.load_instrument)
+        self.ana_hcurve_input.editingFinished.connect(self.load_instrument)
+        self.ana_vcurve_input.editingFinished.connect(self.load_instrument)
+
+        self.abc_input.editingFinished.connect(self.load_instrument)
+        self.abg_input.editingFinished.connect(self.load_instrument)
+        self.sample_mosaic_input.editingFinished.connect(self.load_instrument)
+        self.sample_vmosaic_input.editingFinished.connect(self.load_instrument)
+        self.sample_height_input.editingFinished.connect(self.load_instrument)
+        self.sample_width_input.editingFinished.connect(self.load_instrument)
+        self.sample_depth_input.editingFinished.connect(self.load_instrument)
+        self.sample_u_input.editingFinished.connect(self.load_instrument)
+        self.sample_v_input.editingFinished.connect(self.load_instrument)
+
+        self.hcols_input.editingFinished.connect(self.load_instrument)
+        self.vcols_input.editingFinished.connect(self.load_instrument)
+        self.arms_input.editingFinished.connect(self.load_instrument)
+
+        self.guide_height_input.editingFinished.connect(self.load_instrument)
+        self.guide_width_input.editingFinished.connect(self.load_instrument)
+        self.detector_height_input.editingFinished.connect(self.load_instrument)
+        self.detector_width_input.editingFinished.connect(self.load_instrument)
+
+        self.energy_input.returnPressed.connect(self.load_instrument)
+
+    def clearLayout(self, layout):
+        while layout.count():
+            child = layout.takeAt(0)
+            child.widget().deleteLater()
 
 
 def main():

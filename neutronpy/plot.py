@@ -626,23 +626,22 @@ class PlotResolution(object):
 
         if qslice == 'QxQy':
             self.axes.fill(projections['QxQy'][0, :], projections['QxQy'][1, :], zorder=0, alpha=0.5, edgecolor='none')
-            self.axes.plot(projections['QxQySlice'][0, :], projections['QxQySlice'][1, :], zorder=0 + 3)
+            self.axes.plot(projections['QxQySlice'][0, :], projections['QxQySlice'][1, :], zorder=1)
             dQ1.append(np.max(projections['QxQy'][0, :]) - np.min(projections['QxQy'][0, :]))
             dQ2.append(np.max(projections['QxQy'][1, :]) - np.min(projections['QxQy'][1, :]))
         elif qslice == 'QxW':
-            self.axes.fill(projections['QxW'][0, :], projections['QxW'][1, :], zorder=0 + 1, alpha=0.5, edgecolor='none')
-            self.axes.plot(projections['QxWSlice'][0, :], projections['QxWSlice'][1, :], zorder=0 + 4)
+            self.axes.fill(projections['QxW'][0, :], projections['QxW'][1, :], zorder=0, alpha=0.5, edgecolor='none')
+            self.axes.plot(projections['QxWSlice'][0, :], projections['QxWSlice'][1, :], zorder=1)
             dQ1.append(np.max(projections['QxW'][0, :]) - np.min(projections['QxW'][0, :]))
             dQ2.append(np.max(projections['QxW'][1, :]) - np.min(projections['QxW'][1, :]))
         elif qslice == 'QyW':
-            self.axes.fill(projections['QyW'][0, :], projections['QyW'][1, :], zorder=0 + 2, alpha=0.5, edgecolor='none')
-            self.axes.plot(projections['QyWSlice'][0, :], projections['QyWSlice'][1, :], zorder=0 + 5)
+            self.axes.fill(projections['QyW'][0, :], projections['QyW'][1, :], zorder=0, alpha=0.5, edgecolor='none')
+            self.axes.plot(projections['QyWSlice'][0, :], projections['QyWSlice'][1, :], zorder=1)
             dQ1.append(np.max(projections['QyW'][0, :]) - np.min(projections['QyW'][0, :]))
             dQ2.append(np.max(projections['QyW'][1, :]) - np.min(projections['QyW'][1, :]))
 
-        dQ1, dQ2, [np.max(item) for item in [dQ1, dQ2]]
-#         self.axes.set_xlabel('$\mathbf{Q}_1$ (along ' + str(u) + ') (r.l.u.)' + ', $\delta Q_1={0:.3f}$'.format(dQ1))
-#         self.axes.set_ylabel('$\mathbf{Q}_2$ (along ' + str(v) + ') (r.l.u.)' + ', $\delta Q_2={0:.3f}$'.format(dQ2))
-        self.axes.set_autoscale_on(False)
-        self.axes.locator_params(nbins=4)
-        self.axes.axis('equal')
+        dQ1, dQ2 = [np.max(item) for item in [dQ1, dQ2]]
+
+        self.axes.set_xlabel('$\mathbf{Q}_1$ (along ' + str(u) + ') (r.l.u.)' + ', $\delta Q_1={0:.3f}$'.format(dQ1), fontsize=6)
+        self.axes.set_ylabel('$\mathbf{Q}_2$ (along ' + str(v) + ') (r.l.u.)' + ', $\delta Q_2={0:.3f}$'.format(dQ2), fontsize=6)
+        
