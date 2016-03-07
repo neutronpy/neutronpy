@@ -2,17 +2,17 @@ r'''GUI for resolution calculations
 
 TESTING ONLY FOR NOW
 '''
-from PyQt5 import uic, QtCore, QtGui
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QTextEdit
+import os
 import sys
-import numpy as np
-from neutronpy.instrument import Instrument, GetTau
-from neutronpy.energy import Energy
-from neutronpy.plot import PlotResolution
 import matplotlib
-matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+import numpy as np
+from PyQt5 import uic
+from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QTextEdit
+from .instrument import Instrument, GetTau
+from .energy import Energy
+from .plot import PlotResolution
 
 matplotlib.rc('font', **{'family': 'serif', 'serif': 'Times New Roman', 'size': 9})
 matplotlib.rc('lines', markersize=2, linewidth=0.5)
@@ -24,8 +24,6 @@ class MyMplCanvas(FigureCanvas):
         self.fig.subplots_adjust(bottom=0.25, left=0.25)
 
         self.axes = self.fig.add_subplot(111)
-
-        # We want the axes cleared every time plot() is called
         self.axes.hold(True)
 
         self.compute_initial_figure(qslice, projections, u, v)
@@ -46,17 +44,16 @@ class MyStaticMplCanvas(MyMplCanvas, PlotResolution):
 
     def compute_initial_figure(self, qslice, projections, u, v):
         self.plot_slice(qslice, projections, u, v)
-        # self.fig.tight_layout()
 
 
 class MainWindow(QMainWindow):
     r'''Main Window of Resolution Calculator
-from matplotlib.backends.qt_compat import QtWidgets
+
     '''
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
 
-        uic.loadUi('ui/resolution.ui', self)
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'ui/resolution.ui'), self)
 
         self.qxqyplot = QVBoxLayout(self.qx_qy_plot_widget)
         self.qxwplot = QVBoxLayout(self.qx_w_plot_widget)
@@ -65,8 +62,8 @@ from matplotlib.backends.qt_compat import QtWidgets
         self.text_output.setFontPointSize(10)
         self.text_output.setLineWrapMode(QTextEdit.NoWrap)
 
-        self.dir_dict = {'Clockwise': 1, 'Counter-Clockwise':-1}
-        self.infin_dict = {'ki': 1, 'kf':-1}
+        self.dir_dict = {'Clockwise': 1, 'Counter-Clockwise': -1}
+        self.infin_dict = {'ki': 1, 'kf': -1}
         self.edrop_dict = {'energy (meV)': float(self.energy_input.text()),
                            'wavelength (A)': Energy(wavelength=float(self.energy_input.text())).energy,
                            'wave vector (A-1)': Energy(wavevector=float(self.energy_input.text())).energy}
@@ -220,14 +217,10 @@ from matplotlib.backends.qt_compat import QtWidgets
             child.widget().deleteLater()
 
 
-def main():
+def launch():
     app = QApplication(sys.argv)
 
     w = MainWindow()
     w.show()
 
     sys.exit(app.exec_())
-
-
-if __name__ == "__main__":
-    main()
