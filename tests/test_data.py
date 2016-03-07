@@ -7,12 +7,12 @@ import os
 import unittest
 from mock import patch
 from matplotlib import use
+use('Agg')
 import numpy as np
 from scipy.integrate import simps
 from neutronpy import Energy, Data, functions
 from neutronpy.io import load_data, save_data, detect_filetype
 from neutronpy.constants import BOLTZMANN_IN_MEV_K
-use('Agg')
 
 
 def build_data(clean=True):

@@ -7,12 +7,12 @@ from copy import deepcopy
 import unittest
 from mock import patch
 from matplotlib import use
+use('Agg')
 import numpy as np
 from neutronpy import instrument
 from neutronpy.io import load_instrument
 from neutronpy.sample import Sample
 from neutronpy.instrument_tools import get_bragg_widths, fproject
-use('Agg')
 
 
 def angle2(x, y, z, h, k, l, lattice):
