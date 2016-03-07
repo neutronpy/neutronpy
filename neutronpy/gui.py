@@ -3,7 +3,7 @@ r'''GUI for resolution calculations
 TESTING ONLY FOR NOW
 '''
 from PyQt5 import uic, QtCore, QtGui
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QTextEdit
 import sys
 import numpy as np
 from neutronpy.instrument import Instrument, GetTau
@@ -19,17 +19,18 @@ matplotlib.rc('lines', markersize=2, linewidth=0.5)
 
 
 class MyMplCanvas(FigureCanvas):
-    def __init__(self, parent=None, width=5, height=4, dpi=100, qslice='QxQy', projections=dict(), u=[1, 0, 0], v=[0, 1, 0]):
-        fig = Figure(figsize=(width, height), dpi=dpi, facecolor='w', edgecolor='k')
-        fig.subplots_adjust(bottom=0.25, left=0.25)
-        self.axes = fig.add_subplot(111)
+    def __init__(self, parent=None, width=261, height=201, dpi=100, qslice='QxQy', projections=dict(), u=[1, 0, 0], v=[0, 1, 0]):
+        self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor='w', edgecolor='k')
+        self.fig.subplots_adjust(bottom=0.25, left=0.25)
+
+        self.axes = self.fig.add_subplot(111)
 
         # We want the axes cleared every time plot() is called
         self.axes.hold(True)
 
         self.compute_initial_figure(qslice, projections, u, v)
 
-        FigureCanvas.__init__(self, fig)
+        FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
 
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -45,10 +46,12 @@ class MyStaticMplCanvas(MyMplCanvas, PlotResolution):
 
     def compute_initial_figure(self, qslice, projections, u, v):
         self.plot_slice(qslice, projections, u, v)
+        # self.fig.tight_layout()
 
 
 class MainWindow(QMainWindow):
     r'''Main Window of Resolution Calculator
+from matplotlib.backends.qt_compat import QtWidgets
     '''
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -58,6 +61,9 @@ class MainWindow(QMainWindow):
         self.qxqyplot = QVBoxLayout(self.qx_qy_plot_widget)
         self.qxwplot = QVBoxLayout(self.qx_w_plot_widget)
         self.qywplot = QVBoxLayout(self.qy_w_plot_widget)
+
+        self.text_output.setFontPointSize(10)
+        self.text_output.setLineWrapMode(QTextEdit.NoWrap)
 
         self.dir_dict = {'Clockwise': 1, 'Counter-Clockwise':-1}
         self.infin_dict = {'ki': 1, 'kf':-1}
@@ -89,7 +95,7 @@ class MainWindow(QMainWindow):
             self.instrument.mono.tau = 2 * np.pi / float(self.mono_select_input)
         else:
             self.instrument.mono.tau = GetTau(self.mono_select_dropdown.currentText())
-            self.mono_select_input.setPlaceholderText('{0:.3f}'.format(2. * np.pi / GetTau(self.mono_select_dropdown.currentText())))
+            self.mono_select_input.setText('{0:.3f}'.format(2. * np.pi / GetTau(self.mono_select_dropdown.currentText())))
         self.instrument.mono.mosaic = float(self.mono_mosaic_input.text())
         self.instrument.mono.vmosaic = float(self.mono_vmosaic_input.text())
         self.instrument.mono.dir = self.dir_dict[self.mono_dir_select.currentText()]
@@ -101,7 +107,7 @@ class MainWindow(QMainWindow):
             self.instrument.ana.tau = 2 * np.pi / float(self.ana_select_input)
         else:
             self.instrument.ana.tau = GetTau(self.ana_select_dropdown.currentText())
-            self.ana_select_input.setPlaceholderText('{0:.3f}'.format(2. * np.pi / GetTau(self.ana_select_dropdown.currentText())))
+            self.ana_select_input.setText('{0:.3f}'.format(2. * np.pi / GetTau(self.ana_select_dropdown.currentText())))
         self.instrument.ana.mosaic = float(self.ana_mosaic_input.text())
         self.instrument.ana.vmosaic = float(self.ana_vmosaic_input.text())
         self.instrument.ana.dir = self.dir_dict[self.ana_dir_select.currentText()]
@@ -147,14 +153,16 @@ class MainWindow(QMainWindow):
         except:
             pass
 
-        qxqy = MyStaticMplCanvas(self.qx_qy_plot_widget, width=5, height=4, dpi=100, qslice='QxQy', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
+        qxqy = MyStaticMplCanvas(self.qx_qy_plot_widget, width=261, height=201, dpi=100, qslice='QxQy', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
         self.qxqyplot.addWidget(qxqy)
 
-        qxw = MyStaticMplCanvas(self.qx_w_plot_widget, width=5, height=4, dpi=100, qslice='QxW', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
+        qxw = MyStaticMplCanvas(self.qx_w_plot_widget, width=261, height=201, dpi=100, qslice='QxW', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
         self.qxwplot.addWidget(qxw)
 
-        qyw = MyStaticMplCanvas(self.qy_w_plot_widget, width=5, height=4, dpi=100, qslice='QyW', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
+        qyw = MyStaticMplCanvas(self.qy_w_plot_widget, width=261, height=201, dpi=100, qslice='QyW', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
         self.qywplot.addWidget(qyw)
+
+        self.text_output.setText(self.instrument.description_string())
 
     def load_signals(self):
         self.method_dropdown.currentIndexChanged.connect(self.load_instrument)

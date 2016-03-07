@@ -2896,20 +2896,20 @@
      </rect>
     </property>
    </widget>
-   <widget class="QWidget" name="text_plot_widget" native="true">
+   <widget class="QWidget" name="qy_w_plot_widget" native="true">
     <property name="geometry">
      <rect>
-      <x>370</x>
+      <x>640</x>
       <y>260</y>
       <width>261</width>
       <height>201</height>
      </rect>
     </property>
    </widget>
-   <widget class="QWidget" name="qy_w_plot_widget" native="true">
+   <widget class="QTextEdit" name="text_output">
     <property name="geometry">
      <rect>
-      <x>640</x>
+      <x>370</x>
       <y>260</y>
       <width>261</width>
       <height>201</height>

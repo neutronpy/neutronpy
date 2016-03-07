@@ -642,6 +642,64 @@ class PlotResolution(object):
 
         dQ1, dQ2 = [np.max(item) for item in [dQ1, dQ2]]
 
-        self.axes.set_xlabel('$\mathbf{Q}_1$ (along ' + str(u) + ') (r.l.u.)' + ', $\delta Q_1={0:.3f}$'.format(dQ1), fontsize=6)
-        self.axes.set_ylabel('$\mathbf{Q}_2$ (along ' + str(v) + ') (r.l.u.)' + ', $\delta Q_2={0:.3f}$'.format(dQ2), fontsize=6)
-        
+        self.axes.set_xlabel(r'$\mathbf{Q}_1$ (along ' + str(u) + r') (r.l.u.)' + r', $\delta Q_1={0:.3f}$'.format(dQ1), fontsize=7)
+        if 'W' in qslice:
+            self.axes.set_ylabel(r'$\hbar \omega$ (meV)' + r', $\delta \hbar \omega={0:.3f}$'.format(dQ2), fontsize=7)
+        else:
+            self.axes.set_ylabel(r'$\mathbf{Q}_2$ (along ' + str(v) + r') (r.l.u.)' + r', $\delta Q_2={0:.3f}$'.format(dQ2), fontsize=7)
+
+    def description_string(self):
+        try:
+            method = ['Cooper-Nathans', 'Popovici'][self.method]
+        except AttributeError:
+            method = 'Cooper-Nathans'
+        frame = '[Q1,Q2,Qz,E]'
+
+        try:
+            FX = 2 * int(self.infin == -1) + int(self.infin == 1)
+        except AttributeError:
+            FX = 2
+
+        if self.RMS.shape == (4, 4):
+            NP = self.RMS
+            R0 = float(self.R0)
+            hkle = self.HKLE
+        else:
+            NP = self.RMS[:, :, 0]
+            R0 = self.R0[0]
+            hkle = [self.H[0], self.K[0], self.L[0], self.W[0]]
+
+        ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP))
+        bragg_widths = get_bragg_widths(NP)
+        angles = self.get_angles_and_Q(hkle)[0]
+
+        text_format = ['Method: {0}'.format(method),
+                       'Position HKLE [{0}]'.format(dt.datetime.now().strftime('%d-%b-%Y %H:%M:%S')),
+                       '',
+                       ' [Q_H, Q_K, Q_L, E] = {0} '.format(self.HKLE),
+                       '',
+                       'Resolution Matrix M in {0} (M/10^4):'.format(frame),
+                       '[[{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 0] / 1.0e4),
+                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 1] / 1.0e4),
+                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 2] / 1.0e4),
+                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]]'.format(*NP[:, 3] / 1.0e4),
+                       '',
+                       'Resolution volume:   V_0={0:.6f} meV/A^3'.format(2 * ResVol),
+                       'Intensity prefactor: R_0={0:.3f}'.format(R0),
+                       'Bragg width in [Q_1,Q_2,E] (FWHM):',
+                       ' dQ_1={0:.3f} dQ_2={1:.3f} [A-1] dE={2:.3f} [meV]'.format(bragg_widths[0], bragg_widths[1], bragg_widths[4]),
+                       ' dQ_z={0:.3f} Vanadium width V={1:.3f} [meV]'.format(*bragg_widths[2:4]),
+                       'Instrument parameters:',
+                       ' DM  =  {0:.3f} ETAM= {1:.3f} SM={2}'.format(self.mono.d, self.mono.mosaic, self.mono.dir),
+                       ' KFIX=  {0:.3f} FX  = {1} SS={2}'.format(Energy(energy=self.efixed).wavevector, FX, self.sample.dir),
+                       ' DA  =  {0:.3f} ETAA= {1:.3f} SA={2}'.format(self.ana.d, self.ana.mosaic, self.ana.dir),
+                       ' A1= {0:.2f} A2={1:.2f} A3={2:.2f} A4={3:.2f} A5={4:.2f} A6={5:.2f} [deg]'.format(*angles),
+                       'Collimation [arcmin]:',
+                       ' Horizontal: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.hcol),
+                       ' Vertical: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.vcol),
+                       'Sample:',
+                       ' a, b, c  =  [{0}, {1}, {2}] [Angs]'.format(self.sample.a, self.sample.b, self.sample.c),
+                       ' Alpha, Beta, Gamma  =  [{0}, {1}, {2}] [deg]'.format(self.sample.alpha, self.sample.beta, self.sample.gamma),
+                       ' U  =  {0} [rlu]\tV  =  {1} [rlu]'.format(self.orient1, self.orient2)]
+
+        return '\n'.join(text_format)
