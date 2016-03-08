@@ -807,20 +807,20 @@ def _voigt(x, a):
 
 
 def get_bragg_widths(RM):
-    bragg = [np.sqrt(8 * np.log(2)) / np.sqrt(RM[0, 0]),
-             np.sqrt(8 * np.log(2)) / np.sqrt(RM[1, 1]),
-             np.sqrt(8 * np.log(2)) / np.sqrt(RM[2, 2]),
-             get_phonon_width(0, RM, [0, 0, 0, 1])[1],
-             np.sqrt(8 * np.log(2)) / np.sqrt(RM[3, 3])]
+    bragg = np.array([np.sqrt(8 * np.log(2)) / np.sqrt(RM[0, 0]),
+                      np.sqrt(8 * np.log(2)) / np.sqrt(RM[1, 1]),
+                      np.sqrt(8 * np.log(2)) / np.sqrt(RM[2, 2]),
+                      get_phonon_width(0, RM, [0, 0, 0, 1])[1],
+                      np.sqrt(8 * np.log(2)) / np.sqrt(RM[3, 3])])
 
-    return bragg
+    return bragg * 2
 
 
 def get_phonon_width(r0, M, C):
     T = np.diag(np.ones(4))
     T[3, :] = np.array(C)
     S = np.matrix(np.linalg.inv(T))
-    MP = S.H * M * S
+    MP = np.squeeze(np.array(S.H * M * S))
     [rp, MP] = project_into_plane(0, r0, MP)
     [rp, MP] = project_into_plane(0, rp, MP)
     [rp, MP] = project_into_plane(0, rp, MP)
@@ -1367,7 +1367,7 @@ class Instrument(object):
         1999-2007, Oak Ridge National Laboratory
 
         '''
-        CONVERT1 = np.pi / 60. / 180.
+        CONVERT1 = np.pi / 60. / 180. / np.sqrt(8 * np.log(2))
         CONVERT2 = 2.072
 
         [length, Q, W] = _CleanArgs(Q, W)
@@ -1675,7 +1675,7 @@ class Instrument(object):
                 # Horizontally focusing analyzer if needed
                 if horifoc > 0:
                     Ninv = np.linalg.inv(Ninv)
-                    Ninv[4, 4] = (1 / (kf * alpha[3])) ** 2
+                    Ninv[4, 4] = (1 / (kf * alpha[2])) ** 2
                     Ninv[4, 3] = 0
                     Ninv[3, 4] = 0
                     Ninv[3, 3] = (np.tan(thetaa) / (etaa * kf)) ** 2
@@ -1683,9 +1683,7 @@ class Instrument(object):
 
             Minv = Bmatrix * Ninv * Bmatrix.H
 
-            M = 8 * np.log(2) * np.linalg.inv(Minv)
-            # TODO: rows-columns 3-4 swapped for ResPlot to work.
-            # Inactivate as we want M=[x,y,z,E]
+            M = np.linalg.inv(Minv)
             RM_ = np.copy(M)
 
             # Calculation of prefactor, normalized to source
@@ -1735,7 +1733,6 @@ class Instrument(object):
 
             # Transform prefactor to Chesser-Axe normalization
             R0_ = R0_ / (2. * np.pi) ** 2 * np.sqrt(np.linalg.det(RM_))
-
             # Include kf/ki part of cross section
             R0_ = R0_ * kf / ki
 
@@ -1746,11 +1743,10 @@ class Instrument(object):
                 etasv = np.copy(etas)
                 if hasattr(sample, 'vmosaic'):
                     etasv = sample.vmosaic * CONVERT1
-
-                R0_ = R0_ / np.sqrt((1 + (q * etas) ** 2 * RM_[1, 1]) * (1 + (q * etasv) ** 2 * RM_[2, 2]))
+                R0_ = R0_ / np.sqrt((1 + (q * etas) ** 2 * RM_[2, 2]) * (1 + (q * etasv) ** 2 * RM_[1, 1]))
                 Minv[1, 1] = Minv[1, 1] + q ** 2 * etas ** 2
-                Minv[3, 3] = Minv[3, 3] + q ** 2 * etasv ** 2
-                RM_ = 8 * np.log(2) * np.linalg.inv(Minv)
+                Minv[2, 2] = Minv[2, 2] + q ** 2 * etasv ** 2
+                RM_ = np.linalg.inv(Minv)
 
             # Take care of analyzer reflectivity if needed [I. Zaliznyak, BNL]
             if hasattr(ana, 'thickness') and hasattr(ana, 'Q'):
