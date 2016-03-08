@@ -2,6 +2,12 @@
 Changelog
 =========
 
+* :bug:`57` Fixed ``R0`` prefactors calculated by :py:meth:`.Instrument.calc_resolution` to be consistent with ResLib
+* :bug:`56` Fixed handling of ``ACCURACY`` input argument in :py:meth:`.Instrument.resolution_convolution` and :py:meth:`.Instrument.resolution_convolution_SMA`
+* :bug:`55` Fixed call of prefactor function ``pref`` in :py:meth:`.Instrument.resolution_convolution` and :py:meth:`.Instrument.resolution_convolution_SMA` to include ``W``
+* :bug:`54` Fixed documentation to reflect correct usage of ``mono.dir``, ``ana.dir`` and ``sample.dir`` to define handedness of spectrometer
+* :bug:`53` Added ``xlabel`` and ``ylabel`` to data plotting method :py:meth:`.Data.plot` 
+
 * :release:`v0.3.5 <2016-02-26>` 48, 49, 50, 51
 * :support:`52` Updated License from BSD 3-Clause to MIT License
 * :bug:`51` Fixed default behavior of :py:attr:`.Instrument.moncor` variable in :py:class:`.Instrument` to coincide with documentation
