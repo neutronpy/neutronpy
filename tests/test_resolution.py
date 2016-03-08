@@ -62,7 +62,7 @@ def SMADemo(H, K, L, p):
     return [w0, S, HWHM]
 
 
-def PrefDemo(H, K, L, EXP, p):
+def PrefDemo(H, K, L, W, EXP, p):
     [sample, rsample] = EXP.get_lattice()
 
     q2 = resolution._modvec([H, K, L], rsample) ** 2
@@ -88,7 +88,7 @@ def PrefDemo(H, K, L, EXP, p):
     return [prefactor, bgr]
 
 
-def PrefDemo2(H, K, L, EXP, p):
+def PrefDemo2(H, K, L, W, EXP, p):
     [sample, rsample] = EXP.get_lattice()
 
     q2 = resolution._modvec([H, K, L], rsample) ** 2
@@ -114,7 +114,7 @@ def PrefDemo2(H, K, L, EXP, p):
     return prefactor
 
 
-def PrefDemo3(H, K, L, EXP, p):
+def PrefDemo3(H, K, L, W, EXP, p):
     [sample, rsample] = EXP.get_lattice()
 
     q2 = resolution._modvec([H, K, L], rsample) ** 2

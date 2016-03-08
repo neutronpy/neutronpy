@@ -2286,9 +2286,9 @@ class Instrument(object):
             bgr = 0
         else:
             if nargout == 2:
-                [prefactor, bgr] = pref(H, K, L, self, p)
+                [prefactor, bgr] = pref(H, K, L, W, self, p)
             elif nargout == 1:
-                prefactor = pref(H, K, L, self, p)
+                prefactor = pref(H, K, L, W, self, p)
                 bgr = 0
             else:
                 raise ValueError('Invalid number or output arguments in prefactor function, pref')
@@ -2480,9 +2480,9 @@ class Instrument(object):
             bgr = 0
         else:
             if nargout == 2:
-                [prefactor, bgr] = pref(H, K, L, self, p)
+                [prefactor, bgr] = pref(H, K, L, W, self, p)
             elif nargout == 1:
-                prefactor = pref(H, K, L, self, p)
+                prefactor = pref(H, K, L, W, self, p)
                 bgr = 0
             else:
                 raise ValueError('Fatal error: invalid number or output arguments in prefactor function')
