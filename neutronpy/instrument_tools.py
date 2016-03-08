@@ -74,13 +74,13 @@ def ellipse(saxis1, saxis2, phi=0, origin=None, npts=31):
 
 
 def get_bragg_widths(RM):
-    bragg = [np.sqrt(8 * np.log(2)) / np.sqrt(RM[0, 0]),
-             np.sqrt(8 * np.log(2)) / np.sqrt(RM[1, 1]),
-             np.sqrt(8 * np.log(2)) / np.sqrt(RM[2, 2]),
-             get_phonon_width(0, RM, [0, 0, 0, 1])[1],
-             np.sqrt(8 * np.log(2)) / np.sqrt(RM[3, 3])]
+    bragg = np.array([np.sqrt(8 * np.log(2)) / np.sqrt(RM[0, 0]),
+                      np.sqrt(8 * np.log(2)) / np.sqrt(RM[1, 1]),
+                      np.sqrt(8 * np.log(2)) / np.sqrt(RM[2, 2]),
+                      get_phonon_width(0, RM, [0, 0, 0, 1])[1],
+                      np.sqrt(8 * np.log(2)) / np.sqrt(RM[3, 3])])
 
-    return bragg
+    return bragg * 2
 
 
 def get_phonon_width(r0, M, C):

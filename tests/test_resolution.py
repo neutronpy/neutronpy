@@ -195,7 +195,7 @@ class ResolutionTest(unittest.TestCase):
         NP = EXP.RMS
         R = EXP.R0
         BraggWidths = get_bragg_widths(NP)
-        angles = self.EXP_popovici.get_angles_and_Q(hkle)[0]
+        angles = self.EXP_coopernathans.get_angles_and_Q(hkle)[0]
         ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * 2
 
         self.assertTrue(np.all(np.abs((RMS - NP)) < 100))

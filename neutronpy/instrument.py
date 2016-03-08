@@ -1057,6 +1057,12 @@ class Instrument(PlotResolution):
             else:
                 s2theta = np.real(s2theta)
 
+            # correct sign of curvatures
+            monorh = monorh * sm
+            monorv = monorv * sm
+            anarh = anarh * sa
+            anarv = anarv * sa
+
             thetas = s2theta / 2.
             phi = np.arctan2(-kf * np.sin(s2theta), ki - kf * np.cos(s2theta))
 
