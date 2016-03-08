@@ -2255,13 +2255,13 @@ class Instrument(object):
         [length, H, K, L, W] = _CleanArgs(H, K, L, W)
         [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
 
-        Mzz = RMS[3, 3, :]
-        Mww = RMS[2, 2, :]
+        Mzz = RMS[2, 2, :]
+        Mww = RMS[3, 3, :]
         Mxx = RMS[0, 0, :]
         Mxy = RMS[0, 1, :]
-        Mxw = RMS[0, 2, :]
+        Mxw = RMS[0, 3, :]
         Myy = RMS[1, 1, :]
-        Myw = RMS[1, 2, :]
+        Myw = RMS[1, 3, :]
 
         Mxx = Mxx - Mxw ** 2. / Mww
         Mxy = Mxy - Mxw * Myw / Mww
@@ -2448,15 +2448,15 @@ class Instrument(object):
 
         [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
 
-        Mww = RMS[2, 2, :]
-        Mxw = RMS[0, 2, :]
-        Myw = RMS[1, 2, :]
+        Mww = RMS[3, 3, :]
+        Mxw = RMS[0, 3, :]
+        Myw = RMS[1, 3, :]
 
         GammaFactor = np.sqrt(Mww / 2)
         OmegaFactorx = Mxw / np.sqrt(2 * Mww)
         OmegaFactory = Myw / np.sqrt(2 * Mww)
 
-        Mzz = RMS[3, 3, :]
+        Mzz = RMS[2, 2, :]
         Mxx = RMS[0, 0, :]
         Mxx = Mxx - Mxw ** 2 / Mww
         Myy = RMS[1, 1, :]
