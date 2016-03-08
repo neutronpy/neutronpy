@@ -449,7 +449,7 @@
       </size>
      </property>
      <property name="text">
-      <string>60</string>
+      <string>25</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -555,7 +555,7 @@
       </size>
      </property>
      <property name="text">
-      <string>60</string>
+      <string>25</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -1025,7 +1025,7 @@
       </size>
      </property>
      <property name="text">
-      <string>0,0,1</string>
+      <string>0, 1, 0</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -1212,7 +1212,7 @@
       </size>
      </property>
      <property name="text">
-      <string>1,1,0</string>
+      <string>1, 0, 0</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -1623,7 +1623,7 @@
       </size>
      </property>
      <property name="text">
-      <string>60</string>
+      <string>25</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -1757,7 +1757,7 @@
       </size>
      </property>
      <property name="text">
-      <string>60</string>
+      <string>25</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -2582,7 +2582,7 @@
       </size>
      </property>
      <property name="text">
-      <string>120,120,120,120</string>
+      <string>120, 60, 60, 120</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -2616,7 +2616,7 @@
       </size>
      </property>
      <property name="text">
-      <string>3000,300,200,300</string>
+      <string>300, 300, 300, 300</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -2678,7 +2678,7 @@
       </size>
      </property>
      <property name="text">
-      <string>120,120,120,120</string>
+      <string>120, 120, 120, 120</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -2729,7 +2729,7 @@
      </size>
     </property>
     <property name="text">
-     <string>1,1,1,0</string>
+     <string>1, 0, 0, 0</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
