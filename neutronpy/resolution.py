@@ -2338,9 +2338,13 @@ class Instrument(object):
 
         if METHOD == 'mc':
             found = 1
+            if isinstance(ACCURACY, (list, np.ndarray, tuple)):
+                if len(ACCURACY) == 1:
+                    ACCURACY = ACCURACY[0]
+                else:
+                    raise ValueError('ACCURACY must be an int when using Monte Carlo method')
             if ACCURACY is None:
                 ACCURACY = 10
-
             M = ACCURACY
             convs = np.zeros((modes, length))
             conv = np.zeros(length)
@@ -2486,13 +2490,18 @@ class Instrument(object):
         found = 0
         if METHOD == 'mc':
             found = 1
+            if isinstance(ACCURACY, (list, np.ndarray, tuple)):
+                if len(ACCURACY) == 1:
+                    ACCURACY = ACCURACY[0]
+                else:
+                    raise ValueError('ACCURACY must be an int when using Monte Carlo method')
             if ACCURACY is None:
                 ACCURACY = 10
             M = ACCURACY
             convs = np.zeros((modes, length))
             conv = np.zeros(length)
             for i in range(length):
-                for MonteCarlo in range(M[0]):
+                for MonteCarlo in range(M):
                     if seed is not None:
                         np.random.seed(seed)
                     r = np.random.randn(3, 1000) * np.pi - np.pi / 2
