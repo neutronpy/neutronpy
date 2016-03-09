@@ -548,8 +548,8 @@ def load_instrument(parfile, cfgfile):
     setup.mondir = par['sm']
     setup.infin = infin
     setup.arms = [L0, L1, L2, L3, L1mon]
-    setup.beam.width = ysrc
-    setup.beam.height = zsrc
+    setup.guide.width = ysrc
+    setup.guide.height = zsrc
 
     setup.detector.width = ydet
     setup.detector.height = zdet

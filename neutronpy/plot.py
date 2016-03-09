@@ -4,7 +4,7 @@ r'''Plotting classes for data and resolution
 import datetime as dt
 import numpy as np
 from .kmpfit import Fitter
-from .instrument_tools import get_bragg_widths, get_phonon_width, ellipse, project_into_plane, fproject
+from .instrument_tools import get_bragg_widths, fproject
 from .energy import Energy
 
 
@@ -470,12 +470,12 @@ class PlotResolution(object):
         fig = plt.figure(edgecolor='k', facecolor='w', figsize=plt.figaspect(0.4) * 1.25)
         ax = fig.gca(projection='3d')
 
-        if hasattr(self.beam, 'width'):
-            beam_width = self.beam.width
+        if hasattr(self.guide, 'width'):
+            beam_width = self.guide.width
         else:
             beam_width = 1
-        if hasattr(self.beam, 'height'):
-            beam_height = self.beam.height
+        if hasattr(self.guide, 'height'):
+            beam_height = self.guide.height
         else:
             beam_height = 1
 
@@ -703,3 +703,37 @@ class PlotResolution(object):
                        ' U  =  {0} [rlu]\tV  =  {1} [rlu]'.format(self.orient1, self.orient2)]
 
         return '\n'.join(text_format)
+
+
+class PlotMaterial(object):
+    def plot_unit_cell(self):
+        r'''Plots the unit cell and atoms of the material.
+
+        '''
+
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D  # @UnresolvedImport
+        from itertools import product, combinations
+
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+
+        # draw unit cell
+        for s, e in combinations(np.array(list(product([0, self.abc[0]], [0, self.abc[1]], [0, self.abc[2]]))), 2):
+            if np.sum(np.abs(s - e)) in self.abc:
+                ax.plot3D(*zip(s, e), color="b")
+
+        # plot atoms
+        x, y, z, m = [], [], [], []
+        for item in self.atoms:
+            x.append(item.pos[0] * self.abc[0])
+            y.append(item.pos[1] * self.abc[1])
+            z.append(item.pos[2] * self.abc[2])
+            m.append(item.mass)
+
+        ax.scatter(x, y, z, s=m)
+
+        plt.axis('scaled')
+        plt.axis('off')
+
+        plt.show()

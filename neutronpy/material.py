@@ -3,57 +3,14 @@ r'''Material constructor
 '''
 import numpy as np
 import neutronpy.constants as const
-from .lattice import Lattice
+from .plot import PlotMaterial
 from .structure_factors import NuclearStructureFactor, MagneticStructureFactor
 from .symmetry import SpaceGroup
+from .sample import Sample
+from .atom import Atom
 
 
-class Atom(object):
-    r'''Class for adding atoms to the Material class.
-from neutronpy.structure_factor import NuclearStructureFactor
-
-    Parameters
-    ----------
-    ion : string
-        The name of the Atom, or ion if necessary
-    pos : list(3)
-        The position of the Atom in the chosen geometry
-    dpos : list(3), optional
-        Deviations from the position pos
-    occupancy: float, optional
-        Occupancy of the _Atom (*e.g.* if there is partial occupancy from
-        doping)
-    Mcell : float, optional
-        The mass of the unit cell. If assigned, normalize scattering lengths to
-        the square-root of the mass of the atom
-
-    Returns
-    -------
-    output : object
-        Atom object defining an individual atom in a unit cell of a single
-        crystal
-
-    '''
-    def __init__(self, ion, pos, occupancy=1., Mcell=None, massNorm=False, Uiso=0, Uaniso=np.zeros((3, 3))):
-        self.ion = ion
-        self.pos = np.array(pos)
-        self.occupancy = occupancy
-        self.Mcell = Mcell
-        self.Uiso = Uiso
-        self.Uaniso = np.matrix(Uaniso)
-
-        if massNorm is True:
-            self.mass = const.periodic_table()[ion]['mass']
-            self.b = (const.scattering_lengths()[ion]['Coh b'] * self.occupancy * self.Mcell / np.sqrt(self.mass))
-        else:
-            self.b = const.scattering_lengths()[ion]['Coh b'] / 10.
-
-        self.coh_xs = const.scattering_lengths()[ion]['Coh xs']
-        self.inc_xs = const.scattering_lengths()[ion]['Inc xs']
-        self.abs_xs = const.scattering_lengths()[ion]['Abs xs']
-
-
-class Material(Lattice, NuclearStructureFactor, MagneticStructureFactor, SpaceGroup):
+class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMaterial):
     r'''Class for the Material being supplied for the structure factor calculation
 
     Parameters
@@ -181,30 +138,34 @@ class Material(Lattice, NuclearStructureFactor, MagneticStructureFactor, SpaceGr
         self.Mcell = self.muCell * crystal['formulaUnits']
 
         if 'lattice' in crystal:
-            self.abc = crystal['lattice']['abc']
-            self.abg = crystal['lattice']['abg']
+            a, b, c = crystal['lattice']['abc']
+            alpha, beta, gamma = crystal['lattice']['abg']
 
         if 'wavelength' in crystal:
             self.wavelength = crystal['wavelength']
         else:
             self.wavelength = 2.359
 
-        self.atoms = []
-        for item in crystal['composition']:
-            if 'Uiso' not in item:
-                item['Uiso'] = 0
-            if 'Uaniso' not in item:
-                item['Uaniso'] = np.matrix(np.zeros((3, 3)))
-            if 'occupancy' not in item:
-                item['occupancy'] = 1.
-            self.atoms.append(Atom(item['ion'],
-                                   item['pos'],
-                                   item['occupancy'],
-                                   self.Mcell,
-                                   crystal['massNorm'],
-                                   item['Uiso'],
-                                   item['Uaniso']))
-        super(Material, self).__init__(self.abc, self.abg)
+        if 'space_group' in crystal:
+            self.space_group = SpaceGroup(crystal['space_group'])
+        else:
+            self.atoms = []
+            for item in crystal['composition']:
+                if 'Uiso' not in item:
+                    item['Uiso'] = 0
+                if 'Uaniso' not in item:
+                    item['Uaniso'] = np.matrix(np.zeros((3, 3)))
+                if 'occupancy' not in item:
+                    item['occupancy'] = 1.
+                self.atoms.append(Atom(item['ion'],
+                                       item['pos'],
+                                       item['occupancy'],
+                                       self.Mcell,
+                                       crystal['massNorm'],
+                                       item['Uiso'],
+                                       item['Uaniso']))
+
+        super(Material, self).__init__(a, b, c, alpha, beta, gamma)
 
     @property
     def total_scattering_cross_section(self):
@@ -214,38 +175,6 @@ class Material(Lattice, NuclearStructureFactor, MagneticStructureFactor, SpaceGr
         for atom in self.atoms:
             total += (atom.coh_xs + atom.inc_xs)
         return total
-
-    def plot_unit_cell(self):
-        r'''Plots the unit cell and atoms of the material.
-
-        '''
-
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D  # @UnresolvedImport
-        from itertools import product, combinations
-
-        fig = plt.figure()
-        ax = fig.gca(projection='3d')
-
-        # draw unit cell
-        for s, e in combinations(np.array(list(product([0, self.abc[0]], [0, self.abc[1]], [0, self.abc[2]]))), 2):
-            if np.sum(np.abs(s - e)) in self.abc:
-                ax.plot3D(*zip(s, e), color="b")
-
-        # plot atoms
-        x, y, z, m = [], [], [], []
-        for item in self.atoms:
-            x.append(item.pos[0] * self.abc[0])
-            y.append(item.pos[1] * self.abc[1])
-            z.append(item.pos[2] * self.abc[2])
-            m.append(item.mass)
-
-        ax.scatter(x, y, z, s=m)
-
-        plt.axis('scaled')
-        plt.axis('off')
-
-        plt.show()
 
     def N_atoms(self, mass):
         r'''Number of atoms in the defined Material, given the mass of the sample.

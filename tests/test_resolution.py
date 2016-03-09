@@ -292,8 +292,8 @@ class ResolutionTest(unittest.TestCase):
         EXP.calc_resolution([[1, 2], 0, 0, 0])
         EXP.plot_projections([[1, 2], 0, 0, 0])
 
-        EXP.beam.width = 1
-        EXP.beam.height = 1
+        EXP.guide.width = 1
+        EXP.guide.height = 1
         EXP.mono.width = 1
         EXP.mono.height = 1
         EXP.sample.width = 1

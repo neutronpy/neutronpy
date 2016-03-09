@@ -3,9 +3,10 @@ r'''Sample class for e.g. Instrument class
 
 '''
 import numpy as np
+from .lattice import Lattice
 
 
-class Sample(object):
+class Sample(Lattice):
     u'''Private class containing sample information.
 
     Parameters
@@ -49,6 +50,7 @@ class Sample(object):
 
     '''
     def __init__(self, a, b, c, alpha, beta, gamma, mosaic=None, vmosaic=None, direct=1, u=None, v=None):
+        super(Sample, self).__init__(a, b, c, alpha, beta, gamma)
         self.a = a
         self.b = b
         self.c = c

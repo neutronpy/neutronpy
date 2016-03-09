@@ -15,7 +15,7 @@ class LatticeTests(unittest.TestCase):
         '''
         super(LatticeTests, self).__init__(*args, **kwargs)
 
-        self.unitcell = lattice.Lattice([4, 4, 4], [90, 90, 90])
+        self.unitcell = lattice.Lattice(4, 4, 4, 90, 90, 90)
 
     def test_get_angle_between_planes(self):
         '''Tests get angle between planes defined by two vectors
@@ -68,28 +68,28 @@ class LatticeTests(unittest.TestCase):
         test_cell = self.unitcell
         self.assertTrue(test_cell.lattice_type == 'cubic')
 
-        test_cell = lattice.Lattice([1, 1, 2], [90, 90, 90])
+        test_cell = lattice.Lattice(1, 1, 2, 90, 90, 90)
         self.assertTrue(test_cell.lattice_type == 'tetragonal')
 
-        test_cell = lattice.Lattice([1, 2, 3], [90, 90, 90])
+        test_cell = lattice.Lattice(1, 2, 3, 90, 90, 90)
         self.assertTrue(test_cell.lattice_type == 'orthorhombic')
 
-        test_cell = lattice.Lattice([1, 2, 3], [90, 89, 90])
+        test_cell = lattice.Lattice(1, 2, 3, 90, 89, 90)
         self.assertTrue(test_cell.lattice_type == 'monoclinic')
 
-        test_cell = lattice.Lattice([1, 1, 1], [39, 39, 39])
+        test_cell = lattice.Lattice(1, 1, 1, 39, 39, 39)
         self.assertTrue(test_cell.lattice_type == 'rhombohedral')
 
-        test_cell = lattice.Lattice([1, 1, 1], [39, 39, 39])
+        test_cell = lattice.Lattice(1, 1, 1, 39, 39, 39)
         self.assertTrue(test_cell.lattice_type == 'rhombohedral')
 
-        test_cell = lattice.Lattice([1, 1, 2], [90, 90, 120])
+        test_cell = lattice.Lattice(1, 1, 2, 90, 90, 120)
         self.assertTrue(test_cell.lattice_type == 'hexagonal')
 
-        test_cell = lattice.Lattice([1, 2, 3], [30, 60, 120])
+        test_cell = lattice.Lattice(1, 2, 3, 30, 60, 120)
         self.assertTrue(test_cell.lattice_type == 'triclinic')
 
-        test_cell = lattice.Lattice([1, 1, 2], [90, 90, 150])
+        test_cell = lattice.Lattice(1, 1, 2, 90, 90, 150)
         self.assertRaises(ValueError, getattr, test_cell, 'lattice_type')
 
 

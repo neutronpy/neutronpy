@@ -10,38 +10,121 @@ from .instrument_tools import ellipse, project_into_plane
 from .plot import PlotResolution
 
 
-class _Monochromator():
+class Monochromator(object):
     u'''Class containing monochromator information.
 
     Parameters
     ----------
-    tau : float or string
+    tau : float or str
         Tau value for the monochromator (or analyzer)
 
     mosaic : int
         Mosaic of the crystal in arc minutes
 
-    dir : ±1, optional
+    direct : ±1, optional
         Direction of the crystal (left or right, -1 or +1, respectively).
         Default: -1 (left-handed coordinate frame).
 
+    vmosaic : int, optional
+        Vertical mosaic of the crystal in arc minutes. Default: None
+
+    height : float, optional
+        Height of the crystal in cm. Default: None
+
+    width : float, optional
+        Width of the crystal in cm. Default: None
+
+    depth : float, optional
+        Depth of the crystal in cm. Default: None
+
     Returns
     -------
-    Monochromator : class
+    Monochromator : object
 
     '''
-    def __init__(self, tau, mosaic, direct=-1, rh=None, rv=None):
-        self.tau = tau
+    def __init__(self, tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None):
+        self._tau = tau
         self.mosaic = mosaic
+        if vmosaic is not None:
+            self.vmosaic = vmosaic
         self.dir = direct
         self.d = 2 * np.pi / GetTau(tau)
         if rh is not None:
             self.rh = rh
         if rv is not None:
             self.rv = rv
+        if height is not None:
+            self.height = height
+        if width is not None:
+            self.width = width
+        if depth is not None:
+            self.depth = depth
+
+    @property
+    def tau(self):
+        return self._tau
+
+    @tau.setter
+    def tau(self, tau):
+        self._tau = tau
+        self.d = 2 * np.pi / GetTau(tau)
+
+
+class Analyzer(Monochromator):
+    u'''Class containing analyzer information.
+
+    Parameters
+    ----------
+    tau : float or str
+        Tau value for the analyzer
+
+    mosaic : int
+        Mosaic of the analyzer in arc minutes
+
+    direct : ±1, optional
+        Direction of the analyzer (left or right, -1 or +1, respectively).
+        Default: -1 (left-handed coordinate frame).
+
+    vmosaic : int, optional
+        Vertical mosaic of the analyzer in arc minutes. Default: None
+
+    height : float, optional
+        Height of the analyzer in cm. Default: None
+
+    width : float, optional
+        Width of the analyzer in cm. Default: None
+
+    depth : float, optional
+        Depth of the analyzer in cm. Default: None
+
+    horifoc : int, optional
+        Set to 1 if horizontally focusing analyzer is used. Default: -1
+
+    thickness : float, optional
+        Thickness of Analyzer crystal in cm. Required for analyzer
+        reflectivity calculation. Default: None
+
+    Q : float, optional
+        Kinematic reflectivity coefficient. Required for analyzer
+        reflectivity calculation. Default: None
+
+    Returns
+    -------
+    Analyzer : object
+
+    '''
+    def __init__(self, tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None, horifoc=-1, thickness=None, Q=None):
+        super(Analyzer, self).__init__(tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None)
+        if thickness is not None:
+            self.thickness = thickness
+        if Q is not None:
+            self.Q = Q
+        self.horifoc = horifoc
 
 
 class _dummy():
+    r'''Empty class for constructing empty objects monitor, guide, and detector
+    '''
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
@@ -145,7 +228,8 @@ def _modvec(v, lattice):
 
     Notes
     -----
-    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
+    Oak Ridge National Laboratory
 
     '''
 
@@ -159,8 +243,8 @@ def GetTau(x, getlabel=False):
     ----------
     x : float or string
         Either the numerical Tau value, in Å\ :sup:`-1`, or a
-        common monochromater / analyzer type. Currently included crystals and their
-        corresponding τ values are
+        common monochromater / analyzer type. Currently included crystals and
+        their corresponding τ values are
 
             +------------------+--------------+-----------+
             | String           |     τ        |           |
@@ -209,9 +293,11 @@ def GetTau(x, getlabel=False):
 
     Notes
     -----
-    Tau is defined as :math:`\\tau = 2\\pi/d`, where d is the d-spacing of the crystal in Angstroms.
+    Tau is defined as :math:`\\tau = 2\\pi/d`, where d is the d-spacing of the
+    crystal in Angstroms.
 
-    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
+    Oak Ridge National Laboratory
 
     '''
     choices = {'pg(002)'.lower(): 1.87325,
@@ -263,11 +349,13 @@ def _CleanArgs(*varargin):
     Returns
     -------
     [length, varargout] : [int, tuple]
-        Returns the length of the input vectors and a tuple containing the cleaned vectors
+        Returns the length of the input vectors and a tuple containing the
+        cleaned vectors
 
     Notes
     -----
-    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
+    Oak Ridge National Laboratory
 
     '''
     varargout = []
@@ -429,15 +517,14 @@ class Instrument(PlotResolution):
         if vcol is None:
             vcol = [120, 120, 120, 120]
 
-        self.mono = _Monochromator(mono, mono_mosaic)
-        self.ana = _Monochromator(ana, ana_mosaic)
+        self.mono = Monochromator(mono, mono_mosaic)
+        self.ana = Analyzer(ana, ana_mosaic)
         self.hcol = np.array(hcol)
         self.vcol = np.array(vcol)
         self.efixed = efixed
         self.sample = sample
         self.orient1 = np.array(sample.u)
         self.orient2 = np.array(sample.v)
-        self.beam = _dummy()
         self.detector = _dummy()
         self.monitor = _dummy()
         self.guide = _dummy()
@@ -705,14 +792,14 @@ class Instrument(PlotResolution):
         self._infin = value
 
     @property
-    def beam(self):
+    def guide(self):
         r'''A structure that describes the source
         '''
-        return self._beam
+        return self._guide
 
-    @beam.setter
-    def beam(self, value):
-        self._beam = value
+    @guide.setter
+    def guide(self, value):
+        self._guide = value
 
     @property
     def detector(self):
@@ -773,13 +860,12 @@ class Instrument(PlotResolution):
         1999-2007, Oak Ridge National Laboratory
 
         '''
-        s = np.array([self.sample])
-        lattice = Sample(np.array([item.a for item in s]),
-                         np.array([item.b for item in s]),
-                         np.array([item.c for item in s]),
-                         np.array([item.alpha for item in s]) * np.pi / 180,
-                         np.array([item.beta for item in s]) * np.pi / 180,
-                         np.array([item.gamma for item in s]) * np.pi / 180)
+        lattice = Sample(self.sample.a,
+                         self.sample.b,
+                         self.sample.c,
+                         self.sample.alpha * np.pi / 180,
+                         self.sample.beta * np.pi / 180,
+                         self.sample.gamma * np.pi / 180)
         V, Vstar, rlattice = _star(lattice)  # @UnusedVariable
 
         return [lattice, rlattice]
@@ -878,7 +964,7 @@ class Instrument(PlotResolution):
 
         RM = np.zeros((4, 4, length), dtype=np.float64)
         R0 = np.zeros(length, dtype=np.float64)
-        RM_ = np.zeros((4, 4), dtype=np.float64)  # @UnusedVariable
+        RM_ = np.zeros((4, 4), dtype=np.float64)
         D = np.matrix(np.zeros((8, 13), dtype=np.float64))
         d = np.matrix(np.zeros((4, 7), dtype=np.float64))
         T = np.matrix(np.zeros((4, 13), dtype=np.float64))
@@ -941,8 +1027,8 @@ class Instrument(PlotResolution):
         anarv = 1.e6
         anarh = 1.e6
 
-        if hasattr(self, 'beam'):
-            beam = self.beam
+        if hasattr(self, 'guide'):
+            beam = self.guide
             if hasattr(beam, 'width'):
                 beamw = beam.width ** 2 / 12.
 
@@ -1298,7 +1384,8 @@ class Instrument(PlotResolution):
 
         Notes
         -----
-            Translated from ResLib, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+            Translated from ResLib, originally authored by A. Zheludev, 1999-2007,
+            Oak Ridge National Laboratory
 
         '''
         self.HKLE = hkle
@@ -1363,7 +1450,8 @@ class Instrument(PlotResolution):
         self.R0, self.RMS, self.RM = [np.squeeze(item) for item in (R0, RMS, RM)]
 
     def calc_projections(self, hkle, npts=36):
-        r'''Calculates the resolution ellipses for projections and slices from the resolution matrix.
+        r'''Calculates the resolution ellipses for projections and slices from
+        the resolution matrix.
 
         Parameters
         ----------
@@ -1376,7 +1464,8 @@ class Instrument(PlotResolution):
         Returns
         -------
         projections : dictionary
-            A dictionary containing projections in the planes: QxQy, QxW, and QyW, both projections and slices
+            A dictionary containing projections in the planes: QxQy, QxW, and
+            QyW, both projections and slices
 
         '''
         [H, K, L, W] = hkle
@@ -1542,7 +1631,8 @@ class Instrument(PlotResolution):
             self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
 
     def get_angles_and_Q(self, hkle):
-        r'''Returns the Triple Axis Spectrometer angles and Q-vector given position in reciprocal space
+        r'''Returns the Triple Axis Spectrometer angles and Q-vector given
+        position in reciprocal space
 
         Parameters
         ----------
@@ -1708,9 +1798,9 @@ class Instrument(PlotResolution):
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
 
     def resolution_convolution(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None, seed=None):
-        r'''Numerically calculate the convolution of a user-defined cross-section
-        function with the resolution function for a 3-axis neutron scattering
-        experiment.
+        r'''Numerically calculate the convolution of a user-defined
+        cross-section function with the resolution function for a
+        3-axis neutron scattering experiment.
 
         Parameters
         ----------
