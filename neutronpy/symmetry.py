@@ -2,16 +2,10 @@
 r'''Symmetry operations
 
 '''
-import copy
 import numpy as np
 from neutronpy.constants import symmetry
 
 space_groups = symmetry()['space_groups']
-point_groups = symmetry()['point_groups']
-lattice_translations = symmetry()['lattice_translations']
-wyckoff_info = symmetry()['wyckoff_info']
-space_group_info = symmetry()['space_group_info']
-Latt_vec = lattice_translations['vectors']
 
 
 class SpaceGroup(object):
@@ -21,17 +15,27 @@ class SpaceGroup(object):
     def __init__(self, symbol='P1'):
         if isinstance(symbol, int):
             for key, value in space_groups.items():
-                if value['group'] == symbol:
+                if value['number'] == symbol:
                     self._symbol = key
         elif isinstance(symbol, str):
-            self._symbol = symbol.replace(' ', '')
-        try:
-            self._generator_str = space_groups[self.symbol]['gen']
-            self.lattice_type = space_groups[self.symbol]['type']
-            self.group_number = space_groups[self.symbol]['group']
-            self._generator_mat = get_generator_from_str(self._generator_str)
-        except KeyError:
-            raise KeyError('{0} is not a valid Hermann–Mauguin symbol'.format(self._symbol))
+            if symbol in space_groups:
+                self._symbol = symbol
+            else:
+                for key, value in space_groups.items():
+                    if value['hermann-manguin_symbol'] == symbol or value['full_name'] == symbol:
+                        self._symbol = key
+        else:
+            raise KeyError('{0} is not a valid International symbol, Hermann–Mauguin symbol, or space group number'.format(symbol))
+
+        self.point_group = space_groups[self.symbol]['point_group']
+        self.full_name = space_groups[self.symbol]['full_name']
+        self._generators_str = space_groups[self.symbol]['generators']
+        self.lattice_type = space_groups[self.symbol]['type']
+        self.group_number = space_groups[self.symbol]['number']
+        self.hm_symbol = space_groups[self.symbol]['hermann-manguin_symbol']
+        self._generators_mat = get_generator_from_str(self._generators_str)
+        self.total_operations = space_groups[self.symbol]['total_operations']
+        self.symmetry_operations = self._symmetry_operations_from_generators()
 
     @property
     def symbol(self):
@@ -44,33 +48,42 @@ class SpaceGroup(object):
         self.__init__(symbol)
 
     @property
-    def generators(self):
+    def string_generators(self):
         r'''Space group generators
         '''
-        return self._generator_mat
-
-    @generators.setter
-    def generators(self, operation):
-        self._generator_mat = operation
+        return self._generators_str
 
     @property
-    def generators_str(self):
-        r'''Space group generators in string format
+    def generators(self):
+        r'''Space group generators in matrix format
         '''
-        return self._generator_str
+        return self._generators_mat
 
-    @property
-    def symmetry_operations(self):
-        r'''Symmetry operators given by generators
+    def _symmetry_operations_from_generators(self):
+        symm_ops, new_ops = [np.copy(self.generators)] * 2
+        while len(new_ops) > 0 and len(symm_ops) < self.total_operations:
+            gen_ops = []
+            for g in new_ops:
+                test_ops = np.einsum('ijk,kl', symm_ops, g)
+                for op in test_ops:
+                    op[:3, 3] = np.mod(get_translation(op), 1)
+                    op[np.where(np.abs(1 - get_translation(op)) < 1e-15), 3] = 0
+                    if not (np.abs(symm_ops - op) < 1e-15).all(axis=(1, 2)).any():
+                        gen_ops.append(op)
+                        symm_ops = np.append(symm_ops, [op], axis=0)
+            new_ops = gen_ops
+        assert len(symm_ops) == self.total_operations
+        return symm_ops
+
+    def symmetrize_position(self, vector):
+        r'''Applies symmetry operations to a vector
+
         '''
-        return self._get_symmetry_operations()
+        positions = []
+        for op in self.symmetry_operations:
+            positions.append(np.dot(get_rotation(op), np.array(vector)) + get_translation(op))
 
-
-def apply_symmetry_operation(operation, vector):
-    if not isinstance(operation, np.ndarray):
-        operation = get_generator_from_str(operation)
-
-    return get_rotation(operation) * np.array(vector).reshape((3, 1)) + get_translation(operation)
+        return positions
 
 
 def get_rotation(operations):
@@ -85,58 +98,12 @@ def get_rotation(operations):
 
     rotations = []
     for operation in operations:
-        rotations.append(operation[:, :3])
+        rotations.append(operation[:3, :3])
 
     if len(rotations) == 1:
         rotations = rotations[0]
 
     return rotations
-
-
-def get_rotational_order(operations):
-    r'''Returns order of rotation operator(s)
-
-    '''
-    if isinstance(operations, list) and isinstance(operations[0], np.ndarray) and np.all(np.unique([i.shape for i in operations]) == [3]):
-        pass
-    else:
-        operations = get_rotation(operations)
-
-    if isinstance(operations, np.ndarray):
-        operations = [operations]
-
-    order = []
-    for operation in operations:
-        det = np.linalg.det(operation)
-        tr = operation.trace()
-
-        if tr == -3 and det == -1:
-            order.append(-1)
-        elif tr == -2 and det == -1:
-            order.append(-6)
-        elif tr == -1 and det == -1:
-            order.append(-4)
-        elif tr == -1 and det == 1:
-            order.append(2)
-        elif tr == 0 and det == -1:
-            order.append(-3)
-        elif tr == 0 and det == 1:
-            order.append(3)
-        elif tr == 1 and det == -1:
-            order.append(-2)
-        elif tr == 1 and det == 1:
-            order.append(4)
-        elif tr == 2 and det == 1:
-            order.append(6)
-        elif tr == 3 and det == 1:
-            order.append(1)
-        else:
-            order.append(0)
-
-    if len(order) == 1:
-        order = order[0]
-
-    return order
 
 
 def get_translation(operations):
@@ -151,7 +118,7 @@ def get_translation(operations):
 
     translations = []
     for operation in operations:
-        translations.append(operation[:, 3])
+        translations.append(operation[:3, 3])
 
     if len(translations) == 1:
         translations = translations[0]
@@ -199,10 +166,15 @@ def get_generator_from_str(operations):
             elif 'z' in elements[0]:
                 rotation[i, 2] = 1
 
-        operators.append(np.hstack((rotation, translation.reshape((3, 1)))))
+        out = np.zeros((4, 4), dtype=float)
+        out[0:3, 0:3] = rotation
+        out[0:3, 3] = translation
+        out[3, 3] = 1.
+
+        operators.append(out)
 
     if len(operators) == 1:
-        operators = operators[0]
+        operators = operators
 
     return operators
 
@@ -220,7 +192,7 @@ def get_str_from_generator(operations):
         List of generator strings
 
     '''
-    if isinstance(operations, np.ndarray):
+    if isinstance(operations, np.ndarray) and len(operations.shape) < 3:
         operations = [operations]
 
     syms = ['x', 'y', 'z']
@@ -228,7 +200,7 @@ def get_str_from_generator(operations):
     generators = []
     for operation in operations:
         line = []
-        for row in operation:
+        for row in operation[:3, :]:
             element = ''
             for col, sym in zip(row[:3], syms):
                 element += signs[col] + np.abs(col) * sym
@@ -239,6 +211,8 @@ def get_str_from_generator(operations):
                 translate = '2/3'
             elif row[3] == 0.75:
                 translate = '3/4'
+            elif np.round(row[3], 3) == 0.833:
+                translate = '5/6'
             else:
                 denominator = int(np.round(1. / row[3]))
                 translate = '1/{0}'.format(denominator)
@@ -254,6 +228,3 @@ def get_str_from_generator(operations):
         generators.append(','.join(line))
 
     return generators
-
-
-
