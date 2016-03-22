@@ -427,11 +427,15 @@ class _Monochromator():
     Monochromator : class
 
     '''
-    def __init__(self, tau, mosaic, direct=-1):
+    def __init__(self, tau, mosaic, direct=-1, rh=None, rv=None):
         self.tau = tau
         self.mosaic = mosaic
         self.dir = direct
         self.d = 2 * np.pi / GetTau(tau)
+        if rh is not None:
+            self.rh = rh
+        if rv is not None:
+            self.rv = rv
 
 
 class _dummy():
@@ -1009,6 +1013,13 @@ class Instrument(object):
         dir : int
             Direction of the crystal (left or right, -1 or +1, respectively).
             Default: -1 (left-handed coordinate frame).
+
+        rh : float
+            Horizontal curvature of the monochromator in cm.
+
+        rv : float
+            Vertical curvature of the monochromator in cm.
+
         '''
         return self._mono
 
@@ -1052,6 +1063,12 @@ class Instrument(object):
         dir : int
             Direction of the crystal (left or right, -1 or +1, respectively).
             Default: -1 (left-handed coordinate frame).
+
+        rh : float
+            Horizontal curvature of the analyzer in cm.
+
+        rv : float
+            Vertical curvature of the analyzer in cm.
 
         '''
         return self._ana
@@ -1547,9 +1564,11 @@ class Instrument(object):
 
             thetam = np.arcsin(taum / (2. * ki)) * sm  # * np.sign(epm) * np.sign(em)  # sm  # added sign(em) K.P.
             thetaa = np.arcsin(taua / (2. * kf)) * sa  # * np.sign(ep) * np.sign(em)  # sa
-            s2theta = np.arccos((ki ** 2 + kf ** 2 - q ** 2) / (2. * ki * kf)) * ss  # * np.sign(em)  # ss  # 2theta sample @IgnorePep8
+            s2theta = np.arccos(np.complex((ki ** 2 + kf ** 2 - q ** 2) / (2. * ki * kf))) * ss  # * np.sign(em)  # ss  # 2theta sample @IgnorePep8
             if np.iscomplex(s2theta):
                 raise ValueError(': KI,KF,Q triangle will not close (kinematic equations). Change the value of KFIX,FX,QH,QK or QL.')
+            else:
+                s2theta = np.real(s2theta)
 
             thetas = s2theta / 2.
             phi = np.arctan2(-kf * np.sin(s2theta), ki - kf * np.cos(s2theta))
