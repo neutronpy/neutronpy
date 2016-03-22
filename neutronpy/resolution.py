@@ -1562,10 +1562,10 @@ class Instrument(object):
             ki = np.sqrt(ei / CONVERT2)
             kf = np.sqrt(ef / CONVERT2)
 
-            thetam = np.arcsin(taum / (2. * ki)) * sm  # * np.sign(epm) * np.sign(em)  # sm  # added sign(em) K.P.
-            thetaa = np.arcsin(taua / (2. * kf)) * sa  # * np.sign(ep) * np.sign(em)  # sa
-            s2theta = np.arccos(np.complex((ki ** 2 + kf ** 2 - q ** 2) / (2. * ki * kf))) * ss  # * np.sign(em)  # ss  # 2theta sample @IgnorePep8
-            if np.iscomplex(s2theta):
+            thetam = np.arcsin(taum / (2. * ki)) * sm
+            thetaa = np.arcsin(taua / (2. * kf)) * sa
+            s2theta = np.arccos(np.complex64((ki ** 2 + kf ** 2 - q ** 2) / (2. * ki * kf))) * ss
+            if np.imag(s2theta) != 0:
                 raise ValueError(': KI,KF,Q triangle will not close (kinematic equations). Change the value of KFIX,FX,QH,QK or QL.')
             else:
                 s2theta = np.real(s2theta)
