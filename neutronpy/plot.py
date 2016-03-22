@@ -629,16 +629,23 @@ class PlotResolution(object):
             self.axes.plot(projections['QxQySlice'][0, :], projections['QxQySlice'][1, :], zorder=1)
             dQ1.append(np.max(projections['QxQy'][0, :]) - np.min(projections['QxQy'][0, :]))
             dQ2.append(np.max(projections['QxQy'][1, :]) - np.min(projections['QxQy'][1, :]))
+            print(projections['QxQy'][0, :])
+            self.axes.set_xlim(np.min(projections['QxQy'][0, :][:, 0]), np.max(projections['QxQy'][0, :][:, 0]))
+            self.axes.set_ylim(np.min(projections['QxQy'][1, :][:, 0]), np.max(projections['QxQy'][1, :][:, 0]))
         elif qslice == 'QxW':
             self.axes.fill(projections['QxW'][0, :], projections['QxW'][1, :], zorder=0, alpha=0.5, edgecolor='none')
             self.axes.plot(projections['QxWSlice'][0, :], projections['QxWSlice'][1, :], zorder=1)
             dQ1.append(np.max(projections['QxW'][0, :]) - np.min(projections['QxW'][0, :]))
             dQ2.append(np.max(projections['QxW'][1, :]) - np.min(projections['QxW'][1, :]))
+            self.axes.set_xlim(np.min(projections['QxW'][0, :][:, 0]), np.max(projections['QxW'][0, :][:, 0]))
+            self.axes.set_ylim(np.min(projections['QxW'][1, :][:, 0]), np.max(projections['QxW'][1, :][:, 0]))
         elif qslice == 'QyW':
             self.axes.fill(projections['QyW'][0, :], projections['QyW'][1, :], zorder=0, alpha=0.5, edgecolor='none')
             self.axes.plot(projections['QyWSlice'][0, :], projections['QyWSlice'][1, :], zorder=1)
             dQ1.append(np.max(projections['QyW'][0, :]) - np.min(projections['QyW'][0, :]))
             dQ2.append(np.max(projections['QyW'][1, :]) - np.min(projections['QyW'][1, :]))
+            self.axes.set_xlim(np.min(projections['QyW'][0, :][:, 0]), np.max(projections['QyW'][0, :][:, 0]))
+            self.axes.set_ylim(np.min(projections['QyW'][1, :][:, 0]), np.max(projections['QyW'][1, :][:, 0]))
 
         dQ1, dQ2 = [np.max(item) for item in [dQ1, dQ2]]
 

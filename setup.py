@@ -87,7 +87,7 @@ def setup_package():
                     cmdclass=cmdclass,
                     ext_package='neutronpy',
                     ext_modules=modules,
-                    package_data={'neutronpy': ['database/*.json']},
+                    package_data={'neutronpy': ['database/*.json', 'ui/*.ui']},
                     packages=['neutronpy'],)
 
     try:
