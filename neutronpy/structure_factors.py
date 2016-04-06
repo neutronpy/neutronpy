@@ -22,8 +22,11 @@ class NuclearStructureFactor(object):
 
         Returns
         -------
-         FQ : float or ndarray
-             Structure factor at the position or positions specified
+         NSF : float or ndarray
+             Nuclear structure factor at the position or positions specified
+
+        Notes
+        -----
 
         '''
 
@@ -37,25 +40,14 @@ class NuclearStructureFactor(object):
         if isinstance(l, (np.ndarray, list, tuple)):
             l = np.array(l).astype(complex)
 
-        # Determines shape of input variables to build FQ = 0 array
-        _dims = h + k + l
-        if isinstance(_dims, Number):
-            FQ = 0 * 1j
-        else:
-            FQ = np.zeros(_dims.shape, dtype=np.complex)
-
         # construct structure factor
+        NSF = 0 * 1j
         for atom in self.atoms:
-            FQ += atom.occupancy * atom.b * np.exp(1j * 2. * np.pi * (h * atom.pos[0] + k * atom.pos[1] + l * atom.pos[2])) * \
+            NSF += atom.occupancy * atom.b * np.exp(1j * 2. * np.pi * (h * atom.pos[0] + k * atom.pos[1] + l * atom.pos[2])) * \
                 np.exp(-8 * np.pi ** 2 * atom.Uiso * np.sin(np.deg2rad(self.get_two_theta(atom.pos, self.wavelength) / 2.)) ** 2 / self.wavelength ** 2) * \
                 np.exp(-np.float(np.dot(np.dot(atom.pos, atom.Uaniso), atom.pos)))
 
-        return FQ
-
-
-class MagneticStructureFactor(object):
-    def calc_mag_str_fac(self, hkl):
-        pass
+        return NSF
 
 
 class MagneticFormFactor(object):
@@ -145,3 +137,12 @@ class MagneticFormFactor(object):
         ff = j0 + (1. - 2. / g) * j2
 
         return ff, q, j0, j2, j4
+
+
+class MagneticStructureFactor(object):
+    r'''
+    Methods
+    -------
+    calc_mag_int_vec
+    calc_mag_str_fac
+    '''

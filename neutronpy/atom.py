@@ -4,7 +4,6 @@ import neutronpy.constants as const
 
 class Atom(object):
     r'''Class for adding atoms to the Material class.
-from neutronpy.structure_factor import NuclearStructureFactor
 
     Parameters
     ----------
@@ -45,3 +44,14 @@ from neutronpy.structure_factor import NuclearStructureFactor
         self.coh_xs = const.scattering_lengths()[ion]['Coh xs']
         self.inc_xs = const.scattering_lengths()[ion]['Inc xs']
         self.abs_xs = const.scattering_lengths()[ion]['Abs xs']
+
+
+class MagneticAtom(object):
+    r'''Class for adding magnetic atoms to the Material class.
+
+    '''
+    def __init__(self, ion, pos, moment, occupancy):
+        self.ion = ion
+        self.pos = np.array(pos)
+        self.moment = moment
+        self.occupancy = occupancy

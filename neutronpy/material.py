@@ -5,12 +5,46 @@ import numpy as np
 import neutronpy.constants as const
 from .plot import PlotMaterial
 from .structure_factors import NuclearStructureFactor, MagneticStructureFactor
+from .scattering import HKLGenerator
 from .symmetry import SpaceGroup
 from .sample import Sample
-from .atom import Atom
+from .atom import Atom, MagneticAtom
 
 
-class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMaterial):
+class MagneticUnitCell(Sample):
+    r'''Class defining a magnetic unit cell
+
+    '''
+    def __init__(self, unit_cell):
+        if 'chirality' not in unit_cell:
+            self.chirality = 0
+        if 'ph' not in unit_cell:
+            self.phase = 0
+        self.atoms = []
+        if 'space_group' in unit_cell:
+            self.space_group = SpaceGroup(unit_cell['space_group'])
+            for atom in unit_cell['atoms']:
+                symmetrized_positions = self.space_group.symmetrize_position(atom['pos'])
+                for pos in symmetrized_positions:
+                    self.atoms.append(MagneticAtom(atom['ion'],
+                                                   pos,
+                                                   atom['moment'],
+                                                   atom['occupancy']))
+        else:
+            for atom in unit_cell['atoms']:
+                self.atoms.append(MagneticAtom(atom['ion'],
+                                               atom['pos'],
+                                               atom['moment'],
+                                               atom['occupancy']))
+
+        self.propagation_vector = unit_cell['propagation_vector']
+
+        a, b, c = unit_cell['lattice']['abc']
+        alpha, beta, gamma = unit_cell['lattice']['abg']
+        super(MagneticUnitCell, self).__init__(a, b, c, alpha, beta, gamma)
+
+
+class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, HKLGenerator, PlotMaterial):
     r'''Class for the Material being supplied for the structure factor calculation
 
     Parameters
@@ -114,7 +148,8 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
 
     Methods
     -------
-    calc_str_fac
+    calc_nuc_str_fac
+    calc_mag_str_fac
     calc_optimal_thickness
     plot_unit_cell
     get_angle_between_planes
@@ -148,6 +183,23 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
 
         if 'space_group' in crystal:
             self.space_group = SpaceGroup(crystal['space_group'])
+            self.atoms = []
+            for atom in crystal['composition']:
+                if 'Uiso' not in atom:
+                    atom['Uiso'] = 0
+                if 'Uaniso' not in item:
+                    atom['Uaniso'] = np.matrix(np.zeros((3, 3)))
+                if 'occupancy' not in item:
+                    atom['occupancy'] = 1.
+                symmetrized_positions = self.space_group.symmetrize_position(atom['pos'])
+                for pos in symmetrized_positions:
+                    self.atoms.append(Atom(atom['ion'],
+                                           pos,
+                                           atom['occupancy'],
+                                           self.Mcell,
+                                           crystal['massNorm'],
+                                           atom['Uiso'],
+                                           atom['Uaniso']))
         else:
             self.atoms = []
             for item in crystal['composition']:
@@ -165,7 +217,21 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
                                        item['Uiso'],
                                        item['Uaniso']))
 
-        super(Material, self).__init__(a, b, c, alpha, beta, gamma)
+        if 'magnetic_unit_cell' in crystal:
+            self.magnetic_unit_cell = MagneticUnitCell(crystal['magnetic_cell'])
+
+        if 'mosaic' not in crystal:
+            crystal['mosaic'] = None
+        if 'vmosaic' not in crystal:
+            crystal['vmosaic'] = None
+        if 'u' not in crystal:
+            crystal['u'] = None
+        if 'v' not in crystal:
+            crystal['v'] = None
+        if 'dir' not in crystal:
+            crystal['dir'] = 1
+
+        super(Material, self).__init__(a, b, c, alpha, beta, gamma, crystal['mosaic'], crystal['vmosaic'], crystal['dir'], crystal['u'], crystal['v'])
 
     @property
     def total_scattering_cross_section(self):
@@ -272,3 +338,6 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
             return self.N_atoms(mass) / (4 * np.pi) * INC_XS
         else:
             return INC_XS / (4 * np.pi)
+
+
+
