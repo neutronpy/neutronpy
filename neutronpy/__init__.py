@@ -3,18 +3,20 @@ r'''NeutronPy: open source python library for neutron scattering data analysis
 '''
 from __future__ import absolute_import
 from . import constants
-from . import instrument
-from . import atom
-from . import material
-from . import structure_factors
 from . import functions
 from . import models
 from . import spurion
-from . import lattice
 from . import io
+from . import polarization
+from . import symmetry
 from .kmpfit import Fitter
 from .energy import Energy
 from .data import Data
+from . import instrument
+from .instrument import Instrument
+from .sample import Sample
+from .material import Material
+from .lattice import Lattice
 
 try:
     from . import gui
