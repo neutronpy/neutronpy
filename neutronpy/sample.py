@@ -29,6 +29,12 @@ class Sample(Lattice):
     gamma : float
         Angle between a and b in degrees
 
+    u : array_like
+        First orientation vector
+
+    v : array_like
+        Second orientation vector
+
     mosaic : float, optional
         Horizontal sample mosaic (FWHM) in arc minutes
 
@@ -38,34 +44,45 @@ class Sample(Lattice):
     direct : ±1, optional
         Direction of the crystal (left or right, -1 or +1, respectively)
 
-    u : array_like
-        First orientation vector
+    width : float, optional
+        Sample width in cm. Default: 1
 
-    v : array_like
-        Second orientation vector
+    height : float, optional
+        Sample height in cm. Default: 1
+
+    depth : float, optional
+        Sample thickness in cm. Default: 1
+
+    shape : str, optional
+        Sample shape type. Accepts 'rectangular' or 'cylindrical'.
+        Default: 'rectangular'
 
     Returns
     -------
     Sample : object
 
     '''
-    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=None, vmosaic=None, direct=1, u=None, v=None):
+    def __init__(self, a, b, c, alpha, beta, gamma, u=None, v=None, mosaic=None, vmosaic=None, direct=1,
+                 width=None, height=None, depth=None, shape='rectangular'):
         super(Sample, self).__init__(a, b, c, alpha, beta, gamma)
-        self.a = a
-        self.b = b
-        self.c = c
-        self.alpha = alpha
-        self.beta = beta
-        self.gamma = gamma
+        if u is not None:
+            self._u = np.array(u)
+        if v is not None:
+            self._v = np.array(v)
+
         if mosaic is not None:
             self.mosaic = mosaic
         if vmosaic is not None:
             self.vmosaic = vmosaic
         self.dir = direct
-        if u is not None:
-            self._u = np.array(u)
-        if v is not None:
-            self._v = np.array(v)
+
+        self.shape_type = shape
+        if width is not None:
+            self.width = width
+        if height is not None:
+            self.height = height
+        if depth is not None:
+            self.depth = depth
 
     @property
     def u(self):

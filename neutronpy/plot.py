@@ -629,7 +629,6 @@ class PlotResolution(object):
             self.axes.plot(projections['QxQySlice'][0, :], projections['QxQySlice'][1, :], zorder=1)
             dQ1.append(np.max(projections['QxQy'][0, :]) - np.min(projections['QxQy'][0, :]))
             dQ2.append(np.max(projections['QxQy'][1, :]) - np.min(projections['QxQy'][1, :]))
-            print(projections['QxQy'][0, :])
             self.axes.set_xlim(np.min(projections['QxQy'][0, :][:, 0]), np.max(projections['QxQy'][0, :][:, 0]))
             self.axes.set_ylim(np.min(projections['QxQy'][1, :][:, 0]), np.max(projections['QxQy'][1, :][:, 0]))
         elif qslice == 'QxW':

@@ -832,7 +832,7 @@
     <widget class="QLabel" name="abc_label">
      <property name="geometry">
       <rect>
-       <x>87</x>
+       <x>10</x>
        <y>20</y>
        <width>61</width>
        <height>20</height>
@@ -857,7 +857,7 @@
     <widget class="QLineEdit" name="abc_input">
      <property name="geometry">
       <rect>
-       <x>160</x>
+       <x>83</x>
        <y>20</y>
        <width>100</width>
        <height>21</height>
@@ -891,7 +891,7 @@
     <widget class="QLineEdit" name="abg_input">
      <property name="geometry">
       <rect>
-       <x>160</x>
+       <x>83</x>
        <y>40</y>
        <width>100</width>
        <height>21</height>
@@ -925,7 +925,7 @@
     <widget class="QLabel" name="abg_label">
      <property name="geometry">
       <rect>
-       <x>90</x>
+       <x>13</x>
        <y>40</y>
        <width>63</width>
        <height>16</height>
@@ -1321,6 +1321,42 @@
       <set>Qt::AlignCenter</set>
      </property>
     </widget>
+    <widget class="QComboBox" name="sample_shape_dropdown">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>35</y>
+       <width>131</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>Rectangular</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Cylindrical</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="sample_shape_label">
+     <property name="geometry">
+      <rect>
+       <x>208</x>
+       <y>20</y>
+       <width>101</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Sample Shape</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
     <zorder>abc_input</zorder>
     <zorder>abg_input</zorder>
     <zorder>abg_label</zorder>
@@ -1340,6 +1376,8 @@
     <zorder>sample_mosaic_input</zorder>
     <zorder>sample_label</zorder>
     <zorder>abc_label</zorder>
+    <zorder>sample_shape_dropdown</zorder>
+    <zorder>sample_shape_label</zorder>
    </widget>
    <widget class="QFrame" name="ana_frame">
     <property name="geometry">

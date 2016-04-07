@@ -1017,6 +1017,7 @@ class Instrument(PlotResolution):
         detectorw = 1.
         detectorh = 1.
         sshapes = np.repeat(np.eye(3, dtype=np.float64)[np.newaxis].reshape((1, 3, 3)), length, axis=0)
+        sshape_factor = 12.
         L0 = 1.
         L1 = 1.
         L1mon = 1.
@@ -1075,11 +1076,16 @@ class Instrument(PlotResolution):
             anad = ana.depth ** 2 / 12.
 
         ashape = np.diag([anad, anaw, anah])
+        if hasattr(sample, 'shape_type'):
+            if sample.shape_type == 'cylindrical':
+                sshape_factor = 16.
+            elif sample.shape_type == 'rectangular':
+                sshape_factor = 12.
         if hasattr(sample, 'width') and hasattr(sample, 'depth') and hasattr(sample, 'height'):
-            _sshape = np.diag([sample.depth, sample.width, sample.height]).astype(np.float64) ** 2 / 12.
+            _sshape = np.diag([sample.depth, sample.width, sample.height]).astype(np.float64) ** 2 / sshape_factor
             sshapes = np.repeat(_sshape[np.newaxis].reshape((1, 3, 3)), length, axis=0)
         elif hasattr(sample, 'shape'):
-            _sshape = sample.shape.astype(np.float64) / 12.
+            _sshape = sample.shape.astype(np.float64) / sshape_factor
             if len(_sshape.shape) == 2:
                 sshapes = np.repeat(_sshape[np.newaxis].reshape((1, 3, 3)), length, axis=0)
             else:
