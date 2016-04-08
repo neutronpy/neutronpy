@@ -9,13 +9,17 @@ class Atom(object):
     ----------
     ion : string
         The name of the Atom, or ion if necessary
+
     pos : list(3)
         The position of the Atom in the chosen geometry
+
     dpos : list(3), optional
         Deviations from the position pos
+
     occupancy: float, optional
         Occupancy of the _Atom (*e.g.* if there is partial occupancy from
         doping)
+
     Mcell : float, optional
         The mass of the unit cell. If assigned, normalize scattering lengths to
         the square-root of the mass of the atom
@@ -48,6 +52,19 @@ class Atom(object):
 
 class MagneticAtom(object):
     r'''Class for adding magnetic atoms to the Material class.
+
+    Parameters
+    ----------
+    ion : str
+        The name of the ion
+
+    pos : list(3)
+        The position of the atom in r.l.u.
+
+    Return
+    ------
+    output : object
+        MagneticAtom object defining an individual magnetic ion in a unit cell
 
     '''
     def __init__(self, ion, pos, moment, occupancy):

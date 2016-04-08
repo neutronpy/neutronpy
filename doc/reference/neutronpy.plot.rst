@@ -7,3 +7,5 @@ neutronpy.plot module
     :toctree: generated/
 
     PlotData
+    PlotResolution
+    PlotMaterial

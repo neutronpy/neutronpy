@@ -2,13 +2,19 @@
 Changelog
 =========
 
-* :bug:`57` Fixed ``R0`` prefactors calculated by :py:meth:`.Instrument.calc_resolution` to be consistent with ResLib
-* :bug:`56` Fixed handling of ``ACCURACY`` input argument in :py:meth:`.Instrument.resolution_convolution` and :py:meth:`.Instrument.resolution_convolution_SMA`
-* :bug:`55` Fixed call of prefactor function ``pref`` in :py:meth:`.Instrument.resolution_convolution` and :py:meth:`.Instrument.resolution_convolution_SMA` to include ``W``
-* :bug:`54` Fixed documentation to reflect correct usage of ``mono.dir``, ``ana.dir`` and ``sample.dir`` to define handedness of spectrometer
-* :bug:`53` Added ``xlabel`` and ``ylabel`` to data plotting method :py:meth:`.Data.plot` 
+* :release:`v1.0.0b1 <2016-04-07>`
+* :feature:`62` Major refactoring, breaks backwards compatibility. See documentation for new usage.
+* :feature:`61` Added basic physical models to :py:mod:`.models`
+* :feature:`60` Added :py:class:`.SpaceGroup` to :py:class:`.Material` to symmetrize crystal structures
+* :feature:`59` Added :py:class:`.SpaceGroup` to generate all symmetry operations given space group symbol
+* :feature:`58` Added :py:mod:`.gui` for resolution calculations, invoked by :py:meth:`.gui.launch`
+* :bug:`57 major` Fixed ``R0`` prefactors calculated by :py:meth:`.Instrument.calc_resolution` to be consistent with ResLib
+* :bug:`56 major` Fixed handling of ``ACCURACY`` input argument in :py:meth:`.Instrument.resolution_convolution` and :py:meth:`.Instrument.resolution_convolution_SMA`
+* :bug:`55 major` Fixed call of prefactor function ``pref`` in :py:meth:`.Instrument.resolution_convolution` and :py:meth:`.Instrument.resolution_convolution_SMA` to include ``W``
+* :bug:`54 major` Fixed documentation to reflect correct usage of ``mono.dir``, ``ana.dir`` and ``sample.dir`` to define handedness of spectrometer
+* :bug:`53 major` Added ``xlabel`` and ``ylabel`` to data plotting method :py:meth:`.Data.plot`
 
-* :release:`v0.3.5 <2016-02-26>` 48, 49, 50, 51
+* :release:`v0.3.5 <2016-02-26>` 48, 49, 50, 51, 52
 * :support:`52` Updated License from BSD 3-Clause to MIT License
 * :bug:`51` Fixed default behavior of :py:attr:`.Instrument.moncor` variable in :py:class:`.Instrument` to coincide with documentation
 * :bug:`50` Explicitly defined vertical mosaic ``vmosaic`` in :py:class:`.Sample`

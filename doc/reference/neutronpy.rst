@@ -12,6 +12,10 @@ Members
     data.Data
     energy.Energy
     kmpfit.Fitter
+    instrument.Instrument
+    lattice.Lattice
+    material.Material
+    sample.Sample
 
 Submodules
 ----------
@@ -22,6 +26,7 @@ Submodules
    neutronpy.data
    neutronpy.energy
    neutronpy.functions
+   neutronpy.gui
    neutronpy.instrument
    neutronpy.io
    neutronpy.lattice
@@ -31,6 +36,7 @@ Submodules
    neutronpy.sample
    neutronpy.spurion
    neutronpy.structure_factors
+   neutronpy.symmetry
 
 Module contents
 ---------------

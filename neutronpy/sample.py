@@ -57,9 +57,52 @@ class Sample(Lattice):
         Sample shape type. Accepts 'rectangular' or 'cylindrical'.
         Default: 'rectangular'
 
-    Returns
+    Attributes
+    ----------
+    a
+    b
+    c
+    alpha
+    beta
+    gamma
+    u
+    v
+    mosaic
+    vmosaic
+    direct
+    width
+    height
+    depth
+    shape
+    astar
+    bstar
+    cstar
+    alpha_rad
+    beta_rad
+    gamma_rad
+    alphastar
+    betastar
+    gammastar
+    alphastar_rad
+    betastar_rad
+    gammastar_rad
+    abg_rad
+    reciprocal_abc
+    reciprocal_abg
+    reciprocal_abg_rad
+    lattice_type
+    volume
+    reciprocal_volume
+    G
+    Gstar
+    Bmatrix
+
+    Methods
     -------
-    Sample : object
+    get_d_spacing
+    get_q
+    get_two_theta
+    get_angle_between_planes
 
     '''
     def __init__(self, a, b, c, alpha, beta, gamma, u=None, v=None, mosaic=None, vmosaic=None, direct=1,
@@ -86,6 +129,8 @@ class Sample(Lattice):
 
     @property
     def u(self):
+        r'''First orientation vector
+        '''
         return self._u
 
     @u.setter
@@ -94,6 +139,8 @@ class Sample(Lattice):
 
     @property
     def v(self):
+        r'''Second orientation vector
+        '''
         return self._v
 
     @v.setter

@@ -29,7 +29,7 @@ Initializing the Material class
 -------------------------------
 Once we have built our material in the above format we can initialize the class.
 
->>> from neutronpy.form_facs import Material
+>>> from neutronpy import Material
 >>> FeTe = Material(def_FeTe)
 
 Calculating the structure factor
@@ -50,7 +50,7 @@ The resulting plot of this structure factor would look like the following figure
 
 .. plot::
 
-    from neutronpy.form_facs import Material
+    from neutronpy import Material
     import numpy as np
     import matplotlib.pyplot as plt
     from matplotlib import cm
@@ -84,3 +84,7 @@ The resulting plot of this structure factor would look like the following figure
                       np.abs(FeTe.calc_str_fac((-h, k, 0))) ** 2 +
                       np.abs(FeTe.calc_str_fac((h, -k, 0))) ** 2 +
                       np.abs(FeTe.calc_str_fac((-h, -k, 0))) ** 2)
+
+Using space group to properly symmetrize
+----------------------------------------
+By providing a space group symbol or number it is possible to automatically symmetrize a crystal structure.

@@ -30,8 +30,8 @@ class ModelTests(unittest.TestCase):
         '''
         p = [1, 0.5]
         x = np.linspace(0, 1, 101)
-        models.ferromagnetic_disperions(p, x)
-        models.antiferromagnetic_disperions(p, x)
+        models.ferromagnetic_disperion(p, x)
+        models.antiferromagnetic_disperion(p, x)
 
 
 if __name__ == '__main__':

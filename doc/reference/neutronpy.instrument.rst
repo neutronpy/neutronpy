@@ -8,3 +8,5 @@ neutronpy.instrument module
 
     Instrument
     GetTau
+    Monochromator
+    Analyzer

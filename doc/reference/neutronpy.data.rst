@@ -6,5 +6,5 @@ neutronpy.data module
 .. autosummary::
     :toctree: generated/
 
-    Analysis
     Data
+    Analysis

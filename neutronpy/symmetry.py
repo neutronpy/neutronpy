@@ -9,7 +9,23 @@ space_groups = symmetry()['space_groups']
 
 
 class SpaceGroup(object):
-    r'''Space group of a crystal
+    r'''Class defining a space group of a crystal
+
+    Attributes
+    ----------
+    full_name
+    generators
+    group_number
+    hm_symbol
+    lattice_type
+    string_generators
+    symbol
+    symmetry_operations
+    total_operations
+
+    Methods
+    -------
+    symmetrize_position
 
     '''
     def __init__(self, symbol='P1'):

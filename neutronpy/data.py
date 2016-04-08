@@ -17,7 +17,7 @@ def _call_bin_parallel(arg, **kwarg):
 
 
 class Analysis(object):
-    r'''Analysis subroutines for the Data class
+    r'''Class containing methods for the Data class
 
     Attributes
     ----------

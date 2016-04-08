@@ -74,10 +74,10 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, HKLGener
     'name' : str
         Name of the structure
 
-    'composition': list of dicts
+    'composition' : list of dicts
         For each atom in the unit cell, you must provide:
 
-            'ion': str
+            'ion' : str
                 Name of the atom. Needed for mass and scattering length
 
             'pos' : list of 3 floats
@@ -101,12 +101,17 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, HKLGener
     'massNorm' : bool
         Normalize calculations to mass of atoms
 
-    'formulaUnits': float
+    'formulaUnits' : float
         Number of formula units to use in the calculation
 
     'lattice' : dict
-        'abc': lattice constants of unit cell
-        'abg': lattice angles of unit cell
+
+        'abc' : lattice constants of unit cell
+
+        'abg' : lattice angles of unit cell
+
+    'space_group' : str or int
+        Hermann–Mauguin symbol or international space group number
 
     Returns
     -------
@@ -150,6 +155,8 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, HKLGener
     -------
     calc_nuc_str_fac
     calc_mag_str_fac
+    calc_mag_int_vec
+    calc_incoh_elas_xs
     calc_optimal_thickness
     plot_unit_cell
     get_angle_between_planes

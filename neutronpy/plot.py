@@ -9,6 +9,13 @@ from .energy import Energy
 
 
 class PlotData(object):
+    '''Class containing data plotting methods
+
+    Methods
+    -------
+    plot
+
+    '''
     def plot(self, x, y, z=None, w=None, show_err=True, to_bin=None,
              plot_options=None, fit_options=None, smooth_options=None,
              output_file='', show_plot=True, **kwargs):
@@ -207,7 +214,16 @@ class PlotData(object):
 
 
 class PlotResolution(object):
-    r'''Resolution plotting methods
+    r'''Class containing resolution plotting methods
+
+    Methods
+    -------
+    plot_projections
+    plot_ellipsoid
+    plot_instrument
+    plot_slice
+    description_string
+
     '''
     def plot_projections(self, hkle, npts=36, dpi=100):
         r'''Plots resolution ellipses in the QxQy, QxW, and QyW zones
@@ -712,6 +728,13 @@ class PlotResolution(object):
 
 
 class PlotMaterial(object):
+    r'''Class containing plotting methods for Material object
+
+    Methods
+    -------
+    plot_unit_cell
+
+    '''
     def plot_unit_cell(self):
         r'''Plots the unit cell and atoms of the material.
 

@@ -5,12 +5,18 @@ MagneticStructureFactor
 MagneticFormFactor
 
 '''
-from numbers import Number
 import numpy as np
 from .constants import magnetic_ion_j
 
 
 class NuclearStructureFactor(object):
+    r'''Class containing nuclear structure factor calculator
+
+    Methods
+    -------
+    calc_nuc_str_fac
+
+    '''
     def calc_nuc_str_fac(self, hkl):
         r'''Calculates the structural form factor of the material.
 
@@ -140,9 +146,20 @@ class MagneticFormFactor(object):
 
 
 class MagneticStructureFactor(object):
-    r'''
+    r'''Class containing magnetic structure factor calculator
+
     Methods
     -------
     calc_mag_int_vec
     calc_mag_str_fac
+
     '''
+    def calc_mag_int_vec(self):
+        r'''Calculates magnetic interaction vector
+        '''
+        pass
+
+    def calc_mag_str_fac(self):
+        r'''Calculates magnetic structure factor
+        '''
+        pass

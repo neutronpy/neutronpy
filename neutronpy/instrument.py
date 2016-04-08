@@ -41,6 +41,18 @@ class Monochromator(object):
     -------
     Monochromator : object
 
+    Attributes
+    ----------
+    tau
+    mosaic
+    direct
+    vmosaic
+    height
+    width
+    depth
+    rh
+    rv
+    d
     '''
     def __init__(self, tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None):
         self._tau = tau
@@ -111,6 +123,22 @@ class Analyzer(Monochromator):
     Returns
     -------
     Analyzer : object
+
+    Attributes
+    ----------
+    tau
+    mosaic
+    vmosaic
+    direct
+    height
+    width
+    depth
+    rh
+    rv
+    thickness
+    horifoc
+    Q
+    d
 
     '''
     def __init__(self, tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None, horifoc=-1, thickness=None, Q=None):
@@ -487,6 +515,7 @@ class Instrument(PlotResolution):
     detector
     monitor
     Smooth
+    guide
 
     Methods
     -------
@@ -501,6 +530,7 @@ class Instrument(PlotResolution):
     plot_instrument
     resolution_convolution
     resolution_convolution_SMA
+    plot_slice
 
     '''
     def __init__(self, efixed=14.7, sample=None, hcol=None, vcol=None, mono='PG(002)',
