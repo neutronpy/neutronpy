@@ -1583,7 +1583,10 @@ class Instrument(PlotResolution):
             self.projections['QxQy_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QxQy_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QxQy'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1) / np.linalg.norm([hkle[0][ind], hkle[1][ind], hkle[2][ind]]) ** 2, np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2) / np.linalg.norm([hkle[0][ind], hkle[1][ind], hkle[2][ind]]) ** 2], npts=npts)
+            self.projections['QxQy'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                          [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1 / np.linalg.norm(self.orient1) ** 2),
+                                                           np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2 / np.linalg.norm(self.orient2) ** 2)],
+                                                          npts=npts)
 
             # Slice through Qx,Qy plane
             MP = A[:2, :2, ind]
@@ -1599,7 +1602,10 @@ class Instrument(PlotResolution):
             self.projections['QxQySlice_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QxQySlice_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QxQySlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1) / np.linalg.norm([hkle[0][ind], hkle[1][ind], hkle[2][ind]]) ** 2, np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2) / np.linalg.norm([hkle[0][ind], hkle[1][ind], hkle[2][ind]]) ** 2], npts=npts)
+            self.projections['QxQySlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                               [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1 / np.linalg.norm(self.orient1) ** 2),
+                                                                np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2 / np.linalg.norm(self.orient2) ** 2)],
+                                                               npts=npts)
 
             # Projection into Qx, W plane
 
@@ -1616,7 +1622,10 @@ class Instrument(PlotResolution):
             self.projections['QxW_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QxW_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1) / np.linalg.norm([hkle[0][ind], hkle[1][ind], hkle[2][ind]]) ** 2, hkle[3][ind]], npts=npts)
+            self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                         [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1 / np.linalg.norm(self.orient1) ** 2),
+                                                          hkle[3][ind]],
+                                                         npts=npts)
 
             # Slice through Qx,W plane
             MP = np.array([[A[0, 0, ind], A[0, 3, ind]], [A[3, 0, ind], A[3, 3, ind]]])
@@ -1632,7 +1641,10 @@ class Instrument(PlotResolution):
             self.projections['QxWSlice_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QxWSlice_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1) / np.linalg.norm([hkle[0][ind], hkle[1][ind], hkle[2][ind]]) ** 2, hkle[3][ind]], npts=npts)
+            self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                              [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1 / np.linalg.norm(self.orient1) ** 2),
+                                                               hkle[3][ind]],
+                                                              npts=npts)
 
             # Projections into Qy, W plane
             [R0P, MP] = project_into_plane(0, R0, Bmatrix)
@@ -1648,7 +1660,10 @@ class Instrument(PlotResolution):
             self.projections['QyW_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QyW_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2) / np.linalg.norm([hkle[0][ind], hkle[1][ind], hkle[2][ind]]) ** 2, hkle[3][ind]], npts=npts)
+            self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                         [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2 / np.linalg.norm(self.orient2) ** 2),
+                                                          hkle[3][ind]],
+                                                         npts=npts)
 
             # Slice through Qy,W plane
             MP = np.array([[A[1, 1, ind], A[1, 3, ind]], [A[3, 1, ind], A[3, 3, ind]]])
@@ -1664,7 +1679,10 @@ class Instrument(PlotResolution):
             self.projections['QyWSlice_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QyWSlice_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2) / np.linalg.norm([hkle[0][ind], hkle[1][ind], hkle[2][ind]]) ** 2, hkle[3][ind]], npts=npts)
+            self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                              [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2 / np.linalg.norm(self.orient2) ** 2),
+                                                               hkle[3][ind]],
+                                                              npts=npts)
 
     def get_angles_and_Q(self, hkle):
         r'''Returns the Triple Axis Spectrometer angles and Q-vector given
