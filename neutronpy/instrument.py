@@ -531,6 +531,7 @@ class Instrument(PlotResolution):
     resolution_convolution
     resolution_convolution_SMA
     plot_slice
+    description_string
 
     '''
     def __init__(self, efixed=14.7, sample=None, hcol=None, vcol=None, mono='PG(002)',

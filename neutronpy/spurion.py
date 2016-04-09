@@ -54,3 +54,11 @@ def aluminum(energy=14.7):
     ind = two_theta.argsort()
     for pos, tt, i0, lam in zip(hkl[ind], two_theta[ind], str_fac[ind], wavelength_fraction[ind]):
         print(pos, '{0:.4f}'.format(tt), '{0:.0f}'.format(i0), lam)
+
+
+def currat_axe_peaks():
+    pass
+
+
+def bragg_tails():
+    pass

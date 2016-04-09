@@ -151,6 +151,8 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, HKLGener
     G
     Gstar
     Bmatrix
+    u
+    v
 
     Methods
     -------
@@ -165,6 +167,10 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, HKLGener
     get_q
     get_two_theta
     N_atoms
+    apply_scattering_rules
+    find_equivalent_positions
+    find_site_multiplicity
+    generate_hkl_positions
 
     '''
 
