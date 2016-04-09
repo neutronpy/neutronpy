@@ -252,10 +252,25 @@ class PlotResolution(object):
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, facecolor='w', edgecolor='k', dpi=dpi)
         fig.subplots_adjust(bottom=0.175, left=0.15, right=0.85, top=0.95, wspace=0.35, hspace=0.25)
 
+        ax1_lims, ax2_lims, ax3_lims = [[[0, 0], [0, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]]
         for i in range(self.RMS.shape[-1]):
-            self.plot_slice(ax1, 'QxQy', projections, self.sample.u, self.sample.v)
-            self.plot_slice(ax2, 'QxW', projections, self.sample.u, self.sample.v)
-            self.plot_slice(ax3, 'QyW', projections, self.sample.u, self.sample.v)
+            for ax, slice_str, lims in zip([ax1, ax2, ax3], ['QxQy', 'QxW', 'QyW'], [ax1_lims, ax2_lims, ax3_lims]):
+                self.plot_slice(ax, slice_str, projections, self.sample.u, self.sample.v, num=i)
+
+                xlim = ax.get_xlim()
+                if xlim[0] < lims[0][0] or i == 0:
+                    lims[0][0] = xlim[0]
+                if xlim[1] > lims[0][1] or i == 0:
+                    lims[0][1] = xlim[1]
+
+                ylim = ax.get_ylim()
+                if ylim[0] < lims[1][0] or i == 0:
+                    lims[1][0] = ylim[0]
+                if ylim[1] > lims[1][1] or i == 0:
+                    lims[1][1] = ylim[1]
+
+                ax.set_xlim(lims[0])
+                ax.set_ylim(lims[1])
 
         ax4.axis('off')
         ax4.text(0, 1, self.description_string(), transform=ax4.transAxes, horizontalalignment='left', verticalalignment='top')
@@ -554,30 +569,30 @@ class PlotResolution(object):
         ax.set_zlim3d(getattr(ax, 'get_zlim')()[0], getattr(ax, 'get_zlim')()[1] * 10)
         plt.show()
 
-    def plot_slice(self, axis, qslice, projections, u, v):
+    def plot_slice(self, axis, qslice, projections, u, v, num=0):
         dQ1, dQ2 = [], []
 
         if qslice == 'QxQy':
             axis.fill(projections['QxQy'][0, :], projections['QxQy'][1, :], zorder=0, alpha=0.5, edgecolor='none')
             axis.plot(projections['QxQySlice'][0, :], projections['QxQySlice'][1, :], zorder=1)
-            dQ1.append(np.max(projections['QxQy'][0, :]) - np.min(projections['QxQy'][0, :]))
-            dQ2.append(np.max(projections['QxQy'][1, :]) - np.min(projections['QxQy'][1, :]))
-            axis.set_xlim(np.min(projections['QxQy'][0, :][:, 0]), np.max(projections['QxQy'][0, :][:, 0]))
-            axis.set_ylim(np.min(projections['QxQy'][1, :][:, 0]), np.max(projections['QxQy'][1, :][:, 0]))
+            dQ1.append(np.max(projections['QxQy'][0, :][:, num]) - np.min(projections['QxQy'][0, :][:, num]))
+            dQ2.append(np.max(projections['QxQy'][1, :][:, num]) - np.min(projections['QxQy'][1, :][:, num]))
+            axis.set_xlim(np.min(projections['QxQy'][0, :][:, num]), np.max(projections['QxQy'][0, :][:, num]))
+            axis.set_ylim(np.min(projections['QxQy'][1, :][:, num]), np.max(projections['QxQy'][1, :][:, num]))
         elif qslice == 'QxW':
             axis.fill(projections['QxW'][0, :], projections['QxW'][1, :], zorder=0, alpha=0.5, edgecolor='none')
             axis.plot(projections['QxWSlice'][0, :], projections['QxWSlice'][1, :], zorder=1)
-            dQ1.append(np.max(projections['QxW'][0, :]) - np.min(projections['QxW'][0, :]))
-            dQ2.append(np.max(projections['QxW'][1, :]) - np.min(projections['QxW'][1, :]))
-            axis.set_xlim(np.min(projections['QxW'][0, :][:, 0]), np.max(projections['QxW'][0, :][:, 0]))
-            axis.set_ylim(np.min(projections['QxW'][1, :][:, 0]), np.max(projections['QxW'][1, :][:, 0]))
+            dQ1.append(np.max(projections['QxW'][0, :][:, num]) - np.min(projections['QxW'][0, :][:, num]))
+            dQ2.append(np.max(projections['QxW'][1, :][:, num]) - np.min(projections['QxW'][1, :][:, num]))
+            axis.set_xlim(np.min(projections['QxW'][0, :][:, num]), np.max(projections['QxW'][0, :][:, num]))
+            axis.set_ylim(np.min(projections['QxW'][1, :][:, num]), np.max(projections['QxW'][1, :][:, num]))
         elif qslice == 'QyW':
             axis.fill(projections['QyW'][0, :], projections['QyW'][1, :], zorder=0, alpha=0.5, edgecolor='none')
             axis.plot(projections['QyWSlice'][0, :], projections['QyWSlice'][1, :], zorder=1)
-            dQ1.append(np.max(projections['QyW'][0, :]) - np.min(projections['QyW'][0, :]))
-            dQ2.append(np.max(projections['QyW'][1, :]) - np.min(projections['QyW'][1, :]))
-            axis.set_xlim(np.min(projections['QyW'][0, :][:, 0]), np.max(projections['QyW'][0, :][:, 0]))
-            axis.set_ylim(np.min(projections['QyW'][1, :][:, 0]), np.max(projections['QyW'][1, :][:, 0]))
+            dQ1.append(np.max(projections['QyW'][0, :][:, num]) - np.min(projections['QyW'][0, :][:, num]))
+            dQ2.append(np.max(projections['QyW'][1, :][:, num]) - np.min(projections['QyW'][1, :][:, num]))
+            axis.set_xlim(np.min(projections['QyW'][0, :][:, num]), np.max(projections['QyW'][0, :][:, num]))
+            axis.set_ylim(np.min(projections['QyW'][1, :][:, num]), np.max(projections['QyW'][1, :][:, num]))
 
         dQ1, dQ2 = [np.max(item) for item in [dQ1, dQ2]]
 
