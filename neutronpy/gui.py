@@ -87,6 +87,7 @@ class MainWindow(QMainWindow):
         self.instrument.sample.dir = self.dir_dict[self.sample_dir_select.currentText()]
         self.instrument.sample.mosaic = float(self.sample_mosaic_input.text())
         self.instrument.sample.vmosaic = float(self.sample_vmosaic_input.text())
+        self.instrument.sample.shape_type = self.sample_shape_dropdown.currentText().lower()
 
         if self.mono_select_dropdown.currentText() == 'Custom':
             self.instrument.mono.tau = 2 * np.pi / float(self.mono_select_input)
@@ -199,6 +200,7 @@ class MainWindow(QMainWindow):
         self.sample_depth_input.editingFinished.connect(self.load_instrument)
         self.sample_u_input.editingFinished.connect(self.load_instrument)
         self.sample_v_input.editingFinished.connect(self.load_instrument)
+        self.sample_shape_dropdown.currentIndexChanged.connect(self.load_instrument)
 
         self.hcols_input.editingFinished.connect(self.load_instrument)
         self.vcols_input.editingFinished.connect(self.load_instrument)
