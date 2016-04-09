@@ -75,7 +75,7 @@ Sample Configuration
 --------------------
 Defining the sample using the :py:class:`.Sample` class is simple. In this example we define an arbitrary sample with no given sample mosaic.
 
->>> from neutronpy.resolution import Sample
+>>> from neutronpy import Sample
 >>> sample = Sample(6, 7, 8, 90, 90, 90, u=[1, 0, 0], v=[0, 1, 0])
 
 where the inputs for ``Sample`` are ``a``, ``b``, ``c``, ``alpha``, ``beta``, ``gamma``, and ``mosaic``, respectively, and ``u`` and ``v`` are the orientation vectors in reciprocal lattice units. In this case the sample is oriented in the (*h*, *k*, 0)-plane
@@ -84,7 +84,7 @@ Initializing the Instrument
 ---------------------------
 Once the sample is defined and information about the instrument collected we can formally define the instrument using :py:class:`.Instrument` and the variables that we have already assigned above.
 
->>> from neutronpy.resolution import Instrument
+>>> from neutronpy import Instrument
 >>> EXP = Instrument(efixed, sample, hcol, ana=ana, mono=mono)
 
 There are a great deal more settings available than are used here; see :py:class:`.Instrument` documentation.
@@ -135,7 +135,7 @@ The following is an example of a resolution calculation using the Cooper-Nathans
     import numpy as np
     import matplotlib.pyplot as plt
     from matplotlib import cm
-    from neutronpy.resolution import Instrument, Sample
+    from neutronpy import Instrument, Sample
     from neutronpy.functions import resolution
 
     EXP = Instrument()
@@ -185,7 +185,7 @@ The following is an example of a resolution calculation using the Popovici metho
     import numpy as np
     import matplotlib.pyplot as plt
     from matplotlib import cm
-    from neutronpy.resolution import Instrument, Sample
+    from neutronpy import Instrument, Sample
     from neutronpy.functions import resolution
 
     EXP = Instrument()
@@ -229,7 +229,7 @@ A very simple plot for the default instrument, containing resolution ellipses fo
 
 .. plot::
 
-    from neutronpy.resolution import Instrument
+    from neutronpy import Instrument
     from numpy import linspace
 
     EXP = Instrument()
@@ -252,8 +252,15 @@ To see a plot of the instrument setup using the angles required for a given :mat
 
 .. plot::
 
-    from neutronpy.resolution import Instrument
+    from neutronpy import Instrument
 
     EXP = Instrument()
     EXP.arms = [1560, 600, 260, 300]
     EXP.plot_instrument([1,1,0,0])
+
+Loading an Instrument and Sample from files
+-------------------------------------------
+To load an instrument and sample respectively from cfg and par files :py:meth:`.load_instrument` can be used.
+
+>>> from neutronpy.io import load_instrument
+>>> EXP = load_instrument('path_to_cfg', 'path_to_par')

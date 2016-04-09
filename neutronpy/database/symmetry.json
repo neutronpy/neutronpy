@@ -1,0 +1,3336 @@
+{
+  "space_groups": {
+    "P1": {
+      "total_operations": 1,
+      "generators": [
+        "x,y,z"
+      ],
+      "number": 1,
+      "full_name": "P1",
+      "hermann-manguin_symbol": "P1",
+      "point_group": "1",
+      "type": "triclinic"
+    },
+    "P-1": {
+      "total_operations": 2,
+      "generators": [
+        "x,y,z",
+        "-x,-y,-z"
+      ],
+      "number": 2,
+      "full_name": "P-1",
+      "hermann-manguin_symbol": "P-1",
+      "point_group": "-1",
+      "type": "triclinic"
+    },
+    "P121": {
+      "total_operations": 2,
+      "unique_axis": "b",
+      "number": 3,
+      "generators": [
+        "x,y,z",
+        "-x,y,-z"
+      ],
+      "full_name": "P121",
+      "hermann-manguin_symbol": "P2",
+      "point_group": "2",
+      "type": "monoclinic"
+    },
+    "P12_11": {
+      "total_operations": 2,
+      "unique_axis": "b",
+      "number": 4,
+      "generators": [
+        "x,y,z",
+        "-x,y+1/2,-z"
+      ],
+      "full_name": "P12_11",
+      "hermann-manguin_symbol": "P21",
+      "point_group": "2",
+      "type": "monoclinic"
+    },
+    "C121": {
+      "total_operations": 4,
+      "unique_axis": "b",
+      "number": 5,
+      "generators": [
+        "x,y,z",
+        "-x,y,-z",
+        "x+1/2,y+1/2,z"
+      ],
+      "full_name": "C121",
+      "hermann-manguin_symbol": "C2",
+      "point_group": "2",
+      "type": "monoclinic"
+    },
+    "P1m1": {
+      "total_operations": 2,
+      "unique_axis": "b",
+      "number": 6,
+      "generators": [
+        "x,y,z",
+        "x,-y,z"
+      ],
+      "full_name": "P1m1",
+      "hermann-manguin_symbol": "Pm",
+      "point_group": "m",
+      "type": "monoclinic"
+    },
+    "P1c1": {
+      "total_operations": 2,
+      "unique_axis": "b",
+      "number": 7,
+      "generators": [
+        "x,y,z",
+        "x,-y,z+1/2"
+      ],
+      "full_name": "P1c1",
+      "hermann-manguin_symbol": "Pc",
+      "point_group": "m",
+      "type": "monoclinic"
+    },
+    "C1m1": {
+      "total_operations": 4,
+      "unique_axis": "b",
+      "number": 8,
+      "generators": [
+        "x,y,z",
+        "x,-y,z",
+        "x+1/2,y+1/2,z"
+      ],
+      "full_name": "C1m1",
+      "hermann-manguin_symbol": "Cm",
+      "point_group": "m",
+      "type": "monoclinic"
+    },
+    "C1c1": {
+      "total_operations": 4,
+      "unique_axis": "b",
+      "number": 9,
+      "generators": [
+        "x,y,z",
+        "x,-y,z+1/2",
+        "x+1/2,y+1/2,z"
+      ],
+      "full_name": "C1c1",
+      "hermann-manguin_symbol": "Cc",
+      "point_group": "m",
+      "type": "monoclinic"
+    },
+    "P12/m1": {
+      "total_operations": 4,
+      "unique_axis": "b",
+      "number": 10,
+      "generators": [
+        "x,y,z",
+        "x,-y,z",
+        "-x,-y,-z"
+      ],
+      "full_name": "P12/m1",
+      "hermann-manguin_symbol": "P2/m",
+      "point_group": "2/m",
+      "type": "monoclinic"
+    },
+    "P12_1/m1": {
+      "total_operations": 4,
+      "unique_axis": "b",
+      "number": 11,
+      "generators": [
+        "x,y,z",
+        "-x,y+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "full_name": "P12_1/m1",
+      "hermann-manguin_symbol": "P21/m",
+      "point_group": "2/m",
+      "type": "monoclinic"
+    },
+    "C12/m1": {
+      "total_operations": 8,
+      "unique_axis": "b",
+      "number": 12,
+      "generators": [
+        "x,y,z",
+        "-x,y,-z",
+        "-x,-y,-z",
+        "x+1/2,y+1/2,z"
+      ],
+      "full_name": "C12/m1",
+      "hermann-manguin_symbol": "C2/m",
+      "point_group": "2/m",
+      "type": "monoclinic"
+    },
+    "P12/c1": {
+      "total_operations": 4,
+      "unique_axis": "b",
+      "number": 13,
+      "generators": [
+        "x,y,z",
+        "-x,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "full_name": "P12/c1",
+      "hermann-manguin_symbol": "P2/c",
+      "point_group": "2/m",
+      "type": "monoclinic"
+    },
+    "P12_1/c1": {
+      "total_operations": 4,
+      "unique_axis": "b",
+      "number": 14,
+      "generators": [
+        "x,y,z",
+        "-x,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "full_name": "P12_1/c1",
+      "hermann-manguin_symbol": "P21/c",
+      "point_group": "2/m",
+      "type": "monoclinic"
+    },
+    "C12/c1": {
+      "total_operations": 8,
+      "unique_axis": "b",
+      "number": 15,
+      "generators": [
+        "x,y,z",
+        "-x,y,-z+1/2",
+        "-x,-y,-z",
+        "x+1/2,y+1/2,z"
+      ],
+      "full_name": "C12/c1",
+      "hermann-manguin_symbol": "C2/c",
+      "point_group": "2/m",
+      "type": "monoclinic"
+    },
+    "P222": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z"
+      ],
+      "number": 16,
+      "full_name": "P222",
+      "hermann-manguin_symbol": "P222",
+      "point_group": "222",
+      "type": "orthorhombic"
+    },
+    "P222_1": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "-x,y,-z+1/2"
+      ],
+      "number": 17,
+      "full_name": "P222_1",
+      "hermann-manguin_symbol": "P2221",
+      "point_group": "222",
+      "type": "orthorhombic"
+    },
+    "P2_12_12": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x+1/2,y+1/2,-z"
+      ],
+      "number": 18,
+      "full_name": "P2_12_12",
+      "hermann-manguin_symbol": "P21212",
+      "point_group": "222",
+      "type": "orthorhombic"
+    },
+    "P2_12_121": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2"
+      ],
+      "number": 19,
+      "full_name": "P2_12_12_1",
+      "hermann-manguin_symbol": "P212121",
+      "point_group": "222",
+      "type": "orthorhombic"
+    },
+    "C222_1": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "-x,y,-z+1/2",
+        "x+1/2,y+1/2,z"
+      ],
+      "number": 20,
+      "full_name": "C222_1",
+      "hermann-manguin_symbol": "C2221",
+      "point_group": "222",
+      "type": "orthorhombic"
+    },
+    "C222": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "x+1/2,y+1/2,z"
+      ],
+      "number": 21,
+      "full_name": "C222",
+      "hermann-manguin_symbol": "C222",
+      "point_group": "222",
+      "type": "orthorhombic"
+    },
+    "F222": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "x,y+1/2,z+1/2",
+        "x+1/2,y,z+1/2"
+      ],
+      "number": 22,
+      "full_name": "F222",
+      "hermann-manguin_symbol": "F222",
+      "point_group": "222",
+      "type": "orthorhombic"
+    },
+    "I222": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "x+1/2,y+1/2,z+1/2"
+      ],
+      "number": 23,
+      "full_name": "I222",
+      "hermann-manguin_symbol": "I222",
+      "point_group": "222",
+      "type": "orthorhombic"
+    },
+    "I2_12_121": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "x+1/2,y+1/2,z+1/2"
+      ],
+      "number": 24,
+      "full_name": "I2_12_12_1",
+      "hermann-manguin_symbol": "I212121",
+      "point_group": "222",
+      "type": "orthorhombic"
+    },
+    "Pmm2": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "x,-y,z"
+      ],
+      "number": 25,
+      "full_name": "Pmm2",
+      "hermann-manguin_symbol": "Pmm2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Pmc2_1": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "x,-y,z+1/2"
+      ],
+      "number": 26,
+      "full_name": "Pmc2_1",
+      "hermann-manguin_symbol": "Pmc21",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Pcc2": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "x,-y,z+1/2"
+      ],
+      "number": 27,
+      "full_name": "Pcc2",
+      "hermann-manguin_symbol": "Pcc2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Pma2": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "x+1/2,-y,z"
+      ],
+      "number": 28,
+      "full_name": "Pma2",
+      "hermann-manguin_symbol": "Pma2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Pca2_1": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "x+1/2,-y,z"
+      ],
+      "number": 29,
+      "full_name": "Pca2_1",
+      "hermann-manguin_symbol": "Pca21",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Pnc2": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "x,-y+1/2,z+1/2"
+      ],
+      "number": 30,
+      "full_name": "Pnc2",
+      "hermann-manguin_symbol": "Pnc2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Pmn2_1": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z+1/2",
+        "x+1/2,-y,z+1/2"
+      ],
+      "number": 31,
+      "full_name": "Pmn2_1",
+      "hermann-manguin_symbol": "Pmn21",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Pba2": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "x+1/2,-y+1/2,z"
+      ],
+      "number": 32,
+      "full_name": "Pba2",
+      "hermann-manguin_symbol": "Pba2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Pna2_1": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "x+1/2,-y+1/2,z"
+      ],
+      "number": 33,
+      "full_name": "Pna2_1",
+      "hermann-manguin_symbol": "Pna21",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Pnn2": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "x+1/2,-y+1/2,z+1/2"
+      ],
+      "number": 34,
+      "full_name": "Pnn2",
+      "hermann-manguin_symbol": "Pnn2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Cmm2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "-x,-y,z",
+        "x,-y,z"
+      ],
+      "number": 35,
+      "full_name": "Cmm2",
+      "hermann-manguin_symbol": "Cmm2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Cmc2_1": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "-x,-y,z+1/2",
+        "x,-y,z+1/2"
+      ],
+      "number": 36,
+      "full_name": "Cmc2_1",
+      "hermann-manguin_symbol": "Cmc21",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Ccc2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "-x,-y,z",
+        "x,-y,z+1/2"
+      ],
+      "number": 37,
+      "full_name": "Ccc2",
+      "hermann-manguin_symbol": "Ccc2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Amm2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x,y+1/2,z+1/2",
+        "-x,-y,z",
+        "x,-y,z"
+      ],
+      "number": 38,
+      "full_name": "Amm2",
+      "hermann-manguin_symbol": "Amm2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Abm2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x,y+1/2,z+1/2",
+        "-x,-y,z",
+        "x,-y+1/2,z"
+      ],
+      "number": 39,
+      "full_name": "Aem2",
+      "hermann-manguin_symbol": "Aem2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Ama2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x,y+1/2,z+1/2",
+        "-x,-y,z",
+        "x+1/2,-y,z"
+      ],
+      "number": 40,
+      "full_name": "Ama2",
+      "hermann-manguin_symbol": "Ama2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Aba2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x,y+1/2,z+1/2",
+        "-x,-y,z",
+        "x+1/2,-y+1/2,z"
+      ],
+      "number": 41,
+      "full_name": "Aea2",
+      "hermann-manguin_symbol": "Aea2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Fmm2": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x,-y,z",
+        "x,-y,z"
+      ],
+      "number": 42,
+      "full_name": "Fmm2",
+      "hermann-manguin_symbol": "Fmm2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Fdd2": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x,-y,z",
+        "x+1/4,-y+1/4,z+1/4"
+      ],
+      "number": 43,
+      "full_name": "Fdd2",
+      "hermann-manguin_symbol": "Fdd2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Imm2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "x,-y,z"
+      ],
+      "number": 44,
+      "full_name": "Imm2",
+      "hermann-manguin_symbol": "Imm2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Iba2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "x+1/2,-y+1/2,z"
+      ],
+      "number": 45,
+      "full_name": "Iba2",
+      "hermann-manguin_symbol": "Iba2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Ima2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "x+1/2,-y,z"
+      ],
+      "number": 46,
+      "full_name": "Ima2",
+      "hermann-manguin_symbol": "Ima2",
+      "point_group": "mm2",
+      "type": "orthorhombic"
+    },
+    "Pmmm": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "-x,-y,-z"
+      ],
+      "number": 47,
+      "full_name": "P2/m2/m2/m",
+      "hermann-manguin_symbol": "Pmmm",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pnnn": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-x+1/2,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "Pnnn",
+      "number": 48,
+      "full_name": "P2/n2/n2/n",
+      "origin_choice": "1",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pccm": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 49,
+      "full_name": "P2/c2/c2/m",
+      "hermann-manguin_symbol": "Pccm",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pban": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-x+1/2,y,-z",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "Pban",
+      "number": 50,
+      "full_name": "P2/b2/a2/n",
+      "origin_choice": "1",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pmma": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z",
+        "-x,y,-z",
+        "-x,-y,-z"
+      ],
+      "number": 51,
+      "full_name": "P2_1/m2/m2/a",
+      "hermann-manguin_symbol": "Pmma",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pnna": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z",
+        "-x+1/2,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 52,
+      "full_name": "P2/n2_1/n2/a",
+      "hermann-manguin_symbol": "Pnna",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pmna": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z+1/2",
+        "-x+1/2,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 53,
+      "full_name": "P2/m2/n2_1/a",
+      "hermann-manguin_symbol": "Pmna",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pcca": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z",
+        "-x,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 54,
+      "full_name": "P2_1/c2/c2/a",
+      "hermann-manguin_symbol": "Pcca",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pbam": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x+1/2,y+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "number": 55,
+      "full_name": "P2_1/b2_1/a2/m",
+      "hermann-manguin_symbol": "Pbam",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pccn": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-x,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 56,
+      "full_name": "P2_1/c2_1/c2/n",
+      "hermann-manguin_symbol": "Pccn",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pbcm": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 57,
+      "full_name": "P2/b2_1/c2_1/m",
+      "hermann-manguin_symbol": "Pbcm",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pnnm": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x+1/2,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 58,
+      "full_name": "P2_1/n2_1/n2/m",
+      "hermann-manguin_symbol": "Pnnm",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pmmn": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-x,y+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "Pmmn",
+      "number": 59,
+      "full_name": "P2_1/m2_1/m2/n",
+      "origin_choice": "1",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pbcn": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z+1/2",
+        "-x,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 60,
+      "full_name": "P2_1/b2/c2_1/n",
+      "hermann-manguin_symbol": "Pbcn",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pbca": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 61,
+      "full_name": "P2_1/b2_1/c2_1/a",
+      "hermann-manguin_symbol": "Pbca",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Pnma": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "number": 62,
+      "full_name": "P2_1/n2_1/m2_1/a",
+      "hermann-manguin_symbol": "Pnma",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Cmcm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "-x,-y,z+1/2",
+        "-x,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 63,
+      "full_name": "C2/m2/c2_1/m",
+      "hermann-manguin_symbol": "Cmcm",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Cmce": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "-x,-y+1/2,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 64,
+      "full_name": "C2/m2/c2_1/e",
+      "hermann-manguin_symbol": "Cmce",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Cmmm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "-x,-y,-z"
+      ],
+      "number": 65,
+      "full_name": "C2/m2/m2/m",
+      "hermann-manguin_symbol": "Cmmm",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Cccm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "-x,-y,z",
+        "-x,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 66,
+      "full_name": "C2/c2/c2/m",
+      "hermann-manguin_symbol": "Cccm",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Cmma": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "-x,-y+1/2,z",
+        "-x,y+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "number": 67,
+      "full_name": "C2/m2/m2/e",
+      "hermann-manguin_symbol": "Cmme",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Ccca": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "-x+1/2,-y,z",
+        "-x,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "Ccce",
+      "number": 68,
+      "full_name": "C2/c2/c2/e",
+      "origin_choice": "1",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Fmmm": {
+      "total_operations": 32,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "-x,-y,-z"
+      ],
+      "number": 69,
+      "full_name": "F2/m2/m2/m",
+      "hermann-manguin_symbol": "Fmmm",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Fddd": {
+      "total_operations": 32,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x+3/4,-y+3/4,z",
+        "-x+3/4,y,-z+3/4",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "Fddd",
+      "number": 70,
+      "full_name": "F2/d2/d2/d",
+      "origin_choice": "1",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Immm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "-x,-y,-z"
+      ],
+      "number": 71,
+      "full_name": "I2/m2/m2/m",
+      "hermann-manguin_symbol": "Immm",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Ibam": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-x+1/2,y+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "number": 72,
+      "full_name": "I2/b2/a2/m",
+      "hermann-manguin_symbol": "Ibam",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Ibca": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 73,
+      "full_name": "I2_1/b2_1/c2_1/a",
+      "hermann-manguin_symbol": "Ibca",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "Imma": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y+1/2,z",
+        "-x,y+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "number": 74,
+      "full_name": "I2_1/m2_1/m2_1/a",
+      "hermann-manguin_symbol": "Imma",
+      "point_group": "mmm",
+      "type": "orthorhombic"
+    },
+    "P4": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z"
+      ],
+      "number": 75,
+      "full_name": "P4",
+      "hermann-manguin_symbol": "P4",
+      "point_group": "4",
+      "type": "tetragonal"
+    },
+    "P4_1": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "-y,x,z+1/4"
+      ],
+      "number": 76,
+      "full_name": "P4_1",
+      "hermann-manguin_symbol": "P41",
+      "point_group": "4",
+      "type": "tetragonal"
+    },
+    "P4_2": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z+1/2"
+      ],
+      "number": 77,
+      "full_name": "P4_2",
+      "hermann-manguin_symbol": "P42",
+      "point_group": "4",
+      "type": "tetragonal"
+    },
+    "P4_3": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "-y,x,z+3/4"
+      ],
+      "number": 78,
+      "full_name": "P4_3",
+      "hermann-manguin_symbol": "P43",
+      "point_group": "4",
+      "type": "tetragonal"
+    },
+    "I4": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-y,x,z"
+      ],
+      "number": 79,
+      "full_name": "I4",
+      "hermann-manguin_symbol": "I4",
+      "point_group": "4",
+      "type": "tetragonal"
+    },
+    "I4_1": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y+1/2,z+1/2",
+        "-y,x+1/2,z+1/4"
+      ],
+      "number": 80,
+      "full_name": "I4_1",
+      "hermann-manguin_symbol": "I41",
+      "point_group": "4",
+      "type": "tetragonal"
+    },
+    "P-4": {
+      "total_operations": 4,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "y,-x,-z"
+      ],
+      "number": 81,
+      "full_name": "P-4",
+      "hermann-manguin_symbol": "P-4",
+      "point_group": "-4",
+      "type": "tetragonal"
+    },
+    "I-4": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "y,-x,-z"
+      ],
+      "number": 82,
+      "full_name": "I-4",
+      "hermann-manguin_symbol": "I-4",
+      "point_group": "-4",
+      "type": "tetragonal"
+    },
+    "P4/m": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z",
+        "-x,-y,-z"
+      ],
+      "number": 83,
+      "full_name": "P4/m",
+      "hermann-manguin_symbol": "P4/m",
+      "point_group": "4/m",
+      "type": "tetragonal"
+    },
+    "P4_2/m": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 84,
+      "full_name": "P4_2/m",
+      "hermann-manguin_symbol": "P42/m",
+      "point_group": "4/m",
+      "type": "tetragonal"
+    },
+    "P4/n": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-y+1/2,x,z",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "P4/n",
+      "number": 85,
+      "full_name": "P4/n",
+      "origin_choice": "1",
+      "point_group": "4/m",
+      "type": "tetragonal"
+    },
+    "P4_2/n": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-y,x+1/2,z+1/2",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "P42/n",
+      "number": 86,
+      "full_name": "P4_2/n",
+      "origin_choice": "1",
+      "point_group": "4/m",
+      "type": "tetragonal"
+    },
+    "I4/m": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-y,x,z",
+        "-x,-y,-z"
+      ],
+      "number": 87,
+      "full_name": "I4/m",
+      "hermann-manguin_symbol": "I4/m",
+      "point_group": "4/m",
+      "type": "tetragonal"
+    },
+    "I4_1/a": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y,z+1/2",
+        "-y+3/4,x+1/4,z+1/4",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "I41/a",
+      "number": 88,
+      "full_name": "I4_1/a",
+      "origin_choice": "1",
+      "point_group": "4/m",
+      "type": "tetragonal"
+    },
+    "P422": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z",
+        "-x,y,-z"
+      ],
+      "number": 89,
+      "full_name": "P422",
+      "hermann-manguin_symbol": "P422",
+      "point_group": "422",
+      "type": "tetragonal"
+    },
+    "P42_12": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y+1/2,x+1/2,z",
+        "-x+1/2,y+1/2,-z"
+      ],
+      "number": 90,
+      "full_name": "P42_12",
+      "hermann-manguin_symbol": "P4212",
+      "point_group": "422",
+      "type": "tetragonal"
+    },
+    "P4_122": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "-y,x,z+1/4",
+        "-x,y,-z"
+      ],
+      "number": 91,
+      "full_name": "P4_122",
+      "hermann-manguin_symbol": "P4122",
+      "point_group": "422",
+      "type": "tetragonal"
+    },
+    "P4_12_12": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "-y+1/2,x+1/2,z+1/4",
+        "-x+1/2,y+1/2,-z+1/4"
+      ],
+      "number": 92,
+      "full_name": "P4_12_12",
+      "hermann-manguin_symbol": "P41212",
+      "point_group": "422",
+      "type": "tetragonal"
+    },
+    "P4_222": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z+1/2",
+        "-x,y,-z"
+      ],
+      "number": 93,
+      "full_name": "P4_222",
+      "hermann-manguin_symbol": "P4222",
+      "point_group": "422",
+      "type": "tetragonal"
+    },
+    "P4_22_12": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y+1/2,x+1/2,z+1/2",
+        "-x+1/2,y+1/2,-z+1/2"
+      ],
+      "number": 94,
+      "full_name": "P4_22_12",
+      "hermann-manguin_symbol": "P42212",
+      "point_group": "422",
+      "type": "tetragonal"
+    },
+    "P4_322": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "-y,x,z+3/4",
+        "-x,y,-z"
+      ],
+      "number": 95,
+      "full_name": "P4_322",
+      "hermann-manguin_symbol": "P4322",
+      "point_group": "422",
+      "type": "tetragonal"
+    },
+    "P4_32_12": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z+1/2",
+        "-y+1/2,x+1/2,z+3/4",
+        "-x+1/2,y+1/2,-z+3/4"
+      ],
+      "number": 96,
+      "full_name": "P4_32_12",
+      "hermann-manguin_symbol": "P43212",
+      "point_group": "422",
+      "type": "tetragonal"
+    },
+    "I422": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-y,x,z",
+        "-x,y,-z"
+      ],
+      "number": 97,
+      "full_name": "I422",
+      "hermann-manguin_symbol": "I422",
+      "point_group": "422",
+      "type": "tetragonal"
+    },
+    "I4_122": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y+1/2,z+1/2",
+        "-y,x+1/2,z+1/4",
+        "-x+1/2,y,-z+3/4"
+      ],
+      "number": 98,
+      "full_name": "I4_122",
+      "hermann-manguin_symbol": "I4122",
+      "point_group": "422",
+      "type": "tetragonal"
+    },
+    "P4mm": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z",
+        "x,-y,z"
+      ],
+      "number": 99,
+      "full_name": "P4mm",
+      "hermann-manguin_symbol": "P4mm",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "P4bm": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z",
+        "x+1/2,-y+1/2,z"
+      ],
+      "number": 100,
+      "full_name": "P4bm",
+      "hermann-manguin_symbol": "P4bm",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "P4_2cm": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z+1/2",
+        "x,-y,z+1/2"
+      ],
+      "number": 101,
+      "full_name": "P4_2cm",
+      "hermann-manguin_symbol": "P42cm",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "P4_2nm": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y+1/2,x+1/2,z+1/2",
+        "x+1/2,-y+1/2,z+1/2"
+      ],
+      "number": 102,
+      "full_name": "P4_2nm",
+      "hermann-manguin_symbol": "P42nm",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "P4cc": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z",
+        "x,-y,z+1/2"
+      ],
+      "number": 103,
+      "full_name": "P4cc",
+      "hermann-manguin_symbol": "P4cc",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "P4nc": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z",
+        "x+1/2,-y+1/2,z+1/2"
+      ],
+      "number": 104,
+      "full_name": "P4nc",
+      "hermann-manguin_symbol": "P4nc",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "P4_2mc": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z+1/2",
+        "x,-y,z"
+      ],
+      "number": 105,
+      "full_name": "P4_2mc",
+      "hermann-manguin_symbol": "P42mc",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "P4_2bc": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z+1/2",
+        "x+1/2,-y+1/2,z"
+      ],
+      "number": 106,
+      "full_name": "P4_2bc",
+      "hermann-manguin_symbol": "P42bc",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "I4mm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-y,x,z",
+        "x,-y,z"
+      ],
+      "number": 107,
+      "full_name": "I4mm",
+      "hermann-manguin_symbol": "I4mm",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "I4cm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-y,x,z",
+        "x,-y,z+1/2"
+      ],
+      "number": 108,
+      "full_name": "I4cm",
+      "hermann-manguin_symbol": "I4cm",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "I4_1md": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y+1/2,z+1/2",
+        "-y,x+1/2,z+1/4",
+        "x,-y,z"
+      ],
+      "number": 109,
+      "full_name": "I4_1md",
+      "hermann-manguin_symbol": "I41md",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "I4_1cd": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y+1/2,z+1/2",
+        "-y,x+1/2,z+1/4",
+        "x,-y,z+1/2"
+      ],
+      "number": 110,
+      "full_name": "I4_1cd",
+      "hermann-manguin_symbol": "I41cd",
+      "point_group": "4mm",
+      "type": "tetragonal"
+    },
+    "P-42m": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "y,-x,-z",
+        "-x,y,-z"
+      ],
+      "number": 111,
+      "full_name": "P-42m",
+      "hermann-manguin_symbol": "P-42m",
+      "point_group": "-42m",
+      "type": "tetragonal"
+    },
+    "P-42c": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "y,-x,-z",
+        "-x,y,-z+1/2"
+      ],
+      "number": 112,
+      "full_name": "P-42c",
+      "hermann-manguin_symbol": "P-42c",
+      "point_group": "-42m",
+      "type": "tetragonal"
+    },
+    "P-42_1m": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "y,-x,-z",
+        "-x+1/2,y+1/2,-z"
+      ],
+      "number": 113,
+      "full_name": "P-42_1m",
+      "hermann-manguin_symbol": "P-421m",
+      "point_group": "-42m",
+      "type": "tetragonal"
+    },
+    "P-42_1c": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "y,-x,-z",
+        "-x+1/2,y+1/2,-z+1/2"
+      ],
+      "number": 114,
+      "full_name": "P-42_1c",
+      "hermann-manguin_symbol": "P-421c",
+      "point_group": "-42m",
+      "type": "tetragonal"
+    },
+    "P-4m2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "y,-x,-z",
+        "x,-y,z"
+      ],
+      "number": 115,
+      "full_name": "P-4m2",
+      "hermann-manguin_symbol": "P-4m2",
+      "point_group": "-4m2",
+      "type": "tetragonal"
+    },
+    "P-4c2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "y,-x,-z",
+        "x,-y,z+1/2"
+      ],
+      "number": 116,
+      "full_name": "P-4c2",
+      "hermann-manguin_symbol": "P-4c2",
+      "point_group": "-4m2",
+      "type": "tetragonal"
+    },
+    "P-4b2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "y,-x,-z",
+        "x+1/2,-y+1/2,z"
+      ],
+      "number": 117,
+      "full_name": "P-4b2",
+      "hermann-manguin_symbol": "P-4b2",
+      "point_group": "-4m2",
+      "type": "tetragonal"
+    },
+    "P-4n2": {
+      "total_operations": 8,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "y,-x,-z",
+        "x+1/2,-y+1/2,z+1/2"
+      ],
+      "number": 118,
+      "full_name": "P-4n2",
+      "hermann-manguin_symbol": "P-4n2",
+      "point_group": "-4m2",
+      "type": "tetragonal"
+    },
+    "I-4m2": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "y,-x,-z",
+        "x,-y,z"
+      ],
+      "number": 119,
+      "full_name": "I-4m2",
+      "hermann-manguin_symbol": "I-4m2",
+      "point_group": "-4m2",
+      "type": "tetragonal"
+    },
+    "I-4c2": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "y,-x,-z",
+        "x,-y,z+1/2"
+      ],
+      "number": 120,
+      "full_name": "I-4c2",
+      "hermann-manguin_symbol": "I-4c2",
+      "point_group": "-4m2",
+      "type": "tetragonal"
+    },
+    "I-42m": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "y,-x,-z",
+        "-x,y,-z"
+      ],
+      "number": 121,
+      "full_name": "I-42m",
+      "hermann-manguin_symbol": "I-42m",
+      "point_group": "-42m",
+      "type": "tetragonal"
+    },
+    "I-42d": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "y,-x,-z",
+        "-x+1/2,y,-z+3/4"
+      ],
+      "number": 122,
+      "full_name": "I-42d",
+      "hermann-manguin_symbol": "I-42d",
+      "point_group": "-42m",
+      "type": "tetragonal"
+    },
+    "P4/mmm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z",
+        "-x,y,-z",
+        "-x,-y,-z"
+      ],
+      "number": 123,
+      "full_name": "P4/m2/m2/m",
+      "hermann-manguin_symbol": "P4/mmm",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4/mcc": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z",
+        "-x,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 124,
+      "full_name": "P4/m2/c2/c",
+      "hermann-manguin_symbol": "P4/mcc",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4/nbm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-y+1/2,x,z",
+        "-x+1/2,y,-z",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "P4/nbm",
+      "number": 125,
+      "full_name": "P4/n2/b2/m",
+      "origin_choice": "1",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4/nnc": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-y+1/2,x,z",
+        "-x+1/2,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "P4/nnc",
+      "number": 126,
+      "full_name": "P4/n2/n2/c",
+      "origin_choice": "1",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4/mbm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z",
+        "-x+1/2,y+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "number": 127,
+      "full_name": "P4/m2_1/b2/m",
+      "hermann-manguin_symbol": "P4/mbm",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4/mnc": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z",
+        "-x+1/2,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 128,
+      "full_name": "P4/m2_1/n2/c",
+      "hermann-manguin_symbol": "P4/mnc",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4/nmm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-y+1/2,x,z",
+        "-x,y+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "P4/nmm",
+      "number": 129,
+      "full_name": "P4/n2_1/m2/m",
+      "origin_choice": "1",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4/ncc": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-y+1/2,x,z",
+        "-x,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "P4/ncc",
+      "number": 130,
+      "full_name": "P4/n2_1/c2/c",
+      "origin_choice": "1",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4_2/mmc": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z+1/2",
+        "-x,y,-z",
+        "-x,-y,-z"
+      ],
+      "number": 131,
+      "full_name": "P4_2/m2/m2/c",
+      "hermann-manguin_symbol": "P42/mmc",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4_2/mcm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z+1/2",
+        "-x,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 132,
+      "full_name": "P4_2/m2/c2/m",
+      "hermann-manguin_symbol": "P42/mcm",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4_2/nbc": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-y+1/2,x,z+1/2",
+        "-x+1/2,y,-z",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "P42/nbc",
+      "number": 133,
+      "full_name": "P4_2/n2/b2/c",
+      "origin_choice": "1",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4_2/nnm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-y+1/2,x,z+1/2",
+        "-x+1/2,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "P42/nnm",
+      "number": 134,
+      "full_name": "P4_2/n2/n2/m",
+      "origin_choice": "1",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4_2/mbc": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y,x,z+1/2",
+        "-x+1/2,y+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "number": 135,
+      "full_name": "P4_2/m2_1/b2/c",
+      "hermann-manguin_symbol": "P42/mbc",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4_2/mnm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-y+1/2,x+1/2,z+1/2",
+        "-x+1/2,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 136,
+      "full_name": "P4_2/m2_1/n2/m",
+      "hermann-manguin_symbol": "P42/mnm",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4_2/nmc": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-y+1/2,x,z+1/2",
+        "-x,y+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "P42/nmc",
+      "number": 137,
+      "full_name": "P4_2/n2_1/m2/c",
+      "origin_choice": "1",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P4_2/ncm": {
+      "total_operations": 16,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-y+1/2,x,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "P42/ncm",
+      "number": 138,
+      "full_name": "P4_2/n2_1/c2/m",
+      "origin_choice": "1",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "I4/mmm": {
+      "total_operations": 32,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-y,x,z",
+        "-x,y,-z",
+        "-x,-y,-z"
+      ],
+      "number": 139,
+      "full_name": "I4/m2/m2/m",
+      "hermann-manguin_symbol": "I4/mmm",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "I4/mcm": {
+      "total_operations": 32,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-y,x,z",
+        "-x,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 140,
+      "full_name": "I4/m2/c2/m",
+      "hermann-manguin_symbol": "I4/mcm",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "I4_1/amd": {
+      "total_operations": 32,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y,z+1/2",
+        "-y+1/4,x+3/4,z+1/4",
+        "-x+1/2,y,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "I41/amd",
+      "number": 141,
+      "full_name": "I4_1/a2/m2/d",
+      "origin_choice": "1",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "I4_1/acd": {
+      "total_operations": 32,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y,z+1/2",
+        "-y+1/4,x+3/4,z+1/4",
+        "-x+1/2,y,-z",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "I41/acd",
+      "number": 142,
+      "full_name": "I4_1/a2/c2/d",
+      "origin_choice": "1",
+      "point_group": "4/mmm",
+      "type": "tetragonal"
+    },
+    "P3": {
+      "total_operations": 3,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z"
+      ],
+      "number": 143,
+      "full_name": "P3",
+      "hermann-manguin_symbol": "P3",
+      "point_group": "3",
+      "type": "trigonal"
+    },
+    "P3_1": {
+      "total_operations": 3,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+1/3"
+      ],
+      "number": 144,
+      "full_name": "P3_1",
+      "hermann-manguin_symbol": "P31",
+      "point_group": "3",
+      "type": "trigonal"
+    },
+    "P3_2": {
+      "total_operations": 3,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+2/3"
+      ],
+      "number": 145,
+      "full_name": "P3_2",
+      "hermann-manguin_symbol": "P32",
+      "point_group": "3",
+      "type": "trigonal"
+    },
+    "R3H": {
+      "total_operations": 9,
+      "generators": [
+        "x,y,z",
+        "x+1/3,y+2/3,z+2/3",
+        "-y,x-y,z"
+      ],
+      "number": 146,
+      "axes": "hexagonal",
+      "full_name": "R3",
+      "hermann-manguin_symbol": "R3",
+      "point_group": "3",
+      "type": "trigonal"
+    },
+    "P-3": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,-z"
+      ],
+      "number": 147,
+      "full_name": "P-3",
+      "hermann-manguin_symbol": "P-3",
+      "point_group": "-3",
+      "type": "trigonal"
+    },
+    "R-3H": {
+      "total_operations": 18,
+      "generators": [
+        "x,y,z",
+        "x+1/3,y+2/3,z+2/3",
+        "-y,x-y,z",
+        "-x,-y,-z"
+      ],
+      "number": 148,
+      "axes": "hexagonal",
+      "full_name": "R-3",
+      "hermann-manguin_symbol": "R-3",
+      "point_group": "-3",
+      "type": "trigonal"
+    },
+    "P312": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-y,-x,-z"
+      ],
+      "number": 149,
+      "full_name": "P312",
+      "hermann-manguin_symbol": "P312",
+      "point_group": "312",
+      "type": "trigonal"
+    },
+    "P321": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "y,x,-z"
+      ],
+      "number": 150,
+      "full_name": "P321",
+      "hermann-manguin_symbol": "P321",
+      "point_group": "321",
+      "type": "trigonal"
+    },
+    "P3_112": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+1/3",
+        "-y,-x,-z+2/3"
+      ],
+      "number": 151,
+      "full_name": "P3_112",
+      "hermann-manguin_symbol": "P3112",
+      "point_group": "312",
+      "type": "trigonal"
+    },
+    "P3_121": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+1/3",
+        "y,x,-z"
+      ],
+      "number": 152,
+      "full_name": "P3_121",
+      "hermann-manguin_symbol": "P3121",
+      "point_group": "321",
+      "type": "trigonal"
+    },
+    "P3_212": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+2/3",
+        "-y,-x,-z+1/3"
+      ],
+      "number": 153,
+      "full_name": "P3_212",
+      "hermann-manguin_symbol": "P3212",
+      "point_group": "312",
+      "type": "trigonal"
+    },
+    "P3_221": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+2/3",
+        "y,x,-z"
+      ],
+      "number": 154,
+      "full_name": "P3_221",
+      "hermann-manguin_symbol": "P3221",
+      "point_group": "321",
+      "type": "trigonal"
+    },
+    "R32H": {
+      "total_operations": 18,
+      "generators": [
+        "x,y,z",
+        "x+1/3,y+2/3,z+2/3",
+        "-y,x-y,z",
+        "y,x,-z"
+      ],
+      "number": 155,
+      "axes": "hexagonal",
+      "full_name": "R32",
+      "hermann-manguin_symbol": "R32",
+      "point_group": "32",
+      "type": "trigonal"
+    },
+    "P3m1": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-y,-x,z"
+      ],
+      "number": 156,
+      "full_name": "P3m1",
+      "hermann-manguin_symbol": "P3m1",
+      "point_group": "3m1",
+      "type": "trigonal"
+    },
+    "P31m": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "y,x,z"
+      ],
+      "number": 157,
+      "full_name": "P31m",
+      "hermann-manguin_symbol": "P31m",
+      "point_group": "31m",
+      "type": "trigonal"
+    },
+    "P3c1": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-y,-x,z+1/2"
+      ],
+      "number": 158,
+      "full_name": "P3c1",
+      "hermann-manguin_symbol": "P3c1",
+      "point_group": "3m1",
+      "type": "trigonal"
+    },
+    "P31c": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "y,x,z+1/2"
+      ],
+      "number": 159,
+      "full_name": "P31c",
+      "hermann-manguin_symbol": "P31c",
+      "point_group": "31m",
+      "type": "trigonal"
+    },
+    "R3mH": {
+      "total_operations": 18,
+      "generators": [
+        "x,y,z",
+        "x+1/3,y+2/3,z+2/3",
+        "-y,x-y,z",
+        "-y,-x,z"
+      ],
+      "number": 160,
+      "axes": "hexagonal",
+      "full_name": "R3m",
+      "hermann-manguin_symbol": "R3m",
+      "point_group": "3m",
+      "type": "trigonal"
+    },
+    "R3cH": {
+      "total_operations": 18,
+      "generators": [
+        "x,y,z",
+        "x+2/3,y+1/3,z+1/3",
+        "-y,x-y,z",
+        "-y,-x,z+1/2"
+      ],
+      "number": 161,
+      "axes": "hexagonal",
+      "full_name": "R3c",
+      "hermann-manguin_symbol": "R3c",
+      "point_group": "3m",
+      "type": "trigonal"
+    },
+    "P-31m": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-y,-x,-z",
+        "-x,-y,-z"
+      ],
+      "number": 162,
+      "full_name": "P-312/m",
+      "hermann-manguin_symbol": "P-31m",
+      "point_group": "-31m",
+      "type": "trigonal"
+    },
+    "P-31c": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-y,-x,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 163,
+      "full_name": "P-312/c",
+      "hermann-manguin_symbol": "P-31c",
+      "point_group": "-31m",
+      "type": "trigonal"
+    },
+    "P-3m1": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "y,x,-z",
+        "-x,-y,-z"
+      ],
+      "number": 164,
+      "full_name": "P-32/m1",
+      "hermann-manguin_symbol": "P-3m1",
+      "point_group": "-3m1",
+      "type": "trigonal"
+    },
+    "P-3c1": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "y,x,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 165,
+      "full_name": "P-32/c1",
+      "hermann-manguin_symbol": "P-3c1",
+      "point_group": "-3m1",
+      "type": "trigonal"
+    },
+    "R-3mH": {
+      "total_operations": 36,
+      "generators": [
+        "x,y,z",
+        "x+1/3,y+2/3,z+2/3",
+        "-y,x-y,z",
+        "y,x,-z",
+        "-x,-y,-z"
+      ],
+      "number": 166,
+      "axes": "hexagonal",
+      "full_name": "R-32/m",
+      "hermann-manguin_symbol": "R-3m",
+      "point_group": "-3m",
+      "type": "trigonal"
+    },
+    "R-3cH": {
+      "total_operations": 36,
+      "generators": [
+        "x,y,z",
+        "x+2/3,y+1/3,z+1/3",
+        "-y,x-y,z",
+        "y,x,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 167,
+      "axes": "hexagonal",
+      "full_name": "R-32/c",
+      "hermann-manguin_symbol": "R-3c",
+      "point_group": "-3m",
+      "type": "trigonal"
+    },
+    "P6": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z"
+      ],
+      "number": 168,
+      "full_name": "P6",
+      "hermann-manguin_symbol": "P6",
+      "point_group": "6",
+      "type": "hexagonal"
+    },
+    "P6_1": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+1/3",
+        "-x,-y,z+1/2"
+      ],
+      "number": 169,
+      "full_name": "P6_1",
+      "hermann-manguin_symbol": "P61",
+      "point_group": "6",
+      "type": "hexagonal"
+    },
+    "P6_5": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+2/3",
+        "-x,-y,z+1/2"
+      ],
+      "number": 170,
+      "full_name": "P6_5",
+      "hermann-manguin_symbol": "P65",
+      "point_group": "6",
+      "type": "hexagonal"
+    },
+    "P6_2": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+2/3",
+        "-x,-y,z"
+      ],
+      "number": 171,
+      "full_name": "P6_2",
+      "hermann-manguin_symbol": "P62",
+      "point_group": "6",
+      "type": "hexagonal"
+    },
+    "P6_4": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+1/3",
+        "-x,-y,z"
+      ],
+      "number": 172,
+      "full_name": "P6_4",
+      "hermann-manguin_symbol": "P64",
+      "point_group": "6",
+      "type": "hexagonal"
+    },
+    "P6_3": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z+1/2"
+      ],
+      "number": 173,
+      "full_name": "P6_3",
+      "hermann-manguin_symbol": "P63",
+      "point_group": "6",
+      "type": "hexagonal"
+    },
+    "P-6": {
+      "total_operations": 6,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "x,y,-z"
+      ],
+      "number": 174,
+      "full_name": "P-6",
+      "hermann-manguin_symbol": "P-6",
+      "point_group": "-6",
+      "type": "hexagonal"
+    },
+    "P6/m": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z",
+        "-x,-y,-z"
+      ],
+      "number": 175,
+      "full_name": "P6/m",
+      "hermann-manguin_symbol": "P6/m",
+      "point_group": "6/m",
+      "type": "hexagonal"
+    },
+    "P6_3/m": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 176,
+      "full_name": "P6_3/m",
+      "hermann-manguin_symbol": "P63/m",
+      "point_group": "6/m",
+      "type": "hexagonal"
+    },
+    "P622": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z",
+        "y,x,-z"
+      ],
+      "number": 177,
+      "full_name": "P622",
+      "hermann-manguin_symbol": "P622",
+      "point_group": "622",
+      "type": "hexagonal"
+    },
+    "P6_122": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+1/3",
+        "-x,-y,z+1/2",
+        "y,x,-z+1/3"
+      ],
+      "number": 178,
+      "full_name": "P6_122",
+      "hermann-manguin_symbol": "P6122",
+      "point_group": "622",
+      "type": "hexagonal"
+    },
+    "P6_522": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+2/3",
+        "-x,-y,z+1/2",
+        "y,x,-z+2/3"
+      ],
+      "number": 179,
+      "full_name": "P6_522",
+      "hermann-manguin_symbol": "P6522",
+      "point_group": "622",
+      "type": "hexagonal"
+    },
+    "P6_222": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+2/3",
+        "-x,-y,z",
+        "y,x,-z+2/3"
+      ],
+      "number": 180,
+      "full_name": "P6_222",
+      "hermann-manguin_symbol": "P6222",
+      "point_group": "622",
+      "type": "hexagonal"
+    },
+    "P6_422": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z+1/3",
+        "-x,-y,z",
+        "y,x,-z+1/3"
+      ],
+      "number": 181,
+      "full_name": "P6_422",
+      "hermann-manguin_symbol": "P6422",
+      "point_group": "622",
+      "type": "hexagonal"
+    },
+    "P6_322": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z+1/2",
+        "y,x,-z"
+      ],
+      "number": 182,
+      "full_name": "P6_322",
+      "hermann-manguin_symbol": "P6322",
+      "point_group": "622",
+      "type": "hexagonal"
+    },
+    "P6mm": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z",
+        "-y,-x,z"
+      ],
+      "number": 183,
+      "full_name": "P6mm",
+      "hermann-manguin_symbol": "P6mm",
+      "point_group": "6mm",
+      "type": "hexagonal"
+    },
+    "P6cc": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z",
+        "-y,-x,z+1/2"
+      ],
+      "number": 184,
+      "full_name": "P6cc",
+      "hermann-manguin_symbol": "P6cc",
+      "point_group": "6mm",
+      "type": "hexagonal"
+    },
+    "P6_3cm": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z+1/2",
+        "-y,-x,z+1/2"
+      ],
+      "number": 185,
+      "full_name": "P6_3cm",
+      "hermann-manguin_symbol": "P63cm",
+      "point_group": "6mm",
+      "type": "hexagonal"
+    },
+    "P6_3mc": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z+1/2",
+        "-y,-x,z"
+      ],
+      "number": 186,
+      "full_name": "P6_3mc",
+      "hermann-manguin_symbol": "P63mc",
+      "point_group": "6mm",
+      "type": "hexagonal"
+    },
+    "P-6m2": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "x,y,-z",
+        "-y,-x,z"
+      ],
+      "number": 187,
+      "full_name": "P-6m2",
+      "hermann-manguin_symbol": "P-6m2",
+      "point_group": "-6m2",
+      "type": "hexagonal"
+    },
+    "P-6c2": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "x,y,-z+1/2",
+        "-y,-x,z+1/2"
+      ],
+      "number": 188,
+      "full_name": "P-6c2",
+      "hermann-manguin_symbol": "P-6c2",
+      "point_group": "-6m2",
+      "type": "hexagonal"
+    },
+    "P-62m": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "x,y,-z",
+        "y,x,-z"
+      ],
+      "number": 189,
+      "full_name": "P-62m",
+      "hermann-manguin_symbol": "P-62m",
+      "point_group": "-62m",
+      "type": "hexagonal"
+    },
+    "P-62c": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "x,y,-z+1/2",
+        "y,x,-z"
+      ],
+      "number": 190,
+      "full_name": "P-62c",
+      "hermann-manguin_symbol": "P-62c",
+      "point_group": "-62m",
+      "type": "hexagonal"
+    },
+    "P6/mmm": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z",
+        "y,x,-z",
+        "-x,-y,-z"
+      ],
+      "number": 191,
+      "full_name": "P6/m2/m2/m",
+      "hermann-manguin_symbol": "P6/mmm",
+      "point_group": "6/mmm",
+      "type": "hexagonal"
+    },
+    "P6/mcc": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z",
+        "y,x,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 192,
+      "full_name": "P6/m2/c2/c",
+      "hermann-manguin_symbol": "P6/mcc",
+      "point_group": "6/mmm",
+      "type": "hexagonal"
+    },
+    "P6_3/mcm": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z+1/2",
+        "y,x,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 193,
+      "full_name": "P6_3/m2/c2/m",
+      "hermann-manguin_symbol": "P63/mcm",
+      "point_group": "6/mmm",
+      "type": "hexagonal"
+    },
+    "P6_3/mmc": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-y,x-y,z",
+        "-x,-y,z+1/2",
+        "y,x,-z",
+        "-x,-y,-z"
+      ],
+      "number": 194,
+      "full_name": "P6_3/m2/m2/c",
+      "hermann-manguin_symbol": "P63/mmc",
+      "point_group": "6/mmm",
+      "type": "hexagonal"
+    },
+    "P23": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y"
+      ],
+      "number": 195,
+      "full_name": "P23",
+      "hermann-manguin_symbol": "P23",
+      "point_group": "23",
+      "type": "cubic"
+    },
+    "F23": {
+      "total_operations": 48,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y"
+      ],
+      "number": 196,
+      "full_name": "F23",
+      "hermann-manguin_symbol": "F23",
+      "point_group": "23",
+      "type": "cubic"
+    },
+    "I23": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y"
+      ],
+      "number": 197,
+      "full_name": "I23",
+      "hermann-manguin_symbol": "I23",
+      "point_group": "23",
+      "type": "cubic"
+    },
+    "P2_13": {
+      "total_operations": 12,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "z,x,y"
+      ],
+      "number": 198,
+      "full_name": "P2_13",
+      "hermann-manguin_symbol": "P213",
+      "point_group": "23",
+      "type": "cubic"
+    },
+    "I2_13": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "z,x,y"
+      ],
+      "number": 199,
+      "full_name": "I2_13",
+      "hermann-manguin_symbol": "I213",
+      "point_group": "23",
+      "type": "cubic"
+    },
+    "Pm-3": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "-x,-y,-z"
+      ],
+      "number": 200,
+      "full_name": "P2/m-3",
+      "hermann-manguin_symbol": "Pm-3",
+      "point_group": "m-3",
+      "type": "cubic"
+    },
+    "Pn-3": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-x+1/2,y,-z+1/2",
+        "z,x,y",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "Pn-3",
+      "number": 201,
+      "full_name": "P2/n-3",
+      "origin_choice": "1",
+      "point_group": "m-3",
+      "type": "cubic"
+    },
+    "Fm-3": {
+      "total_operations": 96,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "-x,-y,-z"
+      ],
+      "number": 202,
+      "full_name": "F2/m-3",
+      "hermann-manguin_symbol": "Fm-3",
+      "point_group": "m-3",
+      "type": "cubic"
+    },
+    "Fd-3": {
+      "total_operations": 96,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x+1/4,-y+1/4,z",
+        "-x+1/4,y,-z+1/4",
+        "z,x,y",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "Fd-3",
+      "number": 203,
+      "full_name": "F2/d-3",
+      "origin_choice": "1",
+      "point_group": "m-3",
+      "type": "cubic"
+    },
+    "Im-3": {
+      "total_operations": 48,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "-x,-y,-z"
+      ],
+      "number": 204,
+      "full_name": "I2/m-3",
+      "hermann-manguin_symbol": "Im-3",
+      "point_group": "m-3",
+      "type": "cubic"
+    },
+    "Pa-3": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "z,x,y",
+        "-x,-y,-z"
+      ],
+      "number": 205,
+      "full_name": "P2_1/a-3",
+      "hermann-manguin_symbol": "Pa-3",
+      "point_group": "m-3",
+      "type": "cubic"
+    },
+    "Ia-3": {
+      "total_operations": 48,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "z,x,y",
+        "-x,-y,-z"
+      ],
+      "number": 206,
+      "full_name": "I2_1/a-3",
+      "hermann-manguin_symbol": "Ia-3",
+      "point_group": "m-3",
+      "type": "cubic"
+    },
+    "P432": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y,x,-z"
+      ],
+      "number": 207,
+      "full_name": "P432",
+      "hermann-manguin_symbol": "P432",
+      "point_group": "432",
+      "type": "cubic"
+    },
+    "P4_232": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y+1/2,x+1/2,-z+1/2"
+      ],
+      "number": 208,
+      "full_name": "P4_232",
+      "hermann-manguin_symbol": "P4232",
+      "point_group": "432",
+      "type": "cubic"
+    },
+    "F432": {
+      "total_operations": 96,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y,x,-z"
+      ],
+      "number": 209,
+      "full_name": "F432",
+      "hermann-manguin_symbol": "F432",
+      "point_group": "432",
+      "type": "cubic"
+    },
+    "F4_132": {
+      "total_operations": 96,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x,-y+1/2,z+1/2",
+        "-x+1/2,y+1/2,-z",
+        "z,x,y",
+        "y+3/4,x+1/4,-z+3/4"
+      ],
+      "number": 210,
+      "full_name": "F4_132",
+      "hermann-manguin_symbol": "F4132",
+      "point_group": "432",
+      "type": "cubic"
+    },
+    "I432": {
+      "total_operations": 48,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y,x,-z"
+      ],
+      "number": 211,
+      "full_name": "I432",
+      "hermann-manguin_symbol": "I432",
+      "point_group": "432",
+      "type": "cubic"
+    },
+    "P4_332": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "z,x,y",
+        "y+1/4,x+3/4,-z+3/4"
+      ],
+      "number": 212,
+      "full_name": "P4_332",
+      "hermann-manguin_symbol": "P4332",
+      "point_group": "432",
+      "type": "cubic"
+    },
+    "P4_132": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "z,x,y",
+        "y+3/4,x+1/4,-z+1/4"
+      ],
+      "number": 213,
+      "full_name": "P4_132",
+      "hermann-manguin_symbol": "P4132",
+      "point_group": "432",
+      "type": "cubic"
+    },
+    "I4_132": {
+      "total_operations": 48,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "z,x,y",
+        "y+3/4,x+1/4,-z+1/4"
+      ],
+      "number": 214,
+      "full_name": "I4_132",
+      "hermann-manguin_symbol": "I4132",
+      "point_group": "432",
+      "type": "cubic"
+    },
+    "P-43m": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y,x,z"
+      ],
+      "number": 215,
+      "full_name": "P-43m",
+      "hermann-manguin_symbol": "P-43m",
+      "point_group": "-43m",
+      "type": "cubic"
+    },
+    "F-43m": {
+      "total_operations": 96,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y,x,z"
+      ],
+      "number": 216,
+      "full_name": "F-43m",
+      "hermann-manguin_symbol": "F-43m",
+      "point_group": "-43m",
+      "type": "cubic"
+    },
+    "I-43m": {
+      "total_operations": 48,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y,x,z"
+      ],
+      "number": 217,
+      "full_name": "I-43m",
+      "hermann-manguin_symbol": "I-43m",
+      "point_group": "-43m",
+      "type": "cubic"
+    },
+    "P-43n": {
+      "total_operations": 24,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y+1/2,x+1/2,z+1/2"
+      ],
+      "number": 218,
+      "full_name": "P-43n",
+      "hermann-manguin_symbol": "P-43n",
+      "point_group": "-43m",
+      "type": "cubic"
+    },
+    "F-43c": {
+      "total_operations": 96,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y+1/2,x+1/2,z+1/2"
+      ],
+      "number": 219,
+      "full_name": "F-43c",
+      "hermann-manguin_symbol": "F-43c",
+      "point_group": "-43m",
+      "type": "cubic"
+    },
+    "I-43d": {
+      "total_operations": 48,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "z,x,y",
+        "y+1/4,x+1/4,z+1/4"
+      ],
+      "number": 220,
+      "full_name": "I-43d",
+      "hermann-manguin_symbol": "I-43d",
+      "point_group": "-43m",
+      "type": "cubic"
+    },
+    "Pm-3m": {
+      "total_operations": 48,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y,x,-z",
+        "-x,-y,-z"
+      ],
+      "number": 221,
+      "full_name": "P4/m-32/m",
+      "hermann-manguin_symbol": "Pm-3m",
+      "point_group": "m-3m",
+      "type": "cubic"
+    },
+    "Pn-3n": {
+      "total_operations": 48,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-x+1/2,y,-z+1/2",
+        "z,x,y",
+        "y,x,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "Pn-3n",
+      "number": 222,
+      "full_name": "P4/n-32/n",
+      "origin_choice": "1",
+      "point_group": "m-3m",
+      "type": "cubic"
+    },
+    "Pm-3n": {
+      "total_operations": 48,
+      "generators": [
+        "x,y,z",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y+1/2,x+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 223,
+      "full_name": "P4_2/m-32/n",
+      "hermann-manguin_symbol": "Pm-3n",
+      "point_group": "m-3m",
+      "type": "cubic"
+    },
+    "Pn-3m": {
+      "total_operations": 48,
+      "generators": [
+        "x,y,z",
+        "-x+1/2,-y+1/2,z",
+        "-x+1/2,y,-z+1/2",
+        "z,x,y",
+        "y+1/2,x+1/2,-z",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "Pn-3m",
+      "number": 224,
+      "full_name": "P4_2/n-32/m",
+      "origin_choice": "1",
+      "point_group": "m-3m",
+      "type": "cubic"
+    },
+    "Fm-3m": {
+      "total_operations": 192,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y,x,-z",
+        "-x,-y,-z"
+      ],
+      "number": 225,
+      "full_name": "F4/m-32/m",
+      "hermann-manguin_symbol": "Fm-3m",
+      "point_group": "m-3m",
+      "type": "cubic"
+    },
+    "Fm-3c": {
+      "total_operations": 192,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y+1/2,x+1/2,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "number": 226,
+      "full_name": "F4/m-32/c",
+      "hermann-manguin_symbol": "Fm-3c",
+      "point_group": "m-3m",
+      "type": "cubic"
+    },
+    "Fd-3m": {
+      "total_operations": 192,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x+3/4,-y+1/4,z+1/2",
+        "-x+1/4,y+1/2,-z+3/4",
+        "z,x,y",
+        "y+3/4,x+1/4,-z+1/2",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "Fd-3m",
+      "number": 227,
+      "full_name": "F4_1/d-32/m",
+      "origin_choice": "1",
+      "point_group": "m-3m",
+      "type": "cubic"
+    },
+    "Fd-3c": {
+      "total_operations": 192,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z",
+        "x+1/2,y,z+1/2",
+        "-x+1/4,-y+3/4,z+1/2",
+        "-x+3/4,y+1/2,-z+1/4",
+        "z,x,y",
+        "y+3/4,x+1/4,-z",
+        "-x,-y,-z"
+      ],
+      "hermann-manguin_symbol": "Fd-3c",
+      "number": 228,
+      "full_name": "F4_1/d-32/c",
+      "origin_choice": "1",
+      "point_group": "m-3m",
+      "type": "cubic"
+    },
+    "Im-3m": {
+      "total_operations": 96,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x,-y,z",
+        "-x,y,-z",
+        "z,x,y",
+        "y,x,-z",
+        "-x,-y,-z"
+      ],
+      "number": 229,
+      "full_name": "I4/m-32/m",
+      "hermann-manguin_symbol": "Im-3m",
+      "point_group": "m-3m",
+      "type": "cubic"
+    },
+    "Ia-3d": {
+      "total_operations": 96,
+      "generators": [
+        "x,y,z",
+        "x+1/2,y+1/2,z+1/2",
+        "-x+1/2,-y,z+1/2",
+        "-x,y+1/2,-z+1/2",
+        "z,x,y",
+        "y+3/4,x+1/4,-z+1/4",
+        "-x,-y,-z"
+      ],
+      "number": 230,
+      "full_name": "I4_1/a-32/d",
+      "hermann-manguin_symbol": "Ia-3d",
+      "point_group": "m-3m",
+      "type": "cubic"
+    }
+  }
+}

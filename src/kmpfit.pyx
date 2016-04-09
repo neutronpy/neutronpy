@@ -96,42 +96,40 @@ Example
 
 .. code-block:: python
     #!/usr/bin/env python
-    
+
     import numpy
     from kapteyn import kmpfit
-    
+
     def residuals(p, d):
        a, b, c = p
        x, y, w = d
        return (y - (a*x*x+b*x+c))/w
-    
+
     x = numpy.arange(-50,50,0.2)
     y = 2*x*x + 3*x - 3 + 2*numpy.random.standard_normal(x.shape)
     w = numpy.ones(x.shape)
-    
+
     a = [x, y, w]
     f = kmpfit.Fitter(residuals, params0=[1, 2, 0], data=a)
-    
+
     f.fit()                                     # call fit method
     print f.params
     print f.message
     # result:
     # [2.0001022845514451, 3.0014019147386, -3.0096629062273133]
     # mpfit (potential) success: Convergence in chi-square value (1)
-    
+
     a[1] = 3*x*x  - 2*x - 5 + 0.5*numpy.random.standard_normal(x.shape)
     print f(params0=[2, 0, -1])                 # call Fitter object
     # result:
     # [3.0000324686457871, -1.999896340813663, -5.0060187435412962]
 
 """
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-# pylint: skip-file
-
+# define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 import numpy as np
-cimport numpy as np
 from libc.stdlib cimport calloc, free
 from kmpfit cimport *
+cimport numpy as np
 
 np.import_array()
 
@@ -286,7 +284,7 @@ cdef class Fitter(object):
     **Configuration attributes**
     The following attributes can be set by the user to specify a
     Fitter object's behavior.
-    
+
     Attributes
     ----------
     parinfo
@@ -378,64 +376,64 @@ cdef class Fitter(object):
     property parinfo:
         """A list of dicts with parameter contraints, one dict
         per parameter, or None if not given.
-        
+
         Each dict can have zero or more items with the following keys
         and values:
-        
+
          ``'fixed'``: a boolean value, whether the parameter is to be held fixed or
          not. Default: not fixed.
-        
+
          ``'limits'``: a two-element tuple or list with upper end lower parameter
          limits or  None, which indicates that the parameter is not bounded on
          this side. Default: no limits.
-        
-         ``'step'``: the step size to be used in calculating the numerical 
+
+         ``'step'``: the step size to be used in calculating the numerical
          derivatives. Default: step size is computed automatically.
-        
+
          ``'side'``: the sidedness of the finite difference when computing
          numerical derivatives.  This item can take four values:
-        
+
             * 0 - one-sided derivative computed automatically (default)
-        
+
             * 1 - one-sided derivative :math:`(f(x+h) - f(x)  )/h`
-        
+
             * -1 - one-sided derivative :math:`(f(x)   - f(x-h))/h`
-        
+
             * 2 - two-sided derivative :math:`(f(x+h) - f(x-h))/2h`
-        
+
             * 3 - user-computed explicit derivatives
-        
+
             where :math:`h` is the value of the parameter ``'step'``
             described above.
-         
+
             The "automatic" one-sided derivative method will chose a
             direction for the finite difference which does not
             violate any constraints.  The other methods do not
             perform this check.  The two-sided method is in
             principle more precise, but requires twice as many
             function evaluations.  Default: 0.
-        
+
          ``'deriv_debug'``: boolean to specify console debug logging of
          user-computed derivatives. True: enable debugging.
          If debugging is enabled,
          then ``'side'`` should be set to 0, 1, -1 or 2, depending on which
          numerical derivative you wish to compare to.
          Default: False.
-        
+
         As an example, consider a function with four parameters of which the
         first parameter should be fixed and for the third parameter explicit
         derivatives should be used. In this case, ``parinfo`` should have the value
         ``[{'fixed': True}, None, {'side': 3}, None]`` or
         ``[{'fixed': True}, {}, {'side': 3}, {}]``.
-        
+
         """
         def __get__(self):
             return self._parinfo
-        
+
         def __set__(self, value):
             if value is not None:
                 self._parinfo = value
-    
+
     property params:
         '''A NumPy array, list or tuple with the fitted parameters. This attribute has the same type as :attr:`params0`.
         '''
@@ -480,7 +478,7 @@ cdef class Fitter(object):
         '''
         def __get__(self):
             return self._params0
-        
+
         def __set__(self, value):
             if value is not None:
                 self._params0 = value
@@ -490,7 +488,7 @@ cdef class Fitter(object):
         '''
         def __get__(self):
             return self._data
-        
+
         def __set__(self, value):
             self._data = value
 
@@ -499,11 +497,11 @@ cdef class Fitter(object):
         '''
         def __get__(self):
             return self.config.ftol
-    
+
         def __set__(self, value):
             if value is not None:
                 self.config.ftol = value
-    
+
         def __del__(self):
             self.config.ftol = 0.0
 
@@ -612,7 +610,7 @@ cdef class Fitter(object):
         '''
         def __get__(self):
             return self._npar
-        
+
         def __set__(self, value):
             if value is not None:
                 self._npar = value
@@ -622,7 +620,7 @@ cdef class Fitter(object):
         '''
         def __get__(self):
             return self._message
-        
+
         def __set__(self, value):
             self._message = value
 
@@ -733,7 +731,7 @@ cdef class Fitter(object):
         params0 : array_like
             Optional argument *params0*: initial fitting parameters.
             (Default: previous initial values are used.)
-        
+
         """
         cdef mp_par *c_par
 
@@ -857,7 +855,7 @@ cdef class Fitter(object):
         If parameters were fixed in the fit, the corresponding
         error is 0 and there is no contribution to the confidence
         interval.
-        
+
         """
         from scipy.stats import t
 

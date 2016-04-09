@@ -1,29 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# pylint: skip-file
+r'''Sphinx Documentation builder
 
+'''
+from distutils.version import LooseVersion
+import glob
+import inspect
+from os.path import relpath, dirname
 import os
-import re
 import sys
-
+import sphinx
+import neutronpy_sphinx_rtd_theme
 try:
     import neutronpy
 except ImportError:
     raise RuntimeError('Cannot import neutronpy, it must be installed before building documentation. Please investigate.')
-
-from distutils.version import LooseVersion
-import sphinx
 if LooseVersion(sphinx.__version__) < LooseVersion('1'):
     raise RuntimeError('Need sphinx >= 1 for numpydoc to work correctly')
 
-needs_sphinx = '1.0'
+needs_sphinx = '1.4'
 
 # -----------------------------------------------------------------------------
 # releases (changelog) configuration
 # -----------------------------------------------------------------------------
-#releases_issue_uri = "https://github.com/neutronpy/neutronpy/issues/%s"
-#releases_release_uri = "https://github.com/neutronpy/neutronpy/tree/%s"
+# releases_issue_uri = "https://github.com/neutronpy/neutronpy/issues/%s"
+# releases_release_uri = "https://github.com/neutronpy/neutronpy/tree/%s"
 releases_github_path = "neutronpy/neutronpy"
 releases_debug = False
 
@@ -40,13 +41,11 @@ sys.path.insert(1, os.path.abspath('sphinxext'))
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.coverage',
-              'sphinx.ext.pngmath',
+              'sphinx.ext.imgmath',
               'sphinx.ext.intersphinx',
               'matplotlib.sphinxext.plot_directive',
               'numpydoc',
-              'releases',
-#               'autodoc_cython',
-              ]
+              'releases']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -105,8 +104,6 @@ pygments_style = 'neutronpy_sphinx_rtd_theme.support.LightStyle'
 # -----------------------------------------------------------------------------
 # HTML output
 # -----------------------------------------------------------------------------
-
-import neutronpy_sphinx_rtd_theme
 html_theme = "neutronpy_sphinx_rtd_theme"
 html_theme_path = [neutronpy_sphinx_rtd_theme.get_html_theme_path()]
 
@@ -122,14 +119,10 @@ html_theme_options = {'logo': 'logo.png',
                       'github_banner': True,
                       'link': '#3782BE',
                       'link_hover': '#3782BE',
-                      'sidebar_includehidden': True, 
-                      #'pygments_style': pygments_style,
-                      }
+                      'sidebar_includehidden': True}
 
 # Sister-site links to API docs
-html_theme_options['extra_nav_links'] = {
-     "NeutronPy Docs": 'http://neutronpy.github.io/reference',
-}
+html_theme_options['extra_nav_links'] = {"NeutronPy Docs": 'http://neutronpy.github.io/reference'}
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -196,10 +189,7 @@ htmlhelp_basename = 'neutronpydoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 _stdauthor = 'David M Fobes'
-latex_documents = [
-  ('reference/index', 'neutronpy-ref.tex', 'NeutronPy Reference',
-   _stdauthor, 'manual'),
-]
+latex_documents = [('reference/index', 'neutronpy-ref.tex', 'NeutronPy Reference', _stdauthor, 'manual')]
 
 # Additional stuff for the LaTeX preamble.
 latex_preamble = r'''
@@ -248,12 +238,9 @@ man_pages = [
 # Texinfo output
 # -----------------------------------------------------------------------------
 
-texinfo_documents = [
-  ("contents", 'numpy', 'Numpy Documentation', _stdauthor, 'Numpy',
-   "NumPy: array processing for numbers, strings, records, and objects.",
-   'Programming',
-   1),
-]
+texinfo_documents = [("contents", 'numpy', 'Numpy Documentation', _stdauthor,
+                      'Numpy', "NumPy: array processing for numbers, strings, records, and objects.",
+                      'Programming', 1)]
 
 # -----------------------------------------------------------------------------
 # Intersphinx configuration
@@ -272,7 +259,6 @@ intersphinx_mapping = {'http://docs.python.org/dev': None}
 #
 # autodoc.add_documenter(DocsonlyMethodDocumenter)
 
-import glob
 numpydoc_show_class_members = False
 # autodoc_default_flags = ['members']
 autodoc_docstring_signature = True
@@ -298,9 +284,6 @@ coverage_ignore_c_items = {}
 # Source code links
 # -----------------------------------------------------------------------------
 
-import inspect
-from os.path import relpath, dirname
-
 for name in ['sphinx.ext.linkcode', 'numpydoc.linkcode']:
     try:
         __import__(name)
@@ -310,6 +293,7 @@ for name in ['sphinx.ext.linkcode', 'numpydoc.linkcode']:
         pass
 else:
     print("NOTE: linkcode extension not found -- no links to source generated")
+
 
 def linkcode_resolve(domain, info):
     """
@@ -352,8 +336,6 @@ def linkcode_resolve(domain, info):
     fn = relpath(fn, start=dirname(neutronpy.__file__))
 
     if 'dev' in neutronpy.__version__:
-        return "http://github.com/neutronpy/neutronpy/blob/master/neutronpy/%s%s" % (
-           fn, linespec)
+        return "http://github.com/neutronpy/neutronpy/blob/master/neutronpy/%s%s" % (fn, linespec)
     else:
-        return "http://github.com/neutronpy/neutronpy/blob/v%s/neutronpy/%s%s" % (
-           neutronpy.__version__, fn, linespec)
+        return "http://github.com/neutronpy/neutronpy/blob/v%s/neutronpy/%s%s" % (neutronpy.__version__, fn, linespec)

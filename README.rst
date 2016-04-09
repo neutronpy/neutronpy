@@ -3,7 +3,7 @@ NeutronPy
 
 .. warning::
 
-    v0.x.0 releases may not be backwards compatibile. This software is in a fluid state and undergoing rapid changes. The v1.0.0 release will indicate the start of backwards compatibile updates. Major number releases (x.0) may break backwards compatibility, but users will be notified in the changelog.
+    New releases may not be backwards compatibile. This software is in a fluid state and undergoes rapid changes. Bug fix and maintanence releases will generally be  backwards compatibile updates. Major number releases (x.0) could potentially break backwards compatibility, but users will be notified in the changelog.
 
 **master** |master| :: **develop** |develop| :: **coverage** |coverage| :: **code analysis** |climate|
 
@@ -69,9 +69,13 @@ Documentation
 -------------
 Documentation is available at `neutronpy.github.io <https://neutronpy.github.io/>`_, or can be built using sphinx by navigating to the doc/ folder and executing ``make html``; results will be in the ``doc/_build/`` folder.
 
+To ask questions you may either `request access <http://goo.gl/forms/odTeCYQQEc>`_ to the `Neutronpy Slack Team <http://neutronpy.slack.com>`_, or create a `Github issue <https://github.com/neutronpy/neutronpy/issues/new>`_.
+
 Contributions
 -------------
 Contributions may be made by submitting a pull-request for review using the fork-and-pull method on GitHub. Feature requests and bug reports can be made using the GitHub issues interface.
+
+To discuss development you may `request access <http://goo.gl/forms/odTeCYQQEc>`_ to the `Neutronpy Slack Team <http://neutronpy.slack.com>`_.
 
 Copyright & Licensing
 ---------------------

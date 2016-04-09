@@ -1,0 +1,3344 @@
+{
+  "100Mo": {
+    "Abs xs": 0.4,
+    "Coh b": 6.73,
+    "Coh xs": 5.69,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.69,
+    "conc": 9.63
+  },
+  "100Ru": {
+    "Abs xs": 4.8,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 12.6
+  },
+  "101Ru": {
+    "Abs xs": 3.3,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": null,
+    "Inc xs": null,
+    "Scatt xs": null,
+    "conc": 17
+  },
+  "102Pd": {
+    "Abs xs": 3.4,
+    "Coh b": 7.7,
+    "Coh xs": 7.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.5,
+    "conc": 1.02
+  },
+  "102Ru": {
+    "Abs xs": 1.17,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 144.8,
+    "conc": 31.6
+  },
+  "104Pd": {
+    "Abs xs": 0.6,
+    "Coh b": 7.7,
+    "Coh xs": 7.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.5,
+    "conc": 11.14
+  },
+  "104Ru": {
+    "Abs xs": 0.31,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.483,
+    "conc": 18.7
+  },
+  "105Pd": {
+    "Abs xs": 20.0,
+    "Coh b": 5.5,
+    "Coh xs": 3.8,
+    "Inc b": -2.6,
+    "Inc xs": 0.8,
+    "Scatt xs": 4.6,
+    "conc": 22.33
+  },
+  "106Cd": {
+    "Abs xs": 1,
+    "Coh b": 5.0,
+    "Coh xs": 3.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.1,
+    "conc": 1.25
+  },
+  "106Pd": {
+    "Abs xs": 0.304,
+    "Coh b": 6.4,
+    "Coh xs": 5.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.1,
+    "conc": 27.33
+  },
+  "107Ag": {
+    "Abs xs": 37.6,
+    "Coh b": 7.555,
+    "Coh xs": 7.17,
+    "Inc b": 1.0,
+    "Inc xs": 0.13,
+    "Scatt xs": 7.3,
+    "conc": 51.83
+  },
+  "108Cd": {
+    "Abs xs": 1.1,
+    "Coh b": 5.4,
+    "Coh xs": 3.7,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.7,
+    "conc": 0.89
+  },
+  "108Pd": {
+    "Abs xs": 8.55,
+    "Coh b": 4.1,
+    "Coh xs": 2.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.1,
+    "conc": 26.46
+  },
+  "109Ag": {
+    "Abs xs": 91.0,
+    "Coh b": 4.165,
+    "Coh xs": 2.18,
+    "Inc b": -1.6,
+    "Inc xs": 0.32,
+    "Scatt xs": 2.5,
+    "conc": 48.17
+  },
+  "10B": {
+    "Abs xs": 3835.0,
+    "Coh b": [
+      -0.1,
+      -1.066
+    ],
+    "Coh xs": 0.144,
+    "Inc b": [
+      -4.7,
+      1.231
+    ],
+    "Inc xs": 3,
+    "Scatt xs": 3.1,
+    "conc": 20
+  },
+  "110Cd": {
+    "Abs xs": 11,
+    "Coh b": 5.9,
+    "Coh xs": 4.4,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.4,
+    "conc": 12.51
+  },
+  "110Pd": {
+    "Abs xs": 0.226,
+    "Coh b": 7.7,
+    "Coh xs": 7.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.5,
+    "conc": 11.72
+  },
+  "111Cd": {
+    "Abs xs": 24,
+    "Coh b": 6.5,
+    "Coh xs": 5.3,
+    "Inc b": null,
+    "Inc xs": 0.3,
+    "Scatt xs": 5.6,
+    "conc": 12.81
+  },
+  "112Cd": {
+    "Abs xs": 2.2,
+    "Coh b": 6.4,
+    "Coh xs": 5.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.1,
+    "conc": 24.13
+  },
+  "112Sn": {
+    "Abs xs": 1,
+    "Coh b": 6.0,
+    "Coh xs": 4.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.5,
+    "conc": 1
+  },
+  "113Cd": {
+    "Abs xs": 20600.0,
+    "Coh b": [
+      -8.0,
+      -5.73
+    ],
+    "Coh xs": 12.1,
+    "Inc b": null,
+    "Inc xs": 0.3,
+    "Scatt xs": 12.4,
+    "conc": 12.22
+  },
+  "113In": {
+    "Abs xs": 12.0,
+    "Coh b": 5.39,
+    "Coh xs": 3.65,
+    "Inc b": 0.017,
+    "Inc xs": 3.7e-05,
+    "Scatt xs": 3.65,
+    "conc": 4.3
+  },
+  "114Cd": {
+    "Abs xs": 0.34,
+    "Coh b": 7.5,
+    "Coh xs": 7.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.1,
+    "conc": 28.72
+  },
+  "114Sn": {
+    "Abs xs": 0.114,
+    "Coh b": 6.2,
+    "Coh xs": 4.8,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.8,
+    "conc": 0.7
+  },
+  "115In": {
+    "Abs xs": 202.0,
+    "Coh b": [
+      4.01,
+      -0.0562
+    ],
+    "Coh xs": 2.02,
+    "Inc b": -2.1,
+    "Inc xs": 0.55,
+    "Scatt xs": 2.57,
+    "conc": 95.7
+  },
+  "115Sn": {
+    "Abs xs": 30.0,
+    "Coh b": 6.0,
+    "Coh xs": 4.5,
+    "Inc b": null,
+    "Inc xs": 0.3,
+    "Scatt xs": 4.8,
+    "conc": 0.4
+  },
+  "116Cd": {
+    "Abs xs": 0.075,
+    "Coh b": 6.3,
+    "Coh xs": 5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5,
+    "conc": 7.47
+  },
+  "116Sn": {
+    "Abs xs": 0.14,
+    "Coh b": 5.93,
+    "Coh xs": 4.42,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.42,
+    "conc": 14.7
+  },
+  "117Sn": {
+    "Abs xs": 2.3,
+    "Coh b": 6.48,
+    "Coh xs": 5.28,
+    "Inc b": null,
+    "Inc xs": 0.3,
+    "Scatt xs": 5.6,
+    "conc": 7.7
+  },
+  "118Sn": {
+    "Abs xs": 0.22,
+    "Coh b": 6.07,
+    "Coh xs": 4.63,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.63,
+    "conc": 24.3
+  },
+  "119Sn": {
+    "Abs xs": 2.2,
+    "Coh b": 6.12,
+    "Coh xs": 4.71,
+    "Inc b": null,
+    "Inc xs": 0.3,
+    "Scatt xs": 5,
+    "conc": 8.6
+  },
+  "11B": {
+    "Abs xs": 0.0055,
+    "Coh b": 6.65,
+    "Coh xs": 5.56,
+    "Inc b": -1.3,
+    "Inc xs": 0.21,
+    "Scatt xs": 5.77,
+    "conc": 80
+  },
+  "120Sn": {
+    "Abs xs": 0.14,
+    "Coh b": 6.49,
+    "Coh xs": 5.29,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.29,
+    "conc": 32.4
+  },
+  "120Te": {
+    "Abs xs": 2.3,
+    "Coh b": 5.3,
+    "Coh xs": 3.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.5,
+    "conc": 0.096
+  },
+  "121Sb": {
+    "Abs xs": 5.75,
+    "Coh b": 5.71,
+    "Coh xs": 4.1,
+    "Inc b": -0.05,
+    "Inc xs": 0.0003,
+    "Scatt xs": 4.1,
+    "conc": 57.3
+  },
+  "122Sn": {
+    "Abs xs": 0.18,
+    "Coh b": 5.74,
+    "Coh xs": 4.14,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.14,
+    "conc": 4.6
+  },
+  "122Te": {
+    "Abs xs": 3.4,
+    "Coh b": 3.8,
+    "Coh xs": 1.8,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.8,
+    "conc": 2.6
+  },
+  "123Sb": {
+    "Abs xs": 3.8,
+    "Coh b": 5.38,
+    "Coh xs": 3.64,
+    "Inc b": -0.1,
+    "Inc xs": 0.001,
+    "Scatt xs": 3.64,
+    "conc": 42.7
+  },
+  "123Te": {
+    "Abs xs": 418.0,
+    "Coh b": [
+      -0.05,
+      -0.116
+    ],
+    "Coh xs": 0.002,
+    "Inc b": -2.04,
+    "Inc xs": 0.52,
+    "Scatt xs": 0.52,
+    "conc": 0.908
+  },
+  "124Sn": {
+    "Abs xs": 0.133,
+    "Coh b": 5.97,
+    "Coh xs": 4.48,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.48,
+    "conc": 5.6
+  },
+  "124Te": {
+    "Abs xs": 6.8,
+    "Coh b": 7.96,
+    "Coh xs": 8,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 8,
+    "conc": 4.816
+  },
+  "124Xe": {
+    "Abs xs": 165.0,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 0.1
+  },
+  "125Te": {
+    "Abs xs": 1.55,
+    "Coh b": 5.02,
+    "Coh xs": 3.17,
+    "Inc b": -0.26,
+    "Inc xs": 0.008,
+    "Scatt xs": 3.18,
+    "conc": 7.14
+  },
+  "126Te": {
+    "Abs xs": 1.04,
+    "Coh b": 5.56,
+    "Coh xs": 3.88,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.88,
+    "conc": 18.95
+  },
+  "126Xe": {
+    "Abs xs": 3.5,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 0.09
+  },
+  "128Te": {
+    "Abs xs": 0.215,
+    "Coh b": 5.89,
+    "Coh xs": 4.36,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.36,
+    "conc": 31.69
+  },
+  "12C": {
+    "Abs xs": 0.00353,
+    "Coh b": 6.6511,
+    "Coh xs": 5.559,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.559,
+    "conc": 98.9
+  },
+  "130Ba": {
+    "Abs xs": 30.0,
+    "Coh b": -3.6,
+    "Coh xs": 1.6,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.6,
+    "conc": 0.11
+  },
+  "130Te": {
+    "Abs xs": 0.29,
+    "Coh b": 6.02,
+    "Coh xs": 4.55,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.55,
+    "conc": 33.8
+  },
+  "132Ba": {
+    "Abs xs": 7,
+    "Coh b": 7.8,
+    "Coh xs": 7.6,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.6,
+    "conc": 0.1
+  },
+  "132Xe": {
+    "Abs xs": 0.45,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 26.9
+  },
+  "134Ba": {
+    "Abs xs": 2.0,
+    "Coh b": 5.7,
+    "Coh xs": 4.08,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.08,
+    "conc": 2.42
+  },
+  "134Xe": {
+    "Abs xs": 0.265,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 10.4
+  },
+  "135Ba": {
+    "Abs xs": 5.8,
+    "Coh b": 4.67,
+    "Coh xs": 2.74,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 3.2,
+    "conc": 6.59
+  },
+  "136Ba": {
+    "Abs xs": 0.68,
+    "Coh b": 4.91,
+    "Coh xs": 3.03,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.03,
+    "conc": 7.85
+  },
+  "136Ce": {
+    "Abs xs": 7.3,
+    "Coh b": 5.8,
+    "Coh xs": 4.23,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.23,
+    "conc": 0.19
+  },
+  "136Xe": {
+    "Abs xs": 0.26,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 8.9
+  },
+  "137Ba": {
+    "Abs xs": 3.6,
+    "Coh b": 6.83,
+    "Coh xs": 5.86,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 6.4,
+    "conc": 11.23
+  },
+  "138Ba": {
+    "Abs xs": 0.27,
+    "Coh b": 4.84,
+    "Coh xs": 2.94,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.94,
+    "conc": 71.7
+  },
+  "138Ce": {
+    "Abs xs": 1.1,
+    "Coh b": 6.7,
+    "Coh xs": 5.64,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.64,
+    "conc": 0.25
+  },
+  "138La": {
+    "Abs xs": 57.0,
+    "Coh b": 8.0,
+    "Coh xs": 8.0,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 8.5,
+    "conc": 0.09
+  },
+  "139La": {
+    "Abs xs": 8.93,
+    "Coh b": 8.24,
+    "Coh xs": 8.53,
+    "Inc b": 3.0,
+    "Inc xs": 1.13,
+    "Scatt xs": 9.66,
+    "conc": 99.91
+  },
+  "13C": {
+    "Abs xs": 0.00137,
+    "Coh b": 6.19,
+    "Coh xs": 4.81,
+    "Inc b": -0.52,
+    "Inc xs": 0.034,
+    "Scatt xs": 4.84,
+    "conc": 1.1
+  },
+  "140Ce": {
+    "Abs xs": 0.57,
+    "Coh b": 4.84,
+    "Coh xs": 2.94,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.94,
+    "conc": 88.48
+  },
+  "142Ce": {
+    "Abs xs": 0.95,
+    "Coh b": 4.75,
+    "Coh xs": 2.84,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.84,
+    "conc": 11.08
+  },
+  "142Nd": {
+    "Abs xs": 18.7,
+    "Coh b": 7.7,
+    "Coh xs": 7.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.5,
+    "conc": 27.16
+  },
+  "143Nd": {
+    "Abs xs": 337.0,
+    "Coh b": 14.0,
+    "Coh xs": 25.0,
+    "Inc b": 21.0,
+    "Inc xs": 55.0,
+    "Scatt xs": 80.0,
+    "conc": 12.18
+  },
+  "144Nd": {
+    "Abs xs": 3.6,
+    "Coh b": 2.8,
+    "Coh xs": 1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1,
+    "conc": 23.8
+  },
+  "144Sm": {
+    "Abs xs": 0.7,
+    "Coh b": -3.0,
+    "Coh xs": 1.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.0,
+    "conc": 3.1
+  },
+  "145Nd": {
+    "Abs xs": 42.0,
+    "Coh b": 14.0,
+    "Coh xs": 25.0,
+    "Inc b": null,
+    "Inc xs": 5.0,
+    "Scatt xs": 30.0,
+    "conc": 8.29
+  },
+  "146Nd": {
+    "Abs xs": 1.4,
+    "Coh b": 8.7,
+    "Coh xs": 9.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 9.5,
+    "conc": 17.19
+  },
+  "147Sm": {
+    "Abs xs": 57.0,
+    "Coh b": 14.0,
+    "Coh xs": 25.0,
+    "Inc b": 11.0,
+    "Inc xs": 143,
+    "Scatt xs": 39.0,
+    "conc": 15.1
+  },
+  "148Nd": {
+    "Abs xs": 2.5,
+    "Coh b": 5.7,
+    "Coh xs": 4.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.1,
+    "conc": 5.75
+  },
+  "148Sm": {
+    "Abs xs": 2.4,
+    "Coh b": -3.0,
+    "Coh xs": 1.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.0,
+    "conc": 11.3
+  },
+  "149Sm": {
+    "Abs xs": 42080.0,
+    "Coh b": [
+      -19.2,
+      -11.7
+    ],
+    "Coh xs": 63.5,
+    "Inc b": [
+      31.4,
+      -10.3
+    ],
+    "Inc xs": 137.0,
+    "Scatt xs": 200.0,
+    "conc": 13.9
+  },
+  "14N": {
+    "Abs xs": 1.91,
+    "Coh b": 9.37,
+    "Coh xs": 11.03,
+    "Inc b": 2.0,
+    "Inc xs": 0.5,
+    "Scatt xs": 11.53,
+    "conc": 99.63
+  },
+  "150Nd": {
+    "Abs xs": 1.2,
+    "Coh b": 5.3,
+    "Coh xs": 3.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.5,
+    "conc": 5.63
+  },
+  "150Sm": {
+    "Abs xs": 104.0,
+    "Coh b": 14.0,
+    "Coh xs": 25.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 25.0,
+    "conc": 7.4
+  },
+  "151Eu": {
+    "Abs xs": 9100.0,
+    "Coh b": [
+      6.13,
+      -2.53
+    ],
+    "Coh xs": 5.5,
+    "Inc b": [
+      4.5,
+      -2.14
+    ],
+    "Inc xs": 3.1,
+    "Scatt xs": 8.6,
+    "conc": 47.8
+  },
+  "152Gd": {
+    "Abs xs": 735.0,
+    "Coh b": 10.0,
+    "Coh xs": 13.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 13.0,
+    "conc": 0.2
+  },
+  "152Sm": {
+    "Abs xs": 206.0,
+    "Coh b": -5.0,
+    "Coh xs": 3.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.1,
+    "conc": 26.6
+  },
+  "153Eu": {
+    "Abs xs": 312.0,
+    "Coh b": 8.22,
+    "Coh xs": 8.5,
+    "Inc b": 3.2,
+    "Inc xs": 1.3,
+    "Scatt xs": 9.8,
+    "conc": 52.2
+  },
+  "154Gd": {
+    "Abs xs": 85.0,
+    "Coh b": 10.0,
+    "Coh xs": 13.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 13.0,
+    "conc": 2.1
+  },
+  "154Sm": {
+    "Abs xs": 8.4,
+    "Coh b": 9.3,
+    "Coh xs": 11.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 11.0,
+    "conc": 22.6
+  },
+  "155Gd": {
+    "Abs xs": 61100.0,
+    "Coh b": [
+      6.0,
+      -17.0
+    ],
+    "Coh xs": 40.8,
+    "Inc b": [
+      5.0,
+      -13.16
+    ],
+    "Inc xs": 25.0,
+    "Scatt xs": 66.0,
+    "conc": 14.8
+  },
+  "156Dy": {
+    "Abs xs": 33.0,
+    "Coh b": 6.1,
+    "Coh xs": 4.7,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.7,
+    "conc": 0.06
+  },
+  "156Gd": {
+    "Abs xs": 1.5,
+    "Coh b": 6.3,
+    "Coh xs": 5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5,
+    "conc": 20.6
+  },
+  "157Gd": {
+    "Abs xs": 259000.0,
+    "Coh b": [
+      -1.14,
+      -71.9
+    ],
+    "Coh xs": 650.0,
+    "Inc b": [
+      5.0,
+      -55.8
+    ],
+    "Inc xs": 394.0,
+    "Scatt xs": 1044.0,
+    "conc": 15.7
+  },
+  "158Dy": {
+    "Abs xs": 43.0,
+    "Coh b": 6.0,
+    "Coh xs": 5.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.0,
+    "conc": 0.1
+  },
+  "158Gd": {
+    "Abs xs": 2.2,
+    "Coh b": 9.0,
+    "Coh xs": 10.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 10.0,
+    "conc": 24.8
+  },
+  "15N": {
+    "Abs xs": 2.4e-05,
+    "Coh b": 6.44,
+    "Coh xs": 5.21,
+    "Inc b": -0.02,
+    "Inc xs": 5e-05,
+    "Scatt xs": 5.21,
+    "conc": 0.37
+  },
+  "160Dy": {
+    "Abs xs": 56.0,
+    "Coh b": 6.7,
+    "Coh xs": 5.6,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.6,
+    "conc": 2.34
+  },
+  "160Gd": {
+    "Abs xs": 0.77,
+    "Coh b": 9.15,
+    "Coh xs": 10.52,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 10.52,
+    "conc": 21.8
+  },
+  "161Dy": {
+    "Abs xs": 600.0,
+    "Coh b": 10.3,
+    "Coh xs": 13.3,
+    "Inc b": 4.9,
+    "Inc xs": 3.0,
+    "Scatt xs": 16.0,
+    "conc": 19
+  },
+  "162Dy": {
+    "Abs xs": 194.0,
+    "Coh b": -1.4,
+    "Coh xs": 0.25,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 0.25,
+    "conc": 25.5
+  },
+  "162Er": {
+    "Abs xs": 19.0,
+    "Coh b": 8.8,
+    "Coh xs": 9.7,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 9.7,
+    "conc": 0.14
+  },
+  "163Dy": {
+    "Abs xs": 124.0,
+    "Coh b": 5.0,
+    "Coh xs": 3.1,
+    "Inc b": 1.3,
+    "Inc xs": 0.21,
+    "Scatt xs": 3.3,
+    "conc": 24.9
+  },
+  "164Dy": {
+    "Abs xs": 2840.0,
+    "Coh b": [
+      49.4,
+      -0.79
+    ],
+    "Coh xs": 307.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 307.0,
+    "conc": 28.1
+  },
+  "164Er": {
+    "Abs xs": 13.0,
+    "Coh b": 8.2,
+    "Coh xs": 8.4,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 8.4,
+    "conc": 1.56
+  },
+  "166Er": {
+    "Abs xs": 19.6,
+    "Coh b": 10.6,
+    "Coh xs": 14.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 14.1,
+    "conc": 33.4
+  },
+  "167Er": {
+    "Abs xs": 659.0,
+    "Coh b": 3.0,
+    "Coh xs": 1.1,
+    "Inc b": 1.0,
+    "Inc xs": 0.13,
+    "Scatt xs": 1.2,
+    "conc": 22.9
+  },
+  "168Er": {
+    "Abs xs": 2.74,
+    "Coh b": 7.4,
+    "Coh xs": 6.9,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 6.9,
+    "conc": 27.1
+  },
+  "168Yb": {
+    "Abs xs": 2230.0,
+    "Coh b": [
+      -4.07,
+      -0.62
+    ],
+    "Coh xs": 2.13,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.13,
+    "conc": 0.14
+  },
+  "16O": {
+    "Abs xs": 0.0001,
+    "Coh b": 5.803,
+    "Coh xs": 4.232,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.232,
+    "conc": 99.762
+  },
+  "170Er": {
+    "Abs xs": 5.8,
+    "Coh b": 9.6,
+    "Coh xs": 11.6,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 11.6,
+    "conc": 14.9
+  },
+  "170Yb": {
+    "Abs xs": 11.4,
+    "Coh b": 6.77,
+    "Coh xs": 5.8,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.8,
+    "conc": 3.06
+  },
+  "171Yb": {
+    "Abs xs": 48.6,
+    "Coh b": 9.66,
+    "Coh xs": 11.7,
+    "Inc b": -5.59,
+    "Inc xs": 3.9,
+    "Scatt xs": 15.6,
+    "conc": 14.3
+  },
+  "172Yb": {
+    "Abs xs": 0.8,
+    "Coh b": 9.43,
+    "Coh xs": 11.2,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 11.2,
+    "conc": 21.9
+  },
+  "173Yb": {
+    "Abs xs": 17.1,
+    "Coh b": 9.56,
+    "Coh xs": 11.5,
+    "Inc b": -5.3,
+    "Inc xs": 3.5,
+    "Scatt xs": 15,
+    "conc": 16.1
+  },
+  "174Hf": {
+    "Abs xs": 561.0,
+    "Coh b": 10.9,
+    "Coh xs": 15.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 15.0,
+    "conc": 0.2
+  },
+  "174Yb": {
+    "Abs xs": 69.4,
+    "Coh b": 19.3,
+    "Coh xs": 46.8,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 46.8,
+    "conc": 31.8
+  },
+  "175Lu": {
+    "Abs xs": 21.0,
+    "Coh b": 7.24,
+    "Coh xs": 6.59,
+    "Inc b": 2.2,
+    "Inc xs": 0.6,
+    "Scatt xs": 7.2,
+    "conc": 97.39
+  },
+  "176Hf": {
+    "Abs xs": 23.5,
+    "Coh b": 6.61,
+    "Coh xs": 5.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.5,
+    "conc": 5.2
+  },
+  "176Lu": {
+    "Abs xs": 2065.0,
+    "Coh b": [
+      6.1,
+      -0.57
+    ],
+    "Coh xs": 4.7,
+    "Inc b": [
+      3.0,
+      0.61
+    ],
+    "Inc xs": 1.2,
+    "Scatt xs": 5.9,
+    "conc": 2.61
+  },
+  "176Yb": {
+    "Abs xs": 2.85,
+    "Coh b": 8.72,
+    "Coh xs": 9.6,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 9.6,
+    "conc": 12.7
+  },
+  "177Hf": {
+    "Abs xs": 373.0,
+    "Coh b": 0.8,
+    "Coh xs": 0.1,
+    "Inc b": 0.9,
+    "Inc xs": 0.1,
+    "Scatt xs": 0.2,
+    "conc": 18.6
+  },
+  "178Hf": {
+    "Abs xs": 84.0,
+    "Coh b": 5.9,
+    "Coh xs": 4.4,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.4,
+    "conc": 27.1
+  },
+  "179Hf": {
+    "Abs xs": 41.0,
+    "Coh b": 7.46,
+    "Coh xs": 7,
+    "Inc b": 1.06,
+    "Inc xs": 0.14,
+    "Scatt xs": 7.1,
+    "conc": 13.7
+  },
+  "17O": {
+    "Abs xs": 0.236,
+    "Coh b": 5.78,
+    "Coh xs": 4.2,
+    "Inc b": 0.18,
+    "Inc xs": 0.004,
+    "Scatt xs": 4.2,
+    "conc": 0.038
+  },
+  "180Hf": {
+    "Abs xs": 13.04,
+    "Coh b": 13.2,
+    "Coh xs": 21.9,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 21.9,
+    "conc": 35.2
+  },
+  "180Ta": {
+    "Abs xs": 563.0,
+    "Coh b": 7.0,
+    "Coh xs": 6.2,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 7.0,
+    "conc": 0.012
+  },
+  "180W": {
+    "Abs xs": 30.0,
+    "Coh b": 5.0,
+    "Coh xs": 3.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.0,
+    "conc": 0.1
+  },
+  "181Ta": {
+    "Abs xs": 20.5,
+    "Coh b": 6.91,
+    "Coh xs": 6,
+    "Inc b": -0.29,
+    "Inc xs": 0.011,
+    "Scatt xs": 6.01,
+    "conc": 99.988
+  },
+  "182W": {
+    "Abs xs": 20.7,
+    "Coh b": 6.97,
+    "Coh xs": 6.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 6.1,
+    "conc": 26.3
+  },
+  "183W": {
+    "Abs xs": 10.1,
+    "Coh b": 6.53,
+    "Coh xs": 5.36,
+    "Inc b": null,
+    "Inc xs": 0.3,
+    "Scatt xs": 5.7,
+    "conc": 14.3
+  },
+  "184Os": {
+    "Abs xs": 3000.0,
+    "Coh b": 10.0,
+    "Coh xs": 13.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 13.0,
+    "conc": 0.02
+  },
+  "184W": {
+    "Abs xs": 1.7,
+    "Coh b": 7.48,
+    "Coh xs": 7.03,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.03,
+    "conc": 30.7
+  },
+  "185Re": {
+    "Abs xs": 112.0,
+    "Coh b": 9.0,
+    "Coh xs": 10.2,
+    "Inc b": 2.0,
+    "Inc xs": 0.5,
+    "Scatt xs": 10.7,
+    "conc": 37.4
+  },
+  "186Os": {
+    "Abs xs": 80.0,
+    "Coh b": 11.6,
+    "Coh xs": 17.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 17.0,
+    "conc": 1.58
+  },
+  "186W": {
+    "Abs xs": 37.9,
+    "Coh b": -0.72,
+    "Coh xs": 0.065,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 0.065,
+    "conc": 28.6
+  },
+  "187Os": {
+    "Abs xs": 320.0,
+    "Coh b": 10.0,
+    "Coh xs": 13.0,
+    "Inc b": null,
+    "Inc xs": 0.3,
+    "Scatt xs": 13.0,
+    "conc": 1.6
+  },
+  "187Re": {
+    "Abs xs": 76.4,
+    "Coh b": 9.3,
+    "Coh xs": 10.9,
+    "Inc b": 2.8,
+    "Inc xs": 1,
+    "Scatt xs": 11.9,
+    "conc": 62.6
+  },
+  "188Os": {
+    "Abs xs": 4.7,
+    "Coh b": 7.6,
+    "Coh xs": 7.3,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.3,
+    "conc": 13.3
+  },
+  "189Os": {
+    "Abs xs": 25.0,
+    "Coh b": 10.7,
+    "Coh xs": 14.4,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 14.9,
+    "conc": 16.1
+  },
+  "18O": {
+    "Abs xs": 0.00016,
+    "Coh b": 5.84,
+    "Coh xs": 4.29,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.29,
+    "conc": 0.2
+  },
+  "190Os": {
+    "Abs xs": 13.1,
+    "Coh b": 11.0,
+    "Coh xs": 15.2,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 15.2,
+    "conc": 26.4
+  },
+  "190Pt": {
+    "Abs xs": 152.0,
+    "Coh b": 9.0,
+    "Coh xs": 10.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 10.0,
+    "conc": 0.01
+  },
+  "191Ir": {
+    "Abs xs": 954.0,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": null,
+    "Inc xs": null,
+    "Scatt xs": null,
+    "conc": 37.3
+  },
+  "192Os": {
+    "Abs xs": 2,
+    "Coh b": 11.5,
+    "Coh xs": 16.6,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 16.6,
+    "conc": 41
+  },
+  "192Pt": {
+    "Abs xs": 10.0,
+    "Coh b": 9.9,
+    "Coh xs": 12.3,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 12.3,
+    "conc": 0.79
+  },
+  "193Ir": {
+    "Abs xs": 111.0,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": null,
+    "Inc xs": null,
+    "Scatt xs": null,
+    "conc": 62.7
+  },
+  "194Pt": {
+    "Abs xs": 1.44,
+    "Coh b": 10.55,
+    "Coh xs": 14,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 14,
+    "conc": 32.9
+  },
+  "195Pt": {
+    "Abs xs": 27.5,
+    "Coh b": 8.83,
+    "Coh xs": 9.8,
+    "Inc b": -1.0,
+    "Inc xs": 0.13,
+    "Scatt xs": 9.9,
+    "conc": 33.8
+  },
+  "196Hg": {
+    "Abs xs": 3080.0,
+    "Coh b": 30.3,
+    "Coh xs": 115.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 115.0,
+    "conc": 0.2
+  },
+  "196Pt": {
+    "Abs xs": 0.72,
+    "Coh b": 9.89,
+    "Coh xs": 12.3,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 12.3,
+    "conc": 25.3
+  },
+  "198Hg": {
+    "Abs xs": 2,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 10.1
+  },
+  "198Pt": {
+    "Abs xs": 3.66,
+    "Coh b": 7.8,
+    "Coh xs": 7.6,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.6,
+    "conc": 7.2
+  },
+  "199Hg": {
+    "Abs xs": 2150.0,
+    "Coh b": 16.9,
+    "Coh xs": 36.0,
+    "Inc b": 15.5,
+    "Inc xs": 30.0,
+    "Scatt xs": 66.0,
+    "conc": 17
+  },
+  "1H": {
+    "Abs xs": 0.3326,
+    "Coh b": -3.7406,
+    "Coh xs": 1.7583,
+    "Inc b": 25.274,
+    "Inc xs": 80.27,
+    "Scatt xs": 82.03,
+    "conc": 99.985
+  },
+  "202Hg": {
+    "Abs xs": 4.89,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 9.828,
+    "conc": 29.6
+  },
+  "204Hg": {
+    "Abs xs": 0.43,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 6.8
+  },
+  "204Pb": {
+    "Abs xs": 0.65,
+    "Coh b": 9.9,
+    "Coh xs": 12.3,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 12.3,
+    "conc": 1.4
+  },
+  "205Tl": {
+    "Abs xs": 0.104,
+    "Coh b": 9.52,
+    "Coh xs": 11.39,
+    "Inc b": -0.242,
+    "Inc xs": 0.007,
+    "Scatt xs": 11.4,
+    "conc": 70.476
+  },
+  "206Pb": {
+    "Abs xs": 0.03,
+    "Coh b": 9.22,
+    "Coh xs": 10.68,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 10.68,
+    "conc": 24.1
+  },
+  "207Pb": {
+    "Abs xs": 0.699,
+    "Coh b": 9.28,
+    "Coh xs": 10.82,
+    "Inc b": 0.14,
+    "Inc xs": 0.002,
+    "Scatt xs": 10.82,
+    "conc": 22.1
+  },
+  "208Pb": {
+    "Abs xs": 0.00048,
+    "Coh b": 9.5,
+    "Coh xs": 11.34,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 11.34,
+    "conc": 52.4
+  },
+  "20Ne": {
+    "Abs xs": 0.036,
+    "Coh b": 4.631,
+    "Coh xs": 2.695,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.695,
+    "conc": 90.51
+  },
+  "21Ne": {
+    "Abs xs": 0.67,
+    "Coh b": 6.66,
+    "Coh xs": 5.6,
+    "Inc b": 0.6,
+    "Inc xs": 0.05,
+    "Scatt xs": 5.7,
+    "conc": 0.27
+  },
+  "22Ne": {
+    "Abs xs": 0.046,
+    "Coh b": 3.87,
+    "Coh xs": 1.88,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.88,
+    "conc": 9.22
+  },
+  "233U": {
+    "Abs xs": 574.7,
+    "Coh b": 10.1,
+    "Coh xs": 12.8,
+    "Inc b": 1.0,
+    "Inc xs": 0.1,
+    "Scatt xs": 12.9,
+    "conc": "(1.59E5 a)"
+  },
+  "234U": {
+    "Abs xs": 100.1,
+    "Coh b": 12.4,
+    "Coh xs": 19.3,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 19.3,
+    "conc": 0.005
+  },
+  "235U": {
+    "Abs xs": 680.9,
+    "Coh b": 10.47,
+    "Coh xs": 13.78,
+    "Inc b": 1.3,
+    "Inc xs": 0.2,
+    "Scatt xs": 14,
+    "conc": 0.72
+  },
+  "238Pu": {
+    "Abs xs": 558.0,
+    "Coh b": 14.1,
+    "Coh xs": 25.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 25.0,
+    "conc": "(87.74 a)"
+  },
+  "238U": {
+    "Abs xs": 2.68,
+    "Coh b": 8.402,
+    "Coh xs": 8.871,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 8.871,
+    "conc": 99.275
+  },
+  "239Pu": {
+    "Abs xs": 1017.3,
+    "Coh b": 7.7,
+    "Coh xs": 7.5,
+    "Inc b": 1.3,
+    "Inc xs": 0.2,
+    "Scatt xs": 7.7,
+    "conc": "(2.41E4 a)"
+  },
+  "240Pu": {
+    "Abs xs": 289.6,
+    "Coh b": 3.5,
+    "Coh xs": 1.54,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.54,
+    "conc": "(6.56E3 a)"
+  },
+  "242Pu": {
+    "Abs xs": 18.5,
+    "Coh b": 8.1,
+    "Coh xs": 8.2,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 8.2,
+    "conc": "(3.76E5 a)"
+  },
+  "244Cm": {
+    "Abs xs": 16.2,
+    "Coh b": 9.5,
+    "Coh xs": 11.3,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 11.3,
+    "conc": "(18.10 a)"
+  },
+  "246Cm": {
+    "Abs xs": 1.36,
+    "Coh b": 9.3,
+    "Coh xs": 10.9,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 10.9,
+    "conc": "(4.7E3 a)"
+  },
+  "248Cm": {
+    "Abs xs": 3,
+    "Coh b": 7.7,
+    "Coh xs": 7.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.5,
+    "conc": "(3.5E5 a)"
+  },
+  "24Mg": {
+    "Abs xs": 0.05,
+    "Coh b": 5.66,
+    "Coh xs": 4.03,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.03,
+    "conc": 78.99
+  },
+  "25Mg": {
+    "Abs xs": 0.19,
+    "Coh b": 3.62,
+    "Coh xs": 1.65,
+    "Inc b": 1.48,
+    "Inc xs": 0.28,
+    "Scatt xs": 1.93,
+    "conc": 10
+  },
+  "26Mg": {
+    "Abs xs": 0.0382,
+    "Coh b": 4.89,
+    "Coh xs": 3,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3,
+    "conc": 11.01
+  },
+  "28Si": {
+    "Abs xs": 0.177,
+    "Coh b": 4.107,
+    "Coh xs": 2.12,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.12,
+    "conc": 92.23
+  },
+  "29Si": {
+    "Abs xs": 0.101,
+    "Coh b": 4.7,
+    "Coh xs": 2.78,
+    "Inc b": 0.09,
+    "Inc xs": 0.001,
+    "Scatt xs": 2.78,
+    "conc": 4.67
+  },
+  "2H": {
+    "Abs xs": 0.000519,
+    "Coh b": 6.671,
+    "Coh xs": 5.592,
+    "Inc b": 4.04,
+    "Inc xs": 2.05,
+    "Scatt xs": 7.64,
+    "conc": 0.015
+  },
+  "30Si": {
+    "Abs xs": 0.107,
+    "Coh b": 4.58,
+    "Coh xs": 2.64,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.64,
+    "conc": 3.1
+  },
+  "32S": {
+    "Abs xs": 0.54,
+    "Coh b": 2.804,
+    "Coh xs": 0.988,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 0.988,
+    "conc": 95.02
+  },
+  "33S": {
+    "Abs xs": 0.54,
+    "Coh b": 4.74,
+    "Coh xs": 2.8,
+    "Inc b": 1.5,
+    "Inc xs": 0.3,
+    "Scatt xs": 3.1,
+    "conc": 0.75
+  },
+  "34S": {
+    "Abs xs": 0.227,
+    "Coh b": 3.48,
+    "Coh xs": 1.52,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.52,
+    "conc": 4.21
+  },
+  "35Cl": {
+    "Abs xs": 44.1,
+    "Coh b": 11.65,
+    "Coh xs": 17.06,
+    "Inc b": 6.1,
+    "Inc xs": 4.7,
+    "Scatt xs": 21.8,
+    "conc": 75.77
+  },
+  "36Ar": {
+    "Abs xs": 5.2,
+    "Coh b": 24.9,
+    "Coh xs": 77.9,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 77.9,
+    "conc": 0.337
+  },
+  "36S": {
+    "Abs xs": 0.15,
+    "Coh b": 3.0,
+    "Coh xs": 1.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.1,
+    "conc": 0.02
+  },
+  "37Cl": {
+    "Abs xs": 0.433,
+    "Coh b": 3.08,
+    "Coh xs": 1.19,
+    "Inc b": 0.1,
+    "Inc xs": 0.001,
+    "Scatt xs": 1.19,
+    "conc": 24.23
+  },
+  "38Ar": {
+    "Abs xs": 0.8,
+    "Coh b": 3.5,
+    "Coh xs": 1.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.5,
+    "conc": 0.063
+  },
+  "39K": {
+    "Abs xs": 2.1,
+    "Coh b": 3.74,
+    "Coh xs": 1.76,
+    "Inc b": 1.4,
+    "Inc xs": 0.25,
+    "Scatt xs": 2.01,
+    "conc": 93.258
+  },
+  "3H": {
+    "Abs xs": 0,
+    "Coh b": 4.792,
+    "Coh xs": 2.89,
+    "Inc b": -1.04,
+    "Inc xs": 0.14,
+    "Scatt xs": 3.03,
+    "conc": "(12.32 a)"
+  },
+  "3He": {
+    "Abs xs": 5333.0,
+    "Coh b": [
+      5.74,
+      -1.483
+    ],
+    "Coh xs": 4.42,
+    "Inc b": [
+      -2.5,
+      2.568
+    ],
+    "Inc xs": 1.6,
+    "Scatt xs": 6,
+    "conc": 0.00014
+  },
+  "40Ar": {
+    "Abs xs": 0.66,
+    "Coh b": 1.83,
+    "Coh xs": 0.421,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 0.421,
+    "conc": 99.6
+  },
+  "40Ca": {
+    "Abs xs": 0.41,
+    "Coh b": 4.8,
+    "Coh xs": 2.9,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.9,
+    "conc": 96.941
+  },
+  "40K": {
+    "Abs xs": 35.0,
+    "Coh b": 3.0,
+    "Coh xs": 1.1,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 1.6,
+    "conc": 0.012
+  },
+  "41K": {
+    "Abs xs": 1.46,
+    "Coh b": 2.69,
+    "Coh xs": 0.91,
+    "Inc b": 1.5,
+    "Inc xs": 0.3,
+    "Scatt xs": 1.2,
+    "conc": 6.73
+  },
+  "42Ca": {
+    "Abs xs": 0.68,
+    "Coh b": 3.36,
+    "Coh xs": 1.42,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.42,
+    "conc": 0.647
+  },
+  "43Ca": {
+    "Abs xs": 6.2,
+    "Coh b": -1.56,
+    "Coh xs": 0.31,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 0.8,
+    "conc": 0.135
+  },
+  "44Ca": {
+    "Abs xs": 0.88,
+    "Coh b": 1.42,
+    "Coh xs": 0.25,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 0.25,
+    "conc": 2.086
+  },
+  "46Ca": {
+    "Abs xs": 0.74,
+    "Coh b": 3.6,
+    "Coh xs": 1.6,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.6,
+    "conc": 0.004
+  },
+  "46Ti": {
+    "Abs xs": 0.59,
+    "Coh b": 4.93,
+    "Coh xs": 3.05,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.05,
+    "conc": 8.2
+  },
+  "47Ti": {
+    "Abs xs": 1.7,
+    "Coh b": 3.63,
+    "Coh xs": 1.66,
+    "Inc b": -3.5,
+    "Inc xs": 1.5,
+    "Scatt xs": 3.2,
+    "conc": 7.4
+  },
+  "48Ca": {
+    "Abs xs": 1.09,
+    "Coh b": 0.39,
+    "Coh xs": 0.019,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 0.019,
+    "conc": 0.187
+  },
+  "48Ti": {
+    "Abs xs": 7.84,
+    "Coh b": -6.08,
+    "Coh xs": 4.65,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.65,
+    "conc": 73.8
+  },
+  "49Ti": {
+    "Abs xs": 2.2,
+    "Coh b": 1.04,
+    "Coh xs": 0.14,
+    "Inc b": 5.1,
+    "Inc xs": 3.3,
+    "Scatt xs": 3.4,
+    "conc": 5.4
+  },
+  "4He": {
+    "Abs xs": 0,
+    "Coh b": 3.26,
+    "Coh xs": 1.34,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 1.34,
+    "conc": 99.99986
+  },
+  "50Cr": {
+    "Abs xs": 15.8,
+    "Coh b": -4.5,
+    "Coh xs": 2.54,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.54,
+    "conc": 4.35
+  },
+  "50Ti": {
+    "Abs xs": 0.179,
+    "Coh b": 6.18,
+    "Coh xs": 4.8,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.8,
+    "conc": 5.2
+  },
+  "50V": {
+    "Abs xs": 60.0,
+    "Coh b": 7.6,
+    "Coh xs": 7.3,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 7.8,
+    "conc": 0.25
+  },
+  "51V": {
+    "Abs xs": 4.9,
+    "Coh b": -0.402,
+    "Coh xs": 0.0203,
+    "Inc b": 6.35,
+    "Inc xs": 5.07,
+    "Scatt xs": 5.09,
+    "conc": 99.75
+  },
+  "52Cr": {
+    "Abs xs": 0.76,
+    "Coh b": 4.92,
+    "Coh xs": 3.042,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.042,
+    "conc": 83.79
+  },
+  "53Cr": {
+    "Abs xs": 18.1,
+    "Coh b": -4.2,
+    "Coh xs": 2.22,
+    "Inc b": 6.87,
+    "Inc xs": 5.93,
+    "Scatt xs": 8.15,
+    "conc": 9.5
+  },
+  "54Cr": {
+    "Abs xs": 0.36,
+    "Coh b": 4.55,
+    "Coh xs": 2.6,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.6,
+    "conc": 2.36
+  },
+  "54Fe": {
+    "Abs xs": 2.25,
+    "Coh b": 4.2,
+    "Coh xs": 2.2,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 2.2,
+    "conc": 5.8
+  },
+  "56Fe": {
+    "Abs xs": 2.59,
+    "Coh b": 9.94,
+    "Coh xs": 12.42,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 12.42,
+    "conc": 91.7
+  },
+  "57Fe": {
+    "Abs xs": 2.48,
+    "Coh b": 2.3,
+    "Coh xs": 0.66,
+    "Inc b": null,
+    "Inc xs": 0.3,
+    "Scatt xs": 1,
+    "conc": 2.2
+  },
+  "58Fe": {
+    "Abs xs": 1.28,
+    "Coh b": 15.0,
+    "Coh xs": 28,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 28.0,
+    "conc": 0.3
+  },
+  "58Ni": {
+    "Abs xs": 4.6,
+    "Coh b": 14.4,
+    "Coh xs": 26.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 26.1,
+    "conc": 68.27
+  },
+  "60Ni": {
+    "Abs xs": 2.9,
+    "Coh b": 2.8,
+    "Coh xs": 0.99,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 0.99,
+    "conc": 26.1
+  },
+  "61Ni": {
+    "Abs xs": 2.5,
+    "Coh b": 7.6,
+    "Coh xs": 7.26,
+    "Inc b": 3.9,
+    "Inc xs": 1.9,
+    "Scatt xs": 9.2,
+    "conc": 1.13
+  },
+  "62Ni": {
+    "Abs xs": 14.5,
+    "Coh b": -8.7,
+    "Coh xs": 9.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 9.5,
+    "conc": 3.59
+  },
+  "63Cu": {
+    "Abs xs": 4.5,
+    "Coh b": 6.43,
+    "Coh xs": 5.2,
+    "Inc b": 0.22,
+    "Inc xs": 0.006,
+    "Scatt xs": 5.2,
+    "conc": 69.17
+  },
+  "64Ni": {
+    "Abs xs": 1.52,
+    "Coh b": -0.37,
+    "Coh xs": 0.017,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 0.017,
+    "conc": 0.91
+  },
+  "64Zn": {
+    "Abs xs": 0.93,
+    "Coh b": 5.22,
+    "Coh xs": 3.42,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.42,
+    "conc": 48.6
+  },
+  "65Cu": {
+    "Abs xs": 2.17,
+    "Coh b": 10.61,
+    "Coh xs": 14.1,
+    "Inc b": 1.79,
+    "Inc xs": 0.4,
+    "Scatt xs": 14.5,
+    "conc": 30.83
+  },
+  "66Zn": {
+    "Abs xs": 0.62,
+    "Coh b": 5.97,
+    "Coh xs": 4.48,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.48,
+    "conc": 27.9
+  },
+  "67Zn": {
+    "Abs xs": 6.8,
+    "Coh b": 7.56,
+    "Coh xs": 7.18,
+    "Inc b": -1.5,
+    "Inc xs": 0.28,
+    "Scatt xs": 7.46,
+    "conc": 4.1
+  },
+  "68Zn": {
+    "Abs xs": 1.1,
+    "Coh b": 6.03,
+    "Coh xs": 4.57,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.57,
+    "conc": 18.8
+  },
+  "69Ga": {
+    "Abs xs": 2.18,
+    "Coh b": 7.88,
+    "Coh xs": 7.8,
+    "Inc b": -0.85,
+    "Inc xs": 0.091,
+    "Scatt xs": 7.89,
+    "conc": 60.1
+  },
+  "6Li": {
+    "Abs xs": 940.0,
+    "Coh b": [
+      2.0,
+      -0.261
+    ],
+    "Coh xs": 0.51,
+    "Inc b": [
+      -1.89,
+      0.26
+    ],
+    "Inc xs": 0.46,
+    "Scatt xs": 0.97,
+    "conc": 7.5
+  },
+  "70Ge": {
+    "Abs xs": 3,
+    "Coh b": 10.0,
+    "Coh xs": 12.6,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 12.6,
+    "conc": 20.5
+  },
+  "70Zn": {
+    "Abs xs": 0.092,
+    "Coh b": 6.0,
+    "Coh xs": 4.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.5,
+    "conc": 0.6
+  },
+  "71Ga": {
+    "Abs xs": 3.61,
+    "Coh b": 6.4,
+    "Coh xs": 5.15,
+    "Inc b": -0.82,
+    "Inc xs": 0.084,
+    "Scatt xs": 5.23,
+    "conc": 39.9
+  },
+  "72Ge": {
+    "Abs xs": 0.8,
+    "Coh b": 8.51,
+    "Coh xs": 9.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 9.1,
+    "conc": 27.4
+  },
+  "73Ge": {
+    "Abs xs": 15.1,
+    "Coh b": 5.02,
+    "Coh xs": 3.17,
+    "Inc b": 3.4,
+    "Inc xs": 1.5,
+    "Scatt xs": 4.7,
+    "conc": 7.8
+  },
+  "74Ge": {
+    "Abs xs": 0.4,
+    "Coh b": 7.58,
+    "Coh xs": 7.2,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.2,
+    "conc": 36.5
+  },
+  "74Se": {
+    "Abs xs": 51.8,
+    "Coh b": 0.8,
+    "Coh xs": 0.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 0.1,
+    "conc": 0.9
+  },
+  "76Ge": {
+    "Abs xs": 0.16,
+    "Coh b": 8.2,
+    "Coh xs": 8.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 8.0,
+    "conc": 7.8
+  },
+  "76Se": {
+    "Abs xs": 85.0,
+    "Coh b": 12.2,
+    "Coh xs": 18.7,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 18.7,
+    "conc": 9
+  },
+  "77Se": {
+    "Abs xs": 42.0,
+    "Coh b": 8.25,
+    "Coh xs": 8.6,
+    "Inc b": 0.6,
+    "Inc xs": 0.05,
+    "Scatt xs": 8.65,
+    "conc": 7.6
+  },
+  "78Kr": {
+    "Abs xs": 6.4,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 0.35
+  },
+  "78Se": {
+    "Abs xs": 0.43,
+    "Coh b": 8.24,
+    "Coh xs": 8.5,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 8.5,
+    "conc": 23.5
+  },
+  "79Br": {
+    "Abs xs": 11,
+    "Coh b": 6.8,
+    "Coh xs": 5.81,
+    "Inc b": -1.1,
+    "Inc xs": 0.15,
+    "Scatt xs": 5.96,
+    "conc": 50.69
+  },
+  "7Li": {
+    "Abs xs": 0.0454,
+    "Coh b": -2.22,
+    "Coh xs": 0.619,
+    "Inc b": -2.49,
+    "Inc xs": 0.78,
+    "Scatt xs": 1.4,
+    "conc": 92.5
+  },
+  "80Kr": {
+    "Abs xs": 11.8,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 2.25
+  },
+  "80Se": {
+    "Abs xs": 0.61,
+    "Coh b": 7.48,
+    "Coh xs": 7.03,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 7.03,
+    "conc": 49.6
+  },
+  "81Br": {
+    "Abs xs": 2.7,
+    "Coh b": 6.79,
+    "Coh xs": 5.79,
+    "Inc b": 0.6,
+    "Inc xs": 0.05,
+    "Scatt xs": 5.84,
+    "conc": 49.31
+  },
+  "82Kr": {
+    "Abs xs": 29.0,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 11.6
+  },
+  "82Se": {
+    "Abs xs": 0.044,
+    "Coh b": 6.34,
+    "Coh xs": 5.05,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.05,
+    "conc": 9.4
+  },
+  "83Kr": {
+    "Abs xs": 185.0,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": null,
+    "Inc xs": null,
+    "Scatt xs": null,
+    "conc": 11.5
+  },
+  "84Kr": {
+    "Abs xs": 0.113,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 6.6,
+    "conc": 57
+  },
+  "84Sr": {
+    "Abs xs": 0.87,
+    "Coh b": 7.0,
+    "Coh xs": 6.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 6.0,
+    "conc": 0.56
+  },
+  "85Rb": {
+    "Abs xs": 0.48,
+    "Coh b": 7.03,
+    "Coh xs": 6.2,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 6.7,
+    "conc": 72.17
+  },
+  "86Kr": {
+    "Abs xs": 0.003,
+    "Coh b": 8.1,
+    "Coh xs": 8.2,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 8.2,
+    "conc": 17.3
+  },
+  "86Sr": {
+    "Abs xs": 1.04,
+    "Coh b": 5.67,
+    "Coh xs": 4.04,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.04,
+    "conc": 9.86
+  },
+  "87Rb": {
+    "Abs xs": 0.12,
+    "Coh b": 7.23,
+    "Coh xs": 6.6,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 7.1,
+    "conc": 27.83
+  },
+  "87Sr": {
+    "Abs xs": 16.0,
+    "Coh b": 7.4,
+    "Coh xs": 6.88,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 7.4,
+    "conc": 7
+  },
+  "88Sr": {
+    "Abs xs": 0.058,
+    "Coh b": 7.15,
+    "Coh xs": 6.42,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 6.42,
+    "conc": 82.58
+  },
+  "90Zr": {
+    "Abs xs": 0.011,
+    "Coh b": 6.4,
+    "Coh xs": 5.1,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.1,
+    "conc": 51.45
+  },
+  "91Zr": {
+    "Abs xs": 1.17,
+    "Coh b": 8.7,
+    "Coh xs": 9.5,
+    "Inc b": -1.08,
+    "Inc xs": 0.15,
+    "Scatt xs": 9.7,
+    "conc": 11.32
+  },
+  "92Mo": {
+    "Abs xs": 0.019,
+    "Coh b": 6.91,
+    "Coh xs": 6,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 6,
+    "conc": 14.84
+  },
+  "92Zr": {
+    "Abs xs": 0.22,
+    "Coh b": 7.4,
+    "Coh xs": 6.9,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 6.9,
+    "conc": 17.19
+  },
+  "94Mo": {
+    "Abs xs": 0.015,
+    "Coh b": 6.8,
+    "Coh xs": 5.81,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.81,
+    "conc": 9.25
+  },
+  "94Zr": {
+    "Abs xs": 0.0499,
+    "Coh b": 8.2,
+    "Coh xs": 8.4,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 8.4,
+    "conc": 17.28
+  },
+  "95Mo": {
+    "Abs xs": 13.1,
+    "Coh b": 6.91,
+    "Coh xs": 6,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 6.5,
+    "conc": 15.92
+  },
+  "96Mo": {
+    "Abs xs": 0.5,
+    "Coh b": 6.2,
+    "Coh xs": 4.83,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 4.83,
+    "conc": 16.68
+  },
+  "96Ru": {
+    "Abs xs": 0.28,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": 5.5
+  },
+  "96Zr": {
+    "Abs xs": 0.0229,
+    "Coh b": 5.5,
+    "Coh xs": 3.8,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 3.8,
+    "conc": 2.76
+  },
+  "97Mo": {
+    "Abs xs": 2.5,
+    "Coh b": 7.24,
+    "Coh xs": 6.59,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 7.1,
+    "conc": 9.55
+  },
+  "98Mo": {
+    "Abs xs": 0.127,
+    "Coh b": 6.58,
+    "Coh xs": 5.44,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 5.44,
+    "conc": 24.13
+  },
+  "Ac": {
+    "Abs xs": null,
+    "Coh b": null,
+    "Coh xs": 0,
+    "Inc b": null,
+    "Inc xs": null,
+    "Scatt xs": null,
+    "conc": null
+  },
+  "Ag": {
+    "Abs xs": 63.3,
+    "Coh b": 5.922,
+    "Coh xs": 4.407,
+    "Inc b": null,
+    "Inc xs": 0.58,
+    "Scatt xs": 4.99,
+    "conc": null
+  },
+  "Al": {
+    "Abs xs": 0.231,
+    "Coh b": 3.449,
+    "Coh xs": 1.495,
+    "Inc b": 0.256,
+    "Inc xs": 0.0082,
+    "Scatt xs": 1.503,
+    "conc": 100
+  },
+  "Am": {
+    "Abs xs": 75.3,
+    "Coh b": 8.3,
+    "Coh xs": 8.7,
+    "Inc b": 2.0,
+    "Inc xs": 0.3,
+    "Scatt xs": 9.0,
+    "conc": "(7.37E3 a)"
+  },
+  "Ar": {
+    "Abs xs": 0.675,
+    "Coh b": 1.909,
+    "Coh xs": 0.458,
+    "Inc b": null,
+    "Inc xs": 0.225,
+    "Scatt xs": 0.683,
+    "conc": null
+  },
+  "As": {
+    "Abs xs": 4.5,
+    "Coh b": 6.58,
+    "Coh xs": 5.44,
+    "Inc b": -0.69,
+    "Inc xs": 0.06,
+    "Scatt xs": 5.5,
+    "conc": 100
+  },
+  "At": {
+    "Abs xs": null,
+    "Coh b": null,
+    "Coh xs": 0,
+    "Inc b": null,
+    "Inc xs": null,
+    "Scatt xs": null,
+    "conc": null
+  },
+  "Au": {
+    "Abs xs": 98.65,
+    "Coh b": 7.63,
+    "Coh xs": 7.32,
+    "Inc b": -1.84,
+    "Inc xs": 0.43,
+    "Scatt xs": 7.75,
+    "conc": 100
+  },
+  "B": {
+    "Abs xs": 767.0,
+    "Coh b": [
+      5.3,
+      -0.213
+    ],
+    "Coh xs": 3.54,
+    "Inc b": null,
+    "Inc xs": 1.7,
+    "Scatt xs": 5.24,
+    "conc": null
+  },
+  "Ba": {
+    "Abs xs": 1.1,
+    "Coh b": 5.07,
+    "Coh xs": 3.23,
+    "Inc b": null,
+    "Inc xs": 0.15,
+    "Scatt xs": 3.38,
+    "conc": null
+  },
+  "Be": {
+    "Abs xs": 0.0076,
+    "Coh b": 7.79,
+    "Coh xs": 7.63,
+    "Inc b": 0.12,
+    "Inc xs": 0.0018,
+    "Scatt xs": 7.63,
+    "conc": 100
+  },
+  "Bi": {
+    "Abs xs": 0.0338,
+    "Coh b": 8.532,
+    "Coh xs": 9.148,
+    "Inc b": null,
+    "Inc xs": 0.0084,
+    "Scatt xs": 9.156,
+    "conc": 100
+  },
+  "Br": {
+    "Abs xs": 6.9,
+    "Coh b": 6.795,
+    "Coh xs": 5.8,
+    "Inc b": null,
+    "Inc xs": 0.1,
+    "Scatt xs": 5.9,
+    "conc": null
+  },
+  "C": {
+    "Abs xs": 0.0035,
+    "Coh b": 6.646,
+    "Coh xs": 5.551,
+    "Inc b": null,
+    "Inc xs": 0.001,
+    "Scatt xs": 5.551,
+    "conc": null
+  },
+  "Ca": {
+    "Abs xs": 0.43,
+    "Coh b": 4.7,
+    "Coh xs": 2.78,
+    "Inc b": null,
+    "Inc xs": 0.05,
+    "Scatt xs": 2.83,
+    "conc": null
+  },
+  "Cd": {
+    "Abs xs": 2520.0,
+    "Coh b": [
+      4.87,
+      -0.7
+    ],
+    "Coh xs": 3.04,
+    "Inc b": null,
+    "Inc xs": 3.46,
+    "Scatt xs": 6.5,
+    "conc": null
+  },
+  "Ce": {
+    "Abs xs": 0.63,
+    "Coh b": 4.84,
+    "Coh xs": 2.94,
+    "Inc b": null,
+    "Inc xs": 0.001,
+    "Scatt xs": 2.94,
+    "conc": null
+  },
+  "Cl": {
+    "Abs xs": 33.5,
+    "Coh b": 9.577,
+    "Coh xs": 11.5257,
+    "Inc b": null,
+    "Inc xs": 5.3,
+    "Scatt xs": 16.8,
+    "conc": null
+  },
+  "Cm": {
+    "Abs xs": null,
+    "Coh b": null,
+    "Coh xs": 0,
+    "Inc b": null,
+    "Inc xs": null,
+    "Scatt xs": null,
+    "conc": null
+  },
+  "Co": {
+    "Abs xs": 37.18,
+    "Coh b": 2.49,
+    "Coh xs": 0.779,
+    "Inc b": -6.2,
+    "Inc xs": 4.8,
+    "Scatt xs": 5.6,
+    "conc": 100
+  },
+  "Cr": {
+    "Abs xs": 3.05,
+    "Coh b": 3.635,
+    "Coh xs": 1.66,
+    "Inc b": null,
+    "Inc xs": 1.83,
+    "Scatt xs": 3.49,
+    "conc": null
+  },
+  "Cs": {
+    "Abs xs": 29.0,
+    "Coh b": 5.42,
+    "Coh xs": 3.69,
+    "Inc b": 1.29,
+    "Inc xs": 0.21,
+    "Scatt xs": 3.9,
+    "conc": 100
+  },
+  "Cu": {
+    "Abs xs": 3.78,
+    "Coh b": 7.718,
+    "Coh xs": 7.485,
+    "Inc b": null,
+    "Inc xs": 0.55,
+    "Scatt xs": 8.03,
+    "conc": null
+  },
+  "Dy": {
+    "Abs xs": 994.0,
+    "Coh b": [
+      16.9,
+      -0.276
+    ],
+    "Coh xs": 35.9,
+    "Inc b": null,
+    "Inc xs": 54.4,
+    "Scatt xs": 90.3,
+    "conc": null
+  },
+  "Er": {
+    "Abs xs": 159.0,
+    "Coh b": 7.79,
+    "Coh xs": 7.63,
+    "Inc b": null,
+    "Inc xs": 1.1,
+    "Scatt xs": 8.7,
+    "conc": null
+  },
+  "Eu": {
+    "Abs xs": 4530.0,
+    "Coh b": [
+      7.22,
+      -1.26
+    ],
+    "Coh xs": 6.57,
+    "Inc b": null,
+    "Inc xs": 2.5,
+    "Scatt xs": 9.2,
+    "conc": null
+  },
+  "F": {
+    "Abs xs": 0.0096,
+    "Coh b": 5.654,
+    "Coh xs": 4.017,
+    "Inc b": -0.082,
+    "Inc xs": 0.0008,
+    "Scatt xs": 4.018,
+    "conc": 100
+  },
+  "Fe": {
+    "Abs xs": 2.56,
+    "Coh b": 9.45,
+    "Coh xs": 11.22,
+    "Inc b": null,
+    "Inc xs": 0.4,
+    "Scatt xs": 11.62,
+    "conc": null
+  },
+  "Fr": {
+    "Abs xs": null,
+    "Coh b": null,
+    "Coh xs": 0,
+    "Inc b": null,
+    "Inc xs": null,
+    "Scatt xs": null,
+    "conc": null
+  },
+  "Ga": {
+    "Abs xs": 2.75,
+    "Coh b": 7.288,
+    "Coh xs": 6.675,
+    "Inc b": null,
+    "Inc xs": 0.16,
+    "Scatt xs": 6.83,
+    "conc": null
+  },
+  "Gd": {
+    "Abs xs": 49700.0,
+    "Coh b": [
+      6.5,
+      -13.82
+    ],
+    "Coh xs": 29.3,
+    "Inc b": null,
+    "Inc xs": 151.0,
+    "Scatt xs": 180.0,
+    "conc": null
+  },
+  "Ge": {
+    "Abs xs": 2.2,
+    "Coh b": 8.185,
+    "Coh xs": 8.42,
+    "Inc b": null,
+    "Inc xs": 0.18,
+    "Scatt xs": 8.6,
+    "conc": null
+  },
+  "H": {
+    "Abs xs": 0.3326,
+    "Coh b": -3.739,
+    "Coh xs": 1.7568,
+    "Inc b": null,
+    "Inc xs": 80.26,
+    "Scatt xs": 82.02,
+    "conc": null
+  },
+  "He": {
+    "Abs xs": 0.00747,
+    "Coh b": 3.26,
+    "Coh xs": 1.34,
+    "Inc b": null,
+    "Inc xs": 0,
+    "Scatt xs": 1.34,
+    "conc": null
+  },
+  "Hf": {
+    "Abs xs": 104.1,
+    "Coh b": 7.7,
+    "Coh xs": 7.6,
+    "Inc b": null,
+    "Inc xs": 2.6,
+    "Scatt xs": 10.2,
+    "conc": null
+  },
+  "Hg": {
+    "Abs xs": 372.3,
+    "Coh b": 12.692,
+    "Coh xs": 20.24,
+    "Inc b": null,
+    "Inc xs": 6.6,
+    "Scatt xs": 26.8,
+    "conc": null
+  },
+  "Ho": {
+    "Abs xs": 64.7,
+    "Coh b": 8.01,
+    "Coh xs": 8.06,
+    "Inc b": -1.7,
+    "Inc xs": 0.36,
+    "Scatt xs": 8.42,
+    "conc": 100
+  },
+  "I": {
+    "Abs xs": 6.15,
+    "Coh b": 5.28,
+    "Coh xs": 3.5,
+    "Inc b": 1.58,
+    "Inc xs": 0.31,
+    "Scatt xs": 3.81,
+    "conc": 100
+  },
+  "In": {
+    "Abs xs": 193.8,
+    "Coh b": [
+      4.065,
+      -0.0539
+    ],
+    "Coh xs": 2.08,
+    "Inc b": null,
+    "Inc xs": 0.54,
+    "Scatt xs": 2.62,
+    "conc": null
+  },
+  "Ir": {
+    "Abs xs": 425.0,
+    "Coh b": 10.6,
+    "Coh xs": 14.1,
+    "Inc b": null,
+    "Inc xs": 0.0,
+    "Scatt xs": 14.0,
+    "conc": null
+  },
+  "K": {
+    "Abs xs": 2.1,
+    "Coh b": 3.67,
+    "Coh xs": 1.69,
+    "Inc b": null,
+    "Inc xs": 0.27,
+    "Scatt xs": 1.96,
+    "conc": null
+  },
+  "Kr": {
+    "Abs xs": 25.0,
+    "Coh b": 7.81,
+    "Coh xs": 7.67,
+    "Inc b": null,
+    "Inc xs": 0.01,
+    "Scatt xs": 7.68,
+    "conc": null
+  },
+  "La": {
+    "Abs xs": 8.97,
+    "Coh b": 8.24,
+    "Coh xs": 8.53,
+    "Inc b": null,
+    "Inc xs": 1.13,
+    "Scatt xs": 9.66,
+    "conc": null
+  },
+  "Li": {
+    "Abs xs": 70.5,
+    "Coh b": -1.9,
+    "Coh xs": 0.454,
+    "Inc b": null,
+    "Inc xs": 0.92,
+    "Scatt xs": 1.37,
+    "conc": null
+  },
+  "Lu": {
+    "Abs xs": 74.0,
+    "Coh b": 7.21,
+    "Coh xs": 6.53,
+    "Inc b": null,
+    "Inc xs": 0.7,
+    "Scatt xs": 7.2,
+    "conc": null
+  },
+  "Mg": {
+    "Abs xs": 0.063,
+    "Coh b": 5.375,
+    "Coh xs": 3.631,
+    "Inc b": null,
+    "Inc xs": 0.08,
+    "Scatt xs": 3.71,
+    "conc": null
+  },
+  "Mn": {
+    "Abs xs": 13.3,
+    "Coh b": -3.73,
+    "Coh xs": 1.75,
+    "Inc b": 1.79,
+    "Inc xs": 0.4,
+    "Scatt xs": 2.15,
+    "conc": 100
+  },
+  "Mo": {
+    "Abs xs": 2.48,
+    "Coh b": 6.715,
+    "Coh xs": 5.67,
+    "Inc b": null,
+    "Inc xs": 0.04,
+    "Scatt xs": 5.71,
+    "conc": null
+  },
+  "N": {
+    "Abs xs": 1.9,
+    "Coh b": 9.36,
+    "Coh xs": 11.01,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 11.51,
+    "conc": null
+  },
+  "Na": {
+    "Abs xs": 0.53,
+    "Coh b": 3.63,
+    "Coh xs": 1.66,
+    "Inc b": 3.59,
+    "Inc xs": 1.62,
+    "Scatt xs": 3.28,
+    "conc": 100
+  },
+  "Nb": {
+    "Abs xs": 1.15,
+    "Coh b": 7.054,
+    "Coh xs": 6.253,
+    "Inc b": -0.139,
+    "Inc xs": 0.0024,
+    "Scatt xs": 6.255,
+    "conc": 100
+  },
+  "Nd": {
+    "Abs xs": 50.5,
+    "Coh b": 7.69,
+    "Coh xs": 7.43,
+    "Inc b": null,
+    "Inc xs": 9.2,
+    "Scatt xs": 16.6,
+    "conc": null
+  },
+  "Ne": {
+    "Abs xs": 0.039,
+    "Coh b": 4.566,
+    "Coh xs": 2.62,
+    "Inc b": null,
+    "Inc xs": 0.008,
+    "Scatt xs": 2.628,
+    "conc": null
+  },
+  "Ni": {
+    "Abs xs": 4.49,
+    "Coh b": 10.3,
+    "Coh xs": 13.3,
+    "Inc b": null,
+    "Inc xs": 5.2,
+    "Scatt xs": 18.5,
+    "conc": null
+  },
+  "Np": {
+    "Abs xs": 175.9,
+    "Coh b": 10.55,
+    "Coh xs": 14,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 14.5,
+    "conc": "(2.14E6 a)"
+  },
+  "O": {
+    "Abs xs": 0.00019,
+    "Coh b": 5.803,
+    "Coh xs": 4.232,
+    "Inc b": null,
+    "Inc xs": 0.0008,
+    "Scatt xs": 4.232,
+    "conc": null
+  },
+  "Os": {
+    "Abs xs": 16,
+    "Coh b": 10.7,
+    "Coh xs": 14.4,
+    "Inc b": null,
+    "Inc xs": 0.3,
+    "Scatt xs": 14.7,
+    "conc": null
+  },
+  "P": {
+    "Abs xs": 0.172,
+    "Coh b": 5.13,
+    "Coh xs": 3.307,
+    "Inc b": 0.2,
+    "Inc xs": 0.005,
+    "Scatt xs": 3.312,
+    "conc": 100
+  },
+  "Pa": {
+    "Abs xs": 200.6,
+    "Coh b": 9.1,
+    "Coh xs": 10.4,
+    "Inc b": null,
+    "Inc xs": 0.1,
+    "Scatt xs": 10.5,
+    "conc": "(3.28E4 a)"
+  },
+  "Pb": {
+    "Abs xs": 0.171,
+    "Coh b": 9.405,
+    "Coh xs": 11.115,
+    "Inc b": null,
+    "Inc xs": 0.003,
+    "Scatt xs": 11.118,
+    "conc": null
+  },
+  "Pd": {
+    "Abs xs": 6.9,
+    "Coh b": 5.91,
+    "Coh xs": 4.39,
+    "Inc b": null,
+    "Inc xs": 0.093,
+    "Scatt xs": 4.48,
+    "conc": null
+  },
+  "Pm": {
+    "Abs xs": 168.4,
+    "Coh b": 12.6,
+    "Coh xs": 20.0,
+    "Inc b": 3.2,
+    "Inc xs": 1.3,
+    "Scatt xs": 21.3,
+    "conc": "(2.62 a)"
+  },
+  "Po": {
+    "Abs xs": null,
+    "Coh b": null,
+    "Coh xs": 0,
+    "Inc b": 0.259,
+    "Inc xs": null,
+    "Scatt xs": null,
+    "conc": null
+  },
+  "Pr": {
+    "Abs xs": 11.5,
+    "Coh b": 4.58,
+    "Coh xs": 2.64,
+    "Inc b": -0.35,
+    "Inc xs": 0.015,
+    "Scatt xs": 2.66,
+    "conc": 100
+  },
+  "Pt": {
+    "Abs xs": 10.3,
+    "Coh b": 9.6,
+    "Coh xs": 11.58,
+    "Inc b": null,
+    "Inc xs": 0.13,
+    "Scatt xs": 11.71,
+    "conc": null
+  },
+  "Pu": {
+    "Abs xs": null,
+    "Coh b": null,
+    "Coh xs": null,
+    "Inc b": null,
+    "Inc xs": null,
+    "Scatt xs": null,
+    "conc": null
+  },
+  "Ra": {
+    "Abs xs": 12.8,
+    "Coh b": 10.0,
+    "Coh xs": 13.0,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 13.0,
+    "conc": "(1.60E3 a)"
+  },
+  "Rb": {
+    "Abs xs": 0.38,
+    "Coh b": 7.09,
+    "Coh xs": 6.32,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 6.8,
+    "conc": null
+  },
+  "Re": {
+    "Abs xs": 89.7,
+    "Coh b": 9.2,
+    "Coh xs": 10.6,
+    "Inc b": null,
+    "Inc xs": 0.9,
+    "Scatt xs": 11.5,
+    "conc": null
+  },
+  "Rh": {
+    "Abs xs": 144.8,
+    "Coh b": 5.88,
+    "Coh xs": 4.34,
+    "Inc b": null,
+    "Inc xs": 0.3,
+    "Scatt xs": 4.6,
+    "conc": 100
+  },
+  "Rn": {
+    "Abs xs": null,
+    "Coh b": null,
+    "Coh xs": 0,
+    "Inc b": null,
+    "Inc xs": null,
+    "Scatt xs": 12.6,
+    "conc": null
+  },
+  "Ru": {
+    "Abs xs": 2.56,
+    "Coh b": 7.03,
+    "Coh xs": 6.21,
+    "Inc b": null,
+    "Inc xs": 0.4,
+    "Scatt xs": 6.6,
+    "conc": null
+  },
+  "S": {
+    "Abs xs": 0.53,
+    "Coh b": 2.847,
+    "Coh xs": 1.0186,
+    "Inc b": null,
+    "Inc xs": 0.007,
+    "Scatt xs": 1.026,
+    "conc": null
+  },
+  "Sb": {
+    "Abs xs": 4.91,
+    "Coh b": 5.57,
+    "Coh xs": 3.9,
+    "Inc b": null,
+    "Inc xs": 0.007,
+    "Scatt xs": 3.9,
+    "conc": null
+  },
+  "Sc": {
+    "Abs xs": 27.5,
+    "Coh b": 12.29,
+    "Coh xs": 19,
+    "Inc b": -6.0,
+    "Inc xs": 4.5,
+    "Scatt xs": 23.5,
+    "conc": 100
+  },
+  "Se": {
+    "Abs xs": 11.7,
+    "Coh b": 7.97,
+    "Coh xs": 7.98,
+    "Inc b": null,
+    "Inc xs": 0.32,
+    "Scatt xs": 8.3,
+    "conc": null
+  },
+  "Si": {
+    "Abs xs": 0.171,
+    "Coh b": 4.1491,
+    "Coh xs": 2.163,
+    "Inc b": null,
+    "Inc xs": 0.004,
+    "Scatt xs": 2.167,
+    "conc": null
+  },
+  "Sm": {
+    "Abs xs": 5922.0,
+    "Coh b": [
+      0.8,
+      -1.65
+    ],
+    "Coh xs": 0.422,
+    "Inc b": null,
+    "Inc xs": 39.0,
+    "Scatt xs": 39.0,
+    "conc": null
+  },
+  "Sn": {
+    "Abs xs": 0.626,
+    "Coh b": 6.225,
+    "Coh xs": 4.871,
+    "Inc b": null,
+    "Inc xs": 0.022,
+    "Scatt xs": 4.892,
+    "conc": null
+  },
+  "Sr": {
+    "Abs xs": 1.28,
+    "Coh b": 7.02,
+    "Coh xs": 6.19,
+    "Inc b": null,
+    "Inc xs": 0.06,
+    "Scatt xs": 6.25,
+    "conc": null
+  },
+  "Ta": {
+    "Abs xs": 20.6,
+    "Coh b": 6.91,
+    "Coh xs": 6,
+    "Inc b": null,
+    "Inc xs": 0.01,
+    "Scatt xs": 6.01,
+    "conc": null
+  },
+  "Tb": {
+    "Abs xs": 23.4,
+    "Coh b": 7.38,
+    "Coh xs": 6.84,
+    "Inc b": -0.17,
+    "Inc xs": 0.004,
+    "Scatt xs": 6.84,
+    "conc": 100
+  },
+  "Tc": {
+    "Abs xs": 20.0,
+    "Coh b": 6.8,
+    "Coh xs": 5.8,
+    "Inc b": null,
+    "Inc xs": 0.5,
+    "Scatt xs": 6.3,
+    "conc": "(2.3E5 a)"
+  },
+  "Te": {
+    "Abs xs": 4.7,
+    "Coh b": 5.8,
+    "Coh xs": 4.23,
+    "Inc b": null,
+    "Inc xs": 0.09,
+    "Scatt xs": 4.32,
+    "conc": null
+  },
+  "Th": {
+    "Abs xs": 7.37,
+    "Coh b": 10.31,
+    "Coh xs": 13.36,
+    "Inc b": 0,
+    "Inc xs": 0,
+    "Scatt xs": 13.36,
+    "conc": 100
+  },
+  "Ti": {
+    "Abs xs": 6.09,
+    "Coh b": -3.438,
+    "Coh xs": 1.485,
+    "Inc b": null,
+    "Inc xs": 2.87,
+    "Scatt xs": 4.35,
+    "conc": null
+  },
+  "Tl": {
+    "Abs xs": 3.43,
+    "Coh b": 8.776,
+    "Coh xs": 9.678,
+    "Inc b": null,
+    "Inc xs": 0.21,
+    "Scatt xs": 9.89,
+    "conc": null
+  },
+  "Tm": {
+    "Abs xs": 100.0,
+    "Coh b": 7.07,
+    "Coh xs": 6.28,
+    "Inc b": 0.9,
+    "Inc xs": 0.1,
+    "Scatt xs": 6.38,
+    "conc": 100
+  },
+  "U": {
+    "Abs xs": 7.57,
+    "Coh b": 8.417,
+    "Coh xs": 8.903,
+    "Inc b": null,
+    "Inc xs": 0.005,
+    "Scatt xs": 8.908,
+    "conc": null
+  },
+  "V": {
+    "Abs xs": 5.08,
+    "Coh b": -0.3824,
+    "Coh xs": 0.0184,
+    "Inc b": null,
+    "Inc xs": 5.08,
+    "Scatt xs": 5.1,
+    "conc": null
+  },
+  "W": {
+    "Abs xs": 18.3,
+    "Coh b": 4.86,
+    "Coh xs": 2.97,
+    "Inc b": null,
+    "Inc xs": 1.63,
+    "Scatt xs": 4.6,
+    "conc": null
+  },
+  "Xe": {
+    "Abs xs": 23.9,
+    "Coh b": 4.92,
+    "Coh xs": 2.96,
+    "Inc b": 3.04,
+    "Inc xs": 0,
+    "Scatt xs": null,
+    "conc": null
+  },
+  "Y": {
+    "Abs xs": 1.28,
+    "Coh b": 7.75,
+    "Coh xs": 7.55,
+    "Inc b": 1.1,
+    "Inc xs": 0.15,
+    "Scatt xs": 7.7,
+    "conc": 100
+  },
+  "Yb": {
+    "Abs xs": 34.8,
+    "Coh b": 12.43,
+    "Coh xs": 19.42,
+    "Inc b": null,
+    "Inc xs": 4,
+    "Scatt xs": 23.4,
+    "conc": null
+  },
+  "Zn": {
+    "Abs xs": 1.11,
+    "Coh b": 5.68,
+    "Coh xs": 4.054,
+    "Inc b": null,
+    "Inc xs": 0.077,
+    "Scatt xs": 4.131,
+    "conc": null
+  },
+  "Zr": {
+    "Abs xs": 0.185,
+    "Coh b": 7.16,
+    "Coh xs": 6.44,
+    "Inc b": null,
+    "Inc xs": 0.02,
+    "Scatt xs": 6.46,
+    "conc": null
+  }
+}

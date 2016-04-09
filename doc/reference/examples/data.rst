@@ -13,8 +13,8 @@ Load from file
 ^^^^^^^^^^^^^^
 First, let's assume that you have a data file, ``'scan.dat'`` from a HFIR instrument (SPICE format):
 
->>> from neutronpy import load
->>> data = load('scan.dat')
+>>> from neutronpy.io import load_data
+>>> data = load_data('scan.dat')
 
 This builds ``data`` automatically and loads the following information from the file:
 
@@ -92,8 +92,8 @@ In this case, ``Q`` is collection of column arrays defined as ``[h, k, l, e, tem
 -------------------
 Combining data is as easy as adding multiple ``Data`` objects together, *e.g.*
 
->>> data1 = load('scan1.dat', filetype='SPICE')
->>> data2 = load('scan2.dat', filetype='SPICE')
+>>> data1 = load_data('scan1.dat', filetype='SPICE')
+>>> data2 = load_data('scan2.dat', filetype='SPICE')
 >>> data = data1 + data2
 
 This will combine monitor and detector counts for existing points and concatenate unique points in the two objects to create a new ``data`` object.

@@ -28,9 +28,14 @@ install:
 - conda create --yes -q -n test_environment python=$TRAVIS_PYTHON_VERSION nomkl pip
   setuptools cython numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose matplotlib=$MATPLOTLIB_VERSION
   six mock h5py
+- conda install --yes -q -c https://conda.anaconda.org/dsdale24 pyqt5
 - source activate test_environment
 - pip install pep8 python-coveralls codecov
 - pip install -e . -q --no-deps
+before_script: # configure a headless display to test plot generation
+- "export DISPLAY=:99.0"
+- "sh -e /etc/init.d/xvfb start"
+- sleep 3 # give xvfb some time to start
 script:
 - nosetests --with-coverage --cover-package=neutronpy --logging-level=INFO
 after_success:

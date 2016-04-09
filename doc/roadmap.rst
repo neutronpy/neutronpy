@@ -4,33 +4,33 @@ This document outlines the future of the NeutronPy package, including planned mi
 
 Milestones
 ----------
-There is currently one milestone on Github:
-
-* `0.3 ResLib <https://github.com/neutronpy/neutronpy/milestones/0.3%20ResLib>`_ - contains issues which are ready to be worked on
-
-The Reslib milestone will focus on making the Instrument class more pythonic, and implementing additional ResLib features, such as Monte Carlo convolution with the resolution fuctions.
+There are currently no milestones on Github.
 
 Next Release
 ------------
 In the next release there are several planned features:
 
-* Complete translation of ResLib library features
-    * Complete Documentation
-    * Support both *Q* and *S* coordinate systems
-    * Metric tensor calculation
-    * Convolution with resolution function
-    * Least-Squares fitting of convoluted cross sections
-    * Plotting of resolution ellipses (support 3D plots)
-    * Potential spurion detector
-    * Instrument visualization (w/ shaft angles)
-* Expanded support for input file types
-    * NeXus
-    * SPE
-* Add support for function input (in addition to residuals)
+* Magnetic Structure Factor calculation
+* Space group symmetry operator calculation
+    * For use in nuclear & magnetic structure factor calculations
+* Polarized cross section corrections
+* Data class upgrades
+    * Subtraction of measured background
+    * Add Spectrometer Angles to Data class
+* Bragg peak finder
+* Refactor code for easier maintenance
+    * ex. File IO separated into new module
+    * ex. Energy class to new module
+    * ex. New Sample module/class to allow combination of Material, Lattice, and new SpaceGroup classes
 
 Future Features
 ---------------
 This section is for planned features that may require significant development time.
 
+* TAS Scattering plane finder
+* Calculation of polarization tensor (spherical polarimetry)
+    * Depends on magnetic structure factor calculation
 * 3D visualization of volumes (using OpenGL)
     * Support for slicing and cutting
+* Sample Activation Calculator
+* UI for TAS resolution calcuation

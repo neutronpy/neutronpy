@@ -1,3 +1,6 @@
+r'''Handles lattice geometries to find rotations and transformations
+
+'''
 import numpy as np
 
 
@@ -7,12 +10,23 @@ class Lattice(object):
 
     Parameters
     ----------
-    abc : array_like
-        List of lattice constants *a*, *b*, and *c* in \u212B
+    a : float
+        Lattice constant *a* in \u212B
 
-    abg : array_like
-        List of lattice angles \U0001D6FC, \U0001D6FD, and \U0001D6FE in
-        degrees
+    b : float
+        Lattice constant *b* in \u212B
+
+    c : float
+        Lattice constant *c* in \u212B
+
+    alpha : float
+        Lattice angle \U0001D6FC in degrees
+
+    beta : float
+        Lattice angle \U0001D6FD in degrees
+
+    gamma : float
+        Lattice angle \U0001D6FE in degrees
 
     Returns
     -------
@@ -59,15 +73,19 @@ class Lattice(object):
 
     '''
 
-    def __init__(self, abc, abg):
-        self.abc = np.array(abc)
-        self.abg = np.array(abg)
+    def __init__(self, a, b, c, alpha, beta, gamma):
+        self.abc = [a, b, c]
+        self.abg = [alpha, beta, gamma]
 
     @property
     def a(self):
         r'''First lattice constant in Angstrom
         '''
         return self.abc[0]
+
+    @a.setter
+    def a(self, a):
+        self.abc[0] = a
 
     @property
     def b(self):
@@ -76,11 +94,19 @@ class Lattice(object):
         '''
         return self.abc[1]
 
+    @b.setter
+    def b(self, b):
+        self.abc[1] = b
+
     @property
     def c(self):
         r'''Third lattice constant in Angstrom
         '''
         return self.abc[2]
+
+    @c.setter
+    def c(self, c):
+        self.abc[2] = c
 
     @property
     def alpha(self):
@@ -88,17 +114,29 @@ class Lattice(object):
         '''
         return self.abg[0]
 
+    @alpha.setter
+    def alpha(self, alpha):
+        self.abg[0] = alpha
+
     @property
     def beta(self):
         r'''Second lattice angle in degrees
         '''
         return self.abg[1]
 
+    @beta.setter
+    def beta(self, beta):
+        self.abg[1] = beta
+
     @property
     def gamma(self):
         r'''Third lattice angle in degrees
         '''
         return self.abg[2]
+
+    @gamma.setter
+    def gamma(self, gamma):
+        self.abg[2] = gamma
 
     @property
     def alpha_rad(self):
@@ -211,17 +249,17 @@ class Lattice(object):
 
         if len(np.unique(self.abc)) == 3 and len(np.unique(self.abg)) == 3:
             return 'triclinic'
-        elif len(np.unique(self.abc)) == 3 and self.abg[1] != 90 and np.all(self.abg[:3:2] == 90):
+        elif len(np.unique(self.abc)) == 3 and self.abg[1] != 90 and np.all(np.array(self.abg)[:3:2] == 90):
             return 'monoclinic'
-        elif len(np.unique(self.abc)) == 3 and np.all(self.abg == 90):
+        elif len(np.unique(self.abc)) == 3 and np.all(np.array(self.abg) == 90):
             return 'orthorhombic'
-        elif len(np.unique(self.abc)) == 1 and len(np.unique(self.abg)) == 1 and np.all(self.abg < 120) and np.all(self.abg != 90):
+        elif len(np.unique(self.abc)) == 1 and len(np.unique(self.abg)) == 1 and np.all(np.array(self.abg) < 120) and np.all(np.array(self.abg) != 90):
             return 'rhombohedral'
-        elif len(np.unique(self.abc)) == 2 and self.abc[0] == self.abc[1] and np.all(self.abg == 90):
+        elif len(np.unique(self.abc)) == 2 and self.abc[0] == self.abc[1] and np.all(np.array(self.abg) == 90):
             return 'tetragonal'
-        elif len(np.unique(self.abc)) == 2 and self.abc[0] == self.abc[1] and np.all(self.abg[0:2] == 90) and self.abg[2] == 120:
+        elif len(np.unique(self.abc)) == 2 and self.abc[0] == self.abc[1] and np.all(np.array(self.abg)[0:2] == 90) and self.abg[2] == 120:
             return 'hexagonal'
-        elif len(np.unique(self.abc)) == 1 and np.all(self.abg == 90):
+        elif len(np.unique(self.abc)) == 1 and np.all(np.array(self.abg) == 90):
             return 'cubic'
         else:
             raise ValueError('Provided lattice constants and angles do not resolve to a valid Bravais lattice')
@@ -269,7 +307,7 @@ class Lattice(object):
         '''
 
         return np.matrix([[self.astar, self.bstar * np.cos(self.gammastar_rad), self.cstar * np.cos(self.betastar_rad)],
-                          [0, self.bstar * np.sin(self.gammastar_rad), - self.cstar * np.sin(self.betastar_rad) * np.cos(self.alpha_rad)],
+                          [0, self.bstar * np.sin(self.gammastar_rad), -self.cstar * np.sin(self.betastar_rad) * np.cos(self.alpha_rad)],
                           [0, 0, 1. / self.c]], dtype=float)
 
     def get_d_spacing(self, hkl):
@@ -355,91 +393,3 @@ class Lattice(object):
         '''
 
         return 2 * np.pi / self.get_d_spacing(hkl)
-
-
-class Goniometer(object):
-    r'''Defines a goniometer
-
-    '''
-
-    def __init__(self, u, theta_u, v, theta_v, sgu, sgl, omega=0):
-        self.u = u
-        self.theta_u = theta_u
-
-        self.v = v
-        self.theta_v = theta_v
-
-        self.sgu = sgu
-        self.sgl = sgl
-
-        self.omega = 0
-
-    @property
-    def omega_rad(self):
-        return self.omega_rad
-
-    @property
-    def sgu_rad(self):
-        return np.deg2rad(self.sgu)
-
-    @property
-    def sgl_rad(self):
-        return np.deg2rad(self.sgl)
-
-    @property
-    def theta_rad(self):
-        return np.arctan((self.ki - self.kf * np.cos(self.phi)) / (self.kf * np.sin(self.phi)))
-
-    @property
-    def theta(self):
-        pass
-
-    @property
-    def N(self):
-        return np.matrix([[1, 0, 0],
-                          [0, np.cos(self.sgu_rad), -np.sin(self.sgu_rad)],
-                          [0, np.sin(self.sgu_rad), np.cos(self.sgu_rad)]])
-
-    @property
-    def M(self):
-        return np.matrix([[np.cos(self.sgl_rad), 0, np.sin(self.sgl_rad)],
-                          [0, 1, 0],
-                          [-np.sin(self.sgl_rad), 0, np.cos(self.sgl_rad)]])
-
-    @property
-    def Omega(self):
-        return np.matrix([[np.cos(self.omega_rad), -np.sin(self.omega_rad), 0],
-                          [np.sin(self.omega_rad), np.cos(self.omega_rad), 0],
-                          [0, 0, 1]])
-
-    @property
-    def Theta(self):
-        return np.matrix([[np.cos(self.theta_rad), -np.sin(self.theta_rad), 0],
-                          [np.sin(self.theta_rad), np.cos(self.theta_rad), 0],
-                          [0, 0, 1]])
-
-    @property
-    def T_c(self):
-        return np.matrix([self.u, self.v, np.cross(self.u, self.v)]).T
-
-    @property
-    def T_phi(self):
-        return np.matrix([self.u_phi(np.deg2rad(self.theta_u), self.sgl_rad, self.sgu_rad),
-                          self.u_phi(np.deg2rad(self.theta_v), self.sgl_rad, self.sgu_rad),
-                          self.u_phi(np.deg2rad(0), np.deg2rad(90), np.deg2rad(0))]).T
-
-    @property
-    def R(self):
-        return self.Omega * self.M * self.N
-
-    @property
-    def U(self):
-        r'''Defines an orientation matrix based on supplied goniometer angles
-
-        '''
-        return self.T_phi * np.linalg.inv(self.T_c)
-
-    def u_phi(self, omega, chi, phi):
-        return [np.cos(omega) * np.cos(chi) * np.cos(phi) - np.sin(omega) * np.sin(phi),
-                np.cos(omega) * np.cos(chi) * np.sin(phi) + np.sin(omega) * np.cos(phi),
-                np.cos(omega) * np.sin(chi)]

@@ -1,444 +1,158 @@
 # -*- coding: utf-8 -*-
+r'''Define an instrument for resolution calculations
+
+'''
 import numpy as np
 from scipy.linalg import block_diag as blkdiag
-from .core import Energy
-import datetime as dt
+from neutronpy.data import Energy
+from .sample import Sample
+from .instrument_tools import ellipse, project_into_plane
+from .plot import PlotResolution
 
 
-def load(parfile, cfgfile):
-    r'''Creates Instrument class using input par and cfg files.
-
-    Parameters
-    ----------
-    parfile : str
-        Path to the .par file
-
-    cfgfile : str
-        Path to the .cfg file
-
-    Returns
-    -------
-    setup : obj
-        Returns Instrument class object based on the information in the input
-        files.
-
-    Notes
-    -----
-    The format of the ``parfile`` consists of two tab-separated columns, the first
-    column containing the values and the second column containing the value
-    names preceded by a '%' character:
-
-    +-------+---------+---------------------------------------------------------------------------------+
-    | Type  | Name    | Description                                                                     |
-    +=======+=========+=================================================================================+
-    | float | %DM     | Monochromater d-spacing (Ang^-1)                                                |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %DA     | Analyzer d-spacing (Ang^-1)                                                     |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %ETAM   | Monochromator mosaic (arc min)                                                  |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %ETAA   | Analyzer mosaic (arc min)                                                       |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %ETAS   | Sample mosaic (arc min)                                                         |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | int   | %SM     | Scattering direction of monochromator (+1 clockwise, -1 counterclockwise)       |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | int   | %SS     | Scattering direction of sample (+1 clockwise, -1 counterclockwise)              |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | int   | %SA     | Scattering direction of analyzer (+1 clockwise, -1 counterclockwise)            |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %K      | Fixed wavevector (incident or final) of neutrons                                |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %ALPHA1 | Horizontal collimation of in-pile collimator (arc min)                          |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %ALPHA2 | Horizontal collimation of collimator between monochromator and sample (arc min) |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %ALPHA3 | Horizontal collimation of collimator between sample and analyzer (arc min)      |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %ALPHA4 | Horizontal collimation of collimator between analyzer and detector (arc min)    |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %BETA1  | Vertical collimation of in-pile collimator (arc min)                            |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %BETA2  | Vertical collimation of collimator between monochromator and sample (arc min)   |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %BETA3  | Vertical collimation of collimator between sample and analyzer (arc min)        |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %BETA4  | Vertical collimation of collimator between analyzer and detector (arc min)      |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %AS     | Sample lattice constant a (Ang)                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %BS     | Sample lattice constant b (Ang)                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %CS     | Sample lattice constant c (Ang)                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %AA     | Sample lattice angle alpha (deg)                                                |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %BB     | Sample lattice angle beta (deg)                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %CC     | Sample lattice angle gamma (deg)                                                |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %AX     | Sample orientation vector u_x (r.l.u.)                                          |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %AY     | Sample orientation vector u_y (r.l.u.)                                          |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %AZ     | Sample orientation vector u_z (r.l.u.)                                          |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %BX     | Sample orientation vector v_x (r.l.u.)                                          |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %BY     | Sample orientation vector v_y (r.l.u.)                                          |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %BZ     | Sample orientation vector v_z (r.l.u.)                                          |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %QX     |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %QY     |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %QZ     |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %EN     |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %dqx    |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %dqy    |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %dqz    |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %de     |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %gh     |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %gk     |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %gl     |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-    | float | %gmod   |                                                                                 |
-    +-------+---------+---------------------------------------------------------------------------------+
-
-    The format of the ``cfgfile`` (containing values necessary for Popovici type
-    calculations) can consists of a single column of values, or two
-    tab-separated columns, the first column containing the values and the
-    second column containing the value descriptions preceded by a '%' character.
-    The values MUST be in the following order:
-
-    +-------+-------------------------------------------------------+
-    | Type  | Description                                           |
-    +=======+=======================================================+
-    | float | =0 for circular source, =1 for rectangular source     |
-    +-------+-------------------------------------------------------+
-    | float | width/diameter of the source (cm)                     |
-    +-------+-------------------------------------------------------+
-    | float | height/diameter of the source (cm)                    |
-    +-------+-------------------------------------------------------+
-    | float | =0 No Guide, =1 for Guide                             |
-    +-------+-------------------------------------------------------+
-    | float | horizontal guide divergence (minutes/Angs)            |
-    +-------+-------------------------------------------------------+
-    | float | vertical guide divergence (minutes/Angs)              |
-    +-------+-------------------------------------------------------+
-    | float | =0 for cylindrical sample, =1 for cuboid sample       |
-    +-------+-------------------------------------------------------+
-    | float | sample width/diameter perp. to Q (cm)                 |
-    +-------+-------------------------------------------------------+
-    | float | sample width/diameter along Q (cm)                    |
-    +-------+-------------------------------------------------------+
-    | float | sample height (cm)                                    |
-    +-------+-------------------------------------------------------+
-    | float | =0 for circular detector, =1 for rectangular detector |
-    +-------+-------------------------------------------------------+
-    | float | width/diameter of the detector (cm)                   |
-    +-------+-------------------------------------------------------+
-    | float | height/diameter of the detector (cm)                  |
-    +-------+-------------------------------------------------------+
-    | float | thickness of monochromator (cm)                       |
-    +-------+-------------------------------------------------------+
-    | float | width of monochromator (cm)                           |
-    +-------+-------------------------------------------------------+
-    | float | height of monochromator (cm)                          |
-    +-------+-------------------------------------------------------+
-    | float | thickness of analyser (cm)                            |
-    +-------+-------------------------------------------------------+
-    | float | width of analyser (cm)                                |
-    +-------+-------------------------------------------------------+
-    | float | height of analyser (cm)                               |
-    +-------+-------------------------------------------------------+
-    | float | distance between source and monochromator (cm)        |
-    +-------+-------------------------------------------------------+
-    | float | distance between monochromator and sample (cm)        |
-    +-------+-------------------------------------------------------+
-    | float | distance between sample and analyser (cm)             |
-    +-------+-------------------------------------------------------+
-    | float | distance between analyser and detector (cm)           |
-    +-------+-------------------------------------------------------+
-    | float | horizontal curvature of monochromator 1/radius (cm-1) |
-    +-------+-------------------------------------------------------+
-    | float | vertical curvature of monochromator (cm-1) was 0.013  |
-    +-------+-------------------------------------------------------+
-    | float | horizontal curvature of analyser (cm-1) was 0.078     |
-    +-------+-------------------------------------------------------+
-    | float | vertical curvature of analyser (cm-1)                 |
-    +-------+-------------------------------------------------------+
-    | float | distance monochromator-monitor                        |
-    +-------+-------------------------------------------------------+
-    | float | width monitor (cm)                                    |
-    +-------+-------------------------------------------------------+
-    | float | height monitor (cm)                                   |
-    +-------+-------------------------------------------------------+
-
-    '''
-    with open(parfile, "r") as f:
-        lines = f.readlines()
-        par = {}
-        for line in lines:
-            rows = line.split()
-            par[rows[1][1:].lower()] = float(rows[0])
-
-    with open(cfgfile, "r") as f:
-        lines = f.readlines()
-        cfg = []
-        for line in lines:
-            rows = line.split()
-            cfg.append(float(rows[0]))
-
-    if par['sm'] == par['ss']:
-        dir1 = -1
-    else:
-        dir1 = 1
-
-    if par['ss'] == par['sa']:
-        dir2 = -1
-    else:
-        dir2 = 1
-
-    if par['kfix'] == 2:
-        infin = -1
-    else:
-        infin = par['kfix']
-
-    hcol = [par['alpha1'], par['alpha2'], par['alpha3'], par['alpha4']]
-    vcol = [par['beta1'], par['beta2'], par['beta3'], par['beta4']]
-
-    nsou = cfg[0]  # =0 for circular source, =1 for rectangular source.
-    if nsou == 0:
-        ysrc = cfg[1] / 4  # width/diameter of the source [cm].
-        zsrc = cfg[2] / 4  # height/diameter of the source [cm].
-    else:
-        ysrc = cfg[1] / np.sqrt(12)  # width/diameter of the source [cm].
-        zsrc = cfg[2] / np.sqrt(12)  # height/diameter of the source [cm].
-
-    flag_guide = cfg[3]  # =0 for no guide, =1 for guide.
-    guide_h = cfg[4]  # horizontal guide divergence [mins/Angs]
-    guide_v = cfg[5]  # vertical guide divergence [mins/Angs]
-    if flag_guide == 1:
-        alpha_guide = np.pi / 60. / 180. * 2 * np.pi * guide_h / par['k']
-        alpha0 = hcol[0] * np.pi / 60. / 180.
-        if alpha_guide <= alpha0:
-            hcol[0] = 2. * np.pi / par['k'] * guide_h
-        beta_guide = np.pi / 60. / 180. * 2 * np.pi * guide_v / par['k']
-        beta0 = vcol[0] * np.pi / 60. / 180.
-        if beta_guide <= beta0:
-            vcol[0] = 2. * np.pi / par['k'] * guide_v
-
-    nsam = cfg[6]  # =0 for cylindrical sample, =1 for cuboid sample.
-    if nsam == 0:
-        xsam = cfg[7] / 4  # sample width/diameter perp. to Q [cm].
-        ysam = cfg[8] / 4  # sample width/diameter along Q [cm].
-        zsam = cfg[9] / 4  # sample height [cm].
-    else:
-        xsam = cfg[7] / np.sqrt(12)  # sample width/diameter perp. to Q [cm].
-        ysam = cfg[8] / np.sqrt(12)  # sample width/diameter along Q [cm].
-        zsam = cfg[9] / np.sqrt(12)  # sample height [cm].
-
-    ndet = cfg[10]  # =0 for circular detector, =1 for rectangular detector.
-    if ndet == 0:
-        ydet = cfg[11] / 4  # width/diameter of the detector [cm].
-        zdet = cfg[12] / 4  # height/diameter of the detector [cm].
-    else:
-        ydet = cfg[11] / np.sqrt(12)  # width/diameter of the detector [cm].
-        zdet = cfg[12] / np.sqrt(12)  # height/diameter of the detector [cm].
-
-    xmon = cfg[13]  # thickness of monochromator [cm].
-    ymon = cfg[14]  # width of monochromator [cm].
-    zmon = cfg[15]  # height of monochromator [cm].
-
-    xana = cfg[16]  # thickness of analyser [cm].
-    yana = cfg[17]  # width of analyser [cm].
-    zana = cfg[18]  # height of analyser [cm].
-
-    L0 = cfg[19]  # distance between source and monochromator [cm].
-    L1 = cfg[20]  # distance between monochromator and sample [cm].
-    L2 = cfg[21]  # distance between sample and analyser [cm].
-    L3 = cfg[22]  # distance between analyser and detector [cm].
-
-    romh = par['sm'] * cfg[23]  # horizontal curvature of monochromator 1/radius [cm-1].
-    romv = par['sm'] * cfg[24]  # vertical curvature of monochromator [cm-1].
-    roah = par['sa'] * cfg[25]  # horizontal curvature of analyser [cm-1].
-    roav = par['sa'] * cfg[26]  # vertical curvature of analyser [cm-1].
-    inv_rads = [romh, romv, roah, roav]
-    for n, inv_rad in enumerate(inv_rads):
-        if inv_rad == 0:
-            inv_rads[n] = 1.e6
-        else:
-            inv_rads[n] = 1. / inv_rad
-    [romh, romv, roah, roav] = inv_rads
-
-    L1mon = cfg[27]  # distance monochromator monitor [cm]
-    monitorw = cfg[28] / np.sqrt(12)  # monitor width [cm]
-    monitorh = cfg[29] / np.sqrt(12)  # monitor height [cm]
-
-    # -------------------------------------------------------------------------
-
-    energy = Energy(wavevector=par['k'])
-
-    sample = Sample(par['as'], par['bs'], par['cs'],
-                    par['aa'], par['bb'], par['cc'],
-                    par['etas'])
-    sample.u = [par['ax'], par['ay'], par['az']]
-    sample.v = [par['bx'], par['by'], par['bz']]
-    sample.shape = np.diag([xsam, ysam, zsam])
-
-    setup = Instrument(energy.energy, sample, hcol, vcol,
-                       2 * np.pi / par['dm'], par['etam'],
-                       2 * np.pi / par['da'], par['etaa'])
-
-    setup.method = 1
-    setup.dir1 = dir1
-    setup.dir2 = dir2
-    setup.mondir = par['sm']
-    setup.infin = infin
-    setup.arms = [L0, L1, L2, L3, L1mon]
-    setup.beam.width = ysrc
-    setup.beam.height = zsrc
-
-    setup.detector.width = ydet
-    setup.detector.height = zdet
-
-    setup.mono.depth = xmon
-    setup.mono.width = ymon
-    setup.mono.height = zmon
-    setup.mono.rv = romv
-    setup.mono.rh = romh
-
-    setup.ana.depth = xana
-    setup.ana.width = yana
-    setup.ana.height = zana
-    setup.ana.rv = roav
-    setup.ana.rh = roah
-
-    setup.monitor.width = monitorw
-    setup.monitor.height = monitorh
-
-    return setup
-
-
-class Sample():
-    u'''Private class containing sample information.
+class Monochromator(object):
+    u'''Class containing monochromator information.
 
     Parameters
     ----------
-    a : float
-        Unit cell length in angstroms
-
-    b : float
-        Unit cell length in angstroms
-
-    c : float
-        Unit cell length in angstroms
-
-    alpha : float
-        Angle between b and c in degrees
-
-    beta : float
-        Angle between a and c in degrees
-
-    gamma : float
-        Angle between a and b in degrees
-
-    mosaic : float, optional
-        Horizontal sample mosaic (FWHM) in arc minutes
-
-    vmosaic : float, optional
-        Vertical sample mosaic (FWHM) in arc minutes
-
-    direct : ±1, optional
-        Direction of the crystal (left or right, -1 or +1, respectively)
-
-    u : array_like
-        First orientation vector
-
-    v : array_like
-        Second orientation vector
-
-    Returns
-    -------
-    Sample : object
-
-    '''
-    def __init__(self, a, b, c, alpha, beta, gamma, mosaic=None, vmosaic=None, direct=1, u=None, v=None):
-        self.a = a
-        self.b = b
-        self.c = c
-        self.alpha = alpha
-        self.beta = beta
-        self.gamma = gamma
-        if mosaic is not None:
-            self.mosaic = mosaic
-        if vmosaic is not None:
-            self.vmosaic = vmosaic
-        self.dir = direct
-        if u is not None:
-            self._u = np.array(u)
-        if v is not None:
-            self._v = np.array(v)
-
-    @property
-    def u(self):
-        return self._u
-
-    @u.setter
-    def u(self, vec):
-        self._u = np.array(vec)
-
-    @property
-    def v(self):
-        return self._v
-
-    @v.setter
-    def v(self, vec):
-        self._v = np.array(vec)
-
-
-class _Monochromator():
-    u'''Private class containing monochromator information.
-
-    Parameters
-    ----------
-    tau : float or string
+    tau : float or str
         Tau value for the monochromator (or analyzer)
 
     mosaic : int
         Mosaic of the crystal in arc minutes
 
-    dir : ±1, optional
+    direct : ±1, optional
         Direction of the crystal (left or right, -1 or +1, respectively).
         Default: -1 (left-handed coordinate frame).
 
+    vmosaic : int, optional
+        Vertical mosaic of the crystal in arc minutes. Default: None
+
+    height : float, optional
+        Height of the crystal in cm. Default: None
+
+    width : float, optional
+        Width of the crystal in cm. Default: None
+
+    depth : float, optional
+        Depth of the crystal in cm. Default: None
+
     Returns
     -------
-    Monochromator : class
+    Monochromator : object
 
+    Attributes
+    ----------
+    tau
+    mosaic
+    direct
+    vmosaic
+    height
+    width
+    depth
+    rh
+    rv
+    d
     '''
-    def __init__(self, tau, mosaic, direct=-1, rh=None, rv=None):
-        self.tau = tau
+    def __init__(self, tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None):
+        self._tau = tau
         self.mosaic = mosaic
+        if vmosaic is not None:
+            self.vmosaic = vmosaic
         self.dir = direct
         self.d = 2 * np.pi / GetTau(tau)
         if rh is not None:
             self.rh = rh
         if rv is not None:
             self.rv = rv
+        if height is not None:
+            self.height = height
+        if width is not None:
+            self.width = width
+        if depth is not None:
+            self.depth = depth
+
+    @property
+    def tau(self):
+        return self._tau
+
+    @tau.setter
+    def tau(self, tau):
+        self._tau = tau
+        self.d = 2 * np.pi / GetTau(tau)
+
+
+class Analyzer(Monochromator):
+    u'''Class containing analyzer information.
+
+    Parameters
+    ----------
+    tau : float or str
+        Tau value for the analyzer
+
+    mosaic : int
+        Mosaic of the analyzer in arc minutes
+
+    direct : ±1, optional
+        Direction of the analyzer (left or right, -1 or +1, respectively).
+        Default: -1 (left-handed coordinate frame).
+
+    vmosaic : int, optional
+        Vertical mosaic of the analyzer in arc minutes. Default: None
+
+    height : float, optional
+        Height of the analyzer in cm. Default: None
+
+    width : float, optional
+        Width of the analyzer in cm. Default: None
+
+    depth : float, optional
+        Depth of the analyzer in cm. Default: None
+
+    horifoc : int, optional
+        Set to 1 if horizontally focusing analyzer is used. Default: -1
+
+    thickness : float, optional
+        Thickness of Analyzer crystal in cm. Required for analyzer
+        reflectivity calculation. Default: None
+
+    Q : float, optional
+        Kinematic reflectivity coefficient. Required for analyzer
+        reflectivity calculation. Default: None
+
+    Returns
+    -------
+    Analyzer : object
+
+    Attributes
+    ----------
+    tau
+    mosaic
+    vmosaic
+    direct
+    height
+    width
+    depth
+    rh
+    rv
+    thickness
+    horifoc
+    Q
+    d
+
+    '''
+    def __init__(self, tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None, horifoc=-1, thickness=None, Q=None):
+        super(Analyzer, self).__init__(tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None)
+        if thickness is not None:
+            self.thickness = thickness
+        if Q is not None:
+            self.Q = Q
+        self.horifoc = horifoc
 
 
 class _dummy():
+    r'''Empty class for constructing empty objects monitor, guide, and detector
+    '''
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
@@ -542,7 +256,8 @@ def _modvec(v, lattice):
 
     Notes
     -----
-    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
+    Oak Ridge National Laboratory
 
     '''
 
@@ -556,8 +271,8 @@ def GetTau(x, getlabel=False):
     ----------
     x : float or string
         Either the numerical Tau value, in Å\ :sup:`-1`, or a
-        common monochromater / analyzer type. Currently included crystals and their
-        corresponding τ values are
+        common monochromater / analyzer type. Currently included crystals and
+        their corresponding τ values are
 
             +------------------+--------------+-----------+
             | String           |     τ        |           |
@@ -606,9 +321,11 @@ def GetTau(x, getlabel=False):
 
     Notes
     -----
-    Tau is defined as :math:`\\tau = 2\\pi/d`, where d is the d-spacing of the crystal in Angstroms.
+    Tau is defined as :math:`\\tau = 2\\pi/d`, where d is the d-spacing of the
+    crystal in Angstroms.
 
-    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
+    Oak Ridge National Laboratory
 
     '''
     choices = {'pg(002)'.lower(): 1.87325,
@@ -660,11 +377,13 @@ def _CleanArgs(*varargin):
     Returns
     -------
     [length, varargout] : [int, tuple]
-        Returns the length of the input vectors and a tuple containing the cleaned vectors
+        Returns the length of the input vectors and a tuple containing the
+        cleaned vectors
 
     Notes
     -----
-    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+    Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
+    Oak Ridge National Laboratory
 
     '''
     varargout = []
@@ -686,78 +405,6 @@ def _CleanArgs(*varargin):
         raise ValueError('Fatal error: All inputs must have the same lengths.')
 
     return [length] + varargout
-
-
-def project_into_plane(index, r0, rm):
-    r'''Projects out-of-plane resolution into a specified plane by performing
-    a gaussian integral over the third axis.
-
-    Parameters
-    ----------
-    index : int
-        Index of the axis that should be integrated out
-
-    r0 : float
-        Resolution prefactor
-
-    rm : ndarray
-        Resolution array
-
-    Returns
-    -------
-    mp : ndarray
-        Resolution matrix in a specified plane
-
-    '''
-
-    r = np.sqrt(2 * np.pi / rm[index, index]) * r0
-    mp = rm
-
-    b = rm[:, index] + rm[index, :].T
-    b = np.delete(b, index, 0)
-
-    mp = np.delete(mp, index, 0)
-    mp = np.delete(mp, index, 1)
-
-    mp -= 1 / (4. * rm[index, index]) * np.outer(b, b.T)
-
-    return [r, mp]
-
-
-def ellipse(saxis1, saxis2, phi=0, origin=None, npts=31):
-    r'''Returns an ellipse.
-
-    Parameters
-    ----------
-    saxis1 : float
-        First semiaxis
-
-    saxis2 : float
-        Second semiaxis
-
-    phi : float, optional
-        Angle that semiaxes are rotated
-
-    origin : list of floats, optional
-        Origin position [x0, y0]
-
-    npts: float, optional
-        Number of points in the output arrays.
-
-    Returns
-    -------
-    [x, y] : list of ndarray
-        Two one dimensional arrays representing an ellipse
-    '''
-
-    if origin is None:
-        origin = [0., 0.]
-
-    theta = np.linspace(0., 2. * np.pi, npts)
-
-    x = np.array(saxis1 * np.cos(theta) * np.cos(phi) - saxis2 * np.sin(theta) * np.sin(phi)) + origin[0]
-    y = np.array(saxis1 * np.cos(theta) * np.sin(phi) + saxis2 * np.sin(theta) * np.cos(phi)) + origin[1]
-    return np.vstack((x, y))
 
 
 def _voigt(x, a):
@@ -810,52 +457,7 @@ def _voigt(x, a):
     return y
 
 
-def get_bragg_widths(RM):
-    bragg = np.array([np.sqrt(8 * np.log(2)) / np.sqrt(RM[0, 0]),
-                      np.sqrt(8 * np.log(2)) / np.sqrt(RM[1, 1]),
-                      np.sqrt(8 * np.log(2)) / np.sqrt(RM[2, 2]),
-                      get_phonon_width(0, RM, [0, 0, 0, 1])[1],
-                      np.sqrt(8 * np.log(2)) / np.sqrt(RM[3, 3])])
-
-    return bragg * 2
-
-
-def get_phonon_width(r0, M, C):
-    T = np.diag(np.ones(4))
-    T[3, :] = np.array(C)
-    S = np.matrix(np.linalg.inv(T))
-    MP = np.squeeze(np.array(S.H * M * S))
-    [rp, MP] = project_into_plane(0, r0, MP)
-    [rp, MP] = project_into_plane(0, rp, MP)
-    [rp, MP] = project_into_plane(0, rp, MP)
-    fwhm = np.sqrt(8 * np.log(2)) / np.sqrt(MP[0, 0])
-
-    return [rp, fwhm]
-
-
-def fproject(mat, i):
-    if i == 0:
-        v = 2
-        j = 1
-    if i == 1:
-        v = 0
-        j = 2
-    if i == 2:
-        v = 0
-        j = 1
-    [a, b, c] = mat.shape
-    proj = np.zeros((2, 2, c))
-    proj[0, 0, :] = mat[i, i, :] - mat[i, v, :] ** 2 / mat[v, v, :]
-    proj[0, 1, :] = mat[i, j, :] - mat[i, v, :] * mat[j, v, :] / mat[v, v, :]
-    proj[1, 0, :] = mat[j, i, :] - mat[j, v, :] * mat[i, v, :] / mat[v, v, :]
-    proj[1, 1, :] = mat[j, j, :] - mat[j, v, :] ** 2 / mat[v, v, :]
-    hwhm = proj[0, 0, :] - proj[0, 1, :] ** 2 / proj[1, 1, :]
-    hwhm = np.sqrt(2. * np.log(2.)) / np.sqrt(hwhm)
-
-    return hwhm
-
-
-class Instrument(object):
+class Instrument(PlotResolution):
     u'''An object that represents a Triple Axis Spectrometer (TAS) instrument
     experimental configuration, including a sample.
 
@@ -913,6 +515,7 @@ class Instrument(object):
     detector
     monitor
     Smooth
+    guide
 
     Methods
     -------
@@ -927,6 +530,8 @@ class Instrument(object):
     plot_instrument
     resolution_convolution
     resolution_convolution_SMA
+    plot_slice
+    description_string
 
     '''
     def __init__(self, efixed=14.7, sample=None, hcol=None, vcol=None, mono='PG(002)',
@@ -943,17 +548,17 @@ class Instrument(object):
         if vcol is None:
             vcol = [120, 120, 120, 120]
 
-        self.mono = _Monochromator(mono, mono_mosaic)
-        self.ana = _Monochromator(ana, ana_mosaic)
+        self.mono = Monochromator(mono, mono_mosaic)
+        self.ana = Analyzer(ana, ana_mosaic)
         self.hcol = np.array(hcol)
         self.vcol = np.array(vcol)
         self.efixed = efixed
         self.sample = sample
         self.orient1 = np.array(sample.u)
         self.orient2 = np.array(sample.v)
-        self.beam = _dummy()
         self.detector = _dummy()
         self.monitor = _dummy()
+        self.guide = _dummy()
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -1218,14 +823,14 @@ class Instrument(object):
         self._infin = value
 
     @property
-    def beam(self):
+    def guide(self):
         r'''A structure that describes the source
         '''
-        return self._beam
+        return self._guide
 
-    @beam.setter
-    def beam(self, value):
-        self._beam = value
+    @guide.setter
+    def guide(self, value):
+        self._guide = value
 
     @property
     def detector(self):
@@ -1286,13 +891,12 @@ class Instrument(object):
         1999-2007, Oak Ridge National Laboratory
 
         '''
-        s = np.array([self.sample])
-        lattice = Sample(np.array([item.a for item in s]),
-                         np.array([item.b for item in s]),
-                         np.array([item.c for item in s]),
-                         np.array([item.alpha for item in s]) * np.pi / 180,
-                         np.array([item.beta for item in s]) * np.pi / 180,
-                         np.array([item.gamma for item in s]) * np.pi / 180)
+        lattice = Sample(self.sample.a,
+                         self.sample.b,
+                         self.sample.c,
+                         self.sample.alpha * np.pi / 180,
+                         self.sample.beta * np.pi / 180,
+                         self.sample.gamma * np.pi / 180)
         V, Vstar, rlattice = _star(lattice)  # @UnusedVariable
 
         return [lattice, rlattice]
@@ -1391,7 +995,7 @@ class Instrument(object):
 
         RM = np.zeros((4, 4, length), dtype=np.float64)
         R0 = np.zeros(length, dtype=np.float64)
-        RM_ = np.zeros((4, 4), dtype=np.float64)  # @UnusedVariable
+        RM_ = np.zeros((4, 4), dtype=np.float64)
         D = np.matrix(np.zeros((8, 13), dtype=np.float64))
         d = np.matrix(np.zeros((4, 7), dtype=np.float64))
         T = np.matrix(np.zeros((4, 13), dtype=np.float64))
@@ -1444,6 +1048,7 @@ class Instrument(object):
         detectorw = 1.
         detectorh = 1.
         sshapes = np.repeat(np.eye(3, dtype=np.float64)[np.newaxis].reshape((1, 3, 3)), length, axis=0)
+        sshape_factor = 12.
         L0 = 1.
         L1 = 1.
         L1mon = 1.
@@ -1454,8 +1059,8 @@ class Instrument(object):
         anarv = 1.e6
         anarh = 1.e6
 
-        if hasattr(self, 'beam'):
-            beam = self.beam
+        if hasattr(self, 'guide'):
+            beam = self.guide
             if hasattr(beam, 'width'):
                 beamw = beam.width ** 2 / 12.
 
@@ -1502,11 +1107,16 @@ class Instrument(object):
             anad = ana.depth ** 2 / 12.
 
         ashape = np.diag([anad, anaw, anah])
+        if hasattr(sample, 'shape_type'):
+            if sample.shape_type == 'cylindrical':
+                sshape_factor = 16.
+            elif sample.shape_type == 'rectangular':
+                sshape_factor = 12.
         if hasattr(sample, 'width') and hasattr(sample, 'depth') and hasattr(sample, 'height'):
-            _sshape = np.diag([sample.depth, sample.width, sample.height]).astype(np.float64) ** 2 / 12.
+            _sshape = np.diag([sample.depth, sample.width, sample.height]).astype(np.float64) ** 2 / sshape_factor
             sshapes = np.repeat(_sshape[np.newaxis].reshape((1, 3, 3)), length, axis=0)
         elif hasattr(sample, 'shape'):
-            _sshape = sample.shape.astype(np.float64) / 12.
+            _sshape = sample.shape.astype(np.float64) / sshape_factor
             if len(_sshape.shape) == 2:
                 sshapes = np.repeat(_sshape[np.newaxis].reshape((1, 3, 3)), length, axis=0)
             else:
@@ -1569,6 +1179,12 @@ class Instrument(object):
                 raise ValueError(': KI,KF,Q triangle will not close (kinematic equations). Change the value of KFIX,FX,QH,QK or QL.')
             else:
                 s2theta = np.real(s2theta)
+
+            # correct sign of curvatures
+            monorh = monorh * sm
+            monorv = monorv * sm
+            anarh = anarh * sa
+            anarv = anarv * sa
 
             thetas = s2theta / 2.
             phi = np.arctan2(-kf * np.sin(s2theta), ki - kf * np.cos(s2theta))
@@ -1805,7 +1421,8 @@ class Instrument(object):
 
         Notes
         -----
-            Translated from ResLib, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
+            Translated from ResLib, originally authored by A. Zheludev, 1999-2007,
+            Oak Ridge National Laboratory
 
         '''
         self.HKLE = hkle
@@ -1870,7 +1487,8 @@ class Instrument(object):
         self.R0, self.RMS, self.RM = [np.squeeze(item) for item in (R0, RMS, RM)]
 
     def calc_projections(self, hkle, npts=36):
-        r'''Calculates the resolution ellipses for projections and slices from the resolution matrix.
+        r'''Calculates the resolution ellipses for projections and slices from
+        the resolution matrix.
 
         Parameters
         ----------
@@ -1883,7 +1501,8 @@ class Instrument(object):
         Returns
         -------
         projections : dictionary
-            A dictionary containing projections in the planes: QxQy, QxW, and QyW, both projections and slices
+            A dictionary containing projections in the planes: QxQy, QxW, and
+            QyW, both projections and slices
 
         '''
         [H, K, L, W] = hkle
@@ -1965,7 +1584,10 @@ class Instrument(object):
             self.projections['QxQy_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QxQy_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QxQy'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, npts=npts)
+            self.projections['QxQy'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                          [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1 / np.linalg.norm(self.orient1) ** 2),
+                                                           np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2 / np.linalg.norm(self.orient2) ** 2)],
+                                                          npts=npts)
 
             # Slice through Qx,Qy plane
             MP = A[:2, :2, ind]
@@ -1981,7 +1603,10 @@ class Instrument(object):
             self.projections['QxQySlice_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QxQySlice_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QxQySlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, npts=npts)
+            self.projections['QxQySlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                               [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1 / np.linalg.norm(self.orient1) ** 2),
+                                                                np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2 / np.linalg.norm(self.orient2) ** 2)],
+                                                               npts=npts)
 
             # Projection into Qx, W plane
 
@@ -1998,7 +1623,10 @@ class Instrument(object):
             self.projections['QxW_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QxW_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
+            self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                         [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1 / np.linalg.norm(self.orient1) ** 2),
+                                                          hkle[3][ind]],
+                                                         npts=npts)
 
             # Slice through Qx,W plane
             MP = np.array([[A[0, 0, ind], A[0, 3, ind]], [A[3, 0, ind], A[3, 3, ind]]])
@@ -2014,7 +1642,10 @@ class Instrument(object):
             self.projections['QxWSlice_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QxWSlice_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
+            self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                              [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient1 / np.linalg.norm(self.orient1) ** 2),
+                                                               hkle[3][ind]],
+                                                              npts=npts)
 
             # Projections into Qy, W plane
             [R0P, MP] = project_into_plane(0, R0, Bmatrix)
@@ -2030,7 +1661,10 @@ class Instrument(object):
             self.projections['QyW_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QyW_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
+            self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                         [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2 / np.linalg.norm(self.orient2) ** 2),
+                                                          hkle[3][ind]],
+                                                         npts=npts)
 
             # Slice through Qy,W plane
             MP = np.array([[A[1, 1, ind], A[1, 3, ind]], [A[3, 1, ind], A[3, 3, ind]]])
@@ -2046,10 +1680,14 @@ class Instrument(object):
             self.projections['QyWSlice_fwhm'][0, ind] = 2 * hwhm_xp
             self.projections['QyWSlice_fwhm'][1, ind] = 2 * hwhm_yp
 
-            self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta, [0, hkle[3][ind]], npts=npts)
+            self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
+                                                              [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]], self.orient2 / np.linalg.norm(self.orient2) ** 2),
+                                                               hkle[3][ind]],
+                                                              npts=npts)
 
     def get_angles_and_Q(self, hkle):
-        r'''Returns the Triple Axis Spectrometer angles and Q-vector given position in reciprocal space
+        r'''Returns the Triple Axis Spectrometer angles and Q-vector given
+        position in reciprocal space
 
         Parameters
         ----------
@@ -2215,9 +1853,9 @@ class Instrument(object):
                 return (R0, MP[0, 0], MP[1, 1], MP[0, 1])
 
     def resolution_convolution(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None, seed=None):
-        r'''Numerically calculate the convolution of a user-defined cross-section
-        function with the resolution function for a 3-axis neutron scattering
-        experiment.
+        r'''Numerically calculate the convolution of a user-defined
+        cross-section function with the resolution function for a
+        3-axis neutron scattering experiment.
 
         Parameters
         ----------
@@ -2598,415 +2236,3 @@ class Instrument(object):
         conv = conv + bgr
 
         return conv
-
-    def plot_projections(self, hkle, npts=36, dpi=100):
-        r'''Plots resolution ellipses in the QxQy, QxW, and QyW zones
-
-        Parameters
-        ----------
-        hkle : tup
-            A tuple of intergers or arrays of H, K, L, and W (energy transfer)
-            values at which resolution ellipses are desired to be plotted
-
-        npts : int, optional
-            Number of points in an individual resolution ellipse. Default: 36
-
-        '''
-        try:
-            projections = self.projections
-        except AttributeError:
-            self.calc_projections(hkle, npts)
-            projections = self.projections
-
-        import matplotlib.pyplot as plt
-
-        plt.rc('font', **{'family': 'Bitstream Vera Sans', 'serif': 'cm10', 'size': 6})
-        plt.rc('lines', markersize=3, linewidth=1)
-
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, facecolor='w', edgecolor='k', dpi=dpi)
-        fig.subplots_adjust(bottom=0.175, left=0.15, right=0.85, top=0.95, wspace=0.35, hspace=0.25)
-
-        ax1_dQ1, ax1_dQ2, ax2_dQ1, ax2_dE, ax3_dQ2, ax3_dE = [], [], [], [], [], []
-        for i in range(self.RMS.shape[-1]):
-            ax1.fill(projections['QxQy'][0, :, i], projections['QxQy'][1, :, i], zorder=i, alpha=0.5, edgecolor='none')
-            ax1.plot(projections['QxQySlice'][0, :, i], projections['QxQySlice'][1, :, i], zorder=i + 3)
-            ax1_dQ1.append(np.max(projections['QxQy'][0, :, i]) - np.min(projections['QxQy'][0, :, i]))
-            ax1_dQ2.append(np.max(projections['QxQy'][1, :, i]) - np.min(projections['QxQy'][1, :, i]))
-
-            ax2.fill(projections['QxW'][0, :, i], projections['QxW'][1, :, i], zorder=i + 1, alpha=0.5, edgecolor='none')
-            ax2.plot(projections['QxWSlice'][0, :, i], projections['QxWSlice'][1, :, i], zorder=i + 4)
-            ax2_dQ1.append(np.max(projections['QxW'][0, :, i]) - np.min(projections['QxW'][0, :, i]))
-            ax2_dE.append(np.max(projections['QxW'][1, :, i]) - np.min(projections['QxW'][1, :, i]))
-
-            ax3.fill(projections['QyW'][0, :, i], projections['QyW'][1, :, i], zorder=i + 2, alpha=0.5, edgecolor='none')
-            ax3.plot(projections['QyWSlice'][0, :, i], projections['QyWSlice'][1, :, i], zorder=i + 5)
-            ax3_dQ2.append(np.max(projections['QyW'][0, :, i]) - np.min(projections['QyW'][0, :, i]))
-            ax3_dE.append(np.max(projections['QyW'][1, :, i]) - np.min(projections['QyW'][1, :, i]))
-
-        ax1_dQ1, ax1_dQ2, ax2_dQ1, ax2_dE, ax3_dQ2, ax3_dE = [np.max(item) for item in [ax1_dQ1, ax1_dQ2, ax2_dQ1, ax2_dE, ax3_dQ2, ax3_dE]]
-        ax1.set_xlabel('$\mathbf{Q}_1$ (along ' + str(self.orient1) + ') (r.l.u.)' + ', $\delta Q_1={0:.3f}$'.format(ax1_dQ1))
-        ax1.set_ylabel('$\mathbf{Q}_2$ (along ' + str(self.orient2) + ') (r.l.u.)' + ', $\delta Q_2={0:.3f}$'.format(ax1_dQ2))
-        ax1.set_autoscale_on(False)
-        ax1.locator_params(nbins=4)
-        ax1.axis('equal')
-
-        ax2.set_xlabel('$\mathbf{Q}_{1}$ (along ' + str(self.orient1) + ') (r.l.u.)' + ', $\delta Q_1={0:.3f}$'.format(ax2_dQ1))
-        ax2.set_ylabel('$\hbar \omega$ (meV)' + ', $\delta E={0:.3f}$'.format(ax2_dE))
-        ax2.set_autoscale_on(False)
-        ax2.locator_params(nbins=4)
-        ax2.set_xlim(ax3.get_xlim())
-
-        ax3.set_xlabel('$\mathbf{Q}_2$ (along ' + str(self.orient2) + ') (r.l.u.)' + ', $\delta Q_2={0:.3f}$'.format(ax3_dQ2))
-        ax3.set_ylabel('$\hbar \omega$ (meV)' + ', $\delta E={0:.3f}$'.format(ax3_dE))
-        ax3.set_autoscale_on(False)
-        ax3.locator_params(nbins=4)
-
-        try:
-            method = ['Cooper-Nathans', 'Popovici'][self.method]
-        except AttributeError:
-            method = 'Cooper-Nathans'
-        frame = '[Q1,Q2,Qz,E]'
-
-        try:
-            FX = 2 * int(self.infin == -1) + int(self.infin == 1)
-        except AttributeError:
-            FX = 2
-
-        if self.RMS.shape == (4, 4):
-            NP = self.RMS
-            R0 = float(self.R0)
-            hkle = self.HKLE
-        else:
-            NP = self.RMS[:, :, 0]
-            R0 = self.R0[0]
-            hkle = [self.H[0], self.K[0], self.L[0], self.W[0]]
-
-        ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP))
-        bragg_widths = get_bragg_widths(NP)
-        angles, Q = self.get_angles_and_Q(hkle)
-
-        text_format = ['Method: {0}'.format(method),
-                       'Position HKLE [{0}]'.format(dt.datetime.now().strftime('%d-%b-%Y %H:%M:%S')),
-                       '',
-                       ' [$Q_H$, $Q_K$, $Q_L$, $E$] = {0} '.format(self.HKLE),
-                       '',
-                       'Resolution Matrix M in {0} (M/10^4):'.format(frame),
-                       '[[{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 0] / 1.0e4),
-                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 1] / 1.0e4),
-                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 2] / 1.0e4),
-                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]]'.format(*NP[:, 3] / 1.0e4),
-                       '',
-                       'Resolution volume:   $V_0=${0:.6f} meV/A^3'.format(2 * ResVol),
-                       'Intensity prefactor: $R_0=${0:.3f}'.format(R0),
-                       'Bragg width in [$Q_1$,$Q_2$,$E$] (FWHM):',
-                       ' $\delta Q_1$={0:.3f} $\delta Q_2$={1:.3f} [A-1] $\delta E$={2:.3f} [meV]'.format(bragg_widths[0], bragg_widths[1], bragg_widths[4]),
-                       ' $\delta Q_z$={0:.3f} Vanadium width $V$={1:.3f} [meV]'.format(*bragg_widths[2:4]),
-                       'Instrument parameters:',
-                       ' DM  =  {0:.3f} ETAM= {1:.3f} SM={2}'.format(self.mono.d, self.mono.mosaic, self.mono.dir),
-                       ' KFIX=  {0:.3f} FX  = {1} SS={2}'.format(Energy(energy=self.efixed).wavevector, FX, self.sample.dir),
-                       ' DA  =  {0:.3f} ETAA= {1:.3f} SA={2}'.format(self.ana.d, self.ana.mosaic, self.ana.dir),
-                       ' A1= {0:.2f} A2={1:.2f} A3={2:.2f} A4={3:.2f} A5={4:.2f} A6={5:.2f} [deg]'.format(*angles),
-                       'Collimation [arcmin]:',
-                       ' Horizontal: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.hcol),
-                       ' Vertical: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.vcol),
-                       'Sample:',
-                       ' a, b, c  =  [{0}, {1}, {2}] [Angs]'.format(self.sample.a, self.sample.b, self.sample.c),
-                       ' Alpha, Beta, Gamma  =  [{0}, {1}, {2}] [deg]'.format(self.sample.alpha, self.sample.beta, self.sample.gamma),
-                       ' U  =  {0} [rlu]\tV  =  {1} [rlu]'.format(self.orient1, self.orient2)]
-
-        ax4.axis('off')
-        ax4.text(0, 1, '\n'.join(text_format), transform=ax4.transAxes, horizontalalignment='left', verticalalignment='top')
-
-        plt.show()
-
-    def plot_ellipsoid(self, hkle, dpi=100):
-        r'''Plots the resolution ellipsoid in the $Q_x$, $Q_y$, $W$ zone
-
-        Parameters
-        ----------
-        hkle : tup
-            A tuple of intergers or arrays of H, K, L, and W (energy transfer) values at which resolution ellipsoid are desired to be plotted
-
-        '''
-        from vispy import app, scene, visuals
-        import sys
-
-        [H, K, L, W] = hkle
-        try:
-            if np.all(H == self.H) and np.all(K == self.K) and np.all(L == self.L) and np.all(W == self.W):
-                NP = np.array(self.RMS)
-                R0 = self.R0
-            else:
-                self.calc_resolution(hkle)
-                NP = np.array(self.RMS)
-                R0 = self.R0
-        except AttributeError:
-            self.calc_resolution(hkle)
-            NP = np.array(self.RMS)
-            R0 = self.R0
-
-        if NP.shape == (4, 4):
-            NP = NP[np.newaxis].reshape((4, 4, 1))
-            R0 = [R0]
-
-        # Create a canvas with a 3D viewport
-        canvas = scene.SceneCanvas(keys='interactive', bgcolor='white')
-        view = canvas.central_widget.add_view()
-
-        surface = []
-
-        for ind in range(NP.shape[-1]):
-            # for this plot to work, we need to remove row-column 3 of RMS
-            A = np.copy(NP)
-            RMS = np.delete(np.delete(A, 2, axis=0), 2, axis=1)[:, :, ind]
-
-#             [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
-            qx = [0]  # _scalar([xvec[0], xvec[1], xvec[2]], [self.H[ind], self.K[ind], self.L[ind]], rsample)
-            qy = [0]  # _scalar([yvec[0], yvec[1], yvec[2]], [self.H[ind], self.K[ind], self.L[ind]], rsample)
-            qw = [0]  # [self.W[ind]]
-
-            # Q vectors on figure axes
-#             o1 = np.copy(self.orient1)
-#             o2 = np.copy(self.orient2)
-#             pr = _scalar([o2[0], o2[1], o2[2]], [yvec[0], yvec[1], yvec[2]], rsample)
-
-#             o2[0] = yvec[0] * pr
-#             o2[1] = yvec[1] * pr
-#             o2[2] = yvec[2] * pr
-#
-#             if np.abs(o2[0]) < 1e-5:
-#                 o2[0] = 0
-#             if np.abs(o2[1]) < 1e-5:
-#                 o2[1] = 0
-#             if np.abs(o2[2]) < 1e-5:
-#                 o2[2] = 0
-#
-#             if np.abs(o1[0]) < 1e-5:
-#                 o1[0] = 0
-#             if np.abs(o1[1]) < 1e-5:
-#                 o1[1] = 0
-#             if np.abs(o1[2]) < 1e-5:
-#                 o1[2] = 0
-
-#             frame = '[Q1,Q2,E]'
-
-#             SMAGridPoints = 40
-            EllipsoidGridPoints = 100
-
-            def fn(r0, rms, q1, q2, q3, qx0, qy0, qw0):
-                ee = rms[0, 0] * (q1 - qx0[0]) ** 2 + rms[1, 1] * (q2 - qy0[0]) ** 2 + rms[2, 2] * (q3 - qw0[0]) ** 2 + \
-                   2 * rms[0, 1] * (q1 - qx0[0]) * (q2 - qy0[0]) + \
-                   2 * rms[0, 2] * (q1 - qx0[0]) * (q3 - qw0[0]) + \
-                   2 * rms[2, 1] * (q3 - qw0[0]) * (q2 - qy0[0])
-                return ee
-
-            # plot ellipsoids
-            wx = fproject(RMS.reshape((3, 3, 1)), 0)
-            wy = fproject(RMS.reshape((3, 3, 1)), 1)
-            ww = fproject(RMS.reshape((3, 3, 1)), 2)
-
-            surface = []
-            x = np.linspace(-wx[0] * 1.5, wx[0] * 1.5, EllipsoidGridPoints) + qx[0]
-            y = np.linspace(-wy[0] * 1.5, wy[0] * 1.5, EllipsoidGridPoints) + qy[0]
-            z = np.linspace(-ww[0] * 1.5, ww[0] * 1.5, EllipsoidGridPoints) + qw[0]
-            [xg, yg, zg] = np.meshgrid(x, y, z)
-
-            data = fn(R0[ind], RMS, xg, yg, zg, qx, qy, qw)
-
-            # Create isosurface visual
-            surface.append(scene.visuals.Isosurface(data, level=2. * np.log(2.), color=(0.5, 0.6, 1, 1), shading='smooth', parent=view.scene))  # @UndefinedVariable
-
-        for surf in surface:
-            [nx, ny, nz] = data.shape
-            center = scene.transforms.STTransform(translate=(-nx / 2., -ny / 2., -nz / 2.))
-            surf.transform = center
-
-        frame = scene.visuals.Cube(size=(EllipsoidGridPoints * 5, EllipsoidGridPoints * 5, EllipsoidGridPoints * 5), color='white', edge_color=(0., 0., 0., 1.), parent=view.scene)  # @UndefinedVariable
-        grid = scene.visuals.GridLines(parent=view.scene)  # @UndefinedVariable
-        grid.set_gl_state('translucent')
-
-        # Add a 3D axis to keep us oriented
-        axis = scene.visuals.XYZAxis(parent=view.scene)  # @UndefinedVariable
-
-        # Use a 3D camera
-        # Manual bounds; Mesh visual does not provide bounds yet
-        # Note how you can set bounds before assigning the camera to the viewbox
-        cam = scene.TurntableCamera()
-        cam.azimuth = 135
-        cam.elevation = 30
-        cam.fov = 60
-        cam.distance = 1.2 * EllipsoidGridPoints
-        cam.center = (0, 0, 0)
-        view.camera = cam
-
-        canvas.show()
-        if sys.flags.interactive == 0:
-            app.run()
-
-    def plot_instrument(self, hkle):
-        '''Plots the instrument configuration using angles for a given position
-        in Q and energy transfer
-
-        Parameters
-        ----------
-        hkle : tup
-            A tuple of intergers or arrays of H, K, L, and W (energy transfer)
-            values at which the instrument setup should be plotted
-
-        '''
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D  # @UnresolvedImport
-
-        fig = plt.figure(edgecolor='k', facecolor='w', figsize=plt.figaspect(0.4) * 1.25)
-        ax = fig.gca(projection='3d')
-
-        if hasattr(self.beam, 'width'):
-            beam_width = self.beam.width
-        else:
-            beam_width = 1
-        if hasattr(self.beam, 'height'):
-            beam_height = self.beam.height
-        else:
-            beam_height = 1
-
-        if hasattr(self.mono, 'width'):
-            mono_width = self.mono.width
-        else:
-            mono_width = 1
-        if hasattr(self.mono, 'height'):
-            mono_height = self.mono.height
-        else:
-            mono_height = 1
-
-        if hasattr(self.sample, 'width'):
-            sample_width = self.sample.width
-        else:
-            sample_width = 1
-        if hasattr(self.sample, 'height'):
-            sample_height = self.sample.height
-        else:
-            sample_height = 1
-        if hasattr(self.sample, 'depth'):
-            sample_depth = self.sample.depth
-        else:
-            sample_depth = 1
-
-        if hasattr(self.ana, 'width'):
-            ana_width = self.ana.width
-        else:
-            ana_width = 1
-        if hasattr(self.ana, 'height'):
-            ana_height = self.ana.height
-        else:
-            ana_height = 1
-
-        if hasattr(self.detector, 'width'):
-            detector_width = self.detector.width
-        else:
-            detector_width = 1
-        if hasattr(self.detector, 'height'):
-            detector_height = self.detector.height
-        else:
-            detector_height = 1
-
-        if hasattr(self, 'arms'):
-            arms = self.arms
-        else:
-            arms = [10, 10, 10, 10]
-
-        angles, q = self.get_angles_and_Q(hkle)
-        distances = arms
-
-        angles = np.deg2rad(angles)
-        A1, A2, A3, A4, A5, A6 = -angles
-        x, y, direction = 0, 0, 0
-
-        x0, y0 = x, y
-        # plot the Source -----------------------------------------------------
-        translate = 0
-        rotate = 0 * (np.pi / 180)
-        direction = direction + rotate
-        x = x + translate * np.sin(direction)
-        y = y + translate * np.cos(direction)
-
-        # create a square source
-        X = np.array([-beam_width / 2, -beam_width / 2, beam_width / 2, beam_width / 2, -beam_width / 2])
-        Z = np.array([beam_height / 2, -beam_height / 2, -beam_height / 2, beam_height / 2, beam_height / 2])
-        Y = np.zeros(5)
-        l = ax.plot(X + x, Y + y, zs=Z, color='b')
-        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Beam/Source', color='b')
-
-        x0 = x
-        y0 = y
-        # plot the Monochromator ----------------------------------------------
-        translate = distances[0]
-        rotate = 0
-        direction = direction + rotate
-        x = x + translate * np.sin(direction)
-        y = y + translate * np.cos(direction)
-        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
-
-        # create a square Monochromator
-        X = np.array([-mono_width / 2, -mono_width / 2, mono_width / 2, mono_width / 2, -mono_width / 2]) * np.sin(A1)
-        Z = np.array([mono_height / 2, -mono_height / 2, -mono_height / 2, mono_height / 2, mono_height / 2])
-        Y = X * np.cos(A1)
-        l = ax.plot(X + x, Y + y, zs=Z, color='r')
-        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Monochromator', color='r')
-
-        x0 = x
-        y0 = y
-        # plot the Sample -----------------------------------------------------
-        translate = distances[1]
-        rotate = A2
-        direction = direction + rotate
-        x = x + translate * np.sin(direction)
-        y = y + translate * np.cos(direction)
-        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
-
-        # create a rotated square Sample
-        X = np.array([-sample_width / 2, -sample_width / 2, sample_width / 2, sample_width / 2, -sample_width / 2]) * np.sin(A3)
-        Z = np.array([sample_height / 2, -sample_height / 2, -sample_height / 2, sample_height / 2, sample_height / 2])
-        Y = X * np.cos(A3)
-        l1 = ax.plot(X + x, Y + y, zs=Z, color='g')
-        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Sample', color='g')
-        X = np.array([-sample_depth / 2, -sample_depth / 2, sample_depth / 2, sample_depth / 2, -sample_depth / 2]) * np.sin(A3 + np.pi / 2)
-        Z = np.array([sample_height / 2, -sample_height / 2, -sample_height / 2, sample_height / 2, sample_height / 2])
-        Y = X * np.cos(A3 + np.pi / 2)
-        l2 = ax.plot(X + x, Y + y, zs=Z, color='g')
-
-        x0 = x
-        y0 = y
-        # plot the Analyzer ---------------------------------------------------
-        translate = distances[2]
-        rotate = A4
-        direction = direction + rotate
-        x = x + translate * np.sin(direction)
-        y = y + translate * np.cos(direction)
-        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
-
-        # create a square
-        X = np.array([-ana_width / 2, -ana_width / 2, ana_width / 2, ana_width / 2, -ana_width / 2]) * np.sin(A5)
-        Z = np.array([ana_height / 2, -ana_height / 2, -ana_height / 2, ana_height / 2, ana_height / 2])
-        Y = X * np.cos(A5)
-        l = ax.plot(X + x, Y + y, zs=Z, color='magenta')
-        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Analyzer', color='magenta')
-
-        x0 = x
-        y0 = y
-        # plot the Detector ---------------------------------------------------
-        translate = distances[3]
-        rotate = A6
-        direction = direction + rotate
-        x = x + translate * np.sin(direction)
-        y = y + translate * np.cos(direction)
-        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
-
-        # create a square
-        X = np.array([-detector_width / 2, -detector_width / 2, detector_width / 2, detector_width / 2, -detector_width / 2])
-        Z = np.array([detector_height / 2, -detector_height / 2, -detector_height / 2, detector_height / 2, detector_height / 2])
-        Y = np.zeros(5)
-        l = ax.plot(X + x, Y + y, zs=Z, color='k')
-        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Detector', color='k')
-
-        ax.set_zlim3d(getattr(ax, 'get_zlim')()[0], getattr(ax, 'get_zlim')()[1] * 10)
-        plt.show()

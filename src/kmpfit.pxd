@@ -4,7 +4,7 @@ cdef extern from "mpfit.h":
         int fixed
         int limited[2]
         double limits[2]
-        char *parname  # @IgnorePep8
+        char *parname
         double step
         double relstep
         int side
@@ -34,11 +34,11 @@ cdef extern from "mpfit.h":
         int nfree
         int npegged
         int nfunc
-        double *resid  # @IgnorePep8
-        double *xerror  # @IgnorePep8
-        double *covar  # @IgnorePep8
+        double *resid
+        double *xerror
+        double *covar
         char version[20]
 
-    ctypedef int (*mp_func)(int *m, int n, double *x, double **fvec, double **dvec, void *private_data)  # @IgnorePep8
+    ctypedef int (*mp_func)(int *m, int n, double *x, double **fvec, double **dvec, void *private_data)
 
-    cdef int mpfit(mp_func funct, int npar, double *xall, mp_par *pars, mp_config *config, void *private_data, mp_result *result)  # @IgnorePep8
+    cdef int mpfit(mp_func funct, int npar, double *xall, mp_par *pars, mp_config *config, void *private_data, mp_result *result)
