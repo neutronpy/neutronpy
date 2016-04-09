@@ -18,7 +18,7 @@ except ImportError:
 if LooseVersion(sphinx.__version__) < LooseVersion('1'):
     raise RuntimeError('Need sphinx >= 1 for numpydoc to work correctly')
 
-needs_sphinx = '1.0'
+needs_sphinx = '1.4'
 
 # -----------------------------------------------------------------------------
 # releases (changelog) configuration
@@ -41,7 +41,7 @@ sys.path.insert(1, os.path.abspath('sphinxext'))
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.coverage',
-              'sphinx.ext.pngmath',
+              'sphinx.ext.imgmath',
               'sphinx.ext.intersphinx',
               'matplotlib.sphinxext.plot_directive',
               'numpydoc',

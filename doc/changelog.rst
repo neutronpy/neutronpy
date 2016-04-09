@@ -4,10 +4,12 @@ Changelog
 
 * :release:`v1.0.0b1 <2016-04-07>`
 * :feature:`62` Major refactoring, breaks backwards compatibility. See documentation for new usage.
-* :feature:`61` Added basic physical models to :py:mod:`.models`
-* :feature:`60` Added :py:class:`.SpaceGroup` to :py:class:`.Material` to symmetrize crystal structures
-* :feature:`59` Added :py:class:`.SpaceGroup` to generate all symmetry operations given space group symbol
-* :feature:`58` Added :py:mod:`.gui` for resolution calculations, invoked by :py:meth:`.gui.launch`
+* :feature:`64` Added basic physical models to :py:mod:`.models`
+* :feature:`65` Added :py:class:`.SpaceGroup` to generate all symmetry operations given space group symbol, and added :py:class:`.SpaceGroup` to :py:class:`.Material` to symmetrize crystal structures
+* :feature:`63` Added :py:mod:`.gui` for resolution calculations, invoked by :py:meth:`.gui.launch`
+* :bug:`61 major` Fixed error handling in :py:meth:`.Instrument.calc_resolution_in_Q_coords` for scattering triangle not closing
+* :support:`60` Added documentation to :py:class:`.Monochromator` and :py:class:`.Analyzer` concerning focusing
+* :bug:`58 major` Fixed error in :py:meth:`.Instrument.resolution_convolution_SMA` and :py:meth:`.Instrument.resolution_convolution` giving incorrect lineshapes
 * :bug:`57 major` Fixed ``R0`` prefactors calculated by :py:meth:`.Instrument.calc_resolution` to be consistent with ResLib
 * :bug:`56 major` Fixed handling of ``ACCURACY`` input argument in :py:meth:`.Instrument.resolution_convolution` and :py:meth:`.Instrument.resolution_convolution_SMA`
 * :bug:`55 major` Fixed call of prefactor function ``pref`` in :py:meth:`.Instrument.resolution_convolution` and :py:meth:`.Instrument.resolution_convolution_SMA` to include ``W``
