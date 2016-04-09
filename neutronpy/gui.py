@@ -26,7 +26,7 @@ class MyMplCanvas(FigureCanvas):
         self.axes = self.fig.add_subplot(111)
         self.axes.hold(True)
 
-        self.compute_initial_figure(qslice, projections, u, v)
+        self.compute_initial_figure(self.axes, qslice, projections, u, v)
 
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
@@ -42,8 +42,8 @@ class MyStaticMplCanvas(MyMplCanvas, PlotResolution):
     def __init__(self, *args, **kwargs):
         super(MyStaticMplCanvas, self).__init__(*args, **kwargs)
 
-    def compute_initial_figure(self, qslice, projections, u, v):
-        self.plot_slice(qslice, projections, u, v)
+    def compute_initial_figure(self, axis, qslice, projections, u, v):
+        self.plot_slice(axis, qslice, projections, u, v)
 
 
 class MainWindow(QMainWindow):
