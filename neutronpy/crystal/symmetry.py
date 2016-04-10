@@ -3,7 +3,7 @@ r'''Symmetry operations
 
 '''
 import numpy as np
-from neutronpy.constants import symmetry
+from ..constants import symmetry
 
 space_groups = symmetry()['space_groups']
 

@@ -11,7 +11,7 @@ use('Agg')
 import numpy as np
 from scipy.integrate import simps
 from neutronpy import Energy, Data, functions
-from neutronpy.io import load_data, save_data, detect_filetype
+from neutronpy.fileio import load_data, save_data, detect_filetype
 from neutronpy.constants import BOLTZMANN_IN_MEV_K
 
 
@@ -217,7 +217,7 @@ class DataTest(unittest.TestCase):
     def test_scattering_function(self):
         '''Test scattering function
         '''
-        from neutronpy.material import Material
+        from neutronpy import Material
         input_mat = {'name': 'FeTe',
                      'composition': [{'ion': 'Fe', 'pos': [0.75, 0.25, 0.]},
                                      {'ion': 'Fe', 'pos': [1. - 0.75, 1. - 0.25, 0.0]},
@@ -239,7 +239,7 @@ class DataTest(unittest.TestCase):
     def test_dynamic_susceptibility(self):
         '''Test dynamic susceptibility
         '''
-        from neutronpy.material import Material
+        from neutronpy import Material
         input_mat = {'name': 'FeTe',
                      'composition': [{'ion': 'Fe', 'pos': [0.75, 0.25, 0.]},
                                      {'ion': 'Fe', 'pos': [1. - 0.75, 1. - 0.25, 0.0]},

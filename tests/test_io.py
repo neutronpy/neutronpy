@@ -6,8 +6,8 @@ import unittest
 from mock import patch
 import numpy as np
 from neutronpy import functions
-from neutronpy.io import load_data, save_data, detect_filetype
-from neutronpy.data import Data
+from neutronpy.fileio import load_data, save_data, detect_filetype
+from neutronpy import Data
 
 
 def build_data(clean=True):

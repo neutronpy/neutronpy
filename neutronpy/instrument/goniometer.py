@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 r'''Define Triple Axis goniometer
 
 '''

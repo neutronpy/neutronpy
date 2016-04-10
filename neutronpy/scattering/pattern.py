@@ -1,7 +1,7 @@
+# -*- coding: utf-8 -*-
 r'''Scattering methods for Materials class
 
 '''
-import numpy as np
 
 
 class HKLGenerator(object):

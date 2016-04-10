@@ -3,24 +3,24 @@ r'''NeutronPy: open source python library for neutron scattering data analysis
 '''
 from __future__ import absolute_import
 from . import constants
+from . import fileio
 from . import functions
+from . import instrument
 from . import models
 from . import spurion
-from . import io
-from . import polarization
-from . import symmetry
-from .kmpfit import Fitter
-from .energy import Energy
+from . import scattering
+from .crystal import Lattice
+from .crystal import Material
+from .crystal import Sample
+from .crystal import symmetry
 from .data import Data
-from . import instrument
+from .energy import Energy
+from .kmpfit import Fitter
 from .instrument import Instrument
-from .sample import Sample
-from .material import Material
-from .lattice import Lattice
 
 try:
     from . import gui
 except ImportError:
     print('Warning: PyQt5 not found, cannot run Resolution GUI')
 
-__version__ = '1.0.0b1'
+__version__ = '1.0.0b2'

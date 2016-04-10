@@ -4,12 +4,12 @@ r'''Material constructor
 '''
 import numpy as np
 import neutronpy.constants as const
-from .plot import PlotMaterial
-from .structure_factors import NuclearStructureFactor, MagneticStructureFactor
-from .scattering import HKLGenerator
-from .symmetry import SpaceGroup
-from .sample import Sample
 from .atom import Atom, MagneticAtom
+from .plot import PlotMaterial
+from .sample import Sample
+from .structure_factors import NuclearStructureFactor, MagneticStructureFactor
+from .symmetry import SpaceGroup
+#from ..scattering.pattern import HKLGenerator
 
 
 class MagneticUnitCell(Sample):
@@ -45,7 +45,7 @@ class MagneticUnitCell(Sample):
         super(MagneticUnitCell, self).__init__(a, b, c, alpha, beta, gamma)
 
 
-class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, HKLGenerator, PlotMaterial):
+class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMaterial):
     r'''Class for the Material being supplied for the structure factor calculation
 
     Parameters

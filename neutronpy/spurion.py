@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 r'''Calculates common spurions
 
 '''
 import numpy as np
-from .material import Material
+from .crystal import Material
 from .energy import Energy
 
 

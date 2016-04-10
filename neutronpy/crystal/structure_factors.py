@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 r'''Structure Factors
 
 NuclearStructureFactor
@@ -6,7 +7,7 @@ MagneticFormFactor
 
 '''
 import numpy as np
-from .constants import magnetic_ion_j
+from ..constants import magnetic_ion_j
 
 
 class NuclearStructureFactor(object):

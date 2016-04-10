@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 r'''Handles lattice geometries to find rotations and transformations
 
 '''

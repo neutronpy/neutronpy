@@ -4,7 +4,7 @@ r'''Tests lattice math
 '''
 import unittest
 import numpy as np
-from neutronpy import lattice
+from neutronpy.crystal import lattice
 
 
 class LatticeTests(unittest.TestCase):

@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 import numpy as np
-import neutronpy.constants as const
+from ..constants import periodic_table, scattering_lengths
 
 
 class Atom(object):
@@ -40,14 +41,14 @@ class Atom(object):
         self.Uaniso = np.matrix(Uaniso)
 
         if massNorm is True:
-            self.mass = const.periodic_table()[ion]['mass']
-            self.b = (const.scattering_lengths()[ion]['Coh b'] * self.occupancy * self.Mcell / np.sqrt(self.mass))
+            self.mass = periodic_table()[ion]['mass']
+            self.b = (scattering_lengths()[ion]['Coh b'] * self.occupancy * self.Mcell / np.sqrt(self.mass))
         else:
-            self.b = const.scattering_lengths()[ion]['Coh b'] / 10.
+            self.b = scattering_lengths()[ion]['Coh b'] / 10.
 
-        self.coh_xs = const.scattering_lengths()[ion]['Coh xs']
-        self.inc_xs = const.scattering_lengths()[ion]['Inc xs']
-        self.abs_xs = const.scattering_lengths()[ion]['Abs xs']
+        self.coh_xs = scattering_lengths()[ion]['Coh xs']
+        self.inc_xs = scattering_lengths()[ion]['Inc xs']
+        self.abs_xs = scattering_lengths()[ion]['Abs xs']
 
 
 class MagneticAtom(object):
