@@ -6,10 +6,10 @@ neutronpy
 
    neutronpy
    neutronpy.constants
+   neutronpy.crystal
    neutronpy.functions
    neutronpy.gui
    neutronpy.instrument
-   neutronpy.io
+   neutronpy.fileio
    neutronpy.models
    neutronpy.spurion
-   neutronpy.symmetry

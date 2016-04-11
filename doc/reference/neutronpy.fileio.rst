@@ -1,7 +1,7 @@
-.. currentmodule:: neutronpy.io
+.. currentmodule:: neutronpy.fileio
 
-neutronpy.io module
-===================
+neutronpy.fileio module
+=======================
 
 .. autosummary::
     :toctree: generated/
