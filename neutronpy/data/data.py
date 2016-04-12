@@ -3,12 +3,15 @@ r'''Data handling
 
 '''
 import copy
-from collections import OrderedDict
 from multiprocessing import cpu_count, Pool  # @UnresolvedImport
 import numbers
 import numpy as np
 from .analysis import Analysis
 from .plot import PlotData
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 
 def _call_bin_parallel(arg, **kwarg):

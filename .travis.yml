@@ -30,7 +30,7 @@ install:
   six mock h5py
 - conda install --yes -q -c https://conda.anaconda.org/dsdale24 pyqt5
 - source activate test_environment
-- pip install pep8 python-coveralls codecov
+- pip install pep8 python-coveralls codecov ordereddict
 - pip install -e . -q --no-deps
 before_script: # configure a headless display to test plot generation
 - "export DISPLAY=:99.0"

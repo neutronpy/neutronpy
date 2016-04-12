@@ -3,7 +3,6 @@ import copy
 import numbers
 import numpy as np
 from .loaders import Spice, Icp, Ice, Mad
-from ..data import Data
 
 
 def load_data(files, filetype='auto', tols=1e-4, build_Q=True, load_instrument=False):
