@@ -8,10 +8,27 @@ except ImportError:
 
 
 class Ice(Data):
+    r'''Loads ICE (NCNR) format ascii data file.
+
+    '''
     def __init__(self):
         super(Ice, self).__init__()
 
-    def load(self, filename, build_Q=True, load_instrument=False):
+    def load(self, filename, build_hkl=True, load_instrument=False):
+        r'''Loads the ICE (NCNR) format ascii data file.
+
+        Parameters
+        ----------
+        filename : str
+            Path to file to open
+
+        build_hkl : bool, optional
+            Option to build Q = [h, k, l, e, temp]
+
+        load_instrument : bool, optional
+            Option to build Instrument from file header
+
+        '''
         with open(filename) as f:
             file_header = []
             for line in f:
@@ -31,7 +48,7 @@ class Ice(Data):
         self.data_keys = {'detector': 'Detector', 'monitor': 'Monitor', 'time': 'Time'}
         self._file_header = file_header
 
-        if build_Q:
+        if build_hkl:
             self.Q_keys = {'h': 'QX', 'k': 'QY', 'l': 'QZ', 'e': 'E', 'temp': 'Temp'}
 
         if load_instrument:

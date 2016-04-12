@@ -9,10 +9,27 @@ except ImportError:
 
 
 class Icp(Data):
+    r'''Loads ICP (NCNR) format ascii data file into a Data object
+
+    '''
     def __init__(self):
         super(Icp, self).__init__()
 
-    def load(self, filename, build_Q=True, load_instrument=False):
+    def load(self, filename, build_hkl=True, load_instrument=False):
+        r'''Loads the ICP (NCNR) format ascii data file.
+
+        Parameters
+        ----------
+        filename : str
+            Path to file to open
+
+        build_hkl : bool, optional
+            Option to build Q = [h, k, l, e, temp]
+
+        load_instrument : bool, optional
+            Option to build Instrument from file header
+
+        '''
         with open(filename) as f:
             file_header = []
             for i, line in enumerate(f):
@@ -38,7 +55,7 @@ class Icp(Data):
         self._file_header = file_header
         self.data_keys = {'detector': 'Counts', 'time': 'min', 'monitor': 'monitor'}
 
-        if build_Q:
+        if build_hkl:
             self.Q_keys = {'h': 'Q(x)', 'k': 'Q(y)', 'l': 'Q(z)', 'e': 'E', 'temp': 'T-act'}
 
         if load_instrument:

@@ -8,11 +8,28 @@ except ImportError:
 
 
 class Spice(Data):
+    r'''Loads SPICE (HFIR) format ascii data file into a Data object
+
+    '''
     def __init__(self):
         __metaclass__ = Data
         super(Spice, self).__init__()
 
     def load(self, filename, build_hkl=True, load_instrument=False):
+        r'''Loads the SPICE (HFIR) format ascii data file
+
+        Parameters
+        ----------
+        filename : str
+            Path to file to open
+
+        build_hkl : bool, optional
+            Option to build Q = [h, k, l, e, temp]
+
+        load_instrument : bool, optional
+            Option to build Instrument from file header
+
+        '''
         file_header = []
         with open(filename) as f:
             for line in f:

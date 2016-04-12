@@ -372,7 +372,14 @@ class Data(PlotData, Analysis):
 
         Parameters
         ----------
-        obj : Data object
+        obj : Data_object
+            Data_object with equivalent data columns
+
+        tols : ndarray or float, optional
+            Tolerances for combining two data sets. Default: 5e-4.
+
+        ret : bool, optional
+            Return the combined data set, or merge. Default: False
 
         '''
         if not isinstance(obj, Data):
