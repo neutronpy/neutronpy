@@ -119,7 +119,7 @@ class DataTest(unittest.TestCase):
         '''Tests adding and subtracting data
         '''
         data1 = Data()
-        del data1.Q
+        del data1._data
         data2 = build_data()
 
         def _test(test):

@@ -48,7 +48,7 @@ class IOTests(unittest.TestCase):
         except:
             self.fail('Data loading failed')
 
-        self.assertRaises(ValueError, load_data, (os.path.join(os.path.dirname(__file__), 'scan0006.test')), filetype='blah')
+        self.assertRaises(KeyError, load_data, (os.path.join(os.path.dirname(__file__), 'scan0006.test')), filetype='blah')
 
     def test_save_file(self):
         '''Tests file saving

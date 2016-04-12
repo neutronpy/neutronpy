@@ -1,32 +1,12 @@
 # -*- coding: utf-8 -*-
+import copy
 import numbers
-import re
 import numpy as np
+from .loaders import Spice, Icp, Ice, Mad
 from ..data import Data
 
 
-def build_Q(args, **kwargs):
-    u'''Method for constructing **Q**\ (*q*, ℏω, temp) from h, k, l,
-    energy, and temperature
-
-    Parameters
-    ----------
-    args : dict
-        A dictionary of the `h`, `k`, `l`, `e` and `temp` arrays to form into
-        a column oriented array
-
-    Returns
-    -------
-    Q : ndarray
-        Returns **Q**\ (h, k, l, e, temp) with shape (N, 5) in a column
-        oriented array.
-
-    '''
-    return np.vstack((args[i].flatten() for i in
-                      ['h', 'k', 'l', 'e', 'temp'])).T
-
-
-def load_data(files, filetype='auto', tols=1e-4):
+def load_data(files, filetype='auto', tols=1e-4, build_Q=True, load_instrument=False):
     r'''Loads one or more files and creates a :class:`Data` object with the
     loaded data.
 
@@ -55,11 +35,13 @@ def load_data(files, filetype='auto', tols=1e-4):
         files.
 
     '''
+    load_filetype = {'ice': Ice,
+                     'icp': Icp,
+                     'mad': Mad,
+                     'spice': Spice}
+
     if isinstance(files, str):
         files = (files,)
-
-    if isinstance(tols, numbers.Number):
-        tols = [tols for i in range(5)]
 
     for filename in files:
         if filetype == 'auto':
@@ -68,106 +50,20 @@ def load_data(files, filetype='auto', tols=1e-4):
             except ValueError:
                 raise
 
-        if filetype == 'SPICE':
-            data_keys = {'monitor': 'monitor', 'detector': 'detector',
-                         'time': 'time'}
-            Q_keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'temp': 'tvti'}
-            raw_data = {}
+        try:
+            _data_object_temp = load_filetype[filetype.lower()]()
+            _data_object_temp.load(filename, build_Q, load_instrument)
+        except KeyError:
+            raise KeyError('Filetype not supported.')
 
-            with open(filename) as f:
-                for line in f:
-                    if 'col_headers' in line:
-                        args = next(f).split()
-                        headers = [head for head in args[1:]]
-
-            args = np.genfromtxt(filename, unpack=True, dtype=np.float64)
-
-            _t0 = 60.
-
-        elif filetype == 'ICE':
-            data_keys = {'detector': 'Detector', 'monitor': 'Monitor',
-                         'time': 'Time'}
-            Q_keys = {'h': 'QX', 'k': 'QY', 'l': 'QZ', 'e': 'E',
-                      'temp': 'Temp'}
-            raw_data = {}
-            _t0 = 60.
-
-            with open(filename) as f:
-                for line in f:
-                    if 'Columns' in line:
-                        args = line.split()
-                        headers = [head for head in args[1:]]
-                        break
-
-            args = np.genfromtxt(filename, usecols=(0, 1, 2, 3, 4, 5, 6, 7, 8),
-                                 unpack=True, comments="#", dtype=np.float64)
-
-        elif filetype == 'ICP':
-            data_keys = {'detector': 'Counts', 'time': 'min'}
-            Q_keys = {'h': 'Q(x)', 'k': 'Q(y)', 'l': 'Q(z)', 'e': 'E',
-                      'temp': 'T-act'}
-            raw_data = {}
-            _t0 = 1.
-
-            with open(filename) as f:
-                for i, line in enumerate(f):
-                    if i == 0:
-                        _length = int(re.findall(r"(?='(.*?)')", line)[-2])
-                        [_m0, _prf] = [float(i) for i in re.findall(r"(?='(.*?)')", line)[-4].split()]
-                    if 'Q(x)' in line:
-                        args = line.split()
-                        headers = [head for head in args]
-                        break
-
-            args = np.genfromtxt(filename, unpack=True, dtype=np.float64, skip_header=12)
-
-            raw_data['monitor'] = np.empty(args[0].shape)
-            raw_data['monitor'].fill(_m0 * _prf)
-
-        elif filetype == 'MAD':
-            data_keys = {'detector': 'CNTS', 'time': 'TIME', 'monitor': 'M1'}
-            Q_keys = {'h': 'QH', 'k': 'QK', 'l': 'QL', 'e': 'EN', 'temp': 'TT'}
-            raw_data = {}
-            _t0 = 60
-
-            with open(filename) as f:
-                for i, line in enumerate(f):
-                    if 'DATA_:' in line:
-                        args = next(f).split()
-                        headers = [head for head in args]
-                        skip_lines = i + 2
-                        break
-
-            args = np.genfromtxt(filename, unpack=True, dtype=np.float64,
-                                 skip_header=skip_lines, skip_footer=1)
-
-        else:
-            raise ValueError('Filetype not supported.')
-
-        for key, value in data_keys.items():
-            try:
-                raw_data[key] = args[headers.index(value)]
-            except ValueError:
-                print("ValueError: '{0}' is not in list.".format(value))
-                raw_data[key] = np.ones(args[0].shape)
-
-        _Q_dict = {}
-        for key, value in Q_keys.items():
-            try:
-                _Q_dict[key] = args[headers.index(value)]
-            except ValueError:
-                print("ValueError: '{0}' is not in list.".format(value))
-                _Q_dict[key] = np.ones(args[0].shape)
-
-        raw_data['time'] /= _t0
-        raw_data['Q'] = build_Q(_Q_dict)
-
-        del _Q_dict, args
+        print()
+        if isinstance(tols, numbers.Number):
+            tols = [tols for i in range(len(_data_object_temp._data) - len(_data_object_temp.data_keys))]
 
         try:
-            _data_object.combine_data(raw_data, tols=tols)  # @UndefinedVariable
+            _data_object.combine_data(_data_object_temp, tols=tols)
         except (NameError, UnboundLocalError):
-            _data_object = Data(**raw_data)
+            _data_object = copy.deepcopy(_data_object_temp)
 
     return _data_object
 

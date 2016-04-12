@@ -2,6 +2,8 @@
 r'''Data handling
 
 '''
+import copy
+from collections import OrderedDict
 from multiprocessing import cpu_count, Pool  # @UnresolvedImport
 import numbers
 import numpy as np
@@ -79,36 +81,34 @@ class Data(PlotData, Analysis):
     plot
 
     '''
-    def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0.,
-                 detector=0., monitor=0., error=None, time=0., time_norm=False,
-                 **kwargs):
+    def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., error=None, time=0., time_norm=False, **kwargs):
+        self._data = OrderedDict()
+        self.data_keys = {'monitor': 'monitor', 'detector': 'detector', 'time': 'time'}
+        self.Q_keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'temp': 'temp'}
+
         if Q is None:
             try:
-                n_dim = max([len(item) for item in
-                             (h, k, l, e, temp, detector, monitor, time)
-                             if not isinstance(item, numbers.Number)])
+                n_dim = max([len(item) for item in (h, k, l, e, temp, detector, monitor, time) if not isinstance(item, numbers.Number)])
             except (ValueError, UnboundLocalError):
                 n_dim = 1
 
             self.Q = np.empty((n_dim, 5))
 
-            for arg, key in zip((h, k, l, e, temp),
-                                ('h', 'k', 'l', 'e', 'temp')):
+            for arg, key in zip((h, k, l, e, temp), ('h', 'k', 'l', 'e', 'temp')):
                 if isinstance(arg, numbers.Number):
                     arg = np.array([arg] * n_dim)
                 try:
-                    setattr(self, key, np.array(arg))
-                except ValueError:
+                    self._data[self.Q_keys[key]] = np.array(arg)
+                except (ValueError, KeyError):
                     raise
         else:
             self.Q = Q
             n_dim = Q.shape[1]
 
-        for arg, key in zip((detector, monitor, time),
-                            ('detector', 'monitor', 'time')):
+        for arg, key in zip((detector, monitor, time), ('detector', 'monitor', 'time')):
             if isinstance(arg, numbers.Number):
                 arg = np.array([arg] * n_dim)
-            setattr(self, key, np.array(arg))
+            self._data[self.data_keys[key]] = np.array(arg)
 
         self.m0 = np.nanmax(self.monitor)
         self.t0 = np.nanmax(self.time)
@@ -123,9 +123,7 @@ class Data(PlotData, Analysis):
 
     def __add__(self, right):
         try:
-            output = {'Q': right.Q, 'detector': right.detector,
-                      'monitor': right.monitor, 'time': right.time}
-            return self.combine_data(output, ret=True)
+            return self.combine_data(right, ret=True)
         except AttributeError:
             raise AttributeError('Data types cannot be combined')
 
@@ -161,6 +159,47 @@ class Data(PlotData, Analysis):
         return self
 
     @property
+    def Q(self):
+        r'''Returns a Q matrix with columns h,k,l,e,temp
+        '''
+        return np.vstack((self.data[self.Q_keys[i]].flatten() for i in ['h', 'k', 'l', 'e', 'temp'])).T
+
+    @Q.setter
+    def Q(self, value):
+        for col, key in zip(value.T, ['h', 'k', 'l', 'e', 'temp']):
+            self._data[self.Q_keys[key]] = col
+
+    @property
+    def detector(self):
+        r'''Returns the raw counts on the detector
+        '''
+        return self.data[self.data_keys['detector']]
+
+    @detector.setter
+    def detector(self, value):
+        self.data[self.data_keys['detector']] = value
+
+    @property
+    def monitor(self):
+        r'''Returns the monitor
+        '''
+        return self.data[self.data_keys['monitor']]
+
+    @monitor.setter
+    def monitor(self, value):
+        self.data[self.data_keys['monitor']] = value
+
+    @property
+    def time(self):
+        r'''Returns the time measured
+        '''
+        return self.data[self.data_keys['time']]
+
+    @time.setter
+    def time(self, value):
+        self.data[self.data_keys['time']] = value
+
+    @property
     def h(self):
         r'''Returns lattice parameter q\ :sub:`x`\ , *i.e.* h
 
@@ -173,12 +212,12 @@ class Data(PlotData, Analysis):
         r'''Set h to appropriate column of Q
         '''
         if isinstance(value, numbers.Number):
-            value = [value] * self.Q.shape[0]
-        try:
-            self.Q[:, 0] = np.array(value)
-        except ValueError:
-            raise ValueError('''Input value must have the shape ({0},) or be \
-                                a float.'''.format(self.Q.shape[0]))
+            value = np.array([value] * self.Q.shape[0])
+
+        if value.shape != self.Q.shape[0]:
+            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+        else:
+            self.data[self.Q_keys['h']] = np.array(value)
 
     @property
     def k(self):
@@ -193,12 +232,12 @@ class Data(PlotData, Analysis):
         r'''Set k to appropriate column of Q
         '''
         if isinstance(value, numbers.Number):
-            value = [value] * self.Q.shape[0]
-        try:
-            self.Q[:, 1] = np.array(value)
-        except ValueError:
-            raise ValueError('''Input value must have the shape ({0},) or be \
-                                a float.'''.format(self.Q.shape[0]))
+            value = np.array([value] * self.Q.shape[0])
+
+        if value.shape != self.Q.shape[0]:
+            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+        else:
+            self.data[self.Q_keys['k']] = np.array(value)
 
     @property
     def l(self):
@@ -213,12 +252,12 @@ class Data(PlotData, Analysis):
         r'''Set l to appropriate column of Q
         '''
         if isinstance(value, numbers.Number):
-            value = [value] * self.Q.shape[0]
-        try:
-            self.Q[:, 2] = np.array(value)
-        except ValueError:
-            raise ValueError('''Input value must have the shape ({0},) or be \
-                                a float.'''.format(self.Q.shape[0]))
+            value = value = np.array([value] * self.Q.shape[0])
+
+        if value.shape != self.Q.shape[0]:
+            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+        else:
+            self.data[self.Q_keys['l']] = np.array(value)
 
     @property
     def e(self):
@@ -233,12 +272,12 @@ class Data(PlotData, Analysis):
         r'''Set e to appropriate column of Q
         '''
         if isinstance(value, numbers.Number):
-            value = [value] * self.Q.shape[0]
-        try:
-            self.Q[:, 3] = np.array(value)
-        except ValueError:
-            raise ValueError('''Input value must have the shape ({0},) or be \
-                                a float.'''.format(self.Q.shape[0]))
+            value = np.array([value] * self.Q.shape[0])
+
+        if value.shape != self.Q.shape[0]:
+            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+        else:
+            self.data[self.Q_keys['e']] = np.array(value)
 
     @property
     def temp(self):
@@ -253,12 +292,12 @@ class Data(PlotData, Analysis):
         r'''Set temp to appropriate column of Q
         '''
         if isinstance(value, numbers.Number):
-            value = [value] * self.Q.shape[0]
-        try:
-            self.Q[:, 4] = np.array(value)
-        except ValueError:
-            raise ValueError('''Input value must have the shape ({0},) or be \
-                                a float.'''.format(self.Q.shape[0]))
+            value = np.array([value] * self.Q.shape[0])
+
+        if value.shape != self.Q.shape[0]:
+            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+        else:
+            self.data[self.Q_keys['temp']] = np.array(value)
 
     @property
     def intensity(self):
@@ -306,71 +345,70 @@ class Data(PlotData, Analysis):
             value = np.array([value] * self.detector.shape[0])
 
         if value.shape != self.detector.shape:
-            raise ValueError('''Input value must have the shape ({0},) or be \
-                                a float.'''.format(self.detector.shape[0]))
+            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.detector.shape[0]))
         self._err = value
 
-    def combine_data(self, *args, **kwargs):
+    @property
+    def data(self):
+        r'''Returns all of the raw data in column format
+        '''
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
+
+    @property
+    def data_columns(self):
+        r'''Returns a list of the raw data columns
+        '''
+        return list(self.data.keys())
+
+    def combine_data(self, obj, **kwargs):
         r'''Combines multiple data sets
 
         Parameters
         ----------
-        args : dictionary of ndarrays
-            A dictionary (or multiple) of the data that will be added to the
-            current data, with keys:
-
-                * Q : ndarray : [h, k, l, e] with shape (N, 4,)
-                * monitor : ndarray : shape (N,)
-                * detector : ndarray : shape (N,)
-                * temps : ndarray : shape (N,)
+        obj : Data object
 
         '''
-        Q = self.Q.copy()
-        detector = self.detector.copy()
-        monitor = self.monitor.copy()
-        time = self.time.copy()
+        if not isinstance(obj, Data):
+            raise ValueError('You can only combine two Data objects: input object is the wrong format!')
 
-        tols = np.array([5.e-4, 5.e-4, 5.e-4, 5.e-4, 5.e-4])
+        tols = np.array([5.e-4 for i in range(len(obj._data) - len(self.data_keys))])
         try:
             if kwargs['tols'] is not None:
                 tols = np.array(kwargs['tols'])
         except KeyError:
             pass
 
-        for arg in args:
-            combine = []
-            for i in range(arg['Q'].shape[0]):
-                for j in range(self.Q.shape[0]):
-                    if np.all(np.abs(self.Q[j, :] - arg['Q'][i, :]) <= tols):
-                        combine.append([i, j])
+        # combine
+        _data_temp = copy.deepcopy(self._data)
+        for i in range(len(obj._data[obj.data_keys['detector']])):
+            new_vals = np.array([val[i] for k, val in obj._data.items() if k not in list(obj.data_keys.values())])
+            for j in range(len(self._data[self.data_keys['detector']])):
+                orig_vals = np.array([val[j] for k, val in self._data.items() if k not in list(self.data_keys.values())])
+                if (np.abs(orig_vals - new_vals) <= tols).all():
+                    for _key, _value in _data_temp.items():
+                        if _key in list(self.data_keys.values()):
+                            _data_temp[_key][j] += obj._data[_key][i]
+                    break
+            else:
+                for _key, _value in _data_temp.items():
+                    _data_temp[_key] = np.concatenate((_value, np.array([obj._data[_key][i]])))
 
-            for item in combine:
-                monitor[item[1]] += arg['monitor'][item[0]]
-                detector[item[1]] += arg['detector'][item[0]]
-                time[item[1]] += arg['time'][item[0]]
-
-            if len(combine) > 0:
-                for key in ['Q', 'monitor', 'detector', 'time']:
-                    arg[key] = np.delete(arg[key],
-                                         (np.array(combine,
-                                                   dtype=np.int64)[:, 0],), 0)
-
-            Q = np.concatenate((Q, arg['Q']))
-            detector = np.concatenate((detector, arg['detector']))
-            monitor = np.concatenate((monitor, arg['monitor']))
-            time = np.concatenate((time, arg['time']))
-
-        order = np.lexsort([Q[:, i] for i in reversed(range(Q.shape[1]))])
+        # sort
+        ind = np.lexsort(tuple(value for key, value in _data_temp.items() if key not in list(self.data_keys.values())))
+        _data = OrderedDict()
+        for key, value in _data_temp.items():
+            _data[key] = value[ind]
 
         if 'ret' in kwargs and kwargs['ret']:
-            return Data(Q=Q[order], monitor=monitor[order],
-                        detector=detector[order], time=time[order])
-
+            output = Data()
+            output._data = _data
+            return output
         else:
-            self.Q = Q[order]
-            self.detector = detector[order]
-            self.monitor = monitor[order]
-            self.time = time[order]
+            self._data = _data
 
     def subtract_background(self, background_data, ret=True):
         r'''Subtract background data.

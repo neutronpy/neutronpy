@@ -1,45 +1,55 @@
 from collections import OrderedDict
 import numpy as np
-from neutronpy.data import Data, RawData
-from neutronpy.instrument import Instrument
+from ...data import Data
+from ...instrument import Instrument
 
 
-def load(filename, build_hkl=True, load_instrument=False):
-    top_header = []
-    with open(filename) as f:
-        for line in f:
-            top_header.append(line)
-            if 'col_headers' in line:
-                args = next(f).split()
-                col_headers = [head for head in args[1:]]
-            # grab footer here
+class Spice(Data):
+    def __init__(self):
+        __metaclass__ = Data
+        super(Spice, self).__init__()
 
-    args = np.genfromtxt(filename, unpack=True, comments='#', dtype=np.float64)
+    def load(self, filename, build_hkl=True, load_instrument=False):
+        file_header = []
+        with open(filename) as f:
+            for line in f:
+                if '#' in line:
+                    file_header.append(line.replace('\n', '').replace('# ', ''))
+                if 'col_headers' in line:
+                    args = next(f).split()
+                    col_headers = [head for head in args[1:]]
 
-    _data = OrderedDict()
-    for head, col in zip(col_headers, args):
-        _data[head] = col
+        args = np.genfromtxt(filename, unpack=True, comments='#', dtype=np.float64)
 
-    for key, value in _data.items():
-        print(key, value.shape)
+        data = OrderedDict()
+        for head, col in zip(col_headers, args):
+            data[head] = col
 
-    _t0 = 60.
+        # delete Pt. column (unnecessary, messes up sorting)
+        del data['Pt.']
 
-    if build_hkl:
-        data_keys = {'monitor': 'monitor', 'detector': 'detector', 'time': 'time'}
-        Q_keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'temp': 'tvti'}
-        raw_data = {}
+        self._data = data
+        self._file_header = file_header
+        self.data_keys = {'monitor': 'monitor', 'detector': 'detector', 'time': 'time'}
+
+        if build_hkl:
+            self.Q_keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'temp': 'tvti'}
 
         if load_instrument:
-            return Data(), Instrument()
-        else:
-            return Data()
-    else:
-        if load_instrument:
-            return RawData(), Instrument()
-        else:
-            return RawData()
+            instrument = Instrument()
+            for item in file_header:
+                key, value = item.split('=')
+                if key == 'monochromator':
+                    instrument.mono.tau = value
+                if key == 'analyzer':
+                    instrument.ana.tau = value
+                if key == 'collimation':
+                    hcol = [float(col) for col in value.split('-')]
+                    instrument.hcol = hcol
+                if key == 'samplemosaic':
+                    instrument.sample.mosaic = float(value)
+                if key == 'latticeconstants':
+                    instrument.sample.abc = [float(i) for i in value.split(',')[:3]]
+                    instrument.sample.abg = [float(i) for i in value.split(',')[3:]]
 
-
-if __name__ == "__main__":
-    load('../../../tests/scan0001.dat')
+            self.instrument = instrument
