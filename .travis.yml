@@ -38,10 +38,10 @@ before_install:
 install:
 - conda create --yes -q -n test_environment python=$PYTHON_VERSION nomkl pip
   setuptools cython numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose matplotlib=$MATPLOTLIB_VERSION
-  six mock h5py pep8 wheel
+  six mock h5py pep8
 - conda install --yes -q -c https://conda.anaconda.org/dsdale24 pyqt5
 - source activate test_environment
-- pip install coveralls codecov ordereddict
+- pip install coveralls codecov ordereddict wheel
 - pip install -e . -q --no-deps
 before_script: # configure a headless display to test plot generation
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
