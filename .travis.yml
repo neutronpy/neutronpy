@@ -2,26 +2,26 @@ sudo: required
 language: generic
 matrix:
   include:
-# - os: linux
-#   env: PYTHON_VERSION=2.6 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
-# - os: linux
-#   env: PYTHON_VERSION=2.7 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
-# - os: linux
-#   env: PYTHON_VERSION=3.3 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
-# - os: linux
-#   env: PYTHON_VERSION=3.4 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
-# - os: linux
-#   env: PYTHON_VERSION=3.5 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
- - os: osx
-   env: PYTHON_VERSION=2.6 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
-# - os: osx
-#   env: PYTHON_VERSION=2.7 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
-#  - os: osx
-#    env: PYTHON_VERSION=3.3 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
-# - os: osx
-#   env: PYTHON_VERSION=3.4 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
-# - os: osx
-#   env: PYTHON_VERSION=3.5 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+    - os: linux
+      env: PYTHON_VERSION=2.6 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
+    - os: linux
+      env: PYTHON_VERSION=2.7 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+    - os: linux
+      env: PYTHON_VERSION=3.3 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
+    - os: linux
+      env: PYTHON_VERSION=3.4 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+    - os: linux
+      env: PYTHON_VERSION=3.5 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+    - os: osx
+      env: PYTHON_VERSION=2.6 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
+    - os: osx
+      env: PYTHON_VERSION=2.7 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+    - os: osx
+      env: PYTHON_VERSION=3.3 NUMPY_VERSION=1.9.2 SCIPY_VERSION=0.15.1 MATPLOTLIB_VERSION=1.4.3
+    - os: osx
+      env: PYTHON_VERSION=3.4 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
+    - os: osx
+      env: PYTHON_VERSION=3.5 NUMPY_VERSION=1.10.2 SCIPY_VERSION=0.16.1 MATPLOTLIB_VERSION=1.5.1
 cache: apt
 addons:
   apt:
@@ -31,32 +31,26 @@ addons:
       - liblapack-dev
       - gfortran
 before_install:
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
-  brew update;
-  brew upgrade openssl wget pyenv;
-  wget http://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh -O miniconda.sh;
-  fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh; fi
-- bash miniconda.sh -b -p $HOME/miniconda
-- export PATH="$HOME/miniconda/bin:$PATH"
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then wget http://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh -O miniconda.sh; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh; fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
 install:
-- conda create --yes -q -n test_environment python=$PYTHON_VERSION nomkl pip
-  setuptools cython numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose matplotlib=$MATPLOTLIB_VERSION
-  six mock h5py pep8
-- source activate test_environment
-- if ! ( [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$PYTHON_VERSION" == "2.6" ] ); then pip ordereddict install coveralls codecov; else easy_install ordereddict coveralls codecov; fi
-- pip install -e . -q --no-deps
-before_script: # configure a headless display to test plot generation
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
-  export DISPLAY=:99.0;
-  sh -e /etc/init.d/xvfb start;
-  sleep 3;
-  fi
+  - conda create --yes -q -n test_environment python=$PYTHON_VERSION nomkl pip setuptools cython numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose matplotlib=$MATPLOTLIB_VERSION six mock h5py pep8
+  - source activate test_environment
+  - if ! ( [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$PYTHON_VERSION" == "2.6" ] ); then pip install coveralls codecov ordereddict; else easy_install ordereddict coveralls codecov; fi
+  - pip install -e . -q --no-deps
+before_script:
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then 
+    export DISPLAY=:99.0;
+    sh -e /etc/init.d/xvfb start;
+    sleep 3;
+    fi
 script:
-- nosetests --with-coverage --cover-package=neutronpy --logging-level=INFO
+  - nosetests --with-coverage --cover-package=neutronpy --logging-level=INFO
 after_success:
-- codecov
-- coveralls
+  - codecov
+  - coveralls
 deploy:
   - provider: pypi
     user: davidfobes
