@@ -6,25 +6,46 @@ environment:
      NUMPY_VERSION: "1.9.2"
      SCIPY_VERSION: "0.15.1"
      MATPLOTLIB_VERSION: "1.4.3"
+     ARCH: ""
+   - PYTHON_VERSION: "2.6"
+     NUMPY_VERSION: "1.9.2"
+     SCIPY_VERSION: "0.15.1"
+     MATPLOTLIB_VERSION: "1.4.3"
+     ARCH: "-x64"
    - PYTHON_VERSION: "2.7"
      NUMPY_VERSION: "1.10.1"
      SCIPY_VERSION: "0.16.1"
      MATPLOTLIB_VERSION: "1.5.1"
+     ARCH: ""
+   - PYTHON_VERSION: "2.7"
+     NUMPY_VERSION: "1.10.1"
+     SCIPY_VERSION: "0.16.1"
+     MATPLOTLIB_VERSION: "1.5.1"
+     ARCH: "-x64"
    - PYTHON_VERSION: "3.3"
      NUMPY_VERSION: "1.9.2"
      SCIPY_VERSION: "0.15.1"
      MATPLOTLIB_VERSION: "1.4.3"
+     ARCH: ""
    - PYTHON_VERSION: "3.4"
      NUMPY_VERSION: "1.10.1"
      SCIPY_VERSION: "0.16.1"
      MATPLOTLIB_VERSION: "1.5.1"
+     ARCH: ""
    - PYTHON_VERSION: "3.5"
      NUMPY_VERSION: "1.10.1"
      SCIPY_VERSION: "0.16.1"
      MATPLOTLIB_VERSION: "1.5.1"
+     ARCH: ""
+   - PYTHON_VERSION: "3.5"
+     NUMPY_VERSION: "1.10.1"
+     SCIPY_VERSION: "0.16.1"
+     MATPLOTLIB_VERSION: "1.5.1"
+     ARCH: "-x64"
+
 
 install:
-  - set PATH=C:\Miniconda3;C:\Miniconda3\Scripts;%PATH%
+  - set PATH=C:\Miniconda3%ARCH%;C:\Miniconda3%ARCH%\Scripts;%PATH%
   - conda create --yes -q -n test_environment python=%PYTHON_VERSION% pip
     setuptools cython numpy=%NUMPY_VERSION% scipy=%SCIPY_VERSION% nose matplotlib=%MATPLOTLIB_VERSION%
     six mock h5py pep8
@@ -46,7 +67,7 @@ on_success:
   - echo username=davidfobes                         >> %USERPROFILE%\\.pypirc
   - echo password=%PYPIPASSWORD%                     >> %USERPROFILE%\\.pypirc
   - set HOME=%USERPROFILE%
-  - if "%APPVEYOR_REPO_TAG%"=="true" ( win_build.cmd %PYTHON%\\python.exe setup.py bdist_wheel upload ) else ( echo "Not deploying because not a tagged commit." )
+  - if "%APPVEYOR_REPO_TAG%"=="true" ( python setup.py bdist_wheel upload ) else ( echo "Not deploying because not a tagged commit." )
 
 notifications:
   - provider: Slack
