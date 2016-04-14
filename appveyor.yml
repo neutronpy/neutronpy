@@ -1,0 +1,55 @@
+environment:
+  PYPIPASSWORD:
+    secure: AEQLjbsZ8WEiaWFK3eYbCQ==
+  matrix:
+   - PYTHON_VERSION: "2.6"
+     NUMPY_VERSION: "1.9.2"
+     SCIPY_VERSION: "0.15.1"
+     MATPLOTLIB_VERSION: "1.4.3"
+   - PYTHON_VERSION: "2.7"
+     NUMPY_VERSION: "1.10.1"
+     SCIPY_VERSION: "0.16.1"
+     MATPLOTLIB_VERSION: "1.5.1"
+   - PYTHON_VERSION: "3.3"
+     NUMPY_VERSION: "1.9.2"
+     SCIPY_VERSION: "0.15.1"
+     MATPLOTLIB_VERSION: "1.4.3"
+   - PYTHON_VERSION: "3.4"
+     NUMPY_VERSION: "1.10.1"
+     SCIPY_VERSION: "0.16.1"
+     MATPLOTLIB_VERSION: "1.5.1"
+   - PYTHON_VERSION: "3.5"
+     NUMPY_VERSION: "1.10.1"
+     SCIPY_VERSION: "0.16.1"
+     MATPLOTLIB_VERSION: "1.5.1"
+
+install:
+  - set PATH=C:\Miniconda3;C:\Miniconda3\Scripts;%PATH%
+  - conda create --yes -q -n test_environment python=%PYTHON_VERSION% pip
+    setuptools cython numpy=%NUMPY_VERSION% scipy=%SCIPY_VERSION% nose matplotlib=%MATPLOTLIB_VERSION%
+    six mock h5py pep8
+  - activate test_environment
+  - pip install coveralls codecov ordereddict
+  - pip install -e . --no-deps 
+
+build: off
+
+test_script:
+  - nosetests --with-coverage --cover-package=neutronpy --logging-level=INFO
+
+on_success:
+  - echo [distutils]                                  > %USERPROFILE%\\.pypirc
+  - echo index-servers =                             >> %USERPROFILE%\\.pypirc
+  - echo     pypi                                    >> %USERPROFILE%\\.pypirc
+  - echo [pypi]                                      >> %USERPROFILE%\\.pypirc
+  - echo repository=https://pypi.python.org/pypi     >> %USERPROFILE%\\.pypirc
+  - echo username=davidfobes                         >> %USERPROFILE%\\.pypirc
+  - echo password=%PYPIPASSWORD%                     >> %USERPROFILE%\\.pypirc
+  - set HOME=%USERPROFILE%
+  - if "%APPVEYOR_REPO_TAG%"=="true" ( win_build.cmd %PYTHON%\\python.exe setup.py bdist_wheel upload ) else ( echo "Not deploying because not a tagged commit." )
+
+notifications:
+  - provider: Slack
+    auth_token:
+      secure: 2gRzKdCykTUkI/YSUpCZQepn8/nbMIV5HEK7Ja+Yw7uNArIvtnvRIVEBErgf5wxKPsCUczQKAZoCPNVhKn2C8A==
+    channel: '#development'
