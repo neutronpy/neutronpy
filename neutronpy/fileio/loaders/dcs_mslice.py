@@ -84,4 +84,7 @@ class DcsMslice(Data):
             raise ValueError('File was not loaded correctly!')
 
     def load_xye(self, filename):
-        pass
+        x, y, e = np.loadtxt(filename, unpack=True)
+        self._data = OrderedDict(intensity=y, error=e, x=x, monitor=np.ones(len(y)), time=np.ones(len(y)))
+        self.data_keys = {'intensity': 'intensity', 'monitor': 'monitor', 'time': 'time'}
+        self._err = e
