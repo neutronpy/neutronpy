@@ -59,7 +59,29 @@ class DcsMslice(Data):
         pass
 
     def load_xyie(self, filename):
-        pass
+        with open(filename) as f:
+            data = []
+            for line in f:
+                data.append(line.replace('\n', '').split())
+
+        shape = tuple(int(i) for i in data[0])
+        x = np.squeeze(np.array(data[2:2 + shape[0]]).astype(float))
+        y = np.squeeze(np.array(data[3 + shape[0]:3 + shape[0] + shape[1]]).astype(float))
+        i = np.array(data[4 + np.sum(shape):4 + np.sum(shape) + shape[1]]).astype(float)
+        e = np.array(data[5 + np.sum(shape) + shape[1]:5 + np.sum(shape) + 2 * shape[1]]).astype(float)
+
+        if x.shape[0] == shape[0] and y.shape[0] == shape[1] and i.T.shape == shape and e.T.shape == shape:
+            X, Y = np.meshgrid(x, y)
+            self._data = OrderedDict(intensity=i.flatten(),
+                                     error=e.flatten(),
+                                     x=X.flatten(),
+                                     y=X.flatten(),
+                                     monitor=np.ones(len(i)).flatten(),
+                                     time=np.ones(len(i)).flatten())
+            self.data_keys = {'intensity': 'intensity', 'monitor': 'monitor', 'time': 'time'}
+            self._err = e
+        else:
+            raise ValueError('File was not loaded correctly!')
 
     def load_xye(self, filename):
         pass
