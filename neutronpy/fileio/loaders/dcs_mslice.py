@@ -52,11 +52,67 @@ class DcsMslice(Data):
     def load_iexy(self, filename):
         i, e, x, y = np.loadtxt(filename, unpack=True)
         self._data = OrderedDict(intensity=i, error=e, x=x, y=y, monitor=np.ones(len(i)), time=np.ones(len(i)))
-        self.data_keys = {'intensity': 'intensity', 'monitor': 'monitor', 'time': 'time'}
+        self.data_keys = {'detector': 'intensity', 'monitor': 'monitor', 'time': 'time'}
         self._err = e
 
     def load_spe(self, filename):
-        pass
+        with open(filename) as f:
+            data = []
+            for line in f:
+                if '###' not in line:
+                    _line = line.replace('\n', '').replace('-', ' -').replace('e -', 'e-').split()
+                else:
+                    _line = line.replace('\n', '')
+                data.append(_line)
+
+            shape = tuple(int(i) for i in data[0])
+            i = 1
+            col_headers = []
+            for line in data:
+                if '###' in line:
+                    col_headers.append(line.split('### ')[-1])
+                    if len(col_headers) == 4:
+                        break
+
+            x = []
+            for n, line in enumerate(data[2:]):
+                if '###' in line or len(x) >= shape[0]:
+                    line_num = 3 + n
+                    break
+                x.extend(line)
+
+            y = []
+            for n, line in enumerate(data[line_num:]):
+                if '###' in line or len(x) >= shape[1]:
+                    line_num += n + 1
+                    break
+                y.extend(line)
+
+            x = np.squeeze(np.array(x).astype(float))[:shape[0]]
+            y = np.squeeze(np.array(y).astype(float))[:shape[1]]
+            X, Y = np.meshgrid(x, y)
+
+            _temp_int_err = []
+            for i in range(shape[0] * 2):
+                _temp_data = []
+                for n, line in enumerate(data[line_num:]):
+                    if '###' in line:
+                        line_num += n + 1
+                        break
+                    else:
+                        _temp_data.extend(line)
+                _temp_int_err.append(np.squeeze(np.array(_temp_data).astype(float))[:shape[1]])
+            intensity = np.array(_temp_int_err[0::2]).T
+            err = np.array(_temp_int_err[1::2]).T
+
+            self._data = OrderedDict(intensity=intensity.flatten(),
+                                     error=err.flatten(),
+                                     x=X.flatten(),
+                                     y=X.flatten(),
+                                     monitor=np.ones(len(i)).flatten(),
+                                     time=np.ones(len(i)).flatten())
+            self.data_keys = {'detector': 'intensity', 'monitor': 'monitor', 'time': 'time'}
+            self._err = err
 
     def load_xyie(self, filename):
         with open(filename) as f:
@@ -78,7 +134,7 @@ class DcsMslice(Data):
                                      y=X.flatten(),
                                      monitor=np.ones(len(i)).flatten(),
                                      time=np.ones(len(i)).flatten())
-            self.data_keys = {'intensity': 'intensity', 'monitor': 'monitor', 'time': 'time'}
+            self.data_keys = {'detector': 'intensity', 'monitor': 'monitor', 'time': 'time'}
             self._err = e
         else:
             raise ValueError('File was not loaded correctly!')
@@ -86,5 +142,5 @@ class DcsMslice(Data):
     def load_xye(self, filename):
         x, y, e = np.loadtxt(filename, unpack=True)
         self._data = OrderedDict(intensity=y, error=e, x=x, monitor=np.ones(len(y)), time=np.ones(len(y)))
-        self.data_keys = {'intensity': 'intensity', 'monitor': 'monitor', 'time': 'time'}
+        self.data_keys = {'detector': 'intensity', 'monitor': 'monitor', 'time': 'time'}
         self._err = e
