@@ -54,8 +54,27 @@ class Grasp(Data):
                                  monitor=np.ones(intensity.shape),
                                  time=np.ones(intensity.shape))
 
-        self.data_keys = {'intensity': 'intensity', 'monitor': 'monitor', 'time': 'time'}
+        self.data_keys = {'detector': 'intensity', 'monitor': 'monitor', 'time': 'time'}
         self._err = err_intensity
 
-    def load_dat(self):
-        pass
+    def load_dat(self, filename):
+        with open(filename) as f:
+            file_header = []
+            for n, line in enumerate(f):
+                if 'I' in line and 'Err_I' in line:
+                    col_headers = line.replace('\n', '').split()
+                    skip_rows = n + 1
+                    break
+                file_header.append(line.replace('\n', ''))
+
+        data_cols = np.loadtxt(filename, skiprows=skip_rows, unpack=True)
+        data = OrderedDict()
+        for key, value in zip(col_headers, data_cols):
+            data[key] = value
+
+        data['monitor'] = np.ones(data['I'].shape)
+        data['time'] = np.ones(data['I'].shape)
+
+        self._data = data
+        self.data_keys = {'detector': 'I', 'monitor': 'monitor', 'time': 'time'}
+        self._err = data['Err_I']
