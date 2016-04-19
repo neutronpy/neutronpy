@@ -43,8 +43,14 @@ class IOTests(unittest.TestCase):
                        os.path.join(os.path.dirname(__file__), 'filetypes/scan0002.dat')))
             load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0003.ng5')))
             load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0004.bt7')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0007.bt7')))
             load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0005')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0007.bt7')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/000000.nxs')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/000001.dat')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.iexy')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.spe')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.xyie')))
+
         except:
             self.fail('Data loading failed')
 
@@ -62,10 +68,12 @@ class IOTests(unittest.TestCase):
     def test_filetype_detection(self):
         '''Test filetype detection
         '''
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0001.dat')) == 'SPICE')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0003.ng5')) == 'ICP')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0004.bt7')) == 'ICE')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0005')) == 'MAD')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0001.dat')) == 'spice')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0003.ng5')) == 'icp')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0004.bt7')) == 'ice')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0005')) == 'mad')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.iexy')) == 'dcs_mslice')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/000001.dat')) == 'grasp')
         self.assertRaises(ValueError, detect_filetype, os.path.join(os.path.dirname(__file__), 'filetypes/scan0006.test'))
 
 

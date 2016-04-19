@@ -109,8 +109,8 @@ class DcsMslice(Data):
                                      error=err.flatten(),
                                      x=X.flatten(),
                                      y=X.flatten(),
-                                     monitor=np.ones(len(i)).flatten(),
-                                     time=np.ones(len(i)).flatten())
+                                     monitor=np.ones(len(intensity)).flatten(),
+                                     time=np.ones(len(intensity)).flatten())
             self.data_keys = {'detector': 'intensity', 'monitor': 'monitor', 'time': 'time'}
             self._err = err
 
