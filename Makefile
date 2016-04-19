@@ -14,7 +14,7 @@ test-data:
 test-io:
 	nosetests -s -x tests.test_io
 
-test-fitting:
+test-fit:
 	nosetests -s -x tests.test_fitting
 
 test-symmetry:

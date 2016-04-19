@@ -16,8 +16,8 @@ from .crystal import Sample
 from .crystal import symmetry
 from .data import Data
 from .energy import Energy
-from .kmpfit import Fitter
 from .instrument import Instrument
+from .lsfit import Fitter
 
 try:
     from . import gui

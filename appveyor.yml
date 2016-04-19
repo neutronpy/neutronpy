@@ -50,7 +50,7 @@ install:
     setuptools cython numpy=%NUMPY_VERSION% scipy=%SCIPY_VERSION% nose matplotlib=%MATPLOTLIB_VERSION%
     six mock h5py pep8
   - activate test_environment
-  - pip install coveralls codecov ordereddict
+  - pip install coveralls codecov ordereddict lmfit
   - pip install -e . --no-deps 
 
 build: off
