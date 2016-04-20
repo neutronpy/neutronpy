@@ -3,7 +3,7 @@ install:
 	python3 setup.py install
 
 clean:
-	find . | grep -E "(__pycache__|\.pyc|\.pyo|plot_test.pdf|test.out$$)" | xargs rm -rf
+	find . | grep -E "(__pycache__|\.pyc|\.pyo|plot_test.pdf|test.out|.DS_Store$$)" | xargs rm -rf
 	
 test:
 	python3 setup.py test
