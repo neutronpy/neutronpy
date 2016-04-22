@@ -462,7 +462,7 @@ class Data(PlotData, Analysis):
         error = np.empty(Q_chunk.shape[0])
 
         for i, _Q_chunk in enumerate(Q_chunk):
-            _Q = self.Q
+            _Q = np.vstack((self._data[key] for key in self.bin_keys)).T
             _mon = self.monitor
             _det = self.detector
             _tim = self.time
@@ -497,28 +497,22 @@ class Data(PlotData, Analysis):
             error[i] = np.sqrt(1 / np.sum(1 / _err[chunk0:chunk1] ** 2))
             # error[i] = 1 / np.sqrt(2) * np.average(_err[chunk0:chunk1])
 
-        return (monitor, detector, time, error)
+        return (detector, monitor, time, error)
 
-    def bin(self, to_bin):  # pylint: disable=unused-argument
-        u'''Rebin the data into the specified shape.
+    def bin(self, to_bin):
+        r'''Rebin the data into the specified shape.
 
         Parameters
         ----------
         to_bin : dict
-            h : array_like
-                Q\ :sub:`x`: [lower bound, upper bound, number of points]
+            A dictionary containing information about which data_column should
+            be binned in the following format:
 
-            k : array_like
-                Q\ :sub:`y` [lower bound, upper bound, number of points]
+                `'key': [lower_bound, upper_bound, num_points]`
 
-            l : array_like
-                Q\ :sub:`z` [lower bound, upper bound, number of points]
-
-            e : array_like
-                ℏω: [lower bound, upper bound, number of points]
-
-            temp : array_like
-                *T*: [lower bound, upper bound, number of points]
+            Any data_column is a valid key. Any data_column key not included
+            is ignored during the bin, and will not be returned in the new
+            object.
 
         Returns
         -------
@@ -526,12 +520,12 @@ class Data(PlotData, Analysis):
             The resulting data object with values binned to the specified bounds
 
         '''
-        args = (to_bin[item] for item in ['h', 'k', 'l', 'e', 'temp'])
+        self.bin_keys = list(to_bin.keys())
+        args = (to_bin[item] for item in self.bin_keys)
         q, qstep = (), ()
         for arg in args:
-            if arg[2] == 1:
-                _q, _qstep = (np.array([np.average(arg[:2])]),
-                              (arg[1] - arg[0]))
+            if arg[-1] == 1:
+                _q, _qstep = (np.array([np.average(arg[:2])]), (arg[1] - arg[0]))
             else:
                 _q, _qstep = np.linspace(arg[0], arg[1], arg[2], retstep=True)
             q += _q,
@@ -549,7 +543,17 @@ class Data(PlotData, Analysis):
         outputs = pool.map(_call_bin_parallel, zip([self] * len(Q_chunks), Q_chunks))
         pool.close()
 
-        monitor, detector, time, error = (np.concatenate(arg) for arg in zip(*outputs))
+        detector, monitor, time, error = (np.concatenate(arg) for arg in zip(*outputs))
 
-        return Data(Q=Q, monitor=monitor, detector=detector, time=time,
-                    m0=self.m0, t0=self.t0, error=error)
+        _data = OrderedDict()
+        for key, value in zip(self.bin_keys, Q.T):
+            _data[key] = value
+
+        for key, value in zip(['detector', 'monitor', 'time', 'error'], [detector, monitor, time, error]):
+            _data[key] = value
+
+        output = Data()
+        output._data = _data
+        output._err = error
+
+        return output
