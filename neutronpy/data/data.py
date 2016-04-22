@@ -499,7 +499,7 @@ class Data(PlotData, Analysis):
 
         return (detector, monitor, time, error)
 
-    def bin(self, to_bin):
+    def bin(self, to_bin, build_hkl=True):
         r'''Rebin the data into the specified shape.
 
         Parameters
@@ -514,15 +514,36 @@ class Data(PlotData, Analysis):
             is ignored during the bin, and will not be returned in the new
             object.
 
+        build_hkl : bool, optional
+            Toggle to build hkle. Must already have hkle built in object you
+            are binning. Default: True
+
         Returns
         -------
         binned_data : :class:`.Data` object
             The resulting data object with values binned to the specified bounds
 
         '''
-        self.bin_keys = list(to_bin.keys())
-        args = (to_bin[item] for item in self.bin_keys)
-        q, qstep = (), ()
+        _bin_keys = list(to_bin.keys())
+        if build_hkl:
+            for key, value in self.Q_keys.items():
+                if key in _bin_keys:
+                    _bin_keys.remove(key)
+                _bin_keys.append(value)
+
+        self.bin_keys = copy.copy(_bin_keys)
+
+        args = tuple()
+        for key in self.bin_keys:
+            try:
+                args += to_bin[key],
+            except KeyError:
+                if key in self.Q_keys.values():
+                    args += [self.data[key].min(), self.data[key].max(), 1],
+                else:
+                    raise KeyError
+
+        q, qstep = tuple(), tuple()
         for arg in args:
             if arg[-1] == 1:
                 _q, _qstep = (np.array([np.average(arg[:2])]), (arg[1] - arg[0]))
@@ -555,5 +576,7 @@ class Data(PlotData, Analysis):
         output = Data()
         output._data = _data
         output._err = error
+        if build_hkl:
+            output.Q_keys = copy.copy(self.Q_keys)
 
         return output
