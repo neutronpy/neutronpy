@@ -2,6 +2,7 @@
 r'''Calculates common spurions
 
 '''
+import warnings
 import numpy as np
 from .crystal import Material
 from .energy import Energy
@@ -107,7 +108,7 @@ def currat_axe_peaks(instrument, scan, bragg_positions, angle_tol=1):
     for n, angle in enumerate(angles):
         for bragg_angle in bragg_angles:
             if np.all(np.abs(bragg_angle - angle) <= angle_tol):
-                print('WARNING: YOUR SCAN MAY CONTAIN CURRAT-AXE SCATTERING AT {0}'.format(hkle_scan[n]))
+                warnings.warn('WARNING: YOUR SCAN MAY CONTAIN CURRAT-AXE SCATTERING AT {0}'.format(hkle_scan[n]))
 
 
 def bragg_tails():
