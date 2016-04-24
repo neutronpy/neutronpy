@@ -2,10 +2,10 @@
 import copy
 import numbers
 import numpy as np
-from .loaders import Spice, Icp, Ice, Mad
+from .loaders import DcsMslice, Grasp, Icp, Ice, Mad, Spice
 
 
-def load_data(files, filetype='auto', tols=1e-4, build_Q=True, load_instrument=False):
+def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument=False):
     r'''Loads one or more files and creates a :class:`Data` object with the
     loaded data.
 
@@ -34,7 +34,9 @@ def load_data(files, filetype='auto', tols=1e-4, build_Q=True, load_instrument=F
         files.
 
     '''
-    load_filetype = {'ice': Ice,
+    load_filetype = {'dcs_mslice': DcsMslice,
+                     'grasp': Grasp,
+                     'ice': Ice,
                      'icp': Icp,
                      'mad': Mad,
                      'spice': Spice}
@@ -51,7 +53,7 @@ def load_data(files, filetype='auto', tols=1e-4, build_Q=True, load_instrument=F
 
         try:
             _data_object_temp = load_filetype[filetype.lower()]()
-            _data_object_temp.load(filename, build_Q, load_instrument)
+            _data_object_temp.load(filename, build_hkl=build_hkl, load_instrument=load_instrument)
         except KeyError:
             raise KeyError('Filetype not supported.')
 
@@ -104,7 +106,7 @@ def save_data(obj, filename, fileformat='ascii', **kwargs):
         raise ValueError("""Format not supported. Please use 'ascii', 'hdf5', or 'pickle'""")
 
 
-def detect_filetype(file):
+def detect_filetype(filename):
     u'''Simple method for quickly determining filetype of a given input file.
 
     Parameters
@@ -117,21 +119,23 @@ def detect_filetype(file):
     filetype : str
         The filetype of the given input file
     '''
-    if file[-3:] == 'nxs':
-        return 'nexus'
-    elif file[-4:] == 'iexy':
-        return 'iexy'
+    if filename[-3:] == 'nxs':
+        return 'grasp'
+    elif filename[-4:].lower() == 'iexy' or filename[-3:].lower() == 'spe' or filename[-3:].lower() == 'xye' or filename[-4:] == 'xyie':
+        return 'dcs_mslice'
     else:
-        with open(file) as f:
+        with open(filename) as f:
             first_line = f.readline()
             second_line = f.readline()
             if '#ICE' in first_line:
-                return 'ICE'
+                return 'ice'
             elif '# scan' in first_line:
-                return 'SPICE'
+                return 'spice'
+            elif 'GRASP' in first_line.upper():
+                return 'grasp'
             elif 'Filename' in second_line:
-                return 'ICP'
+                return 'icp'
             elif 'RRR' in first_line or 'AAA' in first_line or 'VVV' in first_line:
-                return 'MAD'
+                return 'mad'
             else:
                 raise ValueError('Unknown filetype.')

@@ -52,6 +52,12 @@ class Spice(Data):
         self._file_header = file_header
         self.data_keys = {'monitor': 'monitor', 'detector': 'detector', 'time': 'time'}
 
+        for line in file_header:
+            if 'def_x' in line:
+                self.plot_default_x = line.split('=')[-1].strip()
+            if 'def_y' in line:
+                self.plot_default_y = line.split('=')[-1].strip()
+
         if build_hkl:
             self.Q_keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'temp': 'tvti'}
 
