@@ -456,16 +456,12 @@ class Data(PlotData, Analysis):
             New monitor, detector, and temps of the binned data
 
         '''
-        monitor = np.empty(Q_chunk.shape[0])
-        detector = np.empty(Q_chunk.shape[0])
-        time = np.empty(Q_chunk.shape[0])
         error = np.empty(Q_chunk.shape[0])
+        data_out = tuple(np.empty(Q_chunk.shape[0]) for key in self.data.keys() if key not in self.bin_keys)
 
         for i, _Q_chunk in enumerate(Q_chunk):
             _Q = np.vstack((self._data[key].flatten() for key in self.bin_keys)).T
-            _mon = self.monitor
-            _det = self.detector
-            _tim = self.time
+            _data_out = tuple(value for key, value in self._data.items() if key not in self.bin_keys)
             _err = self.error
 
             above = _Q_chunk + np.array(self._qstep, dtype=float) / 2.
@@ -474,17 +470,15 @@ class Data(PlotData, Analysis):
             bin_ind = np.where(((_Q <= above).all(axis=1) & (_Q >= below).all(axis=1)))
 
             if len(bin_ind[0]) > 0:
-                monitor[i] = np.average(_mon[bin_ind])
-                detector[i] = np.average(_det[bin_ind])
-                time[i] = np.average(_tim[bin_ind])
+                for j in range(len(data_out)):
+                    data_out[j][i] = np.average(_data_out[j][bin_ind])
                 error[i] = np.sqrt(np.average(_err[bin_ind] ** 2))
             else:
-                monitor[i] = np.nan
-                detector[i] = np.nan
-                time[i] = np.nan
+                for j in range(len(data_out)):
+                    data_out[j][i] = np.nan
                 error[i] = np.nan
 
-        return (detector, monitor, time, error)
+        return data_out + (error,)
 
     def bin(self, to_bin, build_hkl=True):
         r'''Rebin the data into the specified shape.
@@ -550,25 +544,26 @@ class Data(PlotData, Analysis):
         outputs = pool.map(_call_bin_parallel, zip([self] * len(Q_chunks), Q_chunks))
         pool.close()
 
-        detector, monitor, time, error = (np.concatenate(arg) for arg in zip(*outputs))
+        _data_out = [np.concatenate(arg) for arg in zip(*outputs)]
 
-        del_ind = np.where(np.isnan(detector))
+        data_out = tuple()
+        del_nan = np.where(np.isnan(_data_out[0]))
+        for arg in _data_out:
+            data_out += np.delete(arg, del_nan, axis=0),
 
-        Q = np.delete(Q, del_ind, axis=0)
-        detector = np.delete(detector, del_ind)
-        monitor = np.delete(monitor, del_ind)
-        time = np.delete(time, del_ind)
-        error = np.delete(error, del_ind)
+        Q = np.delete(Q, del_nan, axis=0)
 
-        _data = OrderedDict()
-        for key, value in zip(self.bin_keys, Q.T):
-            _data[key] = value
-
-        for key, value in zip(['detector', 'monitor', 'time', 'error'], [detector, monitor, time, error]):
-            _data[key] = value
+        _data = copy.copy(self._data)
+        n = 0
+        for key in _data.keys():
+            if key not in self.bin_keys:
+                _data[key] = data_out[n]
+                n += 1
+            else:
+                _data[key] = Q[:, self.bin_keys.index(key)]
 
         output = copy.deepcopy(self)
         output._data = _data
-        output._err = error
+        output._err = data_out[-1]
 
         return output
