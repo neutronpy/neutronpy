@@ -486,14 +486,13 @@ class Data(PlotData, Analysis):
         Parameters
         ----------
         to_bin : dict
-            A dictionary containing information about which data_column should
-            be binned in the following format:
+            A dictionary containing information about which data_column
+            should be binned in the following format:
 
                 `'key': [lower_bound, upper_bound, num_points]`
 
-            Any data_column is a valid key. Any data_column key not included
-            is ignored during the bin, and will not be returned in the new
-            object.
+            Any key in `data_column` is a valid key. Those keys from
+            `data_column` not included in `to_bin` are averaged.
 
         build_hkl : bool, optional
             Toggle to build hkle. Must already have hkle built in object you
@@ -502,7 +501,8 @@ class Data(PlotData, Analysis):
         Returns
         -------
         binned_data : :class:`.Data` object
-            The resulting data object with values binned to the specified bounds
+            The resulting data object with values binned to the specified
+            bounds
 
         '''
         _bin_keys = list(to_bin.keys())
