@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :release:`v1.0.0b2 <2016-04-24>`
 * :feature:`67` All data is now imported from files when using :py:meth:`.load_data`. Binning is now more generalized.
 * :feature:`71` Added Currat-Axe spurion method :py:meth:`.spurion.currat_axe_peaks`
 

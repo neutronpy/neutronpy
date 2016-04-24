@@ -23,4 +23,4 @@ try:
 except ImportError:
     print('Warning: PyQt5 not found, cannot run Resolution GUI')
 
-__version__ = '1.0.0b2'
+__version__ = '1.0.0b3'
