@@ -30,7 +30,7 @@ def build_data(clean=True):
         mon = 1e3
         tim = 5
 
-    output = Data(Q=np.vstack((item.ravel() for item in np.meshgrid(x, 0., 0., 0., 300.))).T,
+    output = Data(Q=np.vstack((item.ravel() for item in np.meshgrid(x, 0., 0., 4., 300.))).T,
                   detector=y, monitor=np.full(x.shape, mon, dtype=float), time=np.full(x.shape, tim, dtype=float))
 
     return output
@@ -71,15 +71,20 @@ class DataTest(unittest.TestCase):
     def test_rebin(self):
         '''Tests data rebinning
         '''
-        data = build_data(clean=True)
-        data_bin = data.bin(dict(h=[-1, 1., 41], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[3.5, 4.5, 1], temp=[-300, 900, 1]))
+        data = Data(h=np.linspace(0, 1, 101), k=0, l=0, e=0, temp=0,
+                    detector=functions.gaussian([0, 0, 10, 0.5, 0.5], np.linspace(0, 1, 101)),
+                    monitor=np.ones(101), time=np.ones(101))
+        data_bin = data.bin(dict(h=[0, 1., 13], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[-0.5, 0.5, 1]))
 
-        self.assertEqual(data_bin.Q.shape[0], 41)
-        self.assertEqual(data_bin.monitor.shape[0], 41)
-        self.assertEqual(data_bin.detector.shape[0], 41)
+        self.assertEqual(data_bin.Q.shape[0], 13)
+        self.assertEqual(data_bin.monitor.shape[0], 13)
+        self.assertEqual(data_bin.detector.shape[0], 13)
 
         self.assertEqual(np.average(data_bin.monitor), np.average(data.monitor))
         self.assertTrue(abs(simps(data_bin.detector, data_bin.Q[:, 0]) - simps(data.detector, data.Q[:, 0])) <= 0.1)
+        self.assertTrue(np.abs(data_bin.integrate() - data.integrate()) < 1e-4)
+        self.assertTrue(np.abs(data_bin.position()[0] - data.position()[0]) < 1e-4)
+        self.assertTrue(np.abs(data_bin.width()[0] - data.width()[0]) < 1e-2)
 
     def test_analysis(self):
         '''Tests analysis methods

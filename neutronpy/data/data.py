@@ -462,40 +462,27 @@ class Data(PlotData, Analysis):
         error = np.empty(Q_chunk.shape[0])
 
         for i, _Q_chunk in enumerate(Q_chunk):
-            _Q = np.vstack((self._data[key] for key in self.bin_keys)).T
+            _Q = np.vstack((self._data[key].flatten() for key in self.bin_keys)).T
             _mon = self.monitor
             _det = self.detector
             _tim = self.time
             _err = self.error
 
-            for j in range(_Q.shape[1]):
-                _order = np.lexsort([_Q[:, j - n] for n
-                                     in reversed(range(_Q.shape[1]))])
-                _Q = _Q[_order]
-                _mon = _mon[_order]
-                _det = _det[_order]
-                _tim = _tim[_order]
-                _err = _err[_order]
+            above = _Q_chunk + np.array(self._qstep, dtype=float) / 2.
+            below = _Q_chunk - np.array(self._qstep, dtype=float) / 2.
 
-                chunk0 = np.searchsorted(_Q[:, j],
-                                         _Q_chunk[j] - self._qstep[j] / 2.,
-                                         side='left')
-                chunk1 = np.searchsorted(_Q[:, j],
-                                         _Q_chunk[j] + self._qstep[j] / 2.,
-                                         side='right')
+            bin_ind = np.where(((_Q <= above).all(axis=1) & (_Q >= below).all(axis=1)))
 
-                if chunk0 < chunk1:
-                    _Q = _Q[chunk0:chunk1, :]
-                    _mon = _mon[chunk0:chunk1]
-                    _det = _det[chunk0:chunk1]
-                    _tim = _tim[chunk0:chunk1]
-                    _err = _err[chunk0:chunk1]
-
-            monitor[i] = np.average(_mon[chunk0:chunk1])
-            detector[i] = np.average(_det[chunk0:chunk1])
-            time[i] = np.average(_tim[chunk0:chunk1])
-            error[i] = np.sqrt(1 / np.sum(1 / _err[chunk0:chunk1] ** 2))
-            # error[i] = 1 / np.sqrt(2) * np.average(_err[chunk0:chunk1])
+            if len(bin_ind[0]) > 0:
+                monitor[i] = np.average(_mon[bin_ind])
+                detector[i] = np.average(_det[bin_ind])
+                time[i] = np.average(_tim[bin_ind])
+                error[i] = np.sqrt(np.average(_err[bin_ind] ** 2))
+            else:
+                monitor[i] = np.nan
+                detector[i] = np.nan
+                time[i] = np.nan
+                error[i] = np.nan
 
         return (detector, monitor, time, error)
 
@@ -558,13 +545,20 @@ class Data(PlotData, Analysis):
         Q = np.vstack((item.flatten() for item in Q)).T
 
         nprocs = cpu_count()
-        Q_chunks = [Q[n * Q.shape[0] // nprocs:(n + 1) * Q.shape[0] // nprocs]
-                    for n in range(nprocs)]
+        Q_chunks = [Q[n * Q.shape[0] // nprocs:(n + 1) * Q.shape[0] // nprocs] for n in range(nprocs)]
         pool = Pool(processes=nprocs)
         outputs = pool.map(_call_bin_parallel, zip([self] * len(Q_chunks), Q_chunks))
         pool.close()
 
         detector, monitor, time, error = (np.concatenate(arg) for arg in zip(*outputs))
+
+        del_ind = np.where(np.isnan(detector))
+
+        Q = np.delete(Q, del_ind, axis=0)
+        detector = np.delete(detector, del_ind)
+        monitor = np.delete(monitor, del_ind)
+        time = np.delete(time, del_ind)
+        error = np.delete(error, del_ind)
 
         _data = OrderedDict()
         for key, value in zip(self.bin_keys, Q.T):
@@ -573,10 +567,8 @@ class Data(PlotData, Analysis):
         for key, value in zip(['detector', 'monitor', 'time', 'error'], [detector, monitor, time, error]):
             _data[key] = value
 
-        output = Data()
+        output = copy.deepcopy(self)
         output._data = _data
         output._err = error
-        if build_hkl:
-            output.Q_keys = copy.copy(self.Q_keys)
 
         return output

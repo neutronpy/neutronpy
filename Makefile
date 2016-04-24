@@ -7,7 +7,10 @@ clean:
 	
 test:
 	python3 setup.py test
-	
+
+test-data:
+	nosetests -s -x tests.test_data
+
 test-all:
 	python2 setup.py test
 	python3 setup.py test
