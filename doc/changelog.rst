@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* :feature:`71` Added Currat-Axe spurion method :py:meth:`.spurion.currat_axe_peaks`
+
 * :release:`v1.0.0b1 <2016-04-07>`
 * :feature:`62` Major refactoring, breaks backwards compatibility. See documentation for new usage.
 * :feature:`64` Added basic physical models to :py:mod:`.models`
