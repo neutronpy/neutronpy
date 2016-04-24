@@ -456,82 +456,78 @@ class Data(PlotData, Analysis):
             New monitor, detector, and temps of the binned data
 
         '''
-        monitor = np.empty(Q_chunk.shape[0])
-        detector = np.empty(Q_chunk.shape[0])
-        time = np.empty(Q_chunk.shape[0])
         error = np.empty(Q_chunk.shape[0])
+        data_out = tuple(np.empty(Q_chunk.shape[0]) for key in self.data.keys() if key not in self.bin_keys)
 
         for i, _Q_chunk in enumerate(Q_chunk):
-            _Q = self.Q
-            _mon = self.monitor
-            _det = self.detector
-            _tim = self.time
+            _Q = np.vstack((self._data[key].flatten() for key in self.bin_keys)).T
+            _data_out = tuple(value for key, value in self._data.items() if key not in self.bin_keys)
             _err = self.error
 
-            for j in range(_Q.shape[1]):
-                _order = np.lexsort([_Q[:, j - n] for n
-                                     in reversed(range(_Q.shape[1]))])
-                _Q = _Q[_order]
-                _mon = _mon[_order]
-                _det = _det[_order]
-                _tim = _tim[_order]
-                _err = _err[_order]
+            above = _Q_chunk + np.array(self._qstep, dtype=float) / 2.
+            below = _Q_chunk - np.array(self._qstep, dtype=float) / 2.
 
-                chunk0 = np.searchsorted(_Q[:, j],
-                                         _Q_chunk[j] - self._qstep[j] / 2.,
-                                         side='left')
-                chunk1 = np.searchsorted(_Q[:, j],
-                                         _Q_chunk[j] + self._qstep[j] / 2.,
-                                         side='right')
+            bin_ind = np.where(((_Q <= above).all(axis=1) & (_Q >= below).all(axis=1)))
 
-                if chunk0 < chunk1:
-                    _Q = _Q[chunk0:chunk1, :]
-                    _mon = _mon[chunk0:chunk1]
-                    _det = _det[chunk0:chunk1]
-                    _tim = _tim[chunk0:chunk1]
-                    _err = _err[chunk0:chunk1]
+            if len(bin_ind[0]) > 0:
+                for j in range(len(data_out)):
+                    data_out[j][i] = np.average(_data_out[j][bin_ind])
+                error[i] = np.sqrt(np.average(_err[bin_ind] ** 2))
+            else:
+                for j in range(len(data_out)):
+                    data_out[j][i] = np.nan
+                error[i] = np.nan
 
-            monitor[i] = np.average(_mon[chunk0:chunk1])
-            detector[i] = np.average(_det[chunk0:chunk1])
-            time[i] = np.average(_tim[chunk0:chunk1])
-            error[i] = np.sqrt(1 / np.sum(1 / _err[chunk0:chunk1] ** 2))
-            # error[i] = 1 / np.sqrt(2) * np.average(_err[chunk0:chunk1])
+        return data_out + (error,)
 
-        return (monitor, detector, time, error)
-
-    def bin(self, to_bin):  # pylint: disable=unused-argument
-        u'''Rebin the data into the specified shape.
+    def bin(self, to_bin, build_hkl=True):
+        r'''Rebin the data into the specified shape.
 
         Parameters
         ----------
         to_bin : dict
-            h : array_like
-                Q\ :sub:`x`: [lower bound, upper bound, number of points]
+            A dictionary containing information about which data_column
+            should be binned in the following format:
 
-            k : array_like
-                Q\ :sub:`y` [lower bound, upper bound, number of points]
+                `'key': [lower_bound, upper_bound, num_points]`
 
-            l : array_like
-                Q\ :sub:`z` [lower bound, upper bound, number of points]
+            Any key in `data_column` is a valid key. Those keys from
+            `data_column` not included in `to_bin` are averaged.
 
-            e : array_like
-                ℏω: [lower bound, upper bound, number of points]
-
-            temp : array_like
-                *T*: [lower bound, upper bound, number of points]
+        build_hkl : bool, optional
+            Toggle to build hkle. Must already have hkle built in object you
+            are binning. Default: True
 
         Returns
         -------
         binned_data : :class:`.Data` object
-            The resulting data object with values binned to the specified bounds
+            The resulting data object with values binned to the specified
+            bounds
 
         '''
-        args = (to_bin[item] for item in ['h', 'k', 'l', 'e', 'temp'])
-        q, qstep = (), ()
+        _bin_keys = list(to_bin.keys())
+        if build_hkl:
+            for key, value in self.Q_keys.items():
+                if key in _bin_keys:
+                    _bin_keys.remove(key)
+                _bin_keys.append(value)
+
+        self.bin_keys = copy.copy(_bin_keys)
+
+        args = tuple()
+        for key in self.bin_keys:
+            try:
+                args += to_bin[key],
+            except KeyError:
+                if key in self.Q_keys.values():
+                    args += [self.data[key].min(), self.data[key].max(), 1],
+                else:
+                    raise KeyError
+
+        q, qstep = tuple(), tuple()
         for arg in args:
-            if arg[2] == 1:
-                _q, _qstep = (np.array([np.average(arg[:2])]),
-                              (arg[1] - arg[0]))
+            if arg[-1] == 1:
+                _q, _qstep = (np.array([np.average(arg[:2])]), (arg[1] - arg[0]))
             else:
                 _q, _qstep = np.linspace(arg[0], arg[1], arg[2], retstep=True)
             q += _q,
@@ -543,13 +539,31 @@ class Data(PlotData, Analysis):
         Q = np.vstack((item.flatten() for item in Q)).T
 
         nprocs = cpu_count()
-        Q_chunks = [Q[n * Q.shape[0] // nprocs:(n + 1) * Q.shape[0] // nprocs]
-                    for n in range(nprocs)]
+        Q_chunks = [Q[n * Q.shape[0] // nprocs:(n + 1) * Q.shape[0] // nprocs] for n in range(nprocs)]
         pool = Pool(processes=nprocs)
         outputs = pool.map(_call_bin_parallel, zip([self] * len(Q_chunks), Q_chunks))
         pool.close()
 
-        monitor, detector, time, error = (np.concatenate(arg) for arg in zip(*outputs))
+        _data_out = [np.concatenate(arg) for arg in zip(*outputs)]
 
-        return Data(Q=Q, monitor=monitor, detector=detector, time=time,
-                    m0=self.m0, t0=self.t0, error=error)
+        data_out = tuple()
+        del_nan = np.where(np.isnan(_data_out[0]))
+        for arg in _data_out:
+            data_out += np.delete(arg, del_nan, axis=0),
+
+        Q = np.delete(Q, del_nan, axis=0)
+
+        _data = copy.copy(self._data)
+        n = 0
+        for key in _data.keys():
+            if key not in self.bin_keys:
+                _data[key] = data_out[n]
+                n += 1
+            else:
+                _data[key] = Q[:, self.bin_keys.index(key)]
+
+        output = copy.deepcopy(self)
+        output._data = _data
+        output._err = data_out[-1]
+
+        return output
