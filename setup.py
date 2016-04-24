@@ -88,7 +88,7 @@ def setup_package():
                     ext_package='neutronpy',
                     ext_modules=modules,
                     package_data={'neutronpy': ['database/*.json', 'ui/*.ui']},
-                    packages=['neutronpy'],)
+                    packages=['neutronpy', 'neutronpy.crystal', 'neutronpy.data', 'neutronpy.fileio', 'neutronpy.fileio.loaders', 'neutronpy.instrument', 'neutronpy.scattering'],)
 
     try:
         setup(**metadata)

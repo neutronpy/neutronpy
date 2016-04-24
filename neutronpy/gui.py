@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 r'''GUI for resolution calculations
 
 TESTING ONLY FOR NOW
@@ -12,7 +13,7 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QTextEdit
 from .instrument import Instrument, GetTau
 from .energy import Energy
-from .plot import PlotResolution
+from .instrument.plot import PlotInstrument
 
 matplotlib.rc('font', **{'family': 'serif', 'serif': 'Times New Roman', 'size': 9})
 matplotlib.rc('lines', markersize=2, linewidth=0.5)
@@ -38,7 +39,7 @@ class MyMplCanvas(FigureCanvas):
         pass
 
 
-class MyStaticMplCanvas(MyMplCanvas, PlotResolution):
+class MyStaticMplCanvas(MyMplCanvas, PlotInstrument):
     def __init__(self, *args, **kwargs):
         super(MyStaticMplCanvas, self).__init__(*args, **kwargs)
 

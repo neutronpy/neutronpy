@@ -1,3 +1,0 @@
-r'''Polarization Tensor Calculations
-
-'''

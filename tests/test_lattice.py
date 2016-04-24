@@ -4,7 +4,7 @@ r'''Tests lattice math
 '''
 import unittest
 import numpy as np
-from neutronpy import lattice
+from neutronpy.crystal import lattice
 
 
 class LatticeTests(unittest.TestCase):
@@ -20,7 +20,7 @@ class LatticeTests(unittest.TestCase):
     def test_get_angle_between_planes(self):
         '''Tests get angle between planes defined by two vectors
         '''
-        self.assertTrue(self.unitcell.get_angle_between_planes([1, 0, 0], [1, 1, 1]) == 54.73561031724535)
+        self.assertTrue(self.unitcell.get_angle_between_planes([1, 0, 0], [1, 1, 1]) - 54.73561031724535 < 1e-6)
 
     def test_get_d_spacing(self):
         '''Tests d-spacing for given HKL

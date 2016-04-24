@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 r'''Useful constants for neutron scattering calculations, including:
 
 * ``magnetic_form_factors()`` : Magnetic Ion j-values

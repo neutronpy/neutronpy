@@ -10,17 +10,16 @@ from matplotlib import use
 use('Agg')
 import numpy as np
 from neutronpy import instrument
-from neutronpy.io import load_instrument
-from neutronpy.sample import Sample
-from neutronpy.instrument_tools import get_bragg_widths, fproject
+from neutronpy import Sample
+from neutronpy.fileio import load_instrument
 
 
 def angle2(x, y, z, h, k, l, lattice):
     r'''Function necessary for Prefactor functions
     '''
-    latticestar = instrument._star(lattice)[-1]
+    latticestar = instrument.tools._star(lattice)[-1]
 
-    return np.arccos(2 * np.pi * (h * x + k * y + l * z) / instrument._modvec([x, y, z], lattice) / instrument._modvec([h, k, l], latticestar))
+    return np.arccos(2 * np.pi * (h * x + k * y + l * z) / instrument.tools._modvec([x, y, z], lattice) / instrument.tools._modvec([h, k, l], latticestar))
 
 
 def SqwDemo(H, K, L, W, p):
@@ -79,7 +78,7 @@ def PrefDemo(H, K, L, W, EXP, p):
     '''
     [sample, rsample] = EXP.get_lattice()
 
-    q2 = instrument._modvec([H, K, L], rsample) ** 2
+    q2 = instrument.tools._modvec([H, K, L], rsample) ** 2
 
     sd = q2 / (16 * np.pi ** 2)
     ff = 0.0163 * np.exp(-35.883 * sd) + 0.3916 * np.exp(-13.223 * sd) + 0.6052 * np.exp(-4.339 * sd) - 0.0133
@@ -110,7 +109,7 @@ def PrefDemo2(H, K, L, W, EXP, p):
     '''
     [sample, rsample] = EXP.get_lattice()
 
-    q2 = instrument._modvec([H, K, L], rsample) ** 2
+    q2 = instrument.tools._modvec([H, K, L], rsample) ** 2
 
     sd = q2 / (16 * np.pi ** 2)
     ff = 0.0163 * np.exp(-35.883 * sd) + 0.3916 * np.exp(-13.223 * sd) + 0.6052 * np.exp(-4.339 * sd) - 0.0133
@@ -194,7 +193,7 @@ class ResolutionTest(unittest.TestCase):
 
         NP = EXP.RMS
         R = EXP.R0
-        BraggWidths = get_bragg_widths(NP)
+        BraggWidths = instrument.tools.get_bragg_widths(NP)
         angles = self.EXP_coopernathans.get_angles_and_Q(hkle)[0]
         ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * 2
 
@@ -223,7 +222,7 @@ class ResolutionTest(unittest.TestCase):
 
         NP = self.EXP_popovici.RMS
         R = self.EXP_popovici.R0
-        BraggWidths = get_bragg_widths(NP)
+        BraggWidths = instrument.tools.get_bragg_widths(NP)
         angles = self.EXP_popovici.get_angles_and_Q(hkle)[0]
 
         ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP)) * 2
@@ -327,10 +326,10 @@ class ResolutionTest(unittest.TestCase):
     def test_GetTau(self):
         '''Test monochromator crystal tau value finder
         '''
-        self.assertTrue(instrument.GetTau(1.87325, getlabel=True) == 'pg(002)')
-        self.assertTrue(instrument.GetTau(1.8, getlabel=True) == '')
-        self.assertTrue(instrument.GetTau(10) == 10)
-        self.assertRaises(KeyError, instrument.GetTau, 'blah')
+        self.assertTrue(instrument.tools.GetTau(1.87325, getlabel=True) == 'pg(002)')
+        self.assertTrue(instrument.tools.GetTau(1.8, getlabel=True) == '')
+        self.assertTrue(instrument.tools.GetTau(10) == 10)
+        self.assertRaises(KeyError, instrument.tools.GetTau, 'blah')
 
     def test_CleanArgs_err(self):
         '''Test exception capture in CleanArgs
@@ -341,9 +340,9 @@ class ResolutionTest(unittest.TestCase):
         '''Test projection function
         '''
         x = np.ones((4, 4, 1))
-        fproject(x, 0)
-        fproject(x, 1)
-        fproject(x, 2)
+        instrument.tools.fproject(x, 0)
+        instrument.tools.fproject(x, 1)
+        instrument.tools.fproject(x, 2)
 
     def test_constants(self):
         '''Test constants
@@ -382,7 +381,7 @@ class ResolutionTest(unittest.TestCase):
         EXP.ana.Q = 1.5
         EXP.calc_resolution([1, 0, 0, 0])
 
-        EXP.Smooth = instrument._dummy()
+        EXP.Smooth = instrument.tools._dummy()
         EXP.Smooth.X = 1
         EXP.Smooth.Y = 1
         EXP.Smooth.Z = 1

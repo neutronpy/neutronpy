@@ -4,7 +4,7 @@
 '''
 import unittest
 import numpy as np
-from neutronpy.energy import Energy
+from neutronpy import Energy
 
 
 class EnergyTest(unittest.TestCase):

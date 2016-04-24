@@ -6,8 +6,8 @@ import unittest
 from mock import patch
 import numpy as np
 from neutronpy import functions
-from neutronpy.io import load_data, save_data, detect_filetype
-from neutronpy.data import Data
+from neutronpy.fileio import load_data, save_data, detect_filetype
+from neutronpy import Data
 
 
 def build_data(clean=True):
@@ -39,16 +39,22 @@ class IOTests(unittest.TestCase):
         '''Tests file loading
         '''
         try:
-            load_data((os.path.join(os.path.dirname(__file__), 'scan0001.dat'),
-                       os.path.join(os.path.dirname(__file__), 'scan0002.dat')))
-            load_data((os.path.join(os.path.dirname(__file__), 'scan0003.ng5')))
-            load_data((os.path.join(os.path.dirname(__file__), 'scan0004.bt7')))
-            load_data((os.path.join(os.path.dirname(__file__), 'scan0007.bt7')))
-            load_data((os.path.join(os.path.dirname(__file__), 'scan0005')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0001.dat'),
+                       os.path.join(os.path.dirname(__file__), 'filetypes/scan0002.dat')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0003.ng5')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0004.bt7')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0005')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0007.bt7')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/000000.nxs')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/000001.dat')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.iexy')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.spe')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.xyie')))
+
         except:
             self.fail('Data loading failed')
 
-        self.assertRaises(ValueError, load_data, (os.path.join(os.path.dirname(__file__), 'scan0006.test')), filetype='blah')
+        self.assertRaises(KeyError, load_data, (os.path.join(os.path.dirname(__file__), 'filetypes/scan0006.test')), filetype='blah')
 
     def test_save_file(self):
         '''Tests file saving
@@ -62,11 +68,13 @@ class IOTests(unittest.TestCase):
     def test_filetype_detection(self):
         '''Test filetype detection
         '''
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0001.dat')) == 'SPICE')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0003.ng5')) == 'ICP')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0004.bt7')) == 'ICE')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'scan0005')) == 'MAD')
-        self.assertRaises(ValueError, detect_filetype, os.path.join(os.path.dirname(__file__), 'scan0006.test'))
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0001.dat')) == 'spice')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0003.ng5')) == 'icp')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0004.bt7')) == 'ice')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0005')) == 'mad')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.iexy')) == 'dcs_mslice')
+        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/000001.dat')) == 'grasp')
+        self.assertRaises(ValueError, detect_filetype, os.path.join(os.path.dirname(__file__), 'filetypes/scan0006.test'))
 
 
 if __name__ == '__main__':

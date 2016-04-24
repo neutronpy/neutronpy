@@ -7,8 +7,8 @@ import numpy as np
 from mock import patch
 from matplotlib import use
 use('Agg')
-from neutronpy.material import Material
-from neutronpy.structure_factors import MagneticFormFactor
+from neutronpy import Material
+from neutronpy.crystal.structure_factors import MagneticFormFactor
 
 
 class StructureFactor(unittest.TestCase):
