@@ -5,8 +5,8 @@ from ..instrument import Instrument
 from ..crystal import Sample
 
 
-def load_instrument(parfile, cfgfile):
-    r'''Creates Instrument class using input par and cfg files.
+def load_instrument(filename, filetype='ascii'):
+    r"""Creates Instrument class using input par and cfg files.
 
     Parameters
     ----------
@@ -184,155 +184,226 @@ def load_instrument(parfile, cfgfile):
     | float | height monitor (cm)                                   |
     +-------+-------------------------------------------------------+
 
-    '''
-    with open(parfile, "r") as f:
-        lines = f.readlines()
-        par = {}
-        for line in lines:
-            rows = line.split()
-            par[rows[1][1:].lower()] = float(rows[0])
+    """
+    if filetype == 'ascii':
+        parfile, cfgfile = filename
+        with open(parfile, "r") as f:
+            lines = f.readlines()
+            par = {}
+            for line in lines:
+                rows = line.split()
+                par[rows[1][1:].lower()] = float(rows[0])
 
-    with open(cfgfile, "r") as f:
-        lines = f.readlines()
-        cfg = []
-        for line in lines:
-            rows = line.split()
-            cfg.append(float(rows[0]))
+        with open(cfgfile, "r") as f:
+            lines = f.readlines()
+            cfg = []
+            for line in lines:
+                rows = line.split()
+                cfg.append(float(rows[0]))
 
-    if par['sm'] == par['ss']:
-        dir1 = -1
-    else:
-        dir1 = 1
-
-    if par['ss'] == par['sa']:
-        dir2 = -1
-    else:
-        dir2 = 1
-
-    if par['kfix'] == 2:
-        infin = -1
-    else:
-        infin = par['kfix']
-
-    hcol = [par['alpha1'], par['alpha2'], par['alpha3'], par['alpha4']]
-    vcol = [par['beta1'], par['beta2'], par['beta3'], par['beta4']]
-
-    nsou = cfg[0]  # =0 for circular source, =1 for rectangular source.
-    if nsou == 0:
-        ysrc = cfg[1] / 4  # width/diameter of the source [cm].
-        zsrc = cfg[2] / 4  # height/diameter of the source [cm].
-    else:
-        ysrc = cfg[1] / np.sqrt(12)  # width/diameter of the source [cm].
-        zsrc = cfg[2] / np.sqrt(12)  # height/diameter of the source [cm].
-
-    flag_guide = cfg[3]  # =0 for no guide, =1 for guide.
-    guide_h = cfg[4]  # horizontal guide divergence [mins/Angs]
-    guide_v = cfg[5]  # vertical guide divergence [mins/Angs]
-    if flag_guide == 1:
-        alpha_guide = np.pi / 60. / 180. * 2 * np.pi * guide_h / par['k']
-        alpha0 = hcol[0] * np.pi / 60. / 180.
-        if alpha_guide <= alpha0:
-            hcol[0] = 2. * np.pi / par['k'] * guide_h
-        beta_guide = np.pi / 60. / 180. * 2 * np.pi * guide_v / par['k']
-        beta0 = vcol[0] * np.pi / 60. / 180.
-        if beta_guide <= beta0:
-            vcol[0] = 2. * np.pi / par['k'] * guide_v
-
-    nsam = cfg[6]  # =0 for cylindrical sample, =1 for cuboid sample.
-    if nsam == 0:
-        xsam = cfg[7] / 4  # sample width/diameter perp. to Q [cm].
-        ysam = cfg[8] / 4  # sample width/diameter along Q [cm].
-        zsam = cfg[9] / 4  # sample height [cm].
-    else:
-        xsam = cfg[7] / np.sqrt(12)  # sample width/diameter perp. to Q [cm].
-        ysam = cfg[8] / np.sqrt(12)  # sample width/diameter along Q [cm].
-        zsam = cfg[9] / np.sqrt(12)  # sample height [cm].
-
-    ndet = cfg[10]  # =0 for circular detector, =1 for rectangular detector.
-    if ndet == 0:
-        ydet = cfg[11] / 4  # width/diameter of the detector [cm].
-        zdet = cfg[12] / 4  # height/diameter of the detector [cm].
-    else:
-        ydet = cfg[11] / np.sqrt(12)  # width/diameter of the detector [cm].
-        zdet = cfg[12] / np.sqrt(12)  # height/diameter of the detector [cm].
-
-    xmon = cfg[13]  # thickness of monochromator [cm].
-    ymon = cfg[14]  # width of monochromator [cm].
-    zmon = cfg[15]  # height of monochromator [cm].
-
-    xana = cfg[16]  # thickness of analyser [cm].
-    yana = cfg[17]  # width of analyser [cm].
-    zana = cfg[18]  # height of analyser [cm].
-
-    L0 = cfg[19]  # distance between source and monochromator [cm].
-    L1 = cfg[20]  # distance between monochromator and sample [cm].
-    L2 = cfg[21]  # distance between sample and analyser [cm].
-    L3 = cfg[22]  # distance between analyser and detector [cm].
-
-    romh = par['sm'] * cfg[23]  # horizontal curvature of monochromator 1/radius [cm-1].
-    romv = par['sm'] * cfg[24]  # vertical curvature of monochromator [cm-1].
-    roah = par['sa'] * cfg[25]  # horizontal curvature of analyser [cm-1].
-    roav = par['sa'] * cfg[26]  # vertical curvature of analyser [cm-1].
-    inv_rads = [romh, romv, roah, roav]
-    for n, inv_rad in enumerate(inv_rads):
-        if inv_rad == 0:
-            inv_rads[n] = 1.e6
+        if par['sm'] == par['ss']:
+            dir1 = -1
         else:
-            inv_rads[n] = 1. / inv_rad
-    [romh, romv, roah, roav] = inv_rads
+            dir1 = 1
 
-    L1mon = cfg[27]  # distance monochromator monitor [cm]
-    monitorw = cfg[28] / np.sqrt(12)  # monitor width [cm]
-    monitorh = cfg[29] / np.sqrt(12)  # monitor height [cm]
+        if par['ss'] == par['sa']:
+            dir2 = -1
+        else:
+            dir2 = 1
 
-    # -------------------------------------------------------------------------
+        if par['kfix'] == 2:
+            infin = -1
+        else:
+            infin = par['kfix']
 
-    energy = Energy(wavevector=par['k'])
+        hcol = [par['alpha1'], par['alpha2'], par['alpha3'], par['alpha4']]
+        vcol = [par['beta1'], par['beta2'], par['beta3'], par['beta4']]
 
-    sample = Sample(par['as'], par['bs'], par['cs'],
-                    par['aa'], par['bb'], par['cc'],
-                    par['etas'])
-    sample.u = [par['ax'], par['ay'], par['az']]
-    sample.v = [par['bx'], par['by'], par['bz']]
-    sample.shape = np.diag([xsam, ysam, zsam])
+        nsou = cfg[0]  # =0 for circular source, =1 for rectangular source.
+        if nsou == 0:
+            ysrc = cfg[1] / 4  # width/diameter of the source [cm].
+            zsrc = cfg[2] / 4  # height/diameter of the source [cm].
+        else:
+            ysrc = cfg[1] / np.sqrt(12)  # width/diameter of the source [cm].
+            zsrc = cfg[2] / np.sqrt(12)  # height/diameter of the source [cm].
 
-    setup = Instrument(energy.energy, sample, hcol, vcol,
-                       2 * np.pi / par['dm'], par['etam'],
-                       2 * np.pi / par['da'], par['etaa'])
+        flag_guide = cfg[3]  # =0 for no guide, =1 for guide.
+        guide_h = cfg[4]  # horizontal guide divergence [mins/Angs]
+        guide_v = cfg[5]  # vertical guide divergence [mins/Angs]
+        if flag_guide == 1:
+            alpha_guide = np.pi / 60. / 180. * 2 * np.pi * guide_h / par['k']
+            alpha0 = hcol[0] * np.pi / 60. / 180.
+            if alpha_guide <= alpha0:
+                hcol[0] = 2. * np.pi / par['k'] * guide_h
+            beta_guide = np.pi / 60. / 180. * 2 * np.pi * guide_v / par['k']
+            beta0 = vcol[0] * np.pi / 60. / 180.
+            if beta_guide <= beta0:
+                vcol[0] = 2. * np.pi / par['k'] * guide_v
 
-    setup.method = 1
-    setup.dir1 = dir1
-    setup.dir2 = dir2
-    setup.mondir = par['sm']
-    setup.infin = infin
-    setup.arms = [L0, L1, L2, L3, L1mon]
-    setup.guide.width = ysrc
-    setup.guide.height = zsrc
+        nsam = cfg[6]  # =0 for cylindrical sample, =1 for cuboid sample.
+        if nsam == 0:
+            xsam = cfg[7] / 4  # sample width/diameter perp. to Q [cm].
+            ysam = cfg[8] / 4  # sample width/diameter along Q [cm].
+            zsam = cfg[9] / 4  # sample height [cm].
+        else:
+            xsam = cfg[7] / np.sqrt(12)  # sample width/diameter perp. to Q [cm].
+            ysam = cfg[8] / np.sqrt(12)  # sample width/diameter along Q [cm].
+            zsam = cfg[9] / np.sqrt(12)  # sample height [cm].
 
-    setup.detector.width = ydet
-    setup.detector.height = zdet
+        ndet = cfg[10]  # =0 for circular detector, =1 for rectangular detector.
+        if ndet == 0:
+            ydet = cfg[11] / 4  # width/diameter of the detector [cm].
+            zdet = cfg[12] / 4  # height/diameter of the detector [cm].
+        else:
+            ydet = cfg[11] / np.sqrt(12)  # width/diameter of the detector [cm].
+            zdet = cfg[12] / np.sqrt(12)  # height/diameter of the detector [cm].
 
-    setup.mono.depth = xmon
-    setup.mono.width = ymon
-    setup.mono.height = zmon
-    setup.mono.rv = romv
-    setup.mono.rh = romh
+        xmon = cfg[13]  # thickness of monochromator [cm].
+        ymon = cfg[14]  # width of monochromator [cm].
+        zmon = cfg[15]  # height of monochromator [cm].
 
-    setup.ana.depth = xana
-    setup.ana.width = yana
-    setup.ana.height = zana
-    setup.ana.rv = roav
-    setup.ana.rh = roah
+        xana = cfg[16]  # thickness of analyser [cm].
+        yana = cfg[17]  # width of analyser [cm].
+        zana = cfg[18]  # height of analyser [cm].
 
-    setup.monitor.width = monitorw
-    setup.monitor.height = monitorh
+        L0 = cfg[19]  # distance between source and monochromator [cm].
+        L1 = cfg[20]  # distance between monochromator and sample [cm].
+        L2 = cfg[21]  # distance between sample and analyser [cm].
+        L3 = cfg[22]  # distance between analyser and detector [cm].
+
+        romh = par['sm'] * cfg[23]  # horizontal curvature of monochromator 1/radius [cm-1].
+        romv = par['sm'] * cfg[24]  # vertical curvature of monochromator [cm-1].
+        roah = par['sa'] * cfg[25]  # horizontal curvature of analyser [cm-1].
+        roav = par['sa'] * cfg[26]  # vertical curvature of analyser [cm-1].
+        inv_rads = [romh, romv, roah, roav]
+        for n, inv_rad in enumerate(inv_rads):
+            if inv_rad == 0:
+                inv_rads[n] = 1.e6
+            else:
+                inv_rads[n] = 1. / inv_rad
+        [romh, romv, roah, roav] = inv_rads
+
+        L1mon = cfg[27]  # distance monochromator monitor [cm]
+        monitorw = cfg[28] / np.sqrt(12)  # monitor width [cm]
+        monitorh = cfg[29] / np.sqrt(12)  # monitor height [cm]
+
+        # -------------------------------------------------------------------------
+
+        energy = Energy(wavevector=par['k'])
+
+        sample = Sample(par['as'], par['bs'], par['cs'],
+                        par['aa'], par['bb'], par['cc'],
+                        par['etas'])
+        sample.u = [par['ax'], par['ay'], par['az']]
+        sample.v = [par['bx'], par['by'], par['bz']]
+        sample.shape = np.diag([xsam, ysam, zsam])
+
+        setup = Instrument(energy.energy, sample, hcol, vcol,
+                           2 * np.pi / par['dm'], par['etam'],
+                           2 * np.pi / par['da'], par['etaa'])
+
+        setup.method = 1
+        setup.dir1 = dir1
+        setup.dir2 = dir2
+        setup.mondir = par['sm']
+        setup.infin = infin
+        setup.arms = [L0, L1, L2, L3, L1mon]
+        setup.guide.width = ysrc
+        setup.guide.height = zsrc
+
+        setup.detector.width = ydet
+        setup.detector.height = zdet
+
+        setup.mono.depth = xmon
+        setup.mono.width = ymon
+        setup.mono.height = zmon
+        setup.mono.rv = romv
+        setup.mono.rh = romh
+
+        setup.ana.depth = xana
+        setup.ana.width = yana
+        setup.ana.height = zana
+        setup.ana.rv = roav
+        setup.ana.rh = roah
+
+        setup.monitor.width = monitorw
+        setup.monitor.height = monitorh
 
     return setup
 
 
-def save_instrument(instrument, filename):
-    r'''Saves an instrument configuration into par and cfg files for loading
+def save_instrument(obj, filename, filetype='ascii', overwrite=False):
+    r"""Saves an instrument configuration into par and cfg files for loading
     with `load_instrument`
 
-    '''
-    pass
+    Parameters
+    ----------
+    obj : object
+        Instrument object
+
+    filename : str
+        Path to file (extension determined by filetype parameter).
+
+    filetype : str, optional
+        Default: `'ascii'`. Support for `'ascii'` or `'hdf5'`.
+
+    overwrite : bool, optional
+        Default: False. If True, overwrites the file, otherwise appends or
+        creates new files.
+
+    """
+    if filetype == 'ascii':
+        pass
+
+    elif filetype == 'hdf5':
+        import h5py
+
+        if overwrite:
+            mode = 'w'
+        else:
+            mode = 'a'
+
+        with h5py.File(filename + '.hdf5', mode) as f:
+            instrument = f.create_group('instrument')
+            instr_attrs = ['efixed', 'arms', 'hcol', 'vcol', 'method', 'moncor', 'infin']
+
+            mono = instrument.create_group('mono')
+            mono_attrs = ['tau', 'height', 'width', 'depth', 'direct', 'mosaic', 'vmosaic']
+
+            ana = instrument.create_group('ana')
+            ana_attrs = ['tau', 'height', 'width', 'depth', 'direct', 'mosaic', 'vmosaic', 'horifoc', 'thickness', 'Q']
+
+            detector = instrument.create_group('detector')
+            det_attrs = ['height', 'width', 'depth']
+
+            guide = instrument.create_group('guide')
+            guide_attrs = ['height', 'width']
+
+            sample = instrument.create_group('sample')
+            sample_attrs = ['a', 'b', 'c', 'alpha', 'beta', 'gamma', 'u', 'v', 'mosaic', 'vmosaic', 'height', 'width',
+                            'depth']
+
+            Smooth = instrument.create_group('Smooth')
+            Smooth_attrs = ['X', 'Y', 'Z', 'E']
+
+            for grp, grp_name, attrs in zip([instrument, mono, ana, detector, guide, sample, Smooth],
+                                            ['', 'mono', 'ana', 'detector', 'guide', 'sample', 'Smooth'],
+                                            [instr_attrs, mono_attrs, ana_attrs, det_attrs, guide_attrs, sample_attrs,
+                                             Smooth_attrs]):
+                for attr in attrs:
+                    try:
+                        if len(grp_name) == 0:
+                            value = getattr(obj, attr)
+                            if isinstance(value, str):
+                                value = value.encode('utf8')
+                            grp.attrs.create(attr, value)
+                        else:
+                            value = getattr(getattr(obj, grp_name), attr)
+                            if isinstance(value, str):
+                                value = value.encode('utf8')
+                            grp.attrs.create(attr, value)
+                    except AttributeError:
+                        pass
+
+                if len(list(grp.attrs.keys())) == 0:
+                    del instrument[grp_name]
