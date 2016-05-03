@@ -352,8 +352,44 @@ def save_instrument(obj, filename, filetype='ascii', overwrite=False):
         creates new files.
 
     """
+    instr_attrs = ['efixed', 'arms', 'hcol', 'vcol', 'method', 'moncor', 'infin']
+    mono_attrs = ['tau', 'height', 'width', 'depth', 'direct', 'mosaic', 'vmosaic']
+    ana_attrs = ['tau', 'height', 'width', 'depth', 'direct', 'mosaic', 'vmosaic', 'horifoc', 'thickness', 'Q']
+    det_attrs = ['height', 'width', 'depth']
+    guide_attrs = ['height', 'width']
+    sample_attrs = ['a', 'b', 'c', 'alpha', 'beta', 'gamma', 'u', 'v', 'mosaic', 'vmosaic', 'height', 'width', 'depth',
+                    'direct']
+    Smooth_attrs = ['X', 'Y', 'Z', 'E']
+
     if filetype == 'ascii':
-        pass
+        if overwrite:
+            mode = 'w+'
+        else:
+            mode = 'r+'
+
+        lines = []
+        for grp_name, attrs in zip(['', 'mono', 'ana', 'detector', 'guide', 'sample', 'Smooth'],
+                                   [instr_attrs, mono_attrs, ana_attrs, det_attrs, guide_attrs, sample_attrs,
+                                    Smooth_attrs]):
+            for attr in attrs:
+                value = ''
+                if len(grp_name) == 0:
+                    try:
+                        value = getattr(obj, attr)
+                        value = 'instrument.' + str(attr) + ' = ' + str(value) + '\n'
+                    except AttributeError:
+                        pass
+                else:
+                    try:
+                        value = getattr(getattr(obj, grp_name), attr)
+                        value = 'instrument.' + grp_name + '.' + str(attr) + ' = ' + str(value) + '\n'
+                    except AttributeError:
+                        pass
+                if value:
+                    lines.append(value)
+
+        with open(filename + '.instr', mode) as f:
+            f.writelines(lines)
 
     elif filetype == 'hdf5':
         import h5py
@@ -365,26 +401,12 @@ def save_instrument(obj, filename, filetype='ascii', overwrite=False):
 
         with h5py.File(filename + '.hdf5', mode) as f:
             instrument = f.create_group('instrument')
-            instr_attrs = ['efixed', 'arms', 'hcol', 'vcol', 'method', 'moncor', 'infin']
-
             mono = instrument.create_group('mono')
-            mono_attrs = ['tau', 'height', 'width', 'depth', 'direct', 'mosaic', 'vmosaic']
-
             ana = instrument.create_group('ana')
-            ana_attrs = ['tau', 'height', 'width', 'depth', 'direct', 'mosaic', 'vmosaic', 'horifoc', 'thickness', 'Q']
-
             detector = instrument.create_group('detector')
-            det_attrs = ['height', 'width', 'depth']
-
             guide = instrument.create_group('guide')
-            guide_attrs = ['height', 'width']
-
             sample = instrument.create_group('sample')
-            sample_attrs = ['a', 'b', 'c', 'alpha', 'beta', 'gamma', 'u', 'v', 'mosaic', 'vmosaic', 'height', 'width',
-                            'depth', 'direct']
-
             Smooth = instrument.create_group('Smooth')
-            Smooth_attrs = ['X', 'Y', 'Z', 'E']
 
             for grp, grp_name, attrs in zip([instrument, mono, ana, detector, guide, sample, Smooth],
                                             ['', 'mono', 'ana', 'detector', 'guide', 'sample', 'Smooth'],

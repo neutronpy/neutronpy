@@ -110,7 +110,7 @@ def save_data(obj, filename, filetype='ascii', save_instr=False, overwrite=False
         np.savetxt(filename + '.dat', output, header=header, **kwargs)
 
         if save_instr:
-            save_instrument(obj.instrument, filename, filetype='ascii', overwrite=False)
+            save_instrument(obj.instrument, filename, filetype='ascii', overwrite=overwrite)
 
     elif filetype == 'hdf5':
         import h5py
