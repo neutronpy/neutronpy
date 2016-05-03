@@ -3,10 +3,11 @@ import copy
 import numbers
 import numpy as np
 from .loaders import DcsMslice, Grasp, Icp, Ice, Mad, Spice
+from .instrument import save_instrument
 
 
 def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument=False):
-    r'''Loads one or more files and creates a :class:`Data` object with the
+    r"""Loads one or more files and creates a :class:`Data` object with the
     loaded data.
 
     Parameters
@@ -33,7 +34,7 @@ def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument
         A :class:`Data` object populated with the data from the input file or
         files.
 
-    '''
+    """
     load_filetype = {'dcs_mslice': DcsMslice,
                      'grasp': Grasp,
                      'ice': Ice,
@@ -69,8 +70,8 @@ def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument
     return _data_object
 
 
-def save_data(obj, filename, fileformat='ascii', **kwargs):
-    '''Saves a given object to a file in a specified format.
+def save_data(obj, filename, filetype='ascii', save_instr=False, overwrite=False, **kwargs):
+    """Saves a given object to a file in a specified format.
 
     Parameters
     ----------
@@ -80,48 +81,98 @@ def save_data(obj, filename, fileformat='ascii', **kwargs):
     filename : str
         Path to file where data will be saved
 
-    fileformat : str
-        Default: `'ascii'`. Data can either be saved in `'ascii'`,
-        human-readable format, binary `'hdf5'` format, or binary
-        `'pickle'` format.
-    '''
-    output = np.hstack((obj.Q, obj.detector.reshape(obj.detector.shape[0], 1),
-                        obj.monitor.reshape(obj.monitor.shape[0], 1),
-                        obj.time.reshape(obj.time.shape[0], 1)))
+    filetype : str, optional
+        Default: `'ascii'`. Data can either be saved in human-readable
+        `'ascii'` format, binary `'hdf5'` format, or binary `'pickle'`
+        format (not recommended).
 
-    if fileformat == 'ascii':
-        np.savetxt(filename, output, **kwargs)
-    elif fileformat == 'hdf5':
+    save_instr : bool, optional
+        Default: False.
+
+    overwrite : bool, optional
+        Default: False.
+
+    """
+    if filetype == 'ascii':
+        if overwrite:
+            mode = 'w+'
+        else:
+            mode = 'r+'
+
+        output = np.vstack((value for value in obj.data.values())).T
+
+        if hasattr(obj, 'file_header'):
+            header = '\n'.join(obj.file_header)
+        else:
+            header = ''
+        header += '\n' + '\t'.join(obj.data_columns)
+
+        np.savetxt(filename + '.dat', output, header=header, **kwargs)
+
+        if save_instr:
+            save_instrument(obj.instrument, filename, filetype='ascii', overwrite=False)
+
+    elif filetype == 'hdf5':
         import h5py
-        with h5py.File(filename, 'w') as f:
-            dset = f.create_dataset('data', output.shape,
-                                    maxshape=(None, output.shape[1]),
-                                    dtype='float64')
-            dset = output
-    elif fileformat == 'pickle':
+
+        if overwrite:
+            mode = 'w'
+        else:
+            mode = 'a'
+
+        with h5py.File(filename + '.hdf5', mode) as f:
+            data = f.create_group('data')
+
+            try:
+                data.attrs.create('file_header', obj.file_header.encode('utf8'))
+            except AttributeError:
+                pass
+
+            data_keys = data.create_group('data_keys')
+            for key, value in obj.data_keys.items():
+                data_keys.attrs.create(key, value.encode('utf8'))
+
+            if hasattr(obj, 'Q_keys'):
+                Q_keys = data.create_group('Q_keys')
+                for key, value in obj.Q_keys.items():
+                    Q_keys.attrs.create(key, value.encode('utf8'))
+
+            for key, value in obj.data.items():
+                data.create_dataset(key, data=value)
+
+        if save_instr:
+            try:
+                save_instrument(obj.instrument, filename, filetype='hdf5', overwrite=False)
+            except AttributeError:
+                pass
+
+    elif filetype == 'pickle':
         import pickle
         with open(filename, 'wb') as f:
-            pickle.dump(output, f)
+            pickle.dump(obj, f)
     else:
         raise ValueError("""Format not supported. Please use 'ascii', 'hdf5', or 'pickle'""")
 
 
 def detect_filetype(filename):
-    u'''Simple method for quickly determining filetype of a given input file.
+    r"""Simple method for quickly determining filetype of a given input file.
 
     Parameters
     ----------
-    file : str
+    filename : str
         File path
 
     Returns
     -------
     filetype : str
         The filetype of the given input file
-    '''
+
+    """
     if filename[-3:] == 'nxs':
         return 'grasp'
-    elif filename[-4:].lower() == 'iexy' or filename[-3:].lower() == 'spe' or filename[-3:].lower() == 'xye' or filename[-4:] == 'xyie':
+    elif filename[-4:].lower() == 'iexy' or filename[-3:].lower() == 'spe' or filename[
+                                                                              -3:].lower() == 'xye' or filename[
+                                                                                                       -4:] == 'xyie':
         return 'dcs_mslice'
     else:
         with open(filename) as f:
