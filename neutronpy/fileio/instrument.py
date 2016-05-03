@@ -381,7 +381,7 @@ def save_instrument(obj, filename, filetype='ascii', overwrite=False):
 
             sample = instrument.create_group('sample')
             sample_attrs = ['a', 'b', 'c', 'alpha', 'beta', 'gamma', 'u', 'v', 'mosaic', 'vmosaic', 'height', 'width',
-                            'depth']
+                            'depth', 'direct']
 
             Smooth = instrument.create_group('Smooth')
             Smooth_attrs = ['X', 'Y', 'Z', 'E']
