@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-r'''Testing of the resolution library
+r"""Testing of the resolution library
 
-'''
+"""
 import os
 from copy import deepcopy
 import unittest
@@ -15,16 +15,16 @@ from neutronpy.fileio import load_instrument
 
 
 def angle2(x, y, z, h, k, l, lattice):
-    r'''Function necessary for Prefactor functions
-    '''
+    r"""Function necessary for Prefactor functions
+    """
     latticestar = instrument.tools._star(lattice)[-1]
 
     return np.arccos(2 * np.pi * (h * x + k * y + l * z) / instrument.tools._modvec([x, y, z], lattice) / instrument.tools._modvec([h, k, l], latticestar))
 
 
 def SqwDemo(H, K, L, W, p):
-    r'''Example Scattering function for convolution tests
-    '''
+    r"""Example Scattering function for convolution tests
+    """
     del K, L
     Deltax = p[0]
     Deltay = p[1]
@@ -50,8 +50,8 @@ def SqwDemo(H, K, L, W, p):
 
 
 def SMADemo(H, K, L, p):
-    r'''Example Scattering function for convolution tests
-    '''
+    r"""Example Scattering function for convolution tests
+    """
     del K, L
     Deltax = p[0]
     Deltay = p[1]
@@ -74,8 +74,8 @@ def SMADemo(H, K, L, p):
 
 
 def PrefDemo(H, K, L, W, EXP, p):
-    r'''Prefactor example for convolution tests
-    '''
+    r"""Prefactor example for convolution tests
+    """
     [sample, rsample] = EXP.get_lattice()
 
     q2 = instrument.tools._modvec([H, K, L], rsample) ** 2
@@ -102,11 +102,11 @@ def PrefDemo(H, K, L, W, EXP, p):
 
 
 def PrefDemo2(H, K, L, W, EXP, p):
-    r'''Prefactor example for convolution tests
+    r"""Prefactor example for convolution tests
 
     No background
 
-    '''
+    """
     [sample, rsample] = EXP.get_lattice()
 
     q2 = instrument.tools._modvec([H, K, L], rsample) ** 2
@@ -131,21 +131,21 @@ def PrefDemo2(H, K, L, W, EXP, p):
 
 
 def PrefDemo3(H, K, L, W, EXP, p):
-    r'''Prefactor example for convolution tests
+    r"""Prefactor example for convolution tests
 
     No prefactor
 
-    '''
+    """
 
     return
 
 
 class ResolutionTest(unittest.TestCase):
-    r'''Unit tests for Resolution calculations
-    '''
+    r"""Unit tests for Resolution calculations
+    """
     def __init__(self, *args, **kwargs):
-        r'''Setup basic instrument
-        '''
+        r"""Setup basic instrument
+        """
         super(ResolutionTest, self).__init__(*args, **kwargs)
 
         self.sumIavg = 1654.37911333
@@ -175,8 +175,8 @@ class ResolutionTest(unittest.TestCase):
         self.EXP_popovici = deepcopy(instr)
 
     def test_cooper_nathans(self):
-        '''Test Cooper Nathans method
-        '''
+        """Test Cooper Nathans method
+        """
         R0 = 2117.45739160280
         RMS = np.array([[9154.39386475516, 7.32203491574463e-11, 0, 7.11894676107400e-12],
                         [2.68712790277282e-10, 340628.383580632, 0, -32536.7077302429],
@@ -204,8 +204,8 @@ class ResolutionTest(unittest.TestCase):
         self.assertTrue(np.all(np.abs((angles0 - angles)) < 0.1))
 
     def test_popovici(self):
-        '''Test Popovici method
-        '''
+        """Test Popovici method
+        """
         R0 = 2117.46377630698
         RMS = np.array([[9154.44276618996, 4.78869185251432e-08, 0, 4.57431754676102e-09],
                         [8.53192164855333e-08, 340633.245599205, 0, -32537.1653207760],
@@ -234,8 +234,8 @@ class ResolutionTest(unittest.TestCase):
         self.assertTrue(np.all(np.abs((angles0 - angles)) < 1e-3))
 
     def test_4d_conv(self):
-        '''Test 4d convolution
-        '''
+        """Test 4d convolution
+        """
         sample = Sample(6, 7, 8, 90, 90, 90)
         sample.u = [1, 0, 0]
         sample.v = [0, 0, 1]
@@ -259,8 +259,8 @@ class ResolutionTest(unittest.TestCase):
         self.assertRaises(ValueError, EXP.resolution_convolution, SqwDemo, PrefDemo3, 0, (H1, K1, L1, W1), 'fix', [5, 0], p)
 
     def test_sma_conv(self):
-        '''Test SMA convolution
-        '''
+        """Test SMA convolution
+        """
         sample = Sample(6, 7, 8, 90, 90, 90)
         sample.u = [1, 0, 0]
         sample.v = [0, 0, 1]
@@ -283,8 +283,8 @@ class ResolutionTest(unittest.TestCase):
 
     @patch("matplotlib.pyplot.show")
     def test_plotting(self, mock_show):
-        '''Test Plotting methods
-        '''
+        """Test Plotting methods
+        """
         EXP = instrument.Instrument()
         EXP.plot_instrument([1, 0, 0, 0])
         EXP.plot_projections([1, 0, 0, 0])
@@ -305,62 +305,51 @@ class ResolutionTest(unittest.TestCase):
         EXP.arms = [10, 10, 10, 10]
         EXP.plot_instrument([1, 0, 0, 0])
 
-    def test_load_par_cfg(self):
-        '''Test instrument loading using par/cfg files
-        '''
-        parfile = os.path.join(os.path.dirname(__file__), 'test.par')
-        cfgfile = os.path.join(os.path.dirname(__file__), 'test.cfg')
-        load_instrument(parfile, cfgfile)
-
-        parfile = os.path.join(os.path.dirname(__file__), 'test2.par')
-        cfgfile = os.path.join(os.path.dirname(__file__), 'test2.cfg')
-        load_instrument(parfile, cfgfile)
-
     def test_sample(self):
-        '''Test Sample class
-        '''
+        """Test Sample class
+        """
         sample = Sample(1, 1, 1, 90, 90, 90, mosaic=60, direct=-1, u=[1, 0, 0], v=[0, 1, 0])
         self.assertTrue(isinstance(sample.u, np.ndarray))
         self.assertTrue(isinstance(sample.v, np.ndarray))
 
     def test_GetTau(self):
-        '''Test monochromator crystal tau value finder
-        '''
+        """Test monochromator crystal tau value finder
+        """
         self.assertTrue(instrument.tools.GetTau(1.87325, getlabel=True) == 'pg(002)')
         self.assertTrue(instrument.tools.GetTau(1.8, getlabel=True) == '')
         self.assertTrue(instrument.tools.GetTau(10) == 10)
         self.assertRaises(KeyError, instrument.tools.GetTau, 'blah')
 
     def test_CleanArgs_err(self):
-        '''Test exception capture in CleanArgs
-        '''
+        """Test exception capture in CleanArgs
+        """
         pass
 
     def test_fproject(self):
-        '''Test projection function
-        '''
+        """Test projection function
+        """
         x = np.ones((4, 4, 1))
         instrument.tools.fproject(x, 0)
         instrument.tools.fproject(x, 1)
         instrument.tools.fproject(x, 2)
 
     def test_constants(self):
-        '''Test constants
-        '''
+        """Test constants
+        """
         self.EXP_popovici.moncor = 0
         self.assertTrue(self.EXP_popovici.moncor == 0)
 
     def test_errors(self):
-        '''Test exception handling
-        '''
+        """Test exception handling
+        """
         EXP = instrument.Instrument()
         EXP.sample.u = [1, 0, 0]
         EXP.sample.v = [2, 0, 0]
         self.assertRaises(ValueError, EXP.calc_resolution, [1, 1, 0, 0])
 
     def test_calc_res_cases(self):
-        '''Test different resolution cases
-        '''
+        """Test different resolution cases
+        """
         EXP = instrument.Instrument()
         EXP.sample.shape = np.eye(3)
         EXP.calc_resolution([1, 0, 0, 0])
@@ -389,8 +378,8 @@ class ResolutionTest(unittest.TestCase):
         EXP.calc_resolution([1, 0, 0, 0])
 
     def test_projection_calc(self):
-        '''Test different cases of resolution ellipse slices/projections
-        '''
+        """Test different cases of resolution ellipse slices/projections
+        """
         EXP = instrument.Instrument()
         EXP.calc_resolution([1, 0, 0, 0])
         EXP.calc_projections([0, 1, 0, 0])

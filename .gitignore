@@ -34,4 +34,4 @@ venv*/*
 ###############
 main.py
 plot_test.pdf
-test.out
+test.out*

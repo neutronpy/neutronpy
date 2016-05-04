@@ -5,7 +5,7 @@ from ..instrument import Instrument
 from ..crystal import Sample
 
 
-def load_instrument(filename, filetype='ascii'):
+def load_instrument(*args, filetype='ascii'):
     r"""Creates Instrument class using input par and cfg files.
 
     Parameters
@@ -185,8 +185,8 @@ def load_instrument(filename, filetype='ascii'):
     +-------+-------------------------------------------------------+
 
     """
-    if filetype == 'ascii':
-        parfile, cfgfile = filename
+    if filetype == 'parcfg':
+        parfile, cfgfile = args
         with open(parfile, "r") as f:
             lines = f.readlines()
             par = {}
@@ -329,7 +329,19 @@ def load_instrument(filename, filetype='ascii'):
         setup.monitor.width = monitorw
         setup.monitor.height = monitorh
 
-    return setup
+        return setup
+
+    elif filetype == 'ascii':
+        pass
+
+    elif filetype == 'hdf5':
+        pass
+
+    elif filetype == 'taz':
+        pass
+
+    else:
+        raise ValueError("Format not supported. Please use 'ascii', 'hdf5', or 'taz'")
 
 
 def save_instrument(obj, filename, filetype='ascii', overwrite=False):
@@ -345,7 +357,7 @@ def save_instrument(obj, filename, filetype='ascii', overwrite=False):
         Path to file (extension determined by filetype parameter).
 
     filetype : str, optional
-        Default: `'ascii'`. Support for `'ascii'` or `'hdf5'`.
+        Default: `'ascii'`. Support for `'ascii'`, `'hdf5'`, or `'taz'`.
 
     overwrite : bool, optional
         Default: False. If True, overwrites the file, otherwise appends or
@@ -501,3 +513,6 @@ def save_instrument(obj, filename, filetype='ascii', overwrite=False):
 
         with open(filename + '.taz', mode) as f:
             f.write(taz_pretty)
+
+    else:
+        raise ValueError("""Format not supported. Please use 'ascii', 'hdf5', or 'taz'""")
