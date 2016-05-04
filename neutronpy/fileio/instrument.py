@@ -353,8 +353,9 @@ def save_instrument(obj, filename, filetype='ascii', overwrite=False):
 
     """
     instr_attrs = ['efixed', 'arms', 'hcol', 'vcol', 'method', 'moncor', 'infin']
-    mono_attrs = ['tau', 'height', 'width', 'depth', 'direct', 'mosaic', 'vmosaic']
-    ana_attrs = ['tau', 'height', 'width', 'depth', 'direct', 'mosaic', 'vmosaic', 'horifoc', 'thickness', 'Q']
+    mono_attrs = ['tau', 'height', 'width', 'depth', 'direct', 'mosaic', 'vmosaic', 'rh', 'rv']
+    ana_attrs = ['tau', 'height', 'width', 'depth', 'direct', 'mosaic', 'vmosaic', 'rh', 'rv', 'horifoc', 'thickness',
+                 'Q']
     det_attrs = ['height', 'width', 'depth']
     guide_attrs = ['height', 'width']
     sample_attrs = ['a', 'b', 'c', 'alpha', 'beta', 'gamma', 'u', 'v', 'mosaic', 'vmosaic', 'height', 'width', 'depth',
@@ -429,3 +430,74 @@ def save_instrument(obj, filename, filetype='ascii', overwrite=False):
 
                 if len(list(grp.attrs.keys())) == 0:
                     del instrument[grp_name]
+
+    elif filetype == 'taz':
+        import xml.etree.ElementTree as et
+        from xml.dom import minidom
+
+        def prettify(elem):
+            """Return a pretty-printed XML string for the Element.
+            """
+            rough_string = et.tostring(elem, encoding='utf-8')
+            reparsed = minidom.parseString(rough_string)
+            return reparsed.toprettyxml(indent="  ")
+
+        if overwrite:
+            mode = 'w+'
+        else:
+            mode = 'r+'
+
+        taz = et.Element('taz')
+        reso = et.SubElement(taz, 'reso')
+
+        subelements = ['algo', 'use_guide', 'mono_scatter_sense', 'sample_scatter_sense', 'ana_scatter_sense', 'mono_d',
+                       'mono_mosaic', 'mono_refl', 'sample_mosaic', 'ana_d', 'ana_mosaic', 'ana_effic',
+                       'h_coll_after_sample', 'h_coll_ana', 'h_coll_before_sample', 'h_coll_mono',
+                       'v_coll_after_sample', 'v_coll_ana', 'v_coll_before_sample', 'v_coll_mono', 'pop_src_h',
+                       'pop_src_w', 'pop_src_rect', 'pop_mono_curvh', 'pop_mono_curvv', 'pop_mono_h', 'pop_mono_thick',
+                       'pop_mono_use_curvh', 'pop_mono_use_curvv', 'pop_mono_w', 'pop_sample_wperpq',
+                       'pop_sample_cuboid', 'pop_sample_h', 'pop_sample_wq', 'pop_ana_curvh', 'pop_ana_curvv',
+                       'pop_ana_h', 'pop_ana_thick', 'pop_ana_use_curvh', 'pop_ana_use_curvv', 'pop_ana_w', 'pop_det_w',
+                       'pop_det_h', 'pop_det_rect', 'pop_dist_src_mono', 'pop_dist_mono_sample', 'pop_dist_sample_ana',
+                       'pop_dist_ana_det', 'pop_guide_divh', 'pop_guide_divv']
+
+        attrs = ['method', '', 'mono.direct', 'sample.direct', 'ana.direct', 'mono.d', 'mono.mosaic', '',
+                 'sample.mosaic', 'ana.d', 'ana.mosaic', '', 'hcol[-2]', 'hcol[-1]', 'hcol[-3]', 'hcol[-4]', 'vcol[-2]',
+                 'vcol[-1]', 'vcol[-3]', 'vcol[-4]', 'guide.height', 'guide.width', '', 'mono.rh', 'mono.rv',
+                 'mono.height', 'mono.depth', '', '', 'mono.width', '', 'sample.depth', 'sample.height', 'sample.width',
+                 'ana.rh', 'ana.rv', 'ana.height', 'ana.depth', '', '', 'ana.width', 'detector.width',
+                 'detector.height', '', 'arms[-5]', 'arms[-4]', 'arms[-3]', 'arms[-2]', 'arms[-1]', '', '']
+
+        defaults = [1, 0, 0, 1, 0, 3.355, 45, 1, 5, 3.355, 45, 1, 30, 1e4, 30, 1e4, 1e4, 1e4, 1e4, 1e4, 12, 6, 1,
+                    0, 200, 8, .15, 0, 1, 12, 1.5, 0, 3, 1.5, 0, 0, 8, 0.3, 0, 0, 12, 2.5, 5, 1, 10, 200, 115, 85, 15,
+                    15]
+
+        for ele, attr, dflt in zip(subelements, attrs, defaults):
+            subel = et.SubElement(reso, ele)
+            value = str(dflt)
+            if '.' not in attr:
+                if '[' not in attr:
+                    try:
+                        value = str(getattr(obj, attr))
+                    except AttributeError:
+                        pass
+                else:
+                    ind = int(attr[-3:-1])
+                    attr = attr[:-4]
+                    try:
+                        value = str(getattr(obj, attr)[ind])
+                    except AttributeError:
+                        pass
+            else:
+                prnt, chld = attr.split('.')
+                try:
+                    value = str(getattr(getattr(obj, prnt), chld))
+                except AttributeError:
+                    pass
+
+            subel.text = value
+
+        taz_pretty = prettify(taz)
+
+        with open(filename + '.taz', mode) as f:
+            f.write(taz_pretty)
