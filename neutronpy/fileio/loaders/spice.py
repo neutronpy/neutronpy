@@ -35,7 +35,7 @@ class Spice(Data):
         file_header = []
         with open(filename) as f:
             for line in f:
-                if '#' in line:
+                if '#' in line and 'col_headers' not in line:
                     file_header.append(line.replace('\n', '').replace('# ', ''))
                 if 'col_headers' in line:
                     args = next(f).split()

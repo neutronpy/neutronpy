@@ -2,7 +2,7 @@
 import copy
 import numbers
 import numpy as np
-from .loaders import DcsMslice, Grasp, Icp, Ice, Mad, Spice
+from .loaders import DcsMslice, Grasp, Icp, Ice, Mad, Spice, Neutronpy
 from .instrument import save_instrument
 
 
@@ -17,8 +17,10 @@ def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument
 
     filetype : str, optional
         Default: `'auto'`. Specify file type; Currently supported file types
-        are SPICE, ICE, and ICP. By default, the function will attempt to
-        determine the filetype automatically.
+        are SPICE (HFIR), ICE and ICP (NIST), MAD (ILL), DAVE exported ascii
+        formats, GRASP exported ascii and HDF5 formats, and neutronpy exported
+        formats. By default the function will attempt to determine the
+        filetype automatically.
 
     tols : float or array_like
         Default: `1e-4`. A float or array of shape `(5,)` giving tolerances
@@ -40,6 +42,7 @@ def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument
                      'ice': Ice,
                      'icp': Icp,
                      'mad': Mad,
+                     'neutronpy': Neutronpy,
                      'spice': Spice}
 
     if isinstance(files, str):
@@ -94,18 +97,37 @@ def save_data(obj, filename, filetype='ascii', save_instr=False, overwrite=False
 
     """
     if filetype == 'ascii':
+        from datetime import datetime
+
         if overwrite:
             mode = 'w+'
         else:
             mode = 'r+'
 
-        output = np.vstack((value for value in obj.data.values())).T
+        header = '### NeutronPy ::: {0} ###\n\n'.format(datetime.now().isoformat())
+        header += 'data_keys = {0}\n'.format(str(obj.data_keys))
+        if hasattr(obj, 'Q_keys'):
+            header += 'Q_keys = {0}\n'.format(str(obj.Q_keys))
+
+        header += '\n\noriginal_header = \n\t'
 
         if hasattr(obj, 'file_header'):
-            header = '\n'.join(obj.file_header)
+            old_header = '\n\t'.join(obj.file_header)
         else:
-            header = ''
-        header += '\n' + '\t'.join(obj.data_columns)
+            old_header = ''
+
+        old_header += '\n\n'
+
+        data_columns = obj.data_columns
+        data = obj.data
+        if hasattr(obj, '_err'):
+            data_columns.append('error')
+            data['error'] = obj._err
+
+        col_header = '\nnpy_col_headers =\n' + '\t'.join(data_columns)
+        header += old_header + col_header
+
+        output = np.vstack((value for value in data.values())).T
 
         np.savetxt(filename + '.dat', output, header=header, **kwargs)
 
@@ -140,6 +162,9 @@ def save_data(obj, filename, filetype='ascii', save_instr=False, overwrite=False
             for key, value in obj.data.items():
                 data.create_dataset(key, data=value)
 
+            if hasattr(obj, '_err'):
+                data.create_dataset('error', data=obj._err)
+
         if save_instr:
             try:
                 save_instrument(obj.instrument, filename, filetype='hdf5', overwrite=False)
@@ -170,10 +195,11 @@ def detect_filetype(filename):
     """
     if filename[-3:] == 'nxs':
         return 'grasp'
-    elif filename[-4:].lower() == 'iexy' or filename[-3:].lower() == 'spe' or filename[
-                                                                              -3:].lower() == 'xye' or filename[
-                                                                                                       -4:] == 'xyie':
+    elif (filename[-4:].lower() == 'iexy') or (filename[-3:].lower() == 'spe') or (filename[-3:].lower() == 'xye') or (
+                filename[-4:] == 'xyie'):
         return 'dcs_mslice'
+    elif filename[-4:].lower() == 'hdf5':
+        return 'neutronpy'
     else:
         with open(filename) as f:
             first_line = f.readline()
@@ -188,5 +214,7 @@ def detect_filetype(filename):
                 return 'icp'
             elif 'RRR' in first_line or 'AAA' in first_line or 'VVV' in first_line:
                 return 'mad'
+            elif 'NeutronPy' in first_line:
+                return 'neutronpy'
             else:
                 raise ValueError('Unknown filetype.')
