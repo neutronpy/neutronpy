@@ -332,13 +332,145 @@ def load_instrument(*args, filetype='ascii'):
         return setup
 
     elif filetype == 'ascii':
-        pass
+        with open(args[0], 'r') as f:
+            lines = []
+            for line in f:
+                value = line.replace('\n', '').replace('instrument.', '').split('=')
+                left = value[0].split('.')
+                for n, el in enumerate(left):
+                    left[n] = el.strip()
+
+                right = value[1].strip()
+                lines.append([left, right])
+
+        setup = Instrument()
+
+        for line in lines:
+            attr = line[0]
+            value = line[1]
+            if '[' in value:
+                value = value.replace(']', '').replace('[', '').split(' ')
+                value = [float(item) for item in value]
+            else:
+                try:
+                    value = float(line[1])
+                except ValueError:
+                    pass
+
+            if len(attr) == 1:
+                setattr(setup, attr[0], value)
+            else:
+                subobj = getattr(setup, attr[0])
+                setattr(subobj, attr[1], value)
+                setattr(setup, attr[0], subobj)
+
+        return setup
 
     elif filetype == 'hdf5':
-        pass
+        import h5py
+
+        setup = Instrument()
+
+        with h5py.File(args[0], mode='r') as f:
+            instrument = f['instrument']
+            groups = list(instrument.keys())
+
+            for key, value in instrument.attrs.items():
+                setattr(setup, key, value)
+
+            for grp in groups:
+                subobj = getattr(setup, grp)
+                for key, value in instrument[grp].attrs.items():
+                    if isinstance(value, np.bytes_):
+                        value = value.decode('UTF-8')
+                    setattr(subobj, key, value)
+                setattr(setup, grp, subobj)
+
+        return setup
 
     elif filetype == 'taz':
-        pass
+        import xml.etree.ElementTree as et
+
+        tree = et.ElementTree(file=args[0])
+        taz = tree.getroot()
+        reso = taz.find('reso')
+
+        setup = Instrument()
+
+        keys = {'algo': 'method',
+                'ana_d': 'ana.d',
+                'ana_effic': '',
+                'ana_mosaic': 'ana.mosaic',
+                'ana_scatter_sense': 'ana.direct',
+                'h_coll_after_sample': 'hcol[-2]',
+                'h_coll_ana': 'hcol[-1]',
+                'h_coll_before_sample': 'hcol[-3]',
+                'h_coll_mono': 'hcol[-4]',
+                'mono_d': 'mono.d',
+                'mono_mosaic': 'mono.mosaic',
+                'mono_refl': '',
+                'mono_scatter_sense': 'mono.direct',
+                'pop_ana_curvh': 'ana.rh',
+                'pop_ana_curvv': 'ana.rv',
+                'pop_ana_h': 'ana.height',
+                'pop_ana_thick': 'ana.depth',
+                'pop_ana_use_curvh': '',
+                'pop_ana_use_curvv': '',
+                'pop_ana_w': 'ana.width',
+                'pop_det_h': 'detector.height',
+                'pop_det_rect': '',
+                'pop_det_w': 'detector.width',
+                'pop_dist_ana_det': 'arms[-2]',
+                'pop_dist_mono_sample': 'arms[-4]',
+                'pop_dist_sample_ana': 'arms[-3]',
+                'pop_dist_src_mono': 'arms[-5]',
+                'pop_guide_divh': 'arms[-1]',
+                'pop_guide_divv': '',
+                'pop_mono_curvh': 'mono.rh',
+                'pop_mono_curvv': 'mono.rv',
+                'pop_mono_h': 'mono.height',
+                'pop_mono_thick': 'mono.depth',
+                'pop_mono_use_curvh': '',
+                'pop_mono_use_curvv': '',
+                'pop_mono_w': 'mono.width',
+                'pop_sample_cuboid': 'sample.depth',
+                'pop_sample_h': 'sample.height',
+                'pop_sample_wperpq': '',
+                'pop_sample_wq': 'sample.width',
+                'pop_src_h': 'guide.height',
+                'pop_src_rect': '',
+                'pop_src_w': 'guide.width',
+                'sample_mosaic': 'sample.mosaic',
+                'sample_scatter_sense': 'sample.direct',
+                'use_guide': '',
+                'v_coll_after_sample': 'vcol[-2]',
+                'v_coll_ana': 'vcol[-1]',
+                'v_coll_before_sample': 'vcol[-3]',
+                'v_coll_mono': 'vcol[-4]'}
+
+        values = dict()
+
+        for key, value in keys.items():
+            values[value] = reso.find(key).text
+
+        hcol = [float(values[key]) for key in ['hcol[-4]', 'hcol[-3]', 'hcol[-2]', 'hcol[-1]'] if len(values[key]) > 0]
+        vcol = [float(values[key]) for key in ['vcol[-4]', 'vcol[-3]', 'vcol[-2]', 'vcol[-1]'] if len(values[key]) > 0]
+        arms = [float(values[key]) for key in ['arms[-5]', 'arms[-4]', 'arms[-3]', 'arms[-2]', 'arms[-1]'] if
+                len(values[key]) > 0]
+
+        for key, value in zip(['hcol', 'vcol', 'arms'], [hcol, vcol, arms]):
+            setattr(setup, key, value)
+
+        for key, value in values.items():
+            if '[' not in key:
+                if '.' in key:
+                    subobj = getattr(setup, key.split('.')[0])
+                    setattr(subobj, key.split('.')[1], value)
+                    setattr(setup, key.split('.')[0], subobj)
+                else:
+                    setattr(setup, key, value)
+
+        return setup
 
     else:
         raise ValueError("Format not supported. Please use 'ascii', 'hdf5', or 'taz'")
@@ -462,29 +594,62 @@ def save_instrument(obj, filename, filetype='ascii', overwrite=False):
         taz = et.Element('taz')
         reso = et.SubElement(taz, 'reso')
 
-        subelements = ['algo', 'use_guide', 'mono_scatter_sense', 'sample_scatter_sense', 'ana_scatter_sense', 'mono_d',
-                       'mono_mosaic', 'mono_refl', 'sample_mosaic', 'ana_d', 'ana_mosaic', 'ana_effic',
-                       'h_coll_after_sample', 'h_coll_ana', 'h_coll_before_sample', 'h_coll_mono',
-                       'v_coll_after_sample', 'v_coll_ana', 'v_coll_before_sample', 'v_coll_mono', 'pop_src_h',
-                       'pop_src_w', 'pop_src_rect', 'pop_mono_curvh', 'pop_mono_curvv', 'pop_mono_h', 'pop_mono_thick',
-                       'pop_mono_use_curvh', 'pop_mono_use_curvv', 'pop_mono_w', 'pop_sample_wperpq',
-                       'pop_sample_cuboid', 'pop_sample_h', 'pop_sample_wq', 'pop_ana_curvh', 'pop_ana_curvv',
-                       'pop_ana_h', 'pop_ana_thick', 'pop_ana_use_curvh', 'pop_ana_use_curvv', 'pop_ana_w', 'pop_det_w',
-                       'pop_det_h', 'pop_det_rect', 'pop_dist_src_mono', 'pop_dist_mono_sample', 'pop_dist_sample_ana',
-                       'pop_dist_ana_det', 'pop_guide_divh', 'pop_guide_divv']
-
-        attrs = ['method', '', 'mono.direct', 'sample.direct', 'ana.direct', 'mono.d', 'mono.mosaic', '',
-                 'sample.mosaic', 'ana.d', 'ana.mosaic', '', 'hcol[-2]', 'hcol[-1]', 'hcol[-3]', 'hcol[-4]', 'vcol[-2]',
-                 'vcol[-1]', 'vcol[-3]', 'vcol[-4]', 'guide.height', 'guide.width', '', 'mono.rh', 'mono.rv',
-                 'mono.height', 'mono.depth', '', '', 'mono.width', '', 'sample.depth', 'sample.height', 'sample.width',
-                 'ana.rh', 'ana.rv', 'ana.height', 'ana.depth', '', '', 'ana.width', 'detector.width',
-                 'detector.height', '', 'arms[-5]', 'arms[-4]', 'arms[-3]', 'arms[-2]', 'arms[-1]', '', '']
+        keys = {'algo': 'method',
+                'ana_d': 'ana.d',
+                'ana_effic': '',
+                'ana_mosaic': 'ana.mosaic',
+                'ana_scatter_sense': 'ana.direct',
+                'h_coll_after_sample': 'hcol[-2]',
+                'h_coll_ana': 'hcol[-1]',
+                'h_coll_before_sample': 'hcol[-3]',
+                'h_coll_mono': 'hcol[-4]',
+                'mono_d': 'mono.d',
+                'mono_mosaic': 'mono.mosaic',
+                'mono_refl': '',
+                'mono_scatter_sense': 'mono.direct',
+                'pop_ana_curvh': 'ana.rh',
+                'pop_ana_curvv': 'ana.rv',
+                'pop_ana_h': 'ana.height',
+                'pop_ana_thick': 'ana.depth',
+                'pop_ana_use_curvh': '',
+                'pop_ana_use_curvv': '',
+                'pop_ana_w': 'ana.width',
+                'pop_det_h': 'detector.height',
+                'pop_det_rect': '',
+                'pop_det_w': 'detector.width',
+                'pop_dist_ana_det': 'arms[-2]',
+                'pop_dist_mono_sample': 'arms[-4]',
+                'pop_dist_sample_ana': 'arms[-3]',
+                'pop_dist_src_mono': 'arms[-5]',
+                'pop_guide_divh': 'arms[-1]',
+                'pop_guide_divv': '',
+                'pop_mono_curvh': 'mono.rh',
+                'pop_mono_curvv': 'mono.rv',
+                'pop_mono_h': 'mono.height',
+                'pop_mono_thick': 'mono.depth',
+                'pop_mono_use_curvh': '',
+                'pop_mono_use_curvv': '',
+                'pop_mono_w': 'mono.width',
+                'pop_sample_cuboid': 'sample.depth',
+                'pop_sample_h': 'sample.height',
+                'pop_sample_wperpq': '',
+                'pop_sample_wq': 'sample.width',
+                'pop_src_h': 'guide.height',
+                'pop_src_rect': '',
+                'pop_src_w': 'guide.width',
+                'sample_mosaic': 'sample.mosaic',
+                'sample_scatter_sense': 'sample.direct',
+                'use_guide': '',
+                'v_coll_after_sample': 'vcol[-2]',
+                'v_coll_ana': 'vcol[-1]',
+                'v_coll_before_sample': 'vcol[-3]',
+                'v_coll_mono': 'vcol[-4]'}
 
         defaults = [1, 0, 0, 1, 0, 3.355, 45, 1, 5, 3.355, 45, 1, 30, 1e4, 30, 1e4, 1e4, 1e4, 1e4, 1e4, 12, 6, 1,
                     0, 200, 8, .15, 0, 1, 12, 1.5, 0, 3, 1.5, 0, 0, 8, 0.3, 0, 0, 12, 2.5, 5, 1, 10, 200, 115, 85, 15,
                     15]
 
-        for ele, attr, dflt in zip(subelements, attrs, defaults):
+        for (ele, attr), dflt in zip(keys.items(), defaults):
             subel = et.SubElement(reso, ele)
             value = str(dflt)
             if '.' not in attr:

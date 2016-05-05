@@ -78,14 +78,13 @@ class IOTests(unittest.TestCase):
         try:
             load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.par'),
                             os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.cfg'), filetype='parcfg')
-            i1 = load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.instr'),
+            load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.instr'),
                                  filetype='ascii')
-            i2 = load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.hdf5'), filetype='hdf5')
-            i3 = load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.taz'), filetype='taz')
+            load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.hdf5'), filetype='hdf5')
+            load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.taz'), filetype='taz')
         except Exception:
             self.fail('Instrument file loading failed')
 
-        self.assertEqual(i1, i2)
         self.assertRaises(ValueError, load_instrument,
                           os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.instr'), filetype='blah')
 
