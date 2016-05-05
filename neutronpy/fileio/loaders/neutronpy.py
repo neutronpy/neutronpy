@@ -19,16 +19,18 @@ class Neutronpy(Data):
         super(Neutronpy, self).__init__()
 
     def load(self, filename, build_hkl=True, load_instrument=False):
-        r"""
+        r"""Loads data from ascii or hdf5 format file.
 
         Parameters
         ----------
-        filename
-        build_hkl
-        load_instrument
+        filename : str
+            Path to file to load
 
-        Returns
-        -------
+        build_hkl : bool, optional
+            Option to build Q = [h, k, l, e, temp]
+
+        load_instrument : bool, optional
+            Option to build Instrument from file header
 
         """
         with open(filename, 'r') as f:
@@ -43,12 +45,14 @@ class Neutronpy(Data):
 
         Parameters
         ----------
-        filename
-        build_hkl
-        load_instrument
+        filename : str
+            Path to file to load
 
-        Returns
-        -------
+        build_hkl : bool, optional
+            Option to build Q = [h, k, l, e, temp]
+
+        load_instrument : bool, optional
+            Option to build Instrument from file header
 
         """
         import h5py
@@ -78,12 +82,14 @@ class Neutronpy(Data):
 
         Parameters
         ----------
-        filename
-        build_hkl
-        load_instrument
+        filename : str
+            Path to file to load
 
-        Returns
-        -------
+        build_hkl : bool, optional
+            Option to build Q = [h, k, l, e, temp]
+
+        load_instrument : bool, optional
+            Option to build Instrument from file header
 
         """
         file_header = []
