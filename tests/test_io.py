@@ -76,10 +76,10 @@ class IOTests(unittest.TestCase):
         """Tests instrument file loading
         """
         try:
-            load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.par'),
-                            os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.cfg'), filetype='parcfg')
+            load_instrument((os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.par'),
+                             os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.cfg')), filetype='parcfg')
             load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.instr'),
-                                 filetype='ascii')
+                            filetype='ascii')
             load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.hdf5'), filetype='hdf5')
             load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.taz'), filetype='taz')
         except Exception:

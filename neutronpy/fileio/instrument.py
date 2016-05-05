@@ -5,14 +5,14 @@ from ..instrument import Instrument
 from ..crystal import Sample
 
 
-def load_instrument(*args, filetype='ascii'):
+def load_instrument(filename, filetype='ascii'):
     r"""Creates Instrument class using input par and cfg files.
 
     Parameters
     ----------
-    args : str
+    filename : str or tuple
         Path to the instrument file. If filetype is 'parcfg' then two
-        files should be provided in order of '.par', '.cfg'.
+        files should be provided in order of '.par', '.cfg' as a tuple.
 
     filetype : str, optional
         Default: 'ascii'. Instrument file formats 'ascii', 'parcfg', 'hdf5',
@@ -191,7 +191,7 @@ def load_instrument(*args, filetype='ascii'):
 
     """
     if filetype == 'parcfg':
-        parfile, cfgfile = args
+        parfile, cfgfile = filename
         with open(parfile, "r") as f:
             lines = f.readlines()
             par = {}
@@ -337,7 +337,7 @@ def load_instrument(*args, filetype='ascii'):
         return setup
 
     elif filetype == 'ascii':
-        with open(args[0], 'r') as f:
+        with open(filename, 'r') as f:
             lines = []
             for line in f:
                 value = line.replace('\n', '').replace('instrument.', '').split('=')
@@ -376,7 +376,7 @@ def load_instrument(*args, filetype='ascii'):
 
         setup = Instrument()
 
-        with h5py.File(args[0], mode='r') as f:
+        with h5py.File(filename, mode='r') as f:
             instrument = f['instrument']
             groups = list(instrument.keys())
 
@@ -396,7 +396,7 @@ def load_instrument(*args, filetype='ascii'):
     elif filetype == 'taz':
         import xml.etree.ElementTree as et
 
-        tree = et.ElementTree(file=args[0])
+        tree = et.ElementTree(file=filename)
         taz = tree.getroot()
         reso = taz.find('reso')
 
