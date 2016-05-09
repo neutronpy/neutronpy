@@ -129,7 +129,7 @@ def save_data(obj, filename, filetype='ascii', save_instr=False, overwrite=False
 
         output = np.vstack((value for value in data.values())).T
 
-        np.savetxt(filename + '.dat', output, header=header, **kwargs)
+        np.savetxt(filename + '.npy', output, header=header, **kwargs)
 
         if save_instr:
             save_instrument(obj.instrument, filename, filetype='ascii', overwrite=overwrite)
@@ -198,7 +198,7 @@ def detect_filetype(filename):
     elif (filename[-4:].lower() == 'iexy') or (filename[-3:].lower() == 'spe') or (filename[-3:].lower() == 'xye') or (
                 filename[-4:] == 'xyie'):
         return 'dcs_mslice'
-    elif filename[-4:].lower() == 'hdf5':
+    elif filename[-4:].lower() == 'hdf5' or filename[-3].lower() == 'npy':
         return 'neutronpy'
     else:
         with open(filename) as f:
