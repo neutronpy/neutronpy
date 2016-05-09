@@ -23,6 +23,9 @@ test-symmetry:
 test-lattice:
 	nosetests -s -x tests.test_lattice
 
+test-scattering:
+	nosetests -s -x tests.test_scattering
+
 test-all:
 	python2 setup.py test
 	python3 setup.py test
