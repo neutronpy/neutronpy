@@ -61,7 +61,6 @@ def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument
         except KeyError:
             raise KeyError('Filetype not supported.')
 
-        print()
         if isinstance(tols, numbers.Number):
             tols = [tols for i in range(len(_data_object_temp._data) - len(_data_object_temp.data_keys))]
 
