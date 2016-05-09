@@ -69,11 +69,11 @@ class Neutronpy(Data):
                 data[key] = np.copy(value)
 
             self._data = data
-            self.data_keys = {key: str(value) for key, value in data_root['data_keys'].attrs.items()}
+            self.data_keys = dict((key, str(value)) for key, value in data_root['data_keys'].attrs.items())
 
             if build_hkl:
                 try:
-                    self.Q_keys = {key: str(value) for key, value in data_root['Q_keys'].attrs.items()}
+                    self.Q_keys = dict((key, str(value)) for key, value in data_root['Q_keys'].attrs.items())
                 except KeyError:
                     warnings.warn('Q_keys could not be built automatically.')
 
