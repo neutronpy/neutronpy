@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
-r'''Testing of core library
+r"""Testing of core library
 
-'''
+"""
 from copy import deepcopy
-import os
 import unittest
 from mock import patch
 from matplotlib import use
+
 use('Agg')
 import numpy as np
 from scipy.integrate import simps
 from neutronpy import Energy, Data, functions
-from neutronpy.fileio import load_data, save_data, detect_filetype
 from neutronpy.constants import BOLTZMANN_IN_MEV_K
 
 
 def build_data(clean=True):
-    '''Builds data object
-    '''
+    """Builds data object
+    """
     p = np.array([20., 0., 3., -0.15, 0.08, 0.2, 3., 0.15, 0.08, 0.2])
     x = np.linspace(-1, 1, 81)
 
@@ -37,8 +36,8 @@ def build_data(clean=True):
 
 
 def build_3d_data():
-    '''Builds 3D data object
-    '''
+    """Builds 3D data object
+    """
     p = np.array([0, 0, 1, 0, 0, 0.1])
     x, y = np.linspace(-1, 1, 81), np.linspace(-1, 1, 81)
     X, Y = np.meshgrid(x, y)
@@ -54,13 +53,18 @@ def build_3d_data():
 
 
 class DataTest(unittest.TestCase):
-    '''Unit tests for data object
-    '''
+    """Unit tests for data object
+    """
+    def test_build_data(self):
+        data = Data(blah='test')
+        data = Data(error=1)
+
     def test_combine_data(self):
-        '''Tests combining data
-        '''
+        """Tests combining data
+        """
         data1 = build_data(clean=True)
         data2 = build_data(clean=False)
+        data3 = object
 
         data = data1 + data2
 
@@ -68,9 +72,14 @@ class DataTest(unittest.TestCase):
         self.assertTrue((data.detector == data1.detector + data2.detector).all())
         self.assertTrue((data.Q == data1.Q).all() & (data.Q == data2.Q).all())
 
+        def _test():
+            data1 + data3
+
+        self.assertRaises(ValueError, _test)
+
     def test_rebin(self):
-        '''Tests data rebinning
-        '''
+        """Tests data rebinning
+        """
         data = Data(h=np.linspace(0, 1, 101), k=0, l=0, e=0, temp=0,
                     detector=functions.gaussian([0, 0, 10, 0.5, 0.5], np.linspace(0, 1, 101)),
                     monitor=np.ones(101), time=np.ones(101))
@@ -86,9 +95,14 @@ class DataTest(unittest.TestCase):
         self.assertTrue(np.abs(data_bin.position()[0] - data.position()[0]) < 1e-4)
         self.assertTrue(np.abs(data_bin.width()[0] - data.width()[0]) < 1e-2)
 
+        def _test():
+            data_bin = data.bin(dict(blah=[1, 2, 4]))
+
+        self.assertRaises(KeyError, _test)
+
     def test_analysis(self):
-        '''Tests analysis methods
-        '''
+        """Tests analysis methods
+        """
         data = build_data(clean=True)
 
         self.assertAlmostEqual(data.integrate(), 45.8424794006, 6)
@@ -113,16 +127,16 @@ class DataTest(unittest.TestCase):
         self.assertAlmostEqual(data.integrate(background=background), 45.8424794006, 6)
 
     def test_init_cases(self):
-        '''Tests initialization cases
-        '''
+        """Tests initialization cases
+        """
         try:
             Data()
         except:
             self.fail('Data initialization failed')
 
     def test_add_sub_data(self):
-        '''Tests adding and subtracting data
-        '''
+        """Tests adding and subtracting data
+        """
         data1 = Data()
         del data1._data
         data2 = build_data()
@@ -137,8 +151,8 @@ class DataTest(unittest.TestCase):
         self.assertRaises(AttributeError, _test, 'sub')
 
     def test_mul_div_pow_data(self):
-        '''Tests multiplication, division, and power operations on data object
-        '''
+        """Tests multiplication, division, and power operations on data object
+        """
         data = build_data()
         data1 = deepcopy(data) * 10.
         data2 = deepcopy(data) / 10.
@@ -151,8 +165,9 @@ class DataTest(unittest.TestCase):
         self.assertTrue(np.all(data4.detector == data.detector ** 10))
 
     def test_setters(self):
-        '''Tests setters working
-        '''
+        """Tests setters working
+        """
+
         def _test(test):
             data = build_data()
             if test == 'h':
@@ -170,15 +185,26 @@ class DataTest(unittest.TestCase):
             elif test == 'temp':
                 data.temp = 3
                 data.temp = np.zeros(5)
+
         self.assertRaises(ValueError, _test, 'h')
         self.assertRaises(ValueError, _test, 'k')
         self.assertRaises(ValueError, _test, 'l')
         self.assertRaises(ValueError, _test, 'e')
         self.assertRaises(ValueError, _test, 'temp')
 
+        data = build_data()
+        data.h = 3
+        data.k = 3
+        data.l = 3
+        data.e = 3
+        data.temp = 3
+        data.monitor = np.ones(data.monitor.shape)
+        data.time = np.ones(data.time.shape)
+        data.data['detector'] = np.ones(data.intensity.shape)
+
     def test_norms(self):
-        '''Test normalization types
-        '''
+        """Test normalization types
+        """
         data = build_data()
         data.m0 = 0
         self.assertTrue(np.all(data.intensity == data.detector / data.monitor * data.m0))
@@ -187,8 +213,8 @@ class DataTest(unittest.TestCase):
         self.assertTrue(np.all(data.intensity == data.detector / data.time * data.t0))
 
     def test_error(self):
-        '''Tests exception handling
-        '''
+        """Tests exception handling
+        """
         data = build_data()
         data._err = np.sqrt(data.detector)
         data.m0 = 0
@@ -214,14 +240,14 @@ class DataTest(unittest.TestCase):
         self.assertRaises(ValueError, _test, None)
 
     def test_detailed_balance(self):
-        '''Test detailed balance factor
-        '''
+        """Test detailed balance factor
+        """
         data = build_data()
         self.assertTrue(np.all(data.detailed_balance_factor == 1. - np.exp(-data.e / BOLTZMANN_IN_MEV_K / data.temp)))
 
     def test_scattering_function(self):
-        '''Test scattering function
-        '''
+        """Test scattering function
+        """
         from neutronpy import Material
         input_mat = {'name': 'FeTe',
                      'composition': [{'ion': 'Fe', 'pos': [0.75, 0.25, 0.]},
@@ -239,11 +265,12 @@ class DataTest(unittest.TestCase):
         ki = Energy(energy=14.7).wavevector
         kf = Energy(energy=14.7 - data.e).wavevector
 
-        self.assertTrue(np.all(data.scattering_function(material, 14.7) == 4 * np.pi / (material.total_scattering_cross_section) * ki / kf * data.detector))
+        self.assertTrue(np.all(data.scattering_function(material, 14.7) == 4 * np.pi / (
+        material.total_scattering_cross_section) * ki / kf * data.detector))
 
     def test_dynamic_susceptibility(self):
-        '''Test dynamic susceptibility
-        '''
+        """Test dynamic susceptibility
+        """
         from neutronpy import Material
         input_mat = {'name': 'FeTe',
                      'composition': [{'ion': 'Fe', 'pos': [0.75, 0.25, 0.]},
@@ -261,12 +288,12 @@ class DataTest(unittest.TestCase):
         ki = Energy(energy=14.7).wavevector
         kf = Energy(energy=14.7 - data.e).wavevector
 
-        self.assertTrue(np.all(data.dynamic_susceptibility(material, 14.7) == 4 * np.pi / (material.total_scattering_cross_section) * ki / kf *
-                               data.detector * data.detailed_balance_factor))
+        self.assertTrue(np.all(data.dynamic_susceptibility(material, 14.7) == 4 * np.pi / (
+        material.total_scattering_cross_section) * ki / kf * data.detector * data.detailed_balance_factor))
 
     def test_background_subtraction(self):
-        '''Test background subtraction
-        '''
+        """Test background subtraction
+        """
         data = build_data(clean=True)
         background_data = build_data(clean=False)
         try:
@@ -276,17 +303,32 @@ class DataTest(unittest.TestCase):
 
     @patch("matplotlib.pyplot.show")
     def test_plotting(self, mock_show):
-        '''Test plotting
-        '''
+        """Test plotting
+        """
         data = build_data()
+        self.assertRaises(AttributeError, data.plot)
+        data.plot_default_x = 'h'
+        data.plot_default_y = 'detector'
+        data.plot()
         data.plot('h', 'intensity')
+        data.plot('h', 'detector')
         data.plot('h', 'intensity', show_err=False)
         data.plot('h', 'intensity', output_file='plot_test.pdf')
         data.plot('h', 'intensity', smooth_options=dict(sigma=1))
-        data.plot('h', 'intensity', fit_options=dict(function=functions.voigt, fixp=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], p=[20., 0., 3., -0.15, 0.08, 0.2, 3., 0.15, 0.08, 0.2]))
-        data.plot('h', 'intensity', to_bin=dict(h=[-1, 1., 41], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[3.5, 4.5, 1], temp=[-300, 900, 1]))
+        data.plot('h', 'intensity', fit_options=dict(function=functions.voigt, fixp=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                                                     p=[20., 0., 3., -0.15, 0.08, 0.2, 3., 0.15, 0.08, 0.2]))
+        self.assertRaises(Exception, data.plot, 'h', 'intensity',
+                          fit_options=dict(function=functions.voigt, fixp=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                                           p=[20., 0., 3., -0.15, 0.08, 0.2, 3., 0.15, 0.08, 0.2]))
+        data.plot('h', 'intensity',
+                  to_bin=dict(h=[-1, 1., 41], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[3.5, 4.5, 1], temp=[-300, 900, 1]))
+        data.plot('h', 'detector',
+                  to_bin=dict(h=[-1, 1., 41], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[3.5, 4.5, 1], temp=[-300, 900, 1]))
         data3d = build_3d_data()
         data3d.plot(x='h', y='k', z='intensity')
+        data3d.plot(x='h', y='k', z='intensity', to_bin=dict(h=[-1, 1, 41], k=[-1, 1, 41]))
+        data3d.plot(x='h', y='k', z='detector', to_bin=dict(h=[-1, 1, 41], k=[-1, 1, 41]), smooth_options=dict(sigma=1),
+                    output_file='plot_test.pdf')
         self.assertRaises(KeyError, data3d.plot, 'h', 'k', 'blah')
         self.assertRaises(KeyError, data3d.plot, 'h', 'k', 'w', 'blah')
 

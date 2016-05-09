@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-r'''Data handling
+r"""Data handling
 
-'''
+"""
 import copy
 from multiprocessing import cpu_count, Pool  # @UnresolvedImport
 import numbers
@@ -15,13 +15,13 @@ except ImportError:
 
 
 def _call_bin_parallel(arg, **kwarg):
-    r'''Wrapper function to work around pickling problem in Python 2.7
-    '''
+    r"""Wrapper function to work around pickling problem in Python 2.7
+    """
     return Data._bin_parallel(*arg, **kwarg)
 
 
 class Data(PlotData, Analysis):
-    u'''Data class for handling multi-dimensional scattering data. If input
+    u"""Data class for handling multi-dimensional scattering data. If input
     file type is not supported, data can be entered manually.
 
     Parameters
@@ -83,7 +83,7 @@ class Data(PlotData, Analysis):
     scattering_function
     plot
 
-    '''
+    """
     def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., error=None, time=0., time_norm=False, **kwargs):
         self._data = OrderedDict()
         self.data_keys = {'monitor': 'monitor', 'detector': 'detector', 'time': 'time'}
@@ -163,8 +163,8 @@ class Data(PlotData, Analysis):
 
     @property
     def Q(self):
-        r'''Returns a Q matrix with columns h,k,l,e,temp
-        '''
+        r"""Returns a Q matrix with columns h,k,l,e,temp
+        """
         return np.vstack((self.data[self.Q_keys[i]].flatten() for i in ['h', 'k', 'l', 'e', 'temp'])).T
 
     @Q.setter
@@ -174,8 +174,8 @@ class Data(PlotData, Analysis):
 
     @property
     def detector(self):
-        r'''Returns the raw counts on the detector
-        '''
+        r"""Returns the raw counts on the detector
+        """
         return self.data[self.data_keys['detector']]
 
     @detector.setter
@@ -184,8 +184,8 @@ class Data(PlotData, Analysis):
 
     @property
     def monitor(self):
-        r'''Returns the monitor
-        '''
+        r"""Returns the monitor
+        """
         return self.data[self.data_keys['monitor']]
 
     @monitor.setter
@@ -194,8 +194,8 @@ class Data(PlotData, Analysis):
 
     @property
     def time(self):
-        r'''Returns the time measured
-        '''
+        r"""Returns the time measured
+        """
         return self.data[self.data_keys['time']]
 
     @time.setter
@@ -204,109 +204,109 @@ class Data(PlotData, Analysis):
 
     @property
     def h(self):
-        r'''Returns lattice parameter q\ :sub:`x`\ , *i.e.* h
+        r"""Returns lattice parameter q\ :sub:`x`\ , *i.e.* h
 
         Equivalent to Q[:, 0]
-        '''
+        """
         return self.Q[:, 0]
 
     @h.setter
     def h(self, value):
-        r'''Set h to appropriate column of Q
-        '''
+        r"""Set h to appropriate column of Q
+        """
         if isinstance(value, numbers.Number):
-            value = np.array([value] * self.Q.shape[0])
+            value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
-        if value.shape != self.Q.shape[0]:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+        if value.shape != self.data[self.data_keys['detector']].shape:
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.data[self.data_keys['detector']].shape))
         else:
             self.data[self.Q_keys['h']] = np.array(value)
 
     @property
     def k(self):
-        r'''Returns lattice parameter q\ :sub:`y`\ , *i.e.* k
+        r"""Returns lattice parameter q\ :sub:`y`\ , *i.e.* k
 
         Equivalent to Q[:, 1]
-        '''
+        """
         return self.Q[:, 1]
 
     @k.setter
     def k(self, value):
-        r'''Set k to appropriate column of Q
-        '''
+        r"""Set k to appropriate column of Q
+        """
         if isinstance(value, numbers.Number):
-            value = np.array([value] * self.Q.shape[0])
+            value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
-        if value.shape != self.Q.shape[0]:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+        if value.shape != self.data[self.data_keys['detector']].shape:
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.data[self.data_keys['detector']].shape))
         else:
             self.data[self.Q_keys['k']] = np.array(value)
 
     @property
     def l(self):
-        r'''Returns lattice parameter q\ :sub:`z`\ , *i.e.* l
+        r"""Returns lattice parameter q\ :sub:`z`\ , *i.e.* l
 
         Equivalent to Q[:, 2]
-        '''
+        """
         return self.Q[:, 2]
 
     @l.setter
     def l(self, value):
-        r'''Set l to appropriate column of Q
-        '''
+        r"""Set l to appropriate column of Q
+        """
         if isinstance(value, numbers.Number):
-            value = value = np.array([value] * self.Q.shape[0])
+            value = value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
-        if value.shape != self.Q.shape[0]:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+        if value.shape != self.data[self.data_keys['detector']].shape:
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.data[self.data_keys['detector']].shape))
         else:
             self.data[self.Q_keys['l']] = np.array(value)
 
     @property
     def e(self):
-        r'''Returns energy transfer
+        r"""Returns energy transfer
 
         Equivalent to Q[:, 3]
-        '''
+        """
         return self.Q[:, 3]
 
     @e.setter
     def e(self, value):
-        r'''Set e to appropriate column of Q
-        '''
+        r"""Set e to appropriate column of Q
+        """
         if isinstance(value, numbers.Number):
-            value = np.array([value] * self.Q.shape[0])
+            value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
-        if value.shape != self.Q.shape[0]:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+        if value.shape != self.data[self.data_keys['detector']].shape:
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.data[self.data_keys['detector']].shape))
         else:
             self.data[self.Q_keys['e']] = np.array(value)
 
     @property
     def temp(self):
-        r'''Returns temperature
+        r"""Returns temperature
 
         Equivalent to Q[:, 4]
-        '''
+        """
         return self.Q[:, 4]
 
     @temp.setter
     def temp(self, value):
-        r'''Set temp to appropriate column of Q
-        '''
+        r"""Set temp to appropriate column of Q
+        """
         if isinstance(value, numbers.Number):
-            value = np.array([value] * self.Q.shape[0])
+            value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
-        if value.shape != self.Q.shape[0]:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+        if value.shape != self.data[self.data_keys['detector']].shape:
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.data[self.data_keys['detector']].shape))
         else:
             self.data[self.Q_keys['temp']] = np.array(value)
 
     @property
     def intensity(self):
-        r'''Returns the monitor or time normalized intensity
+        r"""Returns the monitor or time normalized intensity
 
-        '''
+        """
 
         if self.time_norm:
             if self.t0 == 0:
@@ -319,9 +319,9 @@ class Data(PlotData, Analysis):
 
     @property
     def error(self):
-        r'''Returns error of monitor or time normalized intensity
+        r"""Returns error of monitor or time normalized intensity
 
-        '''
+        """
         try:
             if self._err is not None:
                 err = self._err
@@ -342,19 +342,19 @@ class Data(PlotData, Analysis):
 
     @error.setter
     def error(self, value):
-        r'''Set error in detector counts
-        '''
+        r"""Set error in detector counts
+        """
         if isinstance(value, numbers.Number):
             value = np.array([value] * self.detector.shape[0])
 
         if value.shape != self.detector.shape:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.detector.shape[0]))
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.detector.shape[0]))
         self._err = value
 
     @property
     def data(self):
-        r'''Returns all of the raw data in column format
-        '''
+        r"""Returns all of the raw data in column format
+        """
         return self._data
 
     @data.setter
@@ -363,12 +363,12 @@ class Data(PlotData, Analysis):
 
     @property
     def data_columns(self):
-        r'''Returns a list of the raw data columns
-        '''
+        r"""Returns a list of the raw data columns
+        """
         return list(self.data.keys())
 
     def combine_data(self, obj, **kwargs):
-        r'''Combines multiple data sets
+        r"""Combines multiple data sets
 
         Parameters
         ----------
@@ -381,7 +381,7 @@ class Data(PlotData, Analysis):
         ret : bool, optional
             Return the combined data set, or merge. Default: False
 
-        '''
+        """
         if not isinstance(obj, Data):
             raise ValueError('You can only combine two Data objects: input object is the wrong format!')
 
@@ -421,7 +421,7 @@ class Data(PlotData, Analysis):
             self._data = _data
 
     def subtract_background(self, background_data, ret=True):
-        r'''Subtract background data.
+        r"""Subtract background data.
 
         Parameters
         ----------
@@ -437,11 +437,11 @@ class Data(PlotData, Analysis):
         data : Data object
             Data object contained subtracted data
 
-        '''
+        """
         pass
 
     def _bin_parallel(self, Q_chunk):
-        r'''Performs binning by finding data chunks to bin together.
+        r"""Performs binning by finding data chunks to bin together.
         Private function for performing binning in parallel using
         multiprocessing library
 
@@ -455,7 +455,7 @@ class Data(PlotData, Analysis):
         (monitor, detector, temps) : tup of ndarrays
             New monitor, detector, and temps of the binned data
 
-        '''
+        """
         error = np.empty(Q_chunk.shape[0])
         data_out = tuple(np.empty(Q_chunk.shape[0]) for key in self.data.keys() if key not in self.bin_keys)
 
@@ -481,7 +481,7 @@ class Data(PlotData, Analysis):
         return data_out + (error,)
 
     def bin(self, to_bin, build_hkl=True):
-        r'''Rebin the data into the specified shape.
+        r"""Rebin the data into the specified shape.
 
         Parameters
         ----------
@@ -504,7 +504,7 @@ class Data(PlotData, Analysis):
             The resulting data object with values binned to the specified
             bounds
 
-        '''
+        """
         _bin_keys = list(to_bin.keys())
         if build_hkl:
             for key, value in self.Q_keys.items():
