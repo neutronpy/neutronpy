@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-r'''Data handling
+r"""Data handling
 
-'''
+"""
 import copy
 from multiprocessing import cpu_count, Pool  # @UnresolvedImport
 import numbers
+import warnings
 import numpy as np
 from .analysis import Analysis
 from .plot import PlotData
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -15,13 +17,13 @@ except ImportError:
 
 
 def _call_bin_parallel(arg, **kwarg):
-    r'''Wrapper function to work around pickling problem in Python 2.7
-    '''
+    r"""Wrapper function to work around pickling problem in Python 2.7
+    """
     return Data._bin_parallel(*arg, **kwarg)
 
 
 class Data(PlotData, Analysis):
-    u'''Data class for handling multi-dimensional scattering data. If input
+    u"""Data class for handling multi-dimensional scattering data. If input
     file type is not supported, data can be entered manually.
 
     Parameters
@@ -83,15 +85,18 @@ class Data(PlotData, Analysis):
     scattering_function
     plot
 
-    '''
-    def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., error=None, time=0., time_norm=False, **kwargs):
+    """
+
+    def __init__(self, Q=None, h=0., k=0., l=0., e=0., temp=0., detector=0., monitor=0., error=None, time=0.,
+                 time_norm=False, **kwargs):
         self._data = OrderedDict()
         self.data_keys = {'monitor': 'monitor', 'detector': 'detector', 'time': 'time'}
         self.Q_keys = {'h': 'h', 'k': 'k', 'l': 'l', 'e': 'e', 'temp': 'temp'}
 
         if Q is None:
             try:
-                n_dim = max([len(item) for item in (h, k, l, e, temp, detector, monitor, time) if not isinstance(item, numbers.Number)])
+                n_dim = max([len(item) for item in (h, k, l, e, temp, detector, monitor, time) if
+                             not isinstance(item, numbers.Number)])
             except (ValueError, UnboundLocalError):
                 n_dim = 1
 
@@ -127,19 +132,14 @@ class Data(PlotData, Analysis):
     def __add__(self, right):
         try:
             return self.combine_data(right, ret=True)
-        except AttributeError:
-            raise AttributeError('Data types cannot be combined')
+        except TypeError:
+            raise
 
     def __sub__(self, right):
         try:
-            monitor = self.monitor
-            detector = self.detector
-
-            output = {'Q': right.Q, 'detector': np.negative(right.detector),
-                      'monitor': right.monitor, 'time': right.time}
-            return self.combine_data(output, ret=True)
-        except AttributeError:
-            raise AttributeError('Data types cannot be combined')
+            return self.subtract_background(right, ret=True)
+        except (TypeError, ValueError):
+            raise
 
     def __mul__(self, right):
         self.detector = self.detector * right
@@ -163,8 +163,8 @@ class Data(PlotData, Analysis):
 
     @property
     def Q(self):
-        r'''Returns a Q matrix with columns h,k,l,e,temp
-        '''
+        r"""Returns a Q matrix with columns h,k,l,e,temp
+        """
         return np.vstack((self.data[self.Q_keys[i]].flatten() for i in ['h', 'k', 'l', 'e', 'temp'])).T
 
     @Q.setter
@@ -174,8 +174,8 @@ class Data(PlotData, Analysis):
 
     @property
     def detector(self):
-        r'''Returns the raw counts on the detector
-        '''
+        r"""Returns the raw counts on the detector
+        """
         return self.data[self.data_keys['detector']]
 
     @detector.setter
@@ -184,8 +184,8 @@ class Data(PlotData, Analysis):
 
     @property
     def monitor(self):
-        r'''Returns the monitor
-        '''
+        r"""Returns the monitor
+        """
         return self.data[self.data_keys['monitor']]
 
     @monitor.setter
@@ -194,8 +194,8 @@ class Data(PlotData, Analysis):
 
     @property
     def time(self):
-        r'''Returns the time measured
-        '''
+        r"""Returns the time measured
+        """
         return self.data[self.data_keys['time']]
 
     @time.setter
@@ -204,109 +204,109 @@ class Data(PlotData, Analysis):
 
     @property
     def h(self):
-        r'''Returns lattice parameter q\ :sub:`x`\ , *i.e.* h
+        r"""Returns lattice parameter q\ :sub:`x`\ , *i.e.* h
 
         Equivalent to Q[:, 0]
-        '''
+        """
         return self.Q[:, 0]
 
     @h.setter
     def h(self, value):
-        r'''Set h to appropriate column of Q
-        '''
+        r"""Set h to appropriate column of Q
+        """
         if isinstance(value, numbers.Number):
             value = np.array([value] * self.Q.shape[0])
 
         if value.shape != self.Q.shape[0]:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.Q.shape[0]))
         else:
             self.data[self.Q_keys['h']] = np.array(value)
 
     @property
     def k(self):
-        r'''Returns lattice parameter q\ :sub:`y`\ , *i.e.* k
+        r"""Returns lattice parameter q\ :sub:`y`\ , *i.e.* k
 
         Equivalent to Q[:, 1]
-        '''
+        """
         return self.Q[:, 1]
 
     @k.setter
     def k(self, value):
-        r'''Set k to appropriate column of Q
-        '''
+        r"""Set k to appropriate column of Q
+        """
         if isinstance(value, numbers.Number):
             value = np.array([value] * self.Q.shape[0])
 
         if value.shape != self.Q.shape[0]:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.Q.shape[0]))
         else:
             self.data[self.Q_keys['k']] = np.array(value)
 
     @property
     def l(self):
-        r'''Returns lattice parameter q\ :sub:`z`\ , *i.e.* l
+        r"""Returns lattice parameter q\ :sub:`z`\ , *i.e.* l
 
         Equivalent to Q[:, 2]
-        '''
+        """
         return self.Q[:, 2]
 
     @l.setter
     def l(self, value):
-        r'''Set l to appropriate column of Q
-        '''
+        r"""Set l to appropriate column of Q
+        """
         if isinstance(value, numbers.Number):
             value = value = np.array([value] * self.Q.shape[0])
 
         if value.shape != self.Q.shape[0]:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.Q.shape[0]))
         else:
             self.data[self.Q_keys['l']] = np.array(value)
 
     @property
     def e(self):
-        r'''Returns energy transfer
+        r"""Returns energy transfer
 
         Equivalent to Q[:, 3]
-        '''
+        """
         return self.Q[:, 3]
 
     @e.setter
     def e(self, value):
-        r'''Set e to appropriate column of Q
-        '''
+        r"""Set e to appropriate column of Q
+        """
         if isinstance(value, numbers.Number):
             value = np.array([value] * self.Q.shape[0])
 
         if value.shape != self.Q.shape[0]:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.Q.shape[0]))
         else:
             self.data[self.Q_keys['e']] = np.array(value)
 
     @property
     def temp(self):
-        r'''Returns temperature
+        r"""Returns temperature
 
         Equivalent to Q[:, 4]
-        '''
+        """
         return self.Q[:, 4]
 
     @temp.setter
     def temp(self, value):
-        r'''Set temp to appropriate column of Q
-        '''
+        r"""Set temp to appropriate column of Q
+        """
         if isinstance(value, numbers.Number):
             value = np.array([value] * self.Q.shape[0])
 
         if value.shape != self.Q.shape[0]:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.Q.shape[0]))
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.Q.shape[0]))
         else:
             self.data[self.Q_keys['temp']] = np.array(value)
 
     @property
     def intensity(self):
-        r'''Returns the monitor or time normalized intensity
+        r"""Returns the monitor or time normalized intensity
 
-        '''
+        """
 
         if self.time_norm:
             if self.t0 == 0:
@@ -319,9 +319,9 @@ class Data(PlotData, Analysis):
 
     @property
     def error(self):
-        r'''Returns error of monitor or time normalized intensity
+        r"""Returns error of monitor or time normalized intensity
 
-        '''
+        """
         try:
             if self._err is not None:
                 err = self._err
@@ -342,19 +342,20 @@ class Data(PlotData, Analysis):
 
     @error.setter
     def error(self, value):
-        r'''Set error in detector counts
-        '''
+        r"""Set error in detector counts
+        """
         if isinstance(value, numbers.Number):
             value = np.array([value] * self.detector.shape[0])
 
         if value.shape != self.detector.shape:
-            raise ValueError('''Input value must have the shape ({0},) or be a float.'''.format(self.detector.shape[0]))
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.detector.shape[0]))
+
         self._err = value
 
     @property
     def data(self):
-        r'''Returns all of the raw data in column format
-        '''
+        r"""Returns all of the raw data in column format
+        """
         return self._data
 
     @data.setter
@@ -363,12 +364,12 @@ class Data(PlotData, Analysis):
 
     @property
     def data_columns(self):
-        r'''Returns a list of the raw data columns
-        '''
+        r"""Returns a list of the raw data columns
+        """
         return list(self.data.keys())
 
     def combine_data(self, obj, **kwargs):
-        r'''Combines multiple data sets
+        r"""Combines multiple data sets
 
         Parameters
         ----------
@@ -381,9 +382,9 @@ class Data(PlotData, Analysis):
         ret : bool, optional
             Return the combined data set, or merge. Default: False
 
-        '''
+        """
         if not isinstance(obj, Data):
-            raise ValueError('You can only combine two Data objects: input object is the wrong format!')
+            raise TypeError('You can only combine two Data objects: input object is the wrong format!')
 
         tols = np.array([5.e-4 for i in range(len(obj._data) - len(self.data_keys))])
         try:
@@ -397,7 +398,8 @@ class Data(PlotData, Analysis):
         for i in range(len(obj._data[obj.data_keys['detector']])):
             new_vals = np.array([val[i] for k, val in obj._data.items() if k not in list(obj.data_keys.values())])
             for j in range(len(self._data[self.data_keys['detector']])):
-                orig_vals = np.array([val[j] for k, val in self._data.items() if k not in list(self.data_keys.values())])
+                orig_vals = np.array(
+                    [val[j] for k, val in self._data.items() if k not in list(self.data_keys.values())])
                 if (np.abs(orig_vals - new_vals) <= tols).all():
                     for _key, _value in _data_temp.items():
                         if _key in list(self.data_keys.values()):
@@ -420,13 +422,18 @@ class Data(PlotData, Analysis):
         else:
             self._data = _data
 
-    def subtract_background(self, background_data, ret=True):
-        r'''Subtract background data.
+    def subtract_background(self, background_data, x=None, ret=True):
+        r"""Subtract background data.
 
         Parameters
         ----------
         background_data : Data object
             Data object containing the data wishing to be subtracted
+
+        x : str, optional
+            data_column key of x-axis values over which background should be
+            subtracted. Used for cases where background data is not taken at
+            exactly same points as data being subtracted. Default: None
 
         ret : bool, optional
             Set False if background should be subtracted in place.
@@ -437,11 +444,68 @@ class Data(PlotData, Analysis):
         data : Data object
             Data object contained subtracted data
 
-        '''
-        pass
+        """
+        if not isinstance(background_data, Data):
+            raise TypeError('You can only combine two Data objects: input object is the wrong format!')
+
+        if self.time_norm != background_data.time_norm:
+            warnings.warn(
+                'Normalization of detector is different. One is normalized to time, and the other to monitor.')
+
+        if x is None:
+            try:
+                _new_intensity = self.intensity - background_data.intensity
+                _new_error = np.sqrt(
+                    np.array([np.max([err1 ** 2, err2 ** 2]) for err1, err2 in zip(self.error, background_data.error)]))
+            except ValueError:
+                raise ValueError(
+                    'Data objects are incompatible shapes: try subtract_background method for more options')
+        else:
+            try:
+                bg_x = background_data.data[x]
+                self_x = self.data[x]
+            except KeyError:
+                try:
+                    bg_x = background_data.data[self.Q_keys[x]]
+                    self_x = self.data[self.Q_keys[x]]
+                except (AttributeError, KeyError):
+                    raise KeyError('Invalid key for data_column.')
+
+            try:
+                from scipy.interpolate import griddata
+
+                bg_intensity_grid = griddata(bg_x, background_data.intensity, self_x, method='nearest')
+                bg_error_grid = np.sqrt(griddata(bg_x, background_data.error ** 2, self_x, method='nearest'))
+            except ImportError:
+                warnings.warn('Background subtraction failed. Scipy Import Error, use more recent version of Python')
+
+                if ret:
+                    return self
+
+            _new_intensity = self.intensity - bg_intensity_grid.flatten()
+            _new_error = np.sqrt(
+                np.array([np.max([err1 ** 2, err2 ** 2]) for err1, err2 in zip(self.error, bg_error_grid.flatten())]))
+
+        _sub_data = copy.copy(self.data)
+        _sub_data[self.data_keys['detector']] = _new_intensity
+        _sub_data[self.data_keys['monitor']] = np.ones(_new_intensity.shape)
+        _sub_data[self.data_keys['time']] = np.ones(_new_intensity.shape)
+
+        if ret:
+            data_obj = copy.deepcopy(self)
+            data_obj.t0 = 1
+            data_obj.m0 = 1
+            data_obj._err = _new_error
+            data_obj._data = _sub_data
+            return data_obj
+        else:
+            self.t0 = 1
+            self.m0 = 1
+            self._err = _new_error
+            self._data = _sub_data
 
     def _bin_parallel(self, Q_chunk):
-        r'''Performs binning by finding data chunks to bin together.
+        r"""Performs binning by finding data chunks to bin together.
         Private function for performing binning in parallel using
         multiprocessing library
 
@@ -455,7 +519,7 @@ class Data(PlotData, Analysis):
         (monitor, detector, temps) : tup of ndarrays
             New monitor, detector, and temps of the binned data
 
-        '''
+        """
         error = np.empty(Q_chunk.shape[0])
         data_out = tuple(np.empty(Q_chunk.shape[0]) for key in self.data.keys() if key not in self.bin_keys)
 
@@ -481,7 +545,7 @@ class Data(PlotData, Analysis):
         return data_out + (error,)
 
     def bin(self, to_bin, build_hkl=True):
-        r'''Rebin the data into the specified shape.
+        r"""Rebin the data into the specified shape.
 
         Parameters
         ----------
@@ -504,7 +568,7 @@ class Data(PlotData, Analysis):
             The resulting data object with values binned to the specified
             bounds
 
-        '''
+        """
         _bin_keys = list(to_bin.keys())
         if build_hkl:
             for key, value in self.Q_keys.items():
