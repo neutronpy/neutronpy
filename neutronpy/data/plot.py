@@ -264,7 +264,7 @@ class PlotData(object):
                              bbox=dict(alpha=0.75, facecolor='white', edgecolor='none'))
 
             except Exception as mes:  # pylint: disable=broad-except
-                print("Something wrong with fit: {0}".format(mes))
+                raise Exception("Something wrong with fit: {0}".format(mes))
 
         if output_file:
             plt.savefig(output_file)

@@ -1,5 +1,6 @@
 import numpy as np
 from ...data import Data
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -7,14 +8,15 @@ except ImportError:
 
 
 class DcsMslice(Data):
-    r'''Loads DCS_MSLICE (NCNR) exported ascii data files.
+    r"""Loads DCS_MSLICE (NCNR) exported ascii data files.
 
-    '''
+    """
+
     def __init__(self):
         super(DcsMslice, self).__init__()
 
     def load(self, filename, **kwargs):
-        r'''Loads the DCS_MSLICE (NCNR) exported ascii data files, including
+        r"""Loads the DCS_MSLICE (NCNR) exported ascii data files, including
         SPE, IEXY, XYE, and XYIE. NOTE: Will NOT load DAVE format files.
         DAVE files are propietary IDL formatted save files.
 
@@ -23,7 +25,7 @@ class DcsMslice(Data):
         filename : str
             Path to file to open
 
-        '''
+        """
         load_file = {'iexy': self.load_iexy,
                      'xyie': self.load_xyie,
                      'spe': self.load_spe,

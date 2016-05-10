@@ -1,4 +1,4 @@
 # -*- coding: utf-8 -*-
-r'''Polarization Tensor Calculations
+r"""Polarization Tensor Calculations
 
-'''
+"""

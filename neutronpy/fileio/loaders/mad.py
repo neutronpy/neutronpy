@@ -1,6 +1,7 @@
 import numpy as np
 from ...data import Data
 from ...instrument import Instrument
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -8,14 +9,15 @@ except ImportError:
 
 
 class Mad(Data):
-    r'''Loads MAD (ILL) format ascii data file into a Data object
+    r"""Loads MAD (ILL) format ascii data file into a Data object
 
-    '''
+    """
+
     def __init__(self):
         super(Mad, self).__init__()
 
     def load(self, filename, build_hkl=True, load_instrument=False):
-        r'''Loads the MAD (ILL) format ascii data file.
+        r"""Loads the MAD (ILL) format ascii data file.
 
         Parameters
         ----------
@@ -28,7 +30,7 @@ class Mad(Data):
         load_instrument : bool, optional
             Option to build Instrument from file header
 
-        '''
+        """
         with open(filename) as f:
             file_header = []
             for i, line in enumerate(f):

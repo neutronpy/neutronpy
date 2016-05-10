@@ -1,0 +1,13 @@
+# ### NeutronPy ::: 2016-05-09T13:09:14.854261 ###
+# 
+# data_keys = {'detector': 'detector', 'monitor': 'monitor', 'time': 'time'}
+# Q_keys = {'l': 'l', 'k': 'k', 'temp': 'temp', 'h': 'h', 'e': 'e'}
+# 
+# 
+# original_header = 
+# 	
+# 
+# 
+# npy_col_headers =
+# h	k	l	e	temp	detector	monitor	time
+0.000000000000000000e+00 0.000000000000000000e+00 0.000000000000000000e+00 0.000000000000000000e+00 0.000000000000000000e+00 0.000000000000000000e+00 0.000000000000000000e+00 0.000000000000000000e+00

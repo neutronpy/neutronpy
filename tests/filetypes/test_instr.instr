@@ -1,0 +1,16 @@
+instrument.efixed = 14.7
+instrument.hcol = [40 40 40 40]
+instrument.vcol = [120 120 120 120]
+instrument.mono.tau = PG(002)
+instrument.mono.mosaic = 25
+instrument.ana.tau = PG(002)
+instrument.ana.mosaic = 25
+instrument.ana.horifoc = -1
+instrument.sample.a = 6
+instrument.sample.b = 7
+instrument.sample.c = 8
+instrument.sample.alpha = 90
+instrument.sample.beta = 90
+instrument.sample.gamma = 90
+instrument.sample.u = [1 0 0]
+instrument.sample.v = [0 1 0]
