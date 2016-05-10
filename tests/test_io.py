@@ -51,6 +51,9 @@ class IOTests(unittest.TestCase):
             load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.iexy')))
             load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.spe')))
             load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.xyie')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.npy')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.hdf5')))
+            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_save_load_spice.npy')), load_instrument=True)
         except:
             self.fail('Data loading failed')
 

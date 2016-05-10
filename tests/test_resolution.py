@@ -2,7 +2,6 @@
 r"""Testing of the resolution library
 
 """
-import os
 from copy import deepcopy
 import unittest
 from mock import patch
@@ -11,7 +10,6 @@ use('Agg')
 import numpy as np
 from neutronpy import instrument
 from neutronpy import Sample
-from neutronpy.fileio import load_instrument
 
 
 def angle2(x, y, z, h, k, l, lattice):

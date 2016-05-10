@@ -67,17 +67,17 @@ class Spice(Data):
             instrument = Instrument()
             for item in file_header:
                 line = item.split('=')
-                if line[0] == 'monochromator':
-                    instrument.mono.tau = line[-1]
-                if line[0] == 'analyzer':
-                    instrument.ana.tau = line[-1]
-                if line[0] == 'collimation':
-                    hcol = [float(col) for col in line[-1].split('-')]
+                if line[0].strip() == 'monochromator':
+                    instrument.mono.tau = line[-1].strip()
+                if line[0].strip() == 'analyzer':
+                    instrument.ana.tau = line[-1].strip()
+                if line[0].strip() == 'collimation':
+                    hcol = [float(col.strip()) for col in line[-1].split('-')]
                     instrument.hcol = hcol
-                if line[0] == 'samplemosaic':
-                    instrument.sample.mosaic = float(line[-1])
-                if line[0] == 'latticeconstants':
-                    instrument.sample.abc = [float(i) for i in line[-1].split(',')[:3]]
-                    instrument.sample.abg = [float(i) for i in line[-1].split(',')[3:]]
+                if line[0].strip() == 'samplemosaic':
+                    instrument.sample.mosaic = float(line[-1].strip())
+                if line[0].strip() == 'latticeconstants':
+                    instrument.sample.abc = [float(i.strip()) for i in line[-1].split(',')[:3]]
+                    instrument.sample.abg = [float(i.strip()) for i in line[-1].split(',')[3:]]
 
             self.instrument = instrument

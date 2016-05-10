@@ -33,12 +33,15 @@ class Neutronpy(Data):
             Option to build Instrument from file header
 
         """
-        with open(filename, 'r') as f:
-            first_line = f.readline()
-            if 'hdf5' in first_line.lower():
-                self.load_hdf5(filename, build_hkl, load_instrument)
-            elif 'NeutronPy' in first_line:
-                self.load_ascii(filename, build_hkl, load_instrument)
+        if filename[-4:].lower() == 'hdf5':
+            self.load_hdf5(filename, build_hkl, load_instrument)
+        else:
+            with open(filename, 'r') as f:
+                first_line = f.readline()
+                if 'NeutronPy' in first_line:
+                    self.load_ascii(filename, build_hkl, load_instrument)
+                else:
+                    raise IOError
 
     def load_hdf5(self, filename, build_hkl=True, load_instrument=False):
         r"""Loads data from HDF5 format file
@@ -63,14 +66,14 @@ class Neutronpy(Data):
             data_root = f['data']
 
             for key, value in data_root.items():
-                data[key] = value
+                data[key] = np.copy(value)
 
             self._data = data
-            self.data_keys = data_root.attrs.get('data_keys')
+            self.data_keys = dict((key, str(value)) for key, value in data_root['data_keys'].attrs.items())
 
             if build_hkl:
                 try:
-                    self.Q_keys = data_root.attrs.get('Q_keys')
+                    self.Q_keys = dict((key, str(value)) for key, value in data_root['Q_keys'].attrs.items())
                 except KeyError:
                     warnings.warn('Q_keys could not be built automatically.')
 
@@ -113,9 +116,6 @@ class Neutronpy(Data):
             if 'original_header' in line:
                 start = n + 1
 
-            if 'npy_col_headers' in line:
-                stop = n - 1
-
             if build_hkl:
                 if 'Q_keys' in line:
                     self.Q_keys = eval(line.replace('Q_keys =', ''))
@@ -130,12 +130,12 @@ class Neutronpy(Data):
                 self.plot_default_y = line.split('=')[-1].strip()
 
         if build_hkl and not hasattr(self, 'Q_keys'):
-            warnings.Warn('Q_keys could not be built automatically.')
+            warnings.warn('Q_keys could not be built automatically.')
 
-        self.file_header = file_header[start:stop]
+        self.file_header = file_header[start:-3]
 
-        if load_instr:
+        if load_instrument:
             try:
                 self.instrument = load_instr(filename.split('.')[0] + '.instr', filetype='ascii')
             except IOError:
-                warnings.Warn('Instrument could not be loaded automatically.')
+                warnings.warn('Instrument could not be loaded automatically.')

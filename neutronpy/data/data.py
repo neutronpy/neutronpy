@@ -215,10 +215,12 @@ class Data(PlotData, Analysis):
         r"""Set h to appropriate column of Q
         """
         if isinstance(value, numbers.Number):
-            value = np.array([value] * self.Q.shape[0])
+            value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
-        if value.shape != self.Q.shape[0]:
-            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.Q.shape[0]))
+        if value.shape != self.data[self.data_keys['detector']].shape:
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(
+                self.data[self.data_keys['detector']].shape))
+
         else:
             self.data[self.Q_keys['h']] = np.array(value)
 
@@ -235,10 +237,12 @@ class Data(PlotData, Analysis):
         r"""Set k to appropriate column of Q
         """
         if isinstance(value, numbers.Number):
-            value = np.array([value] * self.Q.shape[0])
+            value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
-        if value.shape != self.Q.shape[0]:
-            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.Q.shape[0]))
+        if value.shape != self.data[self.data_keys['detector']].shape:
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(
+                self.data[self.data_keys['detector']].shape))
+
         else:
             self.data[self.Q_keys['k']] = np.array(value)
 
@@ -255,10 +259,12 @@ class Data(PlotData, Analysis):
         r"""Set l to appropriate column of Q
         """
         if isinstance(value, numbers.Number):
-            value = value = np.array([value] * self.Q.shape[0])
+            value = value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
-        if value.shape != self.Q.shape[0]:
-            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.Q.shape[0]))
+        if value.shape != self.data[self.data_keys['detector']].shape:
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(
+                self.data[self.data_keys['detector']].shape))
+
         else:
             self.data[self.Q_keys['l']] = np.array(value)
 
@@ -275,10 +281,12 @@ class Data(PlotData, Analysis):
         r"""Set e to appropriate column of Q
         """
         if isinstance(value, numbers.Number):
-            value = np.array([value] * self.Q.shape[0])
+            value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
-        if value.shape != self.Q.shape[0]:
-            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.Q.shape[0]))
+        if value.shape != self.data[self.data_keys['detector']].shape:
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(
+                self.data[self.data_keys['detector']].shape))
+
         else:
             self.data[self.Q_keys['e']] = np.array(value)
 
@@ -295,10 +303,12 @@ class Data(PlotData, Analysis):
         r"""Set temp to appropriate column of Q
         """
         if isinstance(value, numbers.Number):
-            value = np.array([value] * self.Q.shape[0])
+            value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
-        if value.shape != self.Q.shape[0]:
-            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.Q.shape[0]))
+        if value.shape != self.data[self.data_keys['detector']].shape:
+            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(
+                self.data[self.data_keys['detector']].shape))
+
         else:
             self.data[self.Q_keys['temp']] = np.array(value)
 

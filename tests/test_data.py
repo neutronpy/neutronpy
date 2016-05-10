@@ -3,7 +3,6 @@ r"""Testing of core library
 
 """
 from copy import deepcopy
-import os
 import unittest
 from mock import patch
 from matplotlib import use
@@ -57,17 +56,27 @@ class DataTest(unittest.TestCase):
     """Unit tests for data object
     """
 
+    def test_build_data(self):
+        data = Data(blah='test')
+        data = Data(error=1)
+
     def test_combine_data(self):
         """Tests combining data
         """
         data1 = build_data(clean=True)
         data2 = build_data(clean=False)
+        data3 = object
 
         data = data1 + data2
 
         self.assertTrue((data.monitor == data1.monitor + data2.monitor).all())
         self.assertTrue((data.detector == data1.detector + data2.detector).all())
         self.assertTrue((data.Q == data1.Q).all() & (data.Q == data2.Q).all())
+
+        def _test():
+            data1 + data3
+
+        self.assertRaises(TypeError, _test)
 
     def test_rebin(self):
         """Tests data rebinning
@@ -86,6 +95,11 @@ class DataTest(unittest.TestCase):
         self.assertTrue(np.abs(data_bin.integrate() - data.integrate()) < 1e-4)
         self.assertTrue(np.abs(data_bin.position()[0] - data.position()[0]) < 1e-4)
         self.assertTrue(np.abs(data_bin.width()[0] - data.width()[0]) < 1e-2)
+
+        def _test():
+            data_bin = data.bin(dict(blah=[1, 2, 4]))
+
+        self.assertRaises(KeyError, _test)
 
     def test_analysis(self):
         """Tests analysis methods
@@ -178,6 +192,16 @@ class DataTest(unittest.TestCase):
         self.assertRaises(ValueError, _test, 'e')
         self.assertRaises(ValueError, _test, 'temp')
 
+        data = build_data()
+        data.h = 3
+        data.k = 3
+        data.l = 3
+        data.e = 3
+        data.temp = 3
+        data.monitor = np.ones(data.monitor.shape)
+        data.time = np.ones(data.time.shape)
+        data.data['detector'] = np.ones(data.intensity.shape)
+
     def test_norms(self):
         """Test normalization types
         """
@@ -265,8 +289,7 @@ class DataTest(unittest.TestCase):
         kf = Energy(energy=14.7 - data.e).wavevector
 
         self.assertTrue(np.all(data.dynamic_susceptibility(material, 14.7) == 4 * np.pi / (
-        material.total_scattering_cross_section) * ki / kf *
-                               data.detector * data.detailed_balance_factor))
+        material.total_scattering_cross_section) * ki / kf * data.detector * data.detailed_balance_factor))
 
     def test_background_subtraction(self):
         """Test background subtraction
@@ -288,16 +311,30 @@ class DataTest(unittest.TestCase):
         """Test plotting
         """
         data = build_data()
+        self.assertRaises(AttributeError, data.plot)
+        data.plot_default_x = 'h'
+        data.plot_default_y = 'detector'
+        data.plot()
         data.plot('h', 'intensity')
+        data.plot('h', 'detector')
         data.plot('h', 'intensity', show_err=False)
         data.plot('h', 'intensity', output_file='plot_test.pdf')
         data.plot('h', 'intensity', smooth_options=dict(sigma=1))
         data.plot('h', 'intensity', fit_options=dict(function=functions.voigt, fixp=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                                      p=[20., 0., 3., -0.15, 0.08, 0.2, 3., 0.15, 0.08, 0.2]))
+        self.assertRaises(Exception, data.plot, 'h', 'intensity',
+                          fit_options=dict(function=functions.voigt, fixp=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                                           p=[20., 0., 3., -0.15, 0.08, 0.2, 3., 0.15, 0.08, 0.2]))
         data.plot('h', 'intensity',
                   to_bin=dict(h=[-1, 1., 41], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[3.5, 4.5, 1], temp=[-300, 900, 1]))
+        data.plot('h', 'detector',
+                  to_bin=dict(h=[-1, 1., 41], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[3.5, 4.5, 1], temp=[-300, 900, 1]))
+
         data3d = build_3d_data()
         data3d.plot(x='h', y='k', z='intensity')
+        data3d.plot(x='h', y='k', z='intensity', to_bin=dict(h=[-1, 1, 41], k=[-1, 1, 41]))
+        data3d.plot(x='h', y='k', z='detector', to_bin=dict(h=[-1, 1, 41], k=[-1, 1, 41]), smooth_options=dict(sigma=1),
+                    output_file='plot_test.pdf')
         self.assertRaises(KeyError, data3d.plot, 'h', 'k', 'blah')
         self.assertRaises(KeyError, data3d.plot, 'h', 'k', 'w', 'blah')
 
