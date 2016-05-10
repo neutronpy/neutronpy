@@ -67,7 +67,7 @@ on_success:
   - echo username=davidfobes                         >> %USERPROFILE%\\.pypirc
   - echo password=%PYPIPASSWORD%                     >> %USERPROFILE%\\.pypirc
   - set HOME=%USERPROFILE%
-  - if "%APPVEYOR_REPO_TAG%"=="true" ( python setup.py bdist_wheel upload ) else ( echo "Not deploying because not a tagged commit." )
+  - if "%APPVEYOR_REPO_TAG%"=="true" if NOT "%PYTHON_VERSION%"=="2.6" ( python setup.py bdist_wheel upload ) else ( echo "Not deploying because not a tagged commit." )
 
 notifications:
   - provider: Slack

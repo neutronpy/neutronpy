@@ -1,7 +1,8 @@
-r'''NeutronPy: open source python library for neutron scattering data analysis
+r"""NeutronPy: open source python library for neutron scattering data analysis
 
-'''
+"""
 from __future__ import absolute_import
+import warnings
 from . import constants
 from . import fileio
 from . import functions
@@ -21,6 +22,6 @@ from .instrument import Instrument
 try:
     from . import gui
 except ImportError:
-    print('Warning: PyQt5 not found, cannot run Resolution GUI')
+    warnings.warn('PyQt5 not found, cannot run Resolution GUI')
 
-__version__ = '1.0.0b3'
+__version__ = '1.0.0'

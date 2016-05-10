@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* :release:`v1.0.0 <2016-05-10>`
+* :feature:`68` Background subtraction added to :py:class:`.Data`
+* :feature:`73` Added support for saving :py:class:`.Data` and :py:class:`.Instrument` objects to disk
+* :bug:`72 major` Fixed problem with ``io`` namespace by renaming it to ``fileio``
+
 * :release:`v1.0.0b2 <2016-04-24>`
 * :feature:`67` All data is now imported from files when using :py:meth:`.load_data`. Binning is now more generalized.
 * :feature:`71` Added Currat-Axe spurion method :py:meth:`.spurion.currat_axe_peaks`
