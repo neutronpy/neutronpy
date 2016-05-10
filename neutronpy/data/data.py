@@ -7,7 +7,6 @@ from multiprocessing import cpu_count, Pool  # @UnresolvedImport
 import numbers
 import warnings
 import numpy as np
-from scipy.interpolate import griddata
 from .analysis import Analysis
 from .plot import PlotData
 
@@ -472,8 +471,16 @@ class Data(PlotData, Analysis):
                 except (AttributeError, KeyError):
                     raise KeyError('Invalid key for data_column.')
 
-            bg_intensity_grid = griddata(bg_x, background_data.intensity, self_x, method='nearest')
-            bg_error_grid = np.sqrt(griddata(bg_x, background_data.error ** 2, self_x, method='nearest'))
+            try:
+                from scipy.interpolate import griddata
+
+                bg_intensity_grid = griddata(bg_x, background_data.intensity, self_x, method='nearest')
+                bg_error_grid = np.sqrt(griddata(bg_x, background_data.error ** 2, self_x, method='nearest'))
+            except ImportError:
+                warnings.warn('Background subtraction failed. Scipy Import Error, use more recent version of Python')
+
+                if ret:
+                    return self
 
             _new_intensity = self.intensity - bg_intensity_grid.flatten()
             _new_error = np.sqrt(
