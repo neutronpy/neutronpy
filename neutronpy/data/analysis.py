@@ -5,7 +5,7 @@ from ..energy import Energy
 
 
 class Analysis(object):
-    r'''Class containing methods for the Data class
+    r"""Class containing methods for the Data class
 
     Attributes
     ----------
@@ -20,10 +20,10 @@ class Analysis(object):
     dynamic_susceptibility
     estimate_background
 
-    '''
+    """
     @property
     def detailed_balance_factor(self):
-        r'''Returns the detailed balance factor (sometimes called the Bose
+        r"""Returns the detailed balance factor (sometimes called the Bose
         factor)
 
         Parameters
@@ -35,12 +35,12 @@ class Analysis(object):
         dbf : ndarray
             The detailed balance factor (temperature correction)
 
-        '''
+        """
 
         return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
 
     def integrate(self, background=None, **kwargs):
-        r'''Returns the integrated intensity within given bounds
+        r"""Returns the integrated intensity within given bounds
 
         Parameters
         ----------
@@ -54,7 +54,7 @@ class Analysis(object):
             The integrated intensity either over all data, or within
             specified boundaries
 
-        '''
+        """
         if background is not None:
             background = self.estimate_background(background)
         else:
@@ -74,7 +74,7 @@ class Analysis(object):
         return result
 
     def position(self, background=None, **kwargs):
-        r'''Returns the position of a peak within the given bounds
+        r"""Returns the position of a peak within the given bounds
 
         Parameters
         ----------
@@ -88,7 +88,7 @@ class Analysis(object):
             The result is a tuple with position in each dimension of Q,
             (h, k, l, e)
 
-        '''
+        """
         if background is not None:
             background = self.estimate_background(background)
         else:
@@ -114,7 +114,7 @@ class Analysis(object):
         return result
 
     def width(self, background=None, **kwargs):
-        r'''Returns the mean-squared width of a peak within the given bounds
+        r"""Returns the mean-squared width of a peak within the given bounds
 
         Parameters
         ----------
@@ -128,7 +128,7 @@ class Analysis(object):
             The result is a tuple with the width in each dimension of Q,
             (h, k, l, e)
 
-        '''
+        """
         if background is not None:
             background = self.estimate_background(background)
         else:
@@ -156,7 +156,7 @@ class Analysis(object):
         return result
 
     def scattering_function(self, material, ei):
-        r'''Returns the neutron scattering function, i.e. the detector counts
+        r"""Returns the neutron scattering function, i.e. the detector counts
         scaled by :math:`4 \pi / \sigma_{\mathrm{tot}} * k_i/k_f`.
 
         Parameters
@@ -173,7 +173,7 @@ class Analysis(object):
         counts : ndarray
             The detector counts scaled by the total scattering cross section
             and ki/kf
-        '''
+        """
         ki = Energy(energy=ei).wavevector
         kf = Energy(energy=ei - self.e).wavevector
 
@@ -181,7 +181,7 @@ class Analysis(object):
                 kf * self.detector)
 
     def dynamic_susceptibility(self, material, ei):
-        r'''Returns the dynamic susceptibility
+        r"""Returns the dynamic susceptibility
         :math:`\chi^{\prime\prime}(\mathbf{Q},\hbar\omega)`
 
         Parameters
@@ -198,12 +198,12 @@ class Analysis(object):
         counts : ndarray
             The detector counts turned into the scattering function multiplied
             by the detailed balance factor
-        '''
+        """
         return (self.scattering_function(material, ei) *
                 self.detailed_balance_factor)
 
     def estimate_background(self, bg_params):
-        r'''Estimate the background according to ``type`` specified.
+        r"""Estimate the background according to ``type`` specified.
 
         Parameters
         ----------
@@ -219,13 +219,13 @@ class Analysis(object):
         background : float or ndarray
             Value determined to be the background. Will return ndarray only if
             `'type'` is `'constant'` and `'value'` is an ndarray
-        '''
+        """
         if bg_params['type'] == 'constant':
             return bg_params['value']
 
         elif bg_params['type'] == 'percent':
             inten = self.intensity[self.intensity >= 0.]
-            Npts = inten.size * (bg_params['value'] / 100.)
+            Npts = int(inten.size * (bg_params['value'] / 100.))
             min_vals = inten[np.argsort(inten)[:Npts]]
             background = np.average(min_vals)
             return background
