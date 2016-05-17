@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''NeutronPy: Neutron scattering tools for scientific data analysis in python
+"""NeutronPy: Neutron scattering tools for scientific data analysis in python
 
 NeutronPy is a collection of commonly needed tools aimed at facilitating the
 analysis of neutron scattering data. NeutronPy is built primarily using the
@@ -8,7 +8,7 @@ library (least-squares fitting based on the C-implementation of MPFIT), and
 a rewrite of ResLib 3.4c (MatLab) routines for Instrument resolution
 calculations.
 
-'''
+"""
 
 import os
 import sys
@@ -26,12 +26,18 @@ Intended Audience :: Science/Research
 License :: OSI Approved :: MIT License
 Natural Language :: English
 Programming Language :: C
-Programming Language :: Python
+Programming Language :: Cython
+Programming Language :: Python :: 2
+Programming Language :: Python :: 2.6
+Programming Language :: Python :: 2.7
 Programming Language :: Python :: 3
+Programming Language :: Python :: 3.3
+Programming Language :: Python :: 3.4
+Programming Language :: Python :: 3.5
 Programming Language :: Python :: Implementation :: CPython
 Topic :: Scientific/Engineering :: Physics
 Operating System :: Microsoft :: Windows
-Operating System :: POSIX
+Operating System :: POSIX :: Linux
 Operating System :: Unix
 Operating System :: MacOS :: MacOS X
 """
@@ -40,8 +46,8 @@ DOCLINES = __doc__.split("\n")
 
 
 def setup_package():
-    r'''Setup package function
-    '''
+    r"""Setup package function
+    """
     src_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     old_path = os.getcwd()
     os.chdir(src_path)
@@ -88,7 +94,9 @@ def setup_package():
                     ext_package='neutronpy',
                     ext_modules=modules,
                     package_data={'neutronpy': ['database/*.json', 'ui/*.ui']},
-                    packages=['neutronpy', 'neutronpy.crystal', 'neutronpy.data', 'neutronpy.fileio', 'neutronpy.fileio.loaders', 'neutronpy.instrument', 'neutronpy.scattering'],)
+                    packages=['neutronpy', 'neutronpy.crystal', 'neutronpy.data', 'neutronpy.fileio',
+                              'neutronpy.fileio.loaders', 'neutronpy.instrument', 'neutronpy.scattering'],
+                    entry_points={"console_scripts": ["neutronpy=neutronpy.gui:launch"]},)
 
     try:
         setup(**metadata)
