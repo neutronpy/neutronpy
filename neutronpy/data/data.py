@@ -135,31 +135,60 @@ class Data(PlotData, Analysis):
         except TypeError:
             raise
 
+    def __iadd__(self, right):
+        try:
+            self.combine_data(right, ret=False)
+        except TypeError:
+            raise
+
     def __sub__(self, right):
         try:
             return self.subtract_background(right, ret=True)
         except (TypeError, ValueError):
             raise
 
+    def __isub__(self, right):
+        try:
+            self.subtract_background(right, ret=False)
+        except (TypeError, ValueError):
+            raise
+
     def __mul__(self, right):
-        self.detector = self.detector * right
-        return self
+        temp_obj = copy.deepcopy(self)
+        temp_obj.detector = self.detector * right
+        return temp_obj
+
+    def __imul__(self, right):
+        self.detector *= right
 
     def __div__(self, right):
-        self.detector = self.detector / right
-        return self
+        temp_obj = copy.deepcopy(self)
+        temp_obj.detector = self.detector / right
+        return temp_obj
+
+    def __idiv__(self, right):
+        self.detector /= right
 
     def __truediv__(self, right):
-        self.detector = self.detector / right
-        return self
+        temp_obj = copy.deepcopy(self)
+        temp_obj.detector = self.detector / right
+        return temp_obj
+
+    def __itruediv__(self, right):
+        self.detector /= right
 
     def __floordiv__(self, right):
-        self.detector = self.detector // right
-        return self
+        temp_obj = copy.deepcopy(self)
+        temp_obj.detector = self.detector // right
+        return temp_obj
+
+    def __ifloordiv__(self, other):
+        self.detector //= right
 
     def __pow__(self, right):
-        self.detector **= right
-        return self
+        temp_obj = copy.deepcopy(self)
+        temp_obj.detector **= right
+        return temp_obj
 
     def __eq__(self, right):
         if not np.all(sorted(list(self.data.keys())) == sorted(list(right.data.keys()))):
