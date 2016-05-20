@@ -161,6 +161,19 @@ class Data(PlotData, Analysis):
         self.detector **= right
         return self
 
+    def __eq__(self, right):
+        if not np.all(sorted(list(self.data.keys())) == sorted(list(right.data.keys()))):
+            return False
+
+        for key, value in self.data.items():
+            if not np.all(value == right.data[key]):
+                return False
+
+        return True
+
+    def __ne__(self, right):
+        return not self.__eq__(right)
+
     @property
     def Q(self):
         r"""Returns a Q matrix with columns h,k,l,e,temp
