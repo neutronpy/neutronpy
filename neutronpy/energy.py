@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-r''' Class to calculate the energy of a neutron in various common units
-'''
+r""" Class to calculate the energy of a neutron in various common units
+"""
 import numpy as np
 from scipy.constants import h, hbar, k, m_n
 from .constants import JOULES_TO_MEV
 
 
 class Energy(object):
-    u'''Class containing the most commonly used properties of a neutron beam
+    u"""Class containing the most commonly used properties of a neutron beam
     given some initial input, e.g. energy, wavelength, velocity, wavevector,
     temperature, or frequency. At least one input must be supplied.
 
@@ -43,15 +43,23 @@ class Energy(object):
     Methods
     -------
     values
-    '''
-    def __init__(self, energy=None, wavelength=None, velocity=None,
-                 wavevector=None, temperature=None, frequency=None):
+    """
 
-        self._update_values(energy, wavelength, velocity,
-                            wavevector, temperature, frequency)
+    def __init__(self, energy=None, wavelength=None, velocity=None, wavevector=None, temperature=None, frequency=None):
 
-    def _update_values(self, energy=None, wavelength=None, velocity=None,
-                       wavevector=None, temperature=None, frequency=None):
+        self._update_values(energy, wavelength, velocity, wavevector, temperature, frequency)
+
+    def __str__(self):
+        return self.values
+
+    def __eq__(self, right):
+        return abs(self.energy - right.energy) < 1e-6
+
+    def __ne__(self, right):
+        return not self.__eq__(right)
+
+    def _update_values(self, energy=None, wavelength=None, velocity=None, wavevector=None, temperature=None,
+                       frequency=None):
         try:
             if energy is None:
                 if wavelength is not None:
@@ -74,13 +82,13 @@ class Energy(object):
             self.freq = (self.energy / JOULES_TO_MEV / hbar / 2. / np.pi / 1.e12)
 
         except AttributeError:
-            raise AttributeError('''You must define at least one of the \
+            raise AttributeError("""You must define at least one of the \
                                     following: energy, wavelength, velocity, \
-                                    wavevector, temperature, frequency''')
+                                    wavevector, temperature, frequency""")
 
     @property
     def energy(self):
-        r'''Energy of the neutron in meV'''
+        r"""Energy of the neutron in meV"""
         return self.en
 
     @energy.setter
@@ -89,7 +97,7 @@ class Energy(object):
 
     @property
     def wavelength(self):
-        r'''Wavelength of the neutron in Å'''
+        r"""Wavelength of the neutron in Å"""
         return self.wavelen
 
     @wavelength.setter
@@ -98,7 +106,7 @@ class Energy(object):
 
     @property
     def wavevector(self):
-        u'''Wavevector k of the neutron in 1/Å'''
+        u"""Wavevector k of the neutron in 1/Å"""
         return self.wavevec
 
     @wavevector.setter
@@ -107,7 +115,7 @@ class Energy(object):
 
     @property
     def temperature(self):
-        r'''Temperature of the neutron in Kelvin'''
+        r"""Temperature of the neutron in Kelvin"""
         return self.temp
 
     @temperature.setter
@@ -116,7 +124,7 @@ class Energy(object):
 
     @property
     def frequency(self):
-        r'''Frequency of the neutron in THz'''
+        r"""Frequency of the neutron in THz"""
         return self.freq
 
     @frequency.setter
@@ -125,7 +133,7 @@ class Energy(object):
 
     @property
     def velocity(self):
-        r'''Velocity of the neutron in m/s'''
+        r"""Velocity of the neutron in m/s"""
         return self.vel
 
     @velocity.setter
@@ -134,7 +142,7 @@ class Energy(object):
 
     @property
     def values(self):
-        r'''Prints all of the properties of the Neutron beam
+        r"""Prints all of the properties of the Neutron beam
 
         Parameters
         ----------
@@ -145,13 +153,14 @@ class Energy(object):
         values : string
             A string containing all the properties of the neutron including
             respective units
-        '''
-        return u'''
-Energy: {0:3.3f} meV
-Wavelength: {1:3.3f} Å
-Wavevector: {2:3.3f} 1/Å
-Velocity: {3:3.3f} m/s
-Temperature: {4:3.3f} K
-Frequency: {5:3.3f} THz
-'''.format(self.energy, self.wavelength, self.wavevector, self.velocity,
-           self.temperature, self.frequency)
+        """
+        values = [u'',
+                  u'Energy: {0:3.3f} meV'.format(self.energy),
+                  u'Wavelength: {0:3.3f} Å'.format(self.wavelength),
+                  u'Wavevector: {0:3.3f} 1/Å'.format(self.wavevector),
+                  u'Velocity: {0:3.3f} m/s'.format(self.velocity),
+                  u'Temperature: {0:3.3f} K'.format(self.temperature),
+                  u'Frequency: {0:3.3f} THz'.format(self.frequency),
+                  u'']
+
+        return '\n'.join(values)
