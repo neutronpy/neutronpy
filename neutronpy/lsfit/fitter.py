@@ -2,47 +2,17 @@
 r"""non-linear least squares fitting
 """
 import numbers
+import warnings
+from collections import namedtuple
+
 import numpy as np
 from lmfit import minimize, Parameters
+
 from .tools import residual_wrapper
-
-MP_OK = {1: 'Convergence in chi-square value',
-         2: 'Convergence in parameter value',
-         3: 'Convergence in chi-square and parameter value',
-         4: 'Convergence in orthogonality',
-         5: 'Maximum number of iterations reached',
-         6: 'ftol is too small; no further improvement',
-         7: 'xtol is too small; no further improvement',
-         8: 'gtol is too small; no further improvement'}
-
-MP_ERR = {0: 'General input parameter error',
-          -16: 'User function produced non-finite values',
-          -17: 'No user function was supplied',
-          -18: 'No user data points were supplied',
-          -19: 'No free parameters',
-          -20: 'Memory allocation error',
-          -21: 'Initial values inconsistent w constraints',
-          -22: 'Initial constraints inconsistent',
-          -23: 'General input parameter error',
-          -24: 'Not enough degrees of freedom'}
-
-MP_MACHEP0 = 2.2204460e-16
-MP_DWARF = 2.2250739e-308
-MP_GIANT = 1.7976931e+308
-MP_RDWARF = np.sqrt(MP_DWARF * 1.5) * 10
-MP_RGIANT = np.sqrt(MP_GIANT) * 0.1
-
-
-class _dummy():
-    r"""Empty class for constructing empty objects
-    """
-
-    def __init__(self, **kwargs):
-        self.__dict__.update(kwargs)
 
 
 class Fitter(object):
-    u"""Wrapper for LMFIT, which is a wrapper for scipy's optimize.
+    u"""Wrapper for LMFIT, which is an extension of scipy.optimize
 
     Parameters
     ----------
@@ -146,6 +116,9 @@ class Fitter(object):
     The following attributes can be set by the user to specify a
     Fitter object's behavior.
 
+    **This class was adapted from KMPFIT in the Kapteyn project to work with existing
+    unit tests**
+
     Attributes
     ----------
     parinfo
@@ -189,12 +162,16 @@ class Fitter(object):
                  nofinitecheck=False):
 
         self._m = 0
-        self.result = _dummy()
-        self.config = _dummy()
+        self.result = namedtuple('result', [])
+        self.config = namedtuple('config', [])
 
         self.residuals = residual_wrapper(residuals)
+        if deriv is not None:
+            self.deriv = residual_wrapper(deriv)
+        else:
+            self.deriv = None
+
         self.data = data
-        self.deriv = deriv
         self.params0 = params0
         self.parinfo = parinfo
         self.ftol = ftol
@@ -209,7 +186,7 @@ class Fitter(object):
 
     @property
     def parinfo(self):
-        r"""A list of dicts with parameter contraints, one dict
+        r"""A list of dicts with parameter constraints, one dict
         per parameter, or None if not given.
 
         Each dict can have zero or more items with the following keys
@@ -389,8 +366,9 @@ class Fitter(object):
 
     @property
     def covtol(self):
-        r"""Range tolerance for covariance calculation. Default: 1e-14
+        r"""(DEPRECIATED) Range tolerance for covariance calculation. Default: 1e-14
         """
+        warnings.warn('covtol is Depreciated and has no effect', DeprecationWarning)
         return self.config.covtol
 
     @covtol.setter
@@ -402,8 +380,9 @@ class Fitter(object):
 
     @property
     def maxiter(self):
-        r"""Maximum number of iterations. Default: 200
+        r"""(DEPRECIATED) Maximum number of iterations. Default: 200
         """
+        warnings.warn('maxiter is Depreciated and has no effect', DeprecationWarning)
         return self.config.maxiter
 
     @maxiter.setter
@@ -430,8 +409,9 @@ class Fitter(object):
 
     @property
     def nofinitecheck(self):
-        r"""Does not check for finite values. Default: False
+        r"""(DEPRECIATED) Does not check for finite values. Default: False
         """
+        warnings.warn('nofinitecheck is Depreciated and has no effect', DeprecationWarning)
         return self._nofinitecheck
 
     @nofinitecheck.setter
@@ -443,7 +423,7 @@ class Fitter(object):
 
     @property
     def npar(self):
-        r"""Number of parameters.
+        r"""Number of parameters
         """
         try:
             return len(self.params0)
@@ -452,75 +432,75 @@ class Fitter(object):
 
     @property
     def message(self):
-        """Message string.
+        """Success/error message
         """
-        return self.message
+        return self.result.message
 
     @property
     def chi2_min(self):
-        """Final :math:`\chi^2`.
+        """Final :math:`\chi^2`
         """
         return self.result.bestnorm
 
     @property
     def orignorm(self):
-        """Starting value of :math:`\chi^2`.
+        """Initial :math:`\chi^2`.
         """
         return self.result.orignorm
 
     @property
     def niter(self):
-        """Number of iterations.
+        """Number of iterations
         """
         return self.result.niter
 
     @property
     def nfev(self):
-        """Number of function evaluations.
+        """Number of function evaluations
         """
         return self.result.nfev
 
     @property
     def status(self):
-        """Fitting status code.
+        """Status code of fit passed from scipy.optimize.leastsq
         """
         return self.result.status
 
     @property
     def nfree(self):
-        """Number of free parameters.
+        """Number of free parameters
         """
         return self.result.nfree
 
     @property
     def npegged(self):
-        """Number of pegged parameters.
+        """Number of fixed parameters
         """
         return self.result.npegged
 
     @property
     def covar(self):
-        """Final parameter covariance matrix.
+        """Parameter covariance matrix
         """
         return self.result.covar
 
     @property
     def resid(self):
-        """Final residuals.
+        """Residuals
         """
         return self.result.resid
 
     @property
     def xerror(self):
-        """Final parameter uncertainties (:math:`1 \sigma`)
+        """Parameter uncertainties (:math:`1 \sigma`)
         """
         return self.result.xerror
 
     @property
     def dof(self):
-        """Number of degrees of freedom.
+        """Degrees of freedom
         """
-        return self.m - self.nfree
+        return self._m - self.nfree
 
     @property
     def rchi2_min(self):
@@ -530,19 +510,17 @@ class Fitter(object):
 
     @property
     def stderr(self):
-        """Standard errors.
+        """Standard errors estimated from :math:`\sqrt{diag(covar) * \chi^{2}_{reduced}`
         """
         return np.sqrt(np.diagonal(self.covar) * self.rchi2_min)
 
     def fit(self, params0):
-        r"""Perform a fit with the current values of parameters and other
-        attributes.
+        r"""Perform a fit with the provided parameters.
 
         Parameters
         ----------
-        params0 : array_like
-            Optional argument *params0*: initial fitting parameters.
-            (Default: previous initial values are used.)
+        params0 : list
+            Initial fitting parameters
 
         """
         self.params0 = params0
@@ -568,17 +546,25 @@ class Fitter(object):
 
         self.result.orignorm = np.sum(self.residuals(params0, self.data) ** 2)
 
-        result = minimize(self.residuals, p, method='leastsq', ftol=self.ftol, xtol=self.xtol, gtol=self.gtol,
+        result = minimize(self.residuals, p, Dfun=self.deriv, method='leastsq', ftol=self.ftol, xtol=self.xtol, gtol=self.gtol,
                           maxfev=self.maxfev, epsfcn=self.epsfcn, factor=self.stepfactor, args=(self.data,), kws=None)
 
         self.result.bestnorm = result.chisqr
         self.result.redchi = result.redchi
-        self.m = result.ndata
+        self._m = result.ndata
         self.result.nfree = result.nfree
         self.result.resid = result.residual
+        self.result.status = result.ier
         self.result.covar = result.covar
         self.result.xerror = [result.params['p{0}'.format(i)].stderr for i in range(len(result.params))]
 
         self.result.params = [result.params['p{0}'.format(i)].value for i in range(len(result.params))]
+
+        self.result.message = result.message
+
+        self.lmfit_result = result
+
+        if not result.errorbars or not result.success:
+            warnings.warn(self.result.message)
 
         return result.success
