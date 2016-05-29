@@ -12,18 +12,19 @@ from .tools import residual_wrapper
 
 
 class Fitter(object):
-    u"""Wrapper for LMFIT, which is an extension of scipy.optimize
+    u"""Wrapper for LMFIT, which is a high-level extension for
+    scipy.optimize.leastsq. Performs Non-Linear Least Squares fitting using
+    the Levenberg-Marquardt method.
 
     Parameters
     ----------
     residuals : func
         The residuals function, see description below.
 
-    deriv : func, optional
-        Derivatives function, see description below. If a derivatives
-        function is given, user-computed explicit derivatives are automatically
-        set for all parameters in the attribute :attr:`parinfo`, but this can
-        be changed by the user.
+    derivatives : func, optional
+        Derivatives function, to compute the Jacobian of the residuals
+        function with derivatives across the rows. If this is None, the
+        Jacobian will be estimated.
 
     data : tuple, optional
         Default: None
@@ -60,64 +61,32 @@ class Fitter(object):
 
     Notes
     -----
-    Objects of this class are callable and return the fitted parameters when
-    called.
+    Objects of this class are callable, returning the fitted parameters.
 
     **Residuals function**
-    The residuals function must return a NumPy (dtype='d') array with weighted
-    deviations between the model and the data. It takes two arguments:
-    a NumPy array containing the parameter values and a reference
-    to the attribute :attr:`data` which can be any object containing information
-    about the data to be fitted. *E.g.*, a tuple like
-    ``(xvalues, yvalues, errors)``.
-
-    In a typical scientific problem the residuals should be weighted so that
-    each deviate has a Gaussian sigma of 1.0.  If *x* represents values of the
-    independent variable, *y* represents a measurement for each value of *x*,
-    and *err* represents the error in the measurements, then the deviates
+    The residuals function must return an ndarray with weighted deviations
+    between the model and the data. It takes two arguments, a list of the
+    parameter values and a reference for the attribute :attr:`data`, a tuple
+    e.g. ``(x, y, err)``. In a typical scientific problem the residuals should
+    be weighted so that each deviate has a Gaussian sigma of 1.0.  If ``x``
+    represents the independent variable, ``y`` represents an intensity for
+    each value of ``x``, and ``err`` represents the error, then the deviates
     could be calculated as follows:
 
     .. math::
 
        deviates = (y - f(x)) / err
 
-    where *f* is the analytical function representing the model.
-    If *err* are the 1-sigma uncertainties in *y*, then
+    where *f* is the model function. If *err* are 1-sigma uncertainties in
+    ``y``, then
 
     .. math::
 
        \sum deviates^2
 
-    will be the total chi-squared value.  Fitter will minimize this value.
-    As described above, the values of *x*, *y* and *err* are
-    passed through Fitter to the residuals function via the attribute
+    is the total chi-squared.  :py:meth:`Fitter.fit` will minimize this value.
+    ``x``, ``y`` and ``err`` are passed to the residuals function from
     :attr:`data`.
-
-    **Derivatives function**
-    The optional derivates function can be used to compute weighted function
-    derivatives, which are used in the minimization process.  This can be
-    useful to save time, or when the derivative is tricky to evaluate
-    numerically.
-
-    The function takes three arguments: a NumPy array containing the parameter
-    values, a reference to the attribute :attr:`data` and a list with boolean
-    values corresponding with the parameters.
-    If a boolean in the list is True, the derivative with respect to the
-    corresponding parameter should be computed, otherwise it may be ignored.
-    Fitter determines these flags depending on how derivatives are
-    specified in item ``side`` of the attribute :attr:`parinfo`, or whether
-    the parameter is fixed.
-
-    The function must return a NumPy array with partial derivatives with respect
-    to each parameter. It must have shape *(n,m)*, where *n*
-    is the number of parameters and *m* the number of data points.
-
-    **Configuration attributes**
-    The following attributes can be set by the user to specify a
-    Fitter object's behavior.
-
-    **This class was adapted from KMPFIT in the Kapteyn project to work with existing
-    unit tests**
 
     Attributes
     ----------
@@ -156,9 +125,8 @@ class Fitter(object):
     fit
     """
 
-    def __init__(self, residuals, deriv=None, data=None, params0=None,
-                 parinfo=None, ftol=1e-10, xtol=1e-10, gtol=1e-10, epsfcn=None,
-                 stepfactor=100.0, covtol=1e-14, maxiter=200, maxfev=None,
+    def __init__(self, residuals, derivatives=None, data=None, params0=None, parinfo=None, ftol=1e-10, xtol=1e-10,
+                 gtol=1e-10, epsfcn=None, stepfactor=100.0, covtol=1e-14, maxiter=200, maxfev=None,
                  nofinitecheck=False):
 
         self._m = 0
@@ -166,8 +134,8 @@ class Fitter(object):
         self.config = namedtuple('config', [])
 
         self.residuals = residual_wrapper(residuals)
-        if deriv is not None:
-            self.deriv = residual_wrapper(deriv)
+        if derivatives is not None:
+            self.deriv = residual_wrapper(derivatives)
         else:
             self.deriv = None
 
@@ -184,60 +152,33 @@ class Fitter(object):
         self.maxfev = maxfev
         self.nofinitecheck = nofinitecheck
 
+    def __call__(self, params0=None):
+        if hasattr(self, 'params'):
+            return self.params
+        elif self.params0 is not None and params0 is None:
+            self.fit(self.params0)
+            return self.params
+        elif params0 is not None:
+            self.fit(params0)
+            return self.params
+        else:
+            raise ValueError('params0 is undefined, no fit can be performed')
+
     @property
     def parinfo(self):
-        r"""A list of dicts with parameter constraints, one dict
-        per parameter, or None if not given.
+        r"""A list of dicts with parameter constraints, one dict per
+        parameter, or None if not given.
 
-        Each dict can have zero or more items with the following keys
-        and values:
+        Each dict can have zero or more items with the following keys and
+        values:
 
-         ``'fixed'``: a boolean value, whether the parameter is to be held
-         fixed or not. Default: not fixed.
+         ``'fixed'``: bool
+            Parameter to be fixed. Default: False.
 
-         ``'limits'``: a two-element tuple or list with upper end lower
-         parameter limits or  None, which indicates that the parameter is not
-         bounded on this side. Default: no limits.
-
-         ``'step'``: the step size to be used in calculating the numerical
-         derivatives. Default: step size is computed automatically.
-
-         ``'side'``: the sidedness of the finite difference when computing
-         numerical derivatives.  This item can take four values:
-
-            * 0 - one-sided derivative computed automatically (default)
-
-            * 1 - one-sided derivative :math:`(f(x+h) - f(x)  )/h`
-
-            * -1 - one-sided derivative :math:`(f(x)   - f(x-h))/h`
-
-            * 2 - two-sided derivative :math:`(f(x+h) - f(x-h))/2h`
-
-            * 3 - user-computed explicit derivatives
-
-            where :math:`h` is the value of the parameter ``'step'``
-            described above.
-
-            The "automatic" one-sided derivative method will chose a
-            direction for the finite difference which does not
-            violate any constraints.  The other methods do not
-            perform this check.  The two-sided method is in
-            principle more precise, but requires twice as many
-            function evaluations.  Default: 0.
-
-         ``'deriv_debug'``: boolean to specify console debug logging of
-         user-computed derivatives. True: enable debugging.
-         If debugging is enabled,
-         then ``'side'`` should be set to 0, 1, -1 or 2, depending on which
-         numerical derivative you wish to compare to.
-         Default: False.
-
-        As an example, consider a function with four parameters of which the
-        first parameter should be fixed and for the third parameter explicit
-        derivatives should be used. In this case, ``parinfo`` should have the
-        value ``[{'fixed': True}, None, {'side': 3}, None]`` or
-        ``[{'fixed': True}, {}, {'side': 3}, {}]``.
-
+         ``'limits'``: list
+            Two-element list with upper end lower parameter limits or None,
+            which indicates that the parameter is not bounded on this side.
+            Default: None.
         """
         return self._parinfo
 
@@ -255,7 +196,8 @@ class Fitter(object):
 
     @property
     def params(self):
-        r"""The fitted parameters. This attribute has the same type as :attr:`params0`.
+        r"""The fitted parameters. This attribute has the same type as
+        :attr:`params0`.
         """
         return self.result.params
 
@@ -338,7 +280,7 @@ class Fitter(object):
 
     @property
     def epsfcn(self):
-        r"""Finite derivative step size. Default: 2.2204460e-16
+        r"""Finite derivative step size. Default: 2.2204460492503131e-16
         """
         return self.config.epsfcn
 
@@ -366,7 +308,8 @@ class Fitter(object):
 
     @property
     def covtol(self):
-        r"""(DEPRECIATED) Range tolerance for covariance calculation. Default: 1e-14
+        r"""(DEPRECIATED) Range tolerance for covariance calculation.
+        Default: 1e-14
         """
         warnings.warn('covtol is Depreciated and has no effect', DeprecationWarning)
         return self.config.covtol
@@ -510,7 +453,8 @@ class Fitter(object):
 
     @property
     def stderr(self):
-        """Standard errors estimated from :math:`\sqrt{diag(covar) * \chi^{2}_{reduced}`
+        """Standard errors estimated from
+        :math:`\sqrt{diag(covar) * \chi^{2}_{reduced}`
         """
         return np.sqrt(np.diagonal(self.covar) * self.rchi2_min)
 
@@ -546,7 +490,8 @@ class Fitter(object):
 
         self.result.orignorm = np.sum(self.residuals(params0, self.data) ** 2)
 
-        result = minimize(self.residuals, p, Dfun=self.deriv, method='leastsq', ftol=self.ftol, xtol=self.xtol, gtol=self.gtol,
+        result = minimize(self.residuals, p, Dfun=self.deriv, method='leastsq', ftol=self.ftol, xtol=self.xtol,
+                          gtol=self.gtol,
                           maxfev=self.maxfev, epsfcn=self.epsfcn, factor=self.stepfactor, args=(self.data,), kws=None)
 
         self.result.bestnorm = result.chisqr

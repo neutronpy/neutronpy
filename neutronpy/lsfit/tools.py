@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-r"""
+r"""Tools for Fitter class
 """
 from functools import wraps
 

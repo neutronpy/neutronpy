@@ -51,10 +51,10 @@ Requirements
 ------------
 The following packages are required to install this library:
 
-* ``Python >= 2.6 (incl. python 3)``
+* ``Python >= 2.6 (incl. Python 3.3-3.5)``
 * ``numpy >= 1.8.0``
 * ``scipy >= 0.13.0``
-* ``Cython >= 0.20``
+* ``lmfit >= 0.9.1`` (``==0.9.1`` for Python 2.6)
 * ``matplotlib >= 1.3.0`` (optional, plotting)
 * ``nose >= 1.3.0`` (optional, tests)
 * ``h5py`` (optional, file IO)
