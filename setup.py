@@ -14,7 +14,6 @@ import os
 import sys
 import re
 
-# from distutils.core import Extension
 try:
     from setuptools import setup, Extension
 except ImportError:
@@ -53,29 +52,16 @@ def setup_package():
     os.chdir(src_path)
     sys.path.insert(0, src_path)
 
-    cmdclass = {}
-
     with open('neutronpy/__init__.py') as f:
         __version__ = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", f.read(), re.M).group(1)
 
-    include_dirs = ['src']
+    include_dirs = []
 
     try:
         import numpy
         include_dirs.append(os.path.join(os.path.dirname(numpy.__file__), numpy.get_include()))
     except ImportError:
         raise
-
-    try:
-        from Cython.Distutils import build_ext
-        kmpfit_loc = "src/kmpfit.pyx"
-        cmdclass['build_ext'] = build_ext
-    except ImportError:
-        kmpfit_loc = "src/kmpfit.c"
-
-    modules = [Extension("kmpfit", [kmpfit_loc, "src/mpfit.c"], include_dirs=include_dirs)]
-    for e in modules:
-        e.cython_directives = {"embedsignature": True}
 
     metadata = dict(name='neutronpy',
                     version=__version__,
@@ -87,16 +73,15 @@ def setup_package():
                     url='https://github.com/neutronpy/neutronpy',
                     license='MIT',
                     platforms=["Windows", "Linux", "Mac OS X", "Unix"],
-                    install_requires=['numpy', 'scipy', 'matplotlib', 'cython'],
+                    install_requires=['numpy', 'scipy', 'matplotlib', 'lmfit'],
                     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
                     test_suite='nose.collector',
-                    cmdclass=cmdclass,
                     ext_package='neutronpy',
-                    ext_modules=modules,
                     package_data={'neutronpy': ['database/*.json', 'ui/*.ui']},
                     packages=['neutronpy', 'neutronpy.crystal', 'neutronpy.data', 'neutronpy.fileio',
-                              'neutronpy.fileio.loaders', 'neutronpy.instrument', 'neutronpy.scattering'],
-                    entry_points={"console_scripts": ["neutronpy=neutronpy.gui:launch"]},)
+                              'neutronpy.fileio.loaders', 'neutronpy.instrument', 'neutronpy.scattering',
+                              'neutronpy.lsfit'],
+                    entry_points={"console_scripts": ["neutronpy=neutronpy.gui:launch"]}, )
 
     try:
         setup(**metadata)

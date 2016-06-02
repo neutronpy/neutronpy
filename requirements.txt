@@ -1,2 +1,5 @@
 setuptools
-cython
+numpy
+scipy
+lmfit
+matplotlib

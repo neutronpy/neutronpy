@@ -25,6 +25,7 @@ _build
 MANIFEST
 generated
 *.pyc
+.eggs/
 
 # Virtual Env #
 ###############
