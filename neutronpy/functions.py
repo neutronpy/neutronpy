@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-r'''A collection of commonly used one- and two-dimensional functions in neutron scattering,
+r"""A collection of commonly used one- and two-dimensional functions in neutron scattering,
 
 =============== ==========================================================
 gaussian        Vector or matrix norm
@@ -11,14 +11,14 @@ gaussian_ring   Solve linear least-squares problem
 =============== ==========================================================
 
 
-'''
+"""
 import numpy as np
 from scipy import special
 from scipy.special import erf
 
 
 def gaussian(p, q):
-    r'''Returns an arbitrary number of Gaussian profiles.
+    r"""Returns an arbitrary number of Gaussian profiles.
 
     Parameters
     ----------
@@ -79,7 +79,7 @@ def gaussian(p, q):
     >>> plt.plot(x, y)
     >>> plt.show()
 
-    '''
+    """
     funct = p[0] + p[1] * q
     for i in range(int(len(p[2:]) / 3)):
         sigma = p[3 * i + 4] / (2. * np.sqrt(2. * np.log(2.)))
@@ -90,7 +90,7 @@ def gaussian(p, q):
 
 
 def gaussian2d(p, q):
-    r'''Returns an arbitrary number of two-dimensional Gaussian profiles.
+    r"""Returns an arbitrary number of two-dimensional Gaussian profiles.
 
     Parameters
     ----------
@@ -117,8 +117,8 @@ def gaussian2d(p, q):
             | p[...]| etc.                         |
             +-------+------------------------------+
 
-    q : ndarray
-        One dimensional input array.
+    q : tuple
+        Tuple of two one-dimensional input arrays.
 
     Returns
     -------
@@ -137,25 +137,25 @@ def gaussian2d(p, q):
 
     Examples
     --------
-    Plot a single gaussian with an integrated intensity of 1, centered at zero, and fwhm of 0.3:
+    Plot a single gaussian with an integrated intensity of 1, centered at (0, 0), and fwhm of 0.3:
 
     >>> import matplotlib.pyplot as plt
     >>> import numpy as np
-    >>> p = np.array([0., 0., 1., 0., 0.3])
-    >>> x = np.linspace(-1, 1, 101)
-    >>> y = gaussian(p, x)
-    >>> plt.plot(x, y)
+    >>> p = np.array([0., 0., 1., 0., 0., 0.3, 0.3])
+    >>> x, y = np.meshgrid(np.linspace(-1, 1, 101), np.linspace(-1, 1, 101))
+    >>> z = gaussian(p, (x, y))
+    >>> plt.pcolormesh(x, y, z)
     >>> plt.show()
 
     Plot two gaussians, equidistant from the origin with the same intensity and fwhm as above:
 
-    >>> p = np.array([0., 0., 1., -0.3, 0.3, 1., 0.3, 0.3])
-    >>> x = np.linspace(-1, 1, 101)
-    >>> y = gaussian(p, x)
-    >>> plt.plot(x, y)
+    >>> p = np.array([0., 0., 1., -0.3, -0.3, 0.3, 0.3, 1., 0.3, 0.3, 0.3, 0.3])
+    >>> x, y = np.meshgrid(np.linspace(-1, 1, 101), np.linspace(-1, 1, 101))
+    >>> z = gaussian(p, x)
+    >>> plt.pcolormesh(x, y, z)
     >>> plt.show()
 
-    '''
+    """
     x, y = q
 
     funct = p[0] + p[1] * (x + y)
@@ -164,13 +164,14 @@ def gaussian2d(p, q):
         sigma_x = p[5 * i + 5] / (2. * np.sqrt(2. * np.log(2.)))
         sigma_y = p[5 * i + 6] / (2. * np.sqrt(2. * np.log(2.)))
 
-        funct += p[5 * i + 2] / (sigma_x * sigma_y * 2. * np.pi) * np.exp(-((x - p[5 * i + 3]) ** 2 / (2 * sigma_x ** 2) + (y - p[5 * i + 4]) ** 2 / (2 * sigma_y ** 2)))
+        funct += p[5 * i + 2] / (sigma_x * sigma_y * 2. * np.pi) * np.exp(
+            -((x - p[5 * i + 3]) ** 2 / (2 * sigma_x ** 2) + (y - p[5 * i + 4]) ** 2 / (2 * sigma_y ** 2)))
 
     return funct
 
 
 def lorentzian(p, q):
-    u'''Returns an arbitrary number of Lorentz profiles.
+    u"""Returns an arbitrary number of Lorentz profiles.
 
     Parameters
     ----------
@@ -229,7 +230,7 @@ def lorentzian(p, q):
     >>> plt.plot(x, y)
     >>> plt.show()
 
-    '''
+    """
 
     funct = p[0] + p[1] * q
 
@@ -240,7 +241,7 @@ def lorentzian(p, q):
 
 
 def voigt(p, q):
-    r'''Returns an arbitrary number of Voigt profiles, a Lorentz profile convoluted by a Gaussian.
+    r"""Returns an arbitrary number of Voigt profiles, a Lorentz profile convoluted by a Gaussian.
 
     Parameters
     ----------
@@ -299,8 +300,7 @@ def voigt(p, q):
     >>> plt.plot(x, y)
     >>> plt.show()
 
-    '''
-
+    """
     funct = p[0] + p[1] * q
     for i in range(int(len(p[2:]) / 4)):
         sigma = p[4 * i + 5] / (2. * np.sqrt(2. * np.log(2.)))
@@ -316,7 +316,7 @@ def voigt(p, q):
 
 
 def resolution(p, q, mode='gaussian'):
-    r'''Returns a gaussian profile using a resolution matrix generated for a Triple Axis Spectrometer.
+    r"""Returns a gaussian profile using a resolution matrix generated for a Triple Axis Spectrometer.
 
     Parameters
     ----------
@@ -364,24 +364,25 @@ def resolution(p, q, mode='gaussian'):
 
     where RM is the resolution matrix.
 
-    '''
-
+    """
     funct = p[0] + p[1] * (q[0] + q[1])
 
     if mode == 'gaussian':
         for i in range(int(len(p[2:]) / 7)):
             # Normalization pre-factor
-            N = (np.sqrt(p[7 * i + 6]) * np.sqrt(p[7 * i + 7] - p[7 * i + 8] ** 2 / p[7 * i + 6])) / (2. * np.pi * p[7 * i + 5])
+            N = (np.sqrt(p[7 * i + 6]) * np.sqrt(p[7 * i + 7] - p[7 * i + 8] ** 2 / p[7 * i + 6])) / (
+            2. * np.pi * p[7 * i + 5])
 
             funct += p[7 * i + 2] * p[7 * i + 5] * N * np.exp(-1. / 2. * (p[7 * i + 6] * (q[0] - p[7 * i + 3]) ** 2 +
                                                                           p[7 * i + 7] * (q[1] - p[7 * i + 4]) ** 2 +
-                                                                          2. * p[7 * i + 8] * (q[0] - p[7 * i + 3]) * (q[1] - p[7 * i + 4])))
+                                                                          2. * p[7 * i + 8] * (q[0] - p[7 * i + 3]) * (
+                                                                          q[1] - p[7 * i + 4])))
 
     return funct
 
 
 def gaussian_ring(p, q):
-    r'''Returns a two dimensional gaussian ellipse profile.
+    r"""Returns a two dimensional gaussian ellipse profile.
 
     Parameters
     ----------
@@ -428,7 +429,7 @@ def gaussian_ring(p, q):
 
     .. math::    N = \frac{2\pi}{\alpha} \left(\sigma^2 e^{-\frac{r_0^2}{2\sigma^2}} + \sqrt{\frac{\pi}{2}} r_0 \sigma \left(1 + \mathrm{Erf}\left(\frac{r_0}{\sqrt{2}\sigma}\right)\right)\right).
 
-    '''
+    """
     x, y = q
 
     funct = p[0] + p[1] * (x + y)
