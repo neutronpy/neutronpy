@@ -1,2 +1,5 @@
 setuptools
-cython
+numpy>=1.9
+scipy>=0.14
+lmfit>=0.9.1
+matplotlib>=1.4

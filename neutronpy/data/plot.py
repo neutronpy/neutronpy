@@ -1,9 +1,10 @@
 import numpy as np
-from ..kmpfit import Fitter
+from ..lsfit import Fitter
+from ..lsfit.tools import convert_params
 
 
 class PlotData(object):
-    '''Class containing data plotting methods
+    """Class containing data plotting methods
 
     Methods
     -------
@@ -12,11 +13,12 @@ class PlotData(object):
     plot_contour
     plot_volume
 
-    '''
+    """
+
     def plot(self, x=None, y=None, z=None, w=None, show_err=True, to_bin=None,
              plot_options=None, fit_options=None, smooth_options=None,
              output_file='', show_plot=True, **kwargs):
-        r'''Plots the data in the class. x and y must at least be specified,
+        r"""Plots the data in the class. x and y must at least be specified,
         and z and/or w being specified will produce higher dimensional plots
         (contour and volume, respectively).
 
@@ -69,7 +71,7 @@ class PlotData(object):
             Additional plotting keyword arguments passed to the plotting
             function.
 
-        '''
+        """
         if to_bin is None:
             to_bin = dict()
         if plot_options is None:

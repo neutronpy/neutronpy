@@ -10,6 +10,7 @@ neutronpy
    neutronpy.functions
    neutronpy.gui
    neutronpy.instrument
+   neutronpy.lsfit
    neutronpy.fileio
    neutronpy.models
    neutronpy.spurion

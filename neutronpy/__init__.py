@@ -2,6 +2,7 @@ r"""NeutronPy: open source python library for neutron scattering data analysis
 
 """
 from __future__ import absolute_import
+import sys
 import warnings
 from . import constants
 from . import fileio
@@ -16,12 +17,15 @@ from .crystal import Sample
 from .crystal import symmetry
 from .data import Data
 from .energy import Energy
-from .kmpfit import Fitter
 from .instrument import Instrument
+from .lsfit import Fitter
 
 try:
     from . import gui
 except ImportError:
     warnings.warn('PyQt5 not found, cannot run Resolution GUI')
 
-__version__ = '1.0.0'
+__version__ = '1.0.1beta'
+
+if sys.version_info[:2] == (2,6):
+    warnings.warn('Support for Python 2.6 is depreciated and will be dropped in neutronpy 1.1.0', DeprecationWarning)

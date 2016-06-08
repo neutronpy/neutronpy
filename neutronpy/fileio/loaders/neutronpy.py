@@ -15,7 +15,6 @@ class Neutronpy(Data):
     """
 
     def __init__(self):
-        __metaclass__ = Data
         super(Neutronpy, self).__init__()
 
     def load(self, filename, build_hkl=True, load_instrument=False):
