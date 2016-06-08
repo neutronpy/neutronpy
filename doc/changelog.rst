@@ -2,16 +2,21 @@
 Changelog
 =========
 
+* :feature:`80` Rewrite of fitting routines into pure python implementation using LMFIT package
+* :bug:`81` Fixed error in :py:func:`.functions.gaussian2d`
+* :feature:`82` Added ability to compare between :py:class:`.Data` and :py:class:`.Instrument` objects
+* :support:`83` Added developer guide and changed to semantic version numbering
+
 * :release:`1.0.0 <2016-05-10>`
 * :feature:`68` Background subtraction added to :py:class:`.Data`
 * :feature:`73` Added support for saving :py:class:`.Data` and :py:class:`.Instrument` objects to disk
 * :bug:`72 major` Fixed problem with ``io`` namespace by renaming it to ``fileio``
 
-* :release:`1.0.0 <2016-04-24>`
-* :feature:`67` All data is now imported from files when using :py:meth:`.load_data`. Binning is now more generalized.
+* :release:`1.0.0-b3 <2016-04-24>`
+* :feature:`67` All data is now imported from files when using :py:func:`.load_data`. Binning is now more generalized.
 * :feature:`71` Added Currat-Axe spurion method :py:meth:`.spurion.currat_axe_peaks`
 
-* :release:`1.0.0 <2016-04-07>`
+* :release:`1.0.0-b1 <2016-04-07>`
 * :feature:`62` Major refactoring, breaks backwards compatibility. See documentation for new usage.
 * :feature:`64` Added basic physical models to :py:mod:`.models`
 * :feature:`65` Added :py:class:`.SpaceGroup` to generate all symmetry operations given space group symbol, and added :py:class:`.SpaceGroup` to :py:class:`.Material` to symmetrize crystal structures
