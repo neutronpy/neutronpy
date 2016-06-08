@@ -75,14 +75,14 @@ class Fitter(object):
 
     .. math::
 
-       deviates = (y - f(x)) / err
+       d = (y - f(x)) / err
 
     where *f* is the model function. If *err* are 1-sigma uncertainties in
     ``y``, then
 
     .. math::
 
-       \sum deviates^2
+       \sum d^2
 
     is the total chi-squared.  :py:meth:`Fitter.fit` will minimize this value.
     ``x``, ``y`` and ``err`` are passed to the residuals function from

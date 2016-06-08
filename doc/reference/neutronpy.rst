@@ -11,7 +11,7 @@ Members
 
     data.data.Data
     energy.Energy
-    kmpfit.Fitter
+    lsfit.Fitter
     instrument.instrument.Instrument
     crystal.lattice.Lattice
     crystal.material.Material
@@ -30,6 +30,7 @@ Submodules
    neutronpy.functions
    neutronpy.gui
    neutronpy.instrument
+   neutronpy.lsfit
    neutronpy.models
    neutronpy.spurion
 
