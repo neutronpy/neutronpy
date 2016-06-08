@@ -24,6 +24,7 @@ Some frequent issues you may encounter include:
     * File encoding: file should explicitly have the following encoding on the first line: ``# -*- coding: utf-8 -*-``. This is a problem with both 2.6 and 2.7
     * Ordered dictionaries: Unfortunately OrderedDict was not introduced until Python 2.7, so ``try...except`` should be used in files where it is needed. See previous examples in the source code, e.g. in :py:class:`.Data`.
     * ``*args`` and ``**kwargs`` can only be used like ``function(*args, **kwargs)`` in Python 2, whereas in Python 3 you could for instance do ``function(*args keyword=None)``, explicitly naming a ``kwarg`` after ``*args``.
+    * When formatting strings, position must be explicitly specified in the placeholder, e.g. ``'{0:.1f}'``. If you use ``'{:.1f}'`` Python 2.6 will raise an exception.
 
 PEP8 Formatting
 ^^^^^^^^^^^^^^^
@@ -40,11 +41,15 @@ All classes, methods, attributes, functions, etc. should have complete documenta
 
 Docstrings are written in the `reStructuredText (reST) <http://www.sphinx-doc.org/en/stable/rest.html>`_ format, which makes it easy to refer and link to other functions/classes/etc. from inside docstrings.
 
+In order to build documentation you must have
+
 Unit tests
 ^^^^^^^^^^
 In neutronpy, all unit tests are performed using the :py:mod:`unittest` Standard Python Library, and some using :py:mod:`mock` which was only added to the Standard Library in py33, but is available from pypi for earlier versions. See existing tests in the ``tests`` top-level directory for examples.
 
 Development should generally take a test-driven approach, i.e. expected behavior of new functions should be known in advance and tests should be written first. A basic introduction to test-driven development can be found `here <http://code.tutsplus.com/tutorials/beginning-test-driven-development-in-python--net-30137>`_.
+
+If you plan to make a significant contribution to neutronpy, I highly recommend making at least a `Travis-ci <https://travis-ci.org/>`_ account to run the tests on your commits before you submit a pull request. It will help you make changes before making them public.
 
 Development Workflow
 --------------------
@@ -121,4 +126,15 @@ Once your PR has been accepted you can now delete the branches you created and u
 
 Development Environment
 -----------------------
-Often you will want to test your new features while still maintaining the stable version of neutronpy on your machine. In this case you should use a virtual envrionment, using either `virtualenv <https://virtualenv.pypa.io/en/stable/>`_ or `Anaconda <https://www.continuum.io/downloads>`_, which is probably easier.
+Often you will want to test your new features while still maintaining the stable version of neutronpy on your machine. In this case you should use a virtual environment, using either `virtualenv <https://virtualenv.pypa.io/en/stable/>`_ or `Anaconda <https://www.continuum.io/downloads>`_, which is probably easier. For example, using anaconda you can easily create a conda virtualenv with Python 3.4 called py34 and then activate it to install neutronpy (in linux or osx terminal) by::
+
+    conda config --add channels mmcauliffe
+    conda create --yes -q -n py34 python=3.4 numpy scipy pqt5 h5py matplotlib
+    source activate py34
+    pip install neutronpy
+
+Coding can be done in any plaintext text editor, but if you want more features I recommend `PyCharm CE <https://www.jetbrains.com/pycharm/>`_ as an IDE. It is free, easy to use, and handles some of the PEP8 formatting tasks automatically.
+
+Versions
+--------
+Version number incrementation should follow `Semantic Versioning 2.0.0 <http://semver.org/>`_. This means that the version numbers should follow the pattern ``X.Y.Z-beta``, where ``X`` is a major version number, indicating a break in backwards compatibility, ``Y`` is a minor version number indicating the addition of features which DO NOT break backwards compatibility, ``Z`` is a patch version number indicating patches which DO NOT add major features or break backwards compatibility, and ``beta`` indicates pre-release versions. ``X``, ``Y``, and ``Z`` must all be non-negative integer numbers and ``beta`` can contain ascii [a-Z,0-9].

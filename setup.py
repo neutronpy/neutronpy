@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 """NeutronPy: Neutron scattering tools for scientific data analysis in python
 
-NeutronPy is a collection of commonly needed tools aimed at facilitating the
+NeutronPy is a collection of commonly used tools aimed at facilitating the
 analysis of neutron scattering data. NeutronPy is built primarily using the
-numpy and scipy python libraries, with minor contributions from the kapteyn
-library (least-squares fitting based on the C-implementation of MPFIT), and
-a rewrite of ResLib 3.4c (MatLab) routines for Instrument resolution
-calculations.
+numpy and scipy python libraries, with a translation of ResLib 3.4c (MatLab)
+routines for Instrument resolution calculations.
 
 """
 
@@ -24,8 +22,6 @@ Development Status :: 4 - Beta
 Intended Audience :: Science/Research
 License :: OSI Approved :: MIT License
 Natural Language :: English
-Programming Language :: C
-Programming Language :: Cython
 Programming Language :: Python :: 2
 Programming Language :: Python :: 2.6
 Programming Language :: Python :: 2.7

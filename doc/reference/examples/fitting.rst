@@ -3,15 +3,13 @@ Least-squares fitting with the Fitter Class
 
 *Note: This module is still a work-in-progress and the usage of these classes and/or functions may change in the future.*
 
-The follow is an example of how to use the :py:class:`.Fitter` class, which is a non-linear least-squares minimization routine based on the `C implementation of MPFIT <http://www.physics.wisc.edu/~craigm/idl/cmpfit.html>`_. :py:class:`.Fitter` in its current form is identical to the Fitter class in the `kmpfit <https://www.astro.rug.nl/software/kapteyn/kmpfit.html>`_ module of the `Kapteyn Package <https://www.astro.rug.nl/software/kapteyn/index.html>`_.
+The follow is an example of how to use the :py:class:`.Fitter` class, which is an interface to the non-linear least-squares minimization routine :py:func:`scipy.optimize.leastsq`, with some features based on :py:func:`lmfit.minimize`.
 
 Defining the problem
 --------------------
-In its current state, :py:class:`.Fitter` requires you to pass a ``residuals`` function, rather than the function to which you desire to fit your data. On one hand, this gives more flexibility because the form of the residuals can be defined by the user, rather than being confined to the standard formula for residuals:
+:py:class:`.Fitter` requires you to pass a ``residuals`` function, rather than the function to which you desire to fit your data. This gives more flexibility because the form of the residuals can be defined by the user, rather than being confined to the standard formula for residuals:
 
 .. math::   S = \sum_{i}\frac{y_i - f(x_i)}{\sigma_i}.
-
-Note: In the future there will be a change that will allow the user to pass a function and necessary data, without having to write a residuals function, but the current implementation will be preserved, *i.e.* a residual function will always be able to be defined if the user desires.
 
 Assuming you already have your ``function`` prepared, defining the residuals function is trivial. For the sake of this example we will assume that ``function`` is the one dimensional :py:func:`.functions.gaussian`:
 

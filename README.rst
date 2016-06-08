@@ -23,35 +23,34 @@ NeutronPy
         :alt: Code Climate
 
 
-NeutronPy is a python library with commonly used tools for neutron scattering measurements, primarily for Triple Axis Spectrometer data, but easily applied to other types of data, including Time of Flight.
+NeutronPy is a python library with commonly used tools for neutron scattering measurements, primarily for Triple Axis Spectrometer data, but easily applied to other types of data, including some *reduced* Time of Flight data. Below is a non-exhaustive list of Neutronpy's features:
 
-* Triple Axis Spectrometer resolution function calculation (Translated from ResLib), including:
-    * Resolution ellipses
-    * Instrument visualization
-* Structure factor calculation, including:
-    * Structure factors with support for
-        * Mass Normalization
-        * Debye-Waller factor
-        * Unit cell visualization
-    * Single-ion magnetic form factor calculation
-* Least-Squares fitting (custom roll of scipy.optimize.leastsq using features from lmfit)
-* Basic data operations
-    * Binning
-    * Normalization (time/monitor)
-    * Calculated peak integrated intensity, position, and width
-    * Loading from known file types
+    * Triple Axis Spectrometer resolution function calculation (Translated from ResLib), including
+        * Resolution ellipses
+        * Instrument visualization
+    * Structure factor calculation, including
+        * Structure factors with support for
+            * Mass Normalization
+            * Debye-Waller factor
+            * Unit cell visualization
+        * Single-ion magnetic form factor calculation
+    * Least-Squares fitting (custom interface for scipy.optimize.leastsq using lmfit features)
+    * Basic data operations
+        * Binning
+        * Normalization (time/monitor)
+        * Calculated peak integrated intensity, position, and width
+        * Plotting
+        * Slicing
+    * Loading from common TAS file types, including
         * SPICE
         * ICE
         * ICP
         * MAD
-        * etc.
-    * Plotting
-    * Slicing
-* And More...
 
-See `Roadmap <https://github.com/neutronpy/neutronpy/wiki/Roadmap>`_ for future features
 
-NeutronPy began development by David M Fobes in the `Neutron Scattering Group <http://neutrons.phy.bnl.gov/>`_, part of the Condensed Matter Physics & Materials Science Department (CMPMSD) at `Brookhaven National Laboratory <http://www.bnl.gov/>`_. It is currently being developed in the `MPA-CMMS <http://www.lanl.gov/org/padste/adeps/materials-physics-applications/condensed-matter-magnet-science/index.php>`_ division of `Los Alamos National Laboratory <http://www.lanl.gov/>`_. Both are `US Department of Energy, Office of Basic Energy Sciences <http://science.energy.gov/bes/>`_ funded laboratories.
+See `Roadmap <https://github.com/neutronpy/neutronpy/wiki/Roadmap>`_ for panned future features.
+
+NeutronPy began to be developed by David M Fobes in the `Neutron Scattering Group <http://neutrons.phy.bnl.gov/>`_, part of the Condensed Matter Physics & Materials Science Department (CMPMSD) at `Brookhaven National Laboratory <http://www.bnl.gov/>`_. It is currently being developed in the `MPA-CMMS <http://www.lanl.gov/org/padste/adeps/materials-physics-applications/condensed-matter-magnet-science/index.php>`_ division of `Los Alamos National Laboratory <http://www.lanl.gov/>`_. Both are `US Department of Energy, Office of Basic Energy Sciences <http://science.energy.gov/bes/>`_ funded laboratories.
 
 NeutronPy is a work-in-progress (see the `Roadmap <https://github.com/neutronpy/neutronpy/wiki/Roadmap>`_ in the wiki for indications of new upcoming features) and as such, still has many bugs, so use at your own risk. See the Disclaimer below. To report bugs or suggest features see the Contributions section below.
 
@@ -69,9 +68,15 @@ The following packages are required to install this library:
 
 Installation
 ------------
-It is recommended that you use ``pip`` to install NeutronPy::
+It is recommended that you use `anaconda <>`_ and ``pip`` to install NeutronPy::
 
+    conda config --add channels mmcauliffe
+    conda install python nomkl numpy scipy h5py matplotlib pyqt5
     pip install neutronpy
+
+Note: the added channel is for pyqt5.
+
+The resolution calculator gui can be used after installation by executing ``neutronpy`` from the command-line.
 
 Documentation
 -------------
