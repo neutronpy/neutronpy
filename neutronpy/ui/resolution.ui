@@ -335,7 +335,7 @@
      </item>
      <item>
       <property name="text">
-       <string>Co0.92Fe0.08</string>
+       <string>Co0.92Fe0.08(200)</string>
       </property>
      </item>
      <item>
@@ -1525,7 +1525,7 @@
      </item>
      <item>
       <property name="text">
-       <string>Co0.92Fe0.08</string>
+       <string>Co0.92Fe0.08(200)</string>
       </property>
      </item>
      <item>

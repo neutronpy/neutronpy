@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-r'''GUI for resolution calculations
+r"""GUI for resolution calculations
 
 TESTING ONLY FOR NOW
-'''
+"""
 import os
 import sys
 import matplotlib
@@ -20,7 +20,8 @@ matplotlib.rc('lines', markersize=2, linewidth=0.5)
 
 
 class MyMplCanvas(FigureCanvas):
-    def __init__(self, parent=None, width=261, height=201, dpi=100, qslice='QxQy', projections=dict(), u=[1, 0, 0], v=[0, 1, 0]):
+    def __init__(self, parent=None, width=261, height=201, dpi=100, qslice='QxQy', projections=dict(), u=[1, 0, 0],
+                 v=[0, 1, 0]):
         self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor='w', edgecolor='k')
         self.fig.subplots_adjust(bottom=0.25, left=0.25)
 
@@ -48,9 +49,10 @@ class MyStaticMplCanvas(MyMplCanvas, PlotInstrument):
 
 
 class MainWindow(QMainWindow):
-    r'''Main Window of Resolution Calculator
+    r"""Main Window of Resolution Calculator
 
-    '''
+    """
+
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
 
@@ -78,8 +80,12 @@ class MainWindow(QMainWindow):
     def load_instrument(self):
         self.instrument = Instrument()
 
-        self.instrument.sample.a, self.instrument.sample.b, self.instrument.sample.c = [float(i) for i in self.abc_input.text().split(',')]
-        self.instrument.sample.alpha, self.instrument.sample.beta, self.instrument.sample.gamma = [float(i) for i in self.abg_input.text().split(',')]
+        self.instrument.sample.a, self.instrument.sample.b, self.instrument.sample.c = [float(i) for i in
+                                                                                        self.abc_input.text().split(
+                                                                                            ',')]
+        self.instrument.sample.alpha, self.instrument.sample.beta, self.instrument.sample.gamma = [float(i) for i in
+                                                                                                   self.abg_input.text().split(
+                                                                                                       ',')]
         self.instrument.sample.height = float(self.sample_height_input.text())
         self.instrument.sample.width = float(self.sample_width_input.text())
         self.instrument.sample.depth = float(self.sample_depth_input.text())
@@ -94,7 +100,8 @@ class MainWindow(QMainWindow):
             self.instrument.mono.tau = 2 * np.pi / float(self.mono_select_input)
         else:
             self.instrument.mono.tau = GetTau(self.mono_select_dropdown.currentText())
-            self.mono_select_input.setText('{0:.3f}'.format(2. * np.pi / GetTau(self.mono_select_dropdown.currentText())))
+            self.mono_select_input.setText(
+                '{0:.3f}'.format(2. * np.pi / GetTau(self.mono_select_dropdown.currentText())))
         self.instrument.mono.mosaic = float(self.mono_mosaic_input.text())
         self.instrument.mono.vmosaic = float(self.mono_vmosaic_input.text())
         self.instrument.mono.dir = self.dir_dict[self.mono_dir_select.currentText()]
@@ -152,13 +159,19 @@ class MainWindow(QMainWindow):
         except:
             pass
 
-        qxqy = MyStaticMplCanvas(self.qx_qy_plot_widget, width=261, height=201, dpi=100, qslice='QxQy', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
+        qxqy = MyStaticMplCanvas(self.qx_qy_plot_widget, width=261, height=201, dpi=100, qslice='QxQy',
+                                 projections=self.instrument.projections, u=self.instrument.orient1,
+                                 v=self.instrument.orient2)
         self.qxqyplot.addWidget(qxqy)
 
-        qxw = MyStaticMplCanvas(self.qx_w_plot_widget, width=261, height=201, dpi=100, qslice='QxW', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
+        qxw = MyStaticMplCanvas(self.qx_w_plot_widget, width=261, height=201, dpi=100, qslice='QxW',
+                                projections=self.instrument.projections, u=self.instrument.orient1,
+                                v=self.instrument.orient2)
         self.qxwplot.addWidget(qxw)
 
-        qyw = MyStaticMplCanvas(self.qy_w_plot_widget, width=261, height=201, dpi=100, qslice='QyW', projections=self.instrument.projections, u=self.instrument.orient1, v=self.instrument.orient2)
+        qyw = MyStaticMplCanvas(self.qy_w_plot_widget, width=261, height=201, dpi=100, qslice='QyW',
+                                projections=self.instrument.projections, u=self.instrument.orient1,
+                                v=self.instrument.orient2)
         self.qywplot.addWidget(qyw)
 
         self.text_output.setText(self.instrument.description_string())
