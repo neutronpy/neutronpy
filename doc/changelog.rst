@@ -2,6 +2,7 @@
 Changelog
 =========
 
+* :bug:`84` Fixed typo in ``resolution.ui`` to select ``'Co0.92Fe0.08(200)'`` as monochromator/analyzer in :py:mod:`neutronpy.gui`
 * :feature:`80` Rewrite of fitting routines into pure python implementation using LMFIT package
 * :bug:`81` Fixed error in :py:func:`.functions.gaussian2d`
 * :feature:`82` Added ability to compare between :py:class:`.Data` and :py:class:`.Instrument` objects
