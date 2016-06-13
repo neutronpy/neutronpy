@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-r'''Symmetry operations
+r"""Symmetry operations
 
-'''
+"""
 import numpy as np
 from ..constants import symmetry
 
@@ -9,7 +9,7 @@ space_groups = symmetry()['space_groups']
 
 
 class SpaceGroup(object):
-    r'''Class defining a space group of a crystal
+    r"""Class defining a space group of a crystal
 
     Attributes
     ----------
@@ -27,7 +27,7 @@ class SpaceGroup(object):
     -------
     symmetrize_position
 
-    '''
+    """
     def __init__(self, symbol='P1'):
         if isinstance(symbol, int):
             for key, value in space_groups.items():
@@ -55,8 +55,8 @@ class SpaceGroup(object):
 
     @property
     def symbol(self):
-        r'''Space group symbol
-        '''
+        r"""Space group symbol
+        """
         return self._symbol
 
     @symbol.setter
@@ -65,14 +65,14 @@ class SpaceGroup(object):
 
     @property
     def string_generators(self):
-        r'''Space group generators
-        '''
+        r"""Space group generators
+        """
         return self._generators_str
 
     @property
     def generators(self):
-        r'''Space group generators in matrix format
-        '''
+        r"""Space group generators in matrix format
+        """
         return self._generators_mat
 
     def _symmetry_operations_from_generators(self):
@@ -92,9 +92,9 @@ class SpaceGroup(object):
         return symm_ops
 
     def symmetrize_position(self, vector):
-        r'''Applies symmetry operations to a vector
+        r"""Applies symmetry operations to a vector
 
-        '''
+        """
         positions = []
         for op in self.symmetry_operations:
             positions.append(np.dot(get_rotation(op), np.array(vector)) + get_translation(op))
@@ -102,18 +102,32 @@ class SpaceGroup(object):
         return positions
 
 
-def get_rotation(operations):
-    r'''Returns rotational part of operator
+def get_formatted_operations(operations):
+    r"""Returns operations formatted in a list for easy parsing
 
-    '''
+    Parameters
+    ----------
+    operations
+
+    Returns
+    -------
+
+    """
     if (isinstance(operations, list) and isinstance(operations[0], str)) or isinstance(operations, str):
         operations = get_generator_from_str(operations)
 
     if isinstance(operations, np.ndarray):
         operations = [operations]
 
+    return operations
+
+
+def get_rotation(operations):
+    r"""Returns rotational part of operator
+
+    """
     rotations = []
-    for operation in operations:
+    for operation in get_formatted_operations(operations):
         rotations.append(operation[:3, :3])
 
     if len(rotations) == 1:
@@ -123,17 +137,11 @@ def get_rotation(operations):
 
 
 def get_translation(operations):
-    r'''Returns rotational part of operator
+    r"""Returns rotational part of operator
 
-    '''
-    if (isinstance(operations, list) and isinstance(operations[0], str)) or isinstance(operations, str):
-        operations = get_generator_from_str(operations)
-
-    if isinstance(operations, np.ndarray):
-        operations = [operations]
-
+    """
     translations = []
-    for operation in operations:
+    for operation in get_formatted_operations(operations):
         translations.append(operation[:3, 3])
 
     if len(translations) == 1:
@@ -143,14 +151,14 @@ def get_translation(operations):
 
 
 def get_generator_from_str(operations):
-    r'''Returns generator arrays
+    r"""Returns generator arrays
 
     Returns
     -------
     operators : list of ndarrays
         List of operation arrays with shape (3,4)
 
-    '''
+    """
     if isinstance(operations, str):
         operations = [operations]
 
@@ -196,7 +204,7 @@ def get_generator_from_str(operations):
 
 
 def get_str_from_generator(operations):
-    r'''Returns strings of generators from arrays
+    r"""Returns strings of generators from arrays
 
     Parameters
     ----------
@@ -207,7 +215,7 @@ def get_str_from_generator(operations):
     generators : list of str
         List of generator strings
 
-    '''
+    """
     if isinstance(operations, np.ndarray) and len(operations.shape) < 3:
         operations = [operations]
 

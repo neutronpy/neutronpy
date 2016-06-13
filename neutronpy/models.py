@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-r'''Physical Models
+r"""Physical Models
 
-'''
+"""
 import numpy as np
 
 
 def simple_harmonic_oscillator(p, t):
-    r'''Standard equation for a simple harmonic oscillator
+    r"""Standard equation for a simple harmonic oscillator
 
     Parameters
     ----------
@@ -31,12 +31,12 @@ def simple_harmonic_oscillator(p, t):
     func : ndarray
         One dimensional array
 
-    '''
+    """
     return p[0] + p[1] * np.cos(p[2] * t - p[3])
 
 
 def damped_harmonic_oscillator(p, t):
-    r'''Standard equation for a damped harmonic oscillator
+    r"""Standard equation for a damped harmonic oscillator
 
     Parameters
     ----------
@@ -63,12 +63,12 @@ def damped_harmonic_oscillator(p, t):
     func : ndarray
         One dimensional array
 
-    '''
-    return p[0] + np.exp(-p[4] * t / 2.) * p[1] * np.cos(p[2] * t - p[3])
+    """
+    return p[0] + np.exp(-p[4] * t / 2.) * simple_harmonic_oscillator([0, p[1], p[2], p[3]], t)
 
 
 def acoustic_phonon_dispersion(p, x):
-    r'''Standard equation for the dispersion of an acoustic phonon
+    r"""Standard equation for the dispersion of an acoustic phonon
 
     Parameters
     ----------
@@ -90,19 +90,19 @@ def acoustic_phonon_dispersion(p, x):
     func : ndarray
         One dimensional array
 
-    '''
+    """
     return np.sqrt(4 * p[0]) * np.abs(np.sin(p[1] * x))
 
 
 def optical_phonon_disperion():
-    r'''Standard equation for the dispersion of an optical phonon
+    r"""Standard equation for the dispersion of an optical phonon
 
-    '''
+    """
     pass
 
 
 def ferromagnetic_disperion(p, x):
-    r'''Standard equation for the dispersion of a ferromagnetic spin excitation
+    r"""Standard equation for the dispersion of a ferromagnetic spin excitation
 
     Parameters
     ----------
@@ -123,12 +123,12 @@ def ferromagnetic_disperion(p, x):
     func : ndarray
         One dimensional array
 
-    '''
+    """
     return 4 * p[0] * (1 - np.cos(p[1] * x))
 
 
 def antiferromagnetic_disperion(p, x):
-    r'''Standard equation for the dispersion of an antiferromagnetic spin excitation
+    r"""Standard equation for the dispersion of an antiferromagnetic spin excitation
 
     Parameters
     ----------
@@ -149,5 +149,5 @@ def antiferromagnetic_disperion(p, x):
     func : ndarray
         One dimensional array
 
-    '''
+    """
     return p[0] * np.abs(np.sin(p[1] * x))
