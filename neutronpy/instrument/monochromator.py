@@ -47,6 +47,7 @@ class Monochromator(object):
     rv
     d
     '''
+
     def __init__(self, tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None):
         self._tau = tau
         self.mosaic = mosaic

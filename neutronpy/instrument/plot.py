@@ -143,10 +143,9 @@ class PlotInstrument(object):
             EllipsoidGridPoints = 100
 
             def fn(r0, rms, q1, q2, q3, qx0, qy0, qw0):
-                ee = rms[0, 0] * (q1 - qx0[0]) ** 2 + rms[1, 1] * (q2 - qy0[0]) ** 2 + rms[2, 2] * (q3 - qw0[0]) ** 2 + \
-                   2 * rms[0, 1] * (q1 - qx0[0]) * (q2 - qy0[0]) + \
-                   2 * rms[0, 2] * (q1 - qx0[0]) * (q3 - qw0[0]) + \
-                   2 * rms[2, 1] * (q3 - qw0[0]) * (q2 - qy0[0])
+                ee = rms[0, 0] * (q1 - qx0[0]) ** 2 + rms[1, 1] * (q2 - qy0[0]) ** 2 + rms[2, 2] * (q3 - qw0[
+                    0]) ** 2 + 2 * rms[0, 1] * (q1 - qx0[0]) * (q2 - qy0[0]) + 2 * rms[0, 2] * (q1 - qx0[0]) * (
+                    q3 - qw0[0]) + 2 * rms[2, 1] * (q3 - qw0[0]) * (q2 - qy0[0])
                 return ee
 
             # plot ellipsoids

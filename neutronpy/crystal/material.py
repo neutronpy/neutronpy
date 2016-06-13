@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-r'''Material constructor
+r"""Material constructor
 
-'''
+"""
 import numpy as np
 import neutronpy.constants as const
 from .atom import Atom, MagneticAtom
@@ -9,13 +9,14 @@ from .plot import PlotMaterial
 from .sample import Sample
 from .structure_factors import NuclearStructureFactor, MagneticStructureFactor
 from .symmetry import SpaceGroup
-#from ..scattering.pattern import HKLGenerator
+# from ..scattering.pattern import HKLGenerator
 
 
 class MagneticUnitCell(Sample):
-    r'''Class defining a magnetic unit cell
+    r"""Class defining a magnetic unit cell
 
-    '''
+    """
+
     def __init__(self, unit_cell):
         if 'chirality' not in unit_cell:
             self.chirality = 0
@@ -46,7 +47,7 @@ class MagneticUnitCell(Sample):
 
 
 class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMaterial):
-    r'''Class for the Material being supplied for the structure factor calculation
+    r"""Class for the Material being supplied for the structure factor calculation
 
     Parameters
     ----------
@@ -172,7 +173,7 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
     find_site_multiplicity
     generate_hkl_positions
 
-    '''
+    """
 
     def __init__(self, crystal):
         if 'formulaUnits' not in crystal:
@@ -245,19 +246,20 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
         if 'dir' not in crystal:
             crystal['dir'] = 1
 
-        super(Material, self).__init__(a, b, c, alpha, beta, gamma, crystal['mosaic'], crystal['vmosaic'], crystal['dir'], crystal['u'], crystal['v'])
+        super(Material, self).__init__(a, b, c, alpha, beta, gamma, crystal['mosaic'], crystal['vmosaic'],
+                                       crystal['dir'], crystal['u'], crystal['v'])
 
     @property
     def total_scattering_cross_section(self):
-        r'''Returns total scattering cross-section of unit cell
-        '''
+        r"""Returns total scattering cross-section of unit cell
+        """
         total = 0
         for atom in self.atoms:
             total += (atom.coh_xs + atom.inc_xs)
         return total
 
     def N_atoms(self, mass):
-        r'''Number of atoms in the defined Material, given the mass of the sample.
+        r"""Number of atoms in the defined Material, given the mass of the sample.
 
         Parameters
         ----------
@@ -269,11 +271,11 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
         Natoms : int
             The number of atoms of the material based on the mass of the sample.
 
-        '''
+        """
         return const.N_A * mass / self.muCell
 
     def calc_optimal_thickness(self, energy=25.3, transmission=1 / np.exp(1)):
-        r'''Calculates the optimal sample thickess to avoid problems with
+        r"""Calculates the optimal sample thickess to avoid problems with
         extinction, multiple coherent scattering and absorption.
 
         Parameters
@@ -319,7 +321,7 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
         too large and there will be a problem with multiple scattering.
         Therefore a transmission of :math:`T\geq90\%` is desirable.
 
-        '''
+        """
 
         sigma_coh = np.sum([atom.occupancy * atom.coh_xs for atom in self.atoms])
         sigma_inc = np.sum([atom.occupancy * atom.inc_xs for atom in self.atoms])
@@ -330,7 +332,7 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
         return -np.log(transmission) / sigma_T
 
     def calc_incoh_elas_xs(self, mass=None):
-        r'''Calculates the incoherent elastic cross section.
+        r"""Calculates the incoherent elastic cross section.
 
         Parameters
         ----------
@@ -342,16 +344,14 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
         INC_XS : float
             Incoherent Elastic Cross Section
 
-        '''
+        """
 
         INC_XS = 0
         for atom in self.atoms:
-            INC_XS += atom.inc_xs * np.exp(-8 * np.pi ** 2 * atom.Uiso * np.sin(np.deg2rad(self.get_two_theta(atom.pos, self.wavelength) / 2.)) ** 2 / self.wavelength ** 2)
+            INC_XS += atom.inc_xs * np.exp(-8 * np.pi ** 2 * atom.Uiso * np.sin(
+                np.deg2rad(self.get_two_theta(atom.pos, self.wavelength) / 2.)) ** 2 / self.wavelength ** 2)
 
         if mass is not None:
             return self.N_atoms(mass) / (4 * np.pi) * INC_XS
         else:
             return INC_XS / (4 * np.pi)
-
-
-

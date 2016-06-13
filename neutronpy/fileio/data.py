@@ -194,8 +194,7 @@ def detect_filetype(filename):
     """
     if filename[-3:] == 'nxs':
         return 'grasp'
-    elif (filename[-4:].lower() == 'iexy') or (filename[-3:].lower() == 'spe') or (filename[-3:].lower() == 'xye') or (
-                filename[-4:] == 'xyie'):
+    elif (filename[-4:].lower() == 'iexy') or (filename[-3:].lower() == 'spe') or (filename[-3:].lower() == 'xye') or (filename[-4:] == 'xyie'):
         return 'dcs_mslice'
     elif filename[-4:].lower() == 'hdf5' or filename[-3].lower() == 'npy':
         return 'neutronpy'

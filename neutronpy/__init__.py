@@ -27,5 +27,5 @@ except ImportError:
 
 __version__ = '1.0.1beta'
 
-if sys.version_info[:2] == (2,6):
+if sys.version_info[:2] == (2, 6):
     warnings.warn('Support for Python 2.6 is depreciated and will be dropped in neutronpy 1.1.0', DeprecationWarning)
