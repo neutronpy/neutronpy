@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import numbers
 import numpy as np
 from ..constants import BOLTZMANN_IN_MEV_K
 from ..energy import Energy
@@ -21,6 +22,7 @@ class Analysis(object):
     estimate_background
 
     """
+
     @property
     def detailed_balance_factor(self):
         r"""Returns the detailed balance factor (sometimes called the Bose
@@ -39,7 +41,7 @@ class Analysis(object):
 
         return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
 
-    def integrate(self, background=None, **kwargs):
+    def integrate(self, bounds=None, background=None, hkle=True):
         r"""Returns the integrated intensity within given bounds
 
         Parameters
@@ -48,6 +50,13 @@ class Analysis(object):
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
+        background : float or dict, optional
+            Default: None
+
+        hkle : bool, optional
+            If True, integrates only over h, k, l, e dimensions, otherwise
+            integrates over all dimensions in :py:attr:`.Data.data`
+
         Returns
         -------
         result : float
@@ -55,25 +64,14 @@ class Analysis(object):
             specified boundaries
 
         """
-        if background is not None:
-            background = self.estimate_background(background)
-        else:
-            background = 0
-
         result = 0
-        if 'bounds' in kwargs:
-            to_fit = np.where(kwargs['bounds'])
-            for i in range(4):
-                result += np.trapz(self.intensity[to_fit] - background,
-                                   x=self.Q[to_fit, i])
-        else:
-            for i in range(4):
-                result += np.trapz(self.intensity - background,
-                                   x=self.Q[:, i])
+        for key in self.get_keys(hkle):
+            result += np.trapz(self.intensity[self.get_bounds(bounds)] - self.estimate_background(background),
+                               np.squeeze(self.data[key][self.get_bounds(bounds)]))
 
         return result
 
-    def position(self, background=None, **kwargs):
+    def position(self, bounds=None, background=None, hkle=True):
         r"""Returns the position of a peak within the given bounds
 
         Parameters
@@ -82,6 +80,13 @@ class Analysis(object):
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
+        background : float or dict, optional
+            Default: None
+
+        hkle : bool, optional
+            If True, integrates only over h, k, l, e dimensions, otherwise
+            integrates over all dimensions in :py:attr:`.Data.data`
+
         Returns
         -------
         result : tup
@@ -89,31 +94,22 @@ class Analysis(object):
             (h, k, l, e)
 
         """
-        if background is not None:
-            background = self.estimate_background(background)
-        else:
-            background = 0
-
         result = ()
-        if 'bounds' in kwargs:
-            to_fit = np.where(kwargs['bounds'])
-            for j in range(4):
-                _result = 0
-                for i in range(4):
-                    y = self.Q[to_fit, j] * (self.intensity[to_fit] - background)
-                    _result += np.trapz(y, x=self.Q[to_fit, i]) / self.integrate(**kwargs)
-                result += (_result,)
+        for key in self.get_keys(hkle):
+            _result = 0
+            for key_integrate in self.get_keys(hkle):
+                _result += np.trapz(self.data[key][self.get_bounds(bounds)] *
+                                    (self.intensity[self.get_bounds(bounds)] - self.estimate_background(background)),
+                                    self.data[key_integrate][self.get_bounds(bounds)]) / self.integrate(bounds, background)
+
+            result += (np.squeeze(_result),)
+
+        if hkle:
+            return result
         else:
-            for j in range(4):
-                _result = 0
-                for i in range(4):
-                    y = self.Q[:, j] * (self.intensity - background)
-                    _result += np.trapz(y, x=self.Q[:, i]) / self.integrate(**kwargs)
-                result += (_result,)
+            return dict((key, value) for key, value in zip(self.get_keys(hkle), result))
 
-        return result
-
-    def width(self, background=None, **kwargs):
+    def width(self, bounds=None, background=None, fwhm=False, hkle=True):
         r"""Returns the mean-squared width of a peak within the given bounds
 
         Parameters
@@ -122,6 +118,17 @@ class Analysis(object):
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
+        background : float or dict, optional
+            Default: None
+
+        fwhm : bool, optional
+            If True, returns width in fwhm, otherwise in mean-squared width.
+            Default: False
+
+        hkle : bool, optional
+            If True, integrates only over h, k, l, e dimensions, otherwise
+            integrates over all dimensions in :py:attr:`.Data.data`
+
         Returns
         -------
         result : tup
@@ -129,31 +136,25 @@ class Analysis(object):
             (h, k, l, e)
 
         """
-        if background is not None:
-            background = self.estimate_background(background)
-        else:
-            background = 0
 
         result = ()
-        if 'bounds' in kwargs:
-            to_fit = np.where(kwargs['bounds'])
-            for j in range(4):
-                _result = 0
-                for i in range(4):
-                    y = (self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * \
-                        (self.intensity[to_fit] - background)
-                    _result += np.trapz(y, x=self.Q[to_fit, i]) / self.integrate(**kwargs)
-                result += (_result,)
-        else:
-            for j in range(4):
-                _result = 0
-                for i in range(4):
-                    y = (self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * \
-                        (self.intensity - background)
-                    _result += np.trapz(y, x=self.Q[:, i]) / self.integrate(**kwargs)
-                result += (_result,)
+        for key in self.get_keys(hkle):
+            _result = 0
+            for key_integrate in self.get_keys(hkle):
+                _result += np.trapz((self.data[key][self.get_bounds(bounds)] -
+                                     self.position(bounds, background, hkle=False)[key]) ** 2 *
+                                    (self.intensity[self.get_bounds(bounds)] - self.estimate_background(background)),
+                                    self.data[key_integrate][self.get_bounds(bounds)]) / self.integrate(bounds, background)
 
-        return result
+            if fwhm:
+                result += (np.sqrt(np.squeeze(_result)) * 2. * np.sqrt(2. * np.log(2.)),)
+            else:
+                result += (np.squeeze(_result),)
+
+        if hkle:
+            return result
+        else:
+            return dict((key, value) for key, value in zip(self.get_keys(hkle), result))
 
     def scattering_function(self, material, ei):
         r"""Returns the neutron scattering function, i.e. the detector counts
@@ -177,8 +178,7 @@ class Analysis(object):
         ki = Energy(energy=ei).wavevector
         kf = Energy(energy=ei - self.e).wavevector
 
-        return (4 * np.pi / (material.total_scattering_cross_section) * ki /
-                kf * self.detector)
+        return 4 * np.pi / material.total_scattering_cross_section * ki / kf * self.detector
 
     def dynamic_susceptibility(self, material, ei):
         r"""Returns the dynamic susceptibility
@@ -199,8 +199,7 @@ class Analysis(object):
             The detector counts turned into the scattering function multiplied
             by the detailed balance factor
         """
-        return (self.scattering_function(material, ei) *
-                self.detailed_balance_factor)
+        return self.scattering_function(material, ei) * self.detailed_balance_factor
 
     def estimate_background(self, bg_params):
         r"""Estimate the background according to ``type`` specified.
@@ -220,7 +219,13 @@ class Analysis(object):
             Value determined to be the background. Will return ndarray only if
             `'type'` is `'constant'` and `'value'` is an ndarray
         """
-        if bg_params['type'] == 'constant':
+        if isinstance(bg_params, type(None)):
+            return 0
+
+        elif isinstance(bg_params, numbers.Number):
+            return bg_params
+
+        elif bg_params['type'] == 'constant':
             return bg_params['value']
 
         elif bg_params['type'] == 'percent':
@@ -235,3 +240,40 @@ class Analysis(object):
 
         else:
             return 0
+
+    def get_bounds(self, bounds):
+        r"""Generates a to_fit tuple if bounds is present in kwargs
+
+        Parameters
+        ----------
+        bounds : dict
+
+        Returns
+        -------
+        to_fit : tuple
+            Tuple of indices
+
+        """
+        if bounds is not None:
+            return np.where(bounds)
+        else:
+            return np.where(self.Q[:, 0])
+
+    def get_keys(self, hkle):
+        r"""
+
+        Parameters
+        ----------
+        hkle : bool
+            If True only returns keys for h,k,l,e, otherwise returns all keys
+
+        Returns
+        -------
+        keys : list
+            :py:attr:`.Data.data` dictionary keys
+
+        """
+        if hkle:
+            return [key for key in self.data if key in self.Q_keys.values()]
+        else:
+            return [key for key in self.data if key not in self.data_keys.values()]
