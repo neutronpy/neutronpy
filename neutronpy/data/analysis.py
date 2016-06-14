@@ -98,7 +98,7 @@ class Analysis(object):
 
         return result
 
-    def width(self, background=None, **kwargs):
+    def width(self, background=None, fwhm=False, **kwargs):
         r"""Returns the mean-squared width of a peak within the given bounds
 
         Parameters
@@ -109,6 +109,10 @@ class Analysis(object):
 
         background : float or dict, optional
             Default: None
+
+        fwhm : bool, optional
+            If True, returns width in fwhm, otherwise in mean-squared width.
+            Default: False
 
         Returns
         -------
@@ -125,7 +129,10 @@ class Analysis(object):
                                     (self.intensity[self.get_bounds(kwargs)] - self.estimate_background(background)),
                                     self.Q[self.get_bounds(kwargs), i]) / self.integrate(**kwargs)
 
-            result += (_result,)
+            if fwhm:
+                result += (np.sqrt(np.squeeze(_result)) * 2. * np.sqrt(2. * np.log(2.)),)
+            else:
+                result += (np.squeeze(_result),)
 
         return result
 

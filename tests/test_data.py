@@ -84,17 +84,18 @@ class DataTest(unittest.TestCase):
         data = Data(h=np.linspace(0, 1, 101), k=0, l=0, e=0, temp=0,
                     detector=functions.gaussian([0, 0, 10, 0.5, 0.5], np.linspace(0, 1, 101)),
                     monitor=np.ones(101), time=np.ones(101))
-        data_bin = data.bin(dict(h=[0, 1., 13], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[-0.5, 0.5, 1]))
 
-        self.assertEqual(data_bin.Q.shape[0], 13)
-        self.assertEqual(data_bin.monitor.shape[0], 13)
-        self.assertEqual(data_bin.detector.shape[0], 13)
+        data_bin = data.bin(dict(h=[0, 1., 51], k=[-0.1, 0.1, 1], l=[-0.1, 0.1, 1], e=[-0.5, 0.5, 1]))
+
+        self.assertEqual(data_bin.Q.shape[0], 51)
+        self.assertEqual(data_bin.monitor.shape[0], 51)
+        self.assertEqual(data_bin.detector.shape[0], 51)
 
         self.assertEqual(np.average(data_bin.monitor), np.average(data.monitor))
         self.assertTrue(abs(simps(data_bin.detector, data_bin.Q[:, 0]) - simps(data.detector, data.Q[:, 0])) <= 0.1)
-        self.assertTrue(np.abs(data_bin.integrate() - data.integrate()) < 1e-4)
-        self.assertTrue(np.abs(data_bin.position()[0] - data.position()[0]) < 1e-4)
-        self.assertTrue(np.abs(data_bin.width()[0] - data.width()[0]) < 1e-2)
+        self.assertAlmostEqual(np.abs(data_bin.integrate() - data.integrate()), 0, 1)
+        self.assertAlmostEqual(np.abs(data_bin.position()[0] - data.position()[0]), 0, 1)
+        self.assertAlmostEqual(np.abs(data_bin.width()[0] - data.width()[0]), 0, 1)
 
         def _test():
             data_bin = data.bin(dict(blah=[1, 2, 4]))
@@ -104,28 +105,32 @@ class DataTest(unittest.TestCase):
     def test_analysis(self):
         """Tests analysis methods
         """
-        data = build_data(clean=True)
+        x = np.linspace(-2, 2, 100)
+        y = functions.gaussian([0, 0, 1, 0, 0.5], x)
 
-        self.assertAlmostEqual(data.integrate(), 45.8424794006, 6)
-        self.assertTrue((data.position()[0] < 1e-15))
-        self.assertAlmostEqual(data.width()[0], 0.3, 2)
+        data = Data(Q=np.vstack((item.ravel() for item in np.meshgrid(x, 0., 0., 4., 300.))).T,
+                    detector=y, monitor=np.full(x.shape, 1, dtype=float), time=np.full(x.shape, 1, dtype=float))
+
+        self.assertAlmostEqual(np.abs(data.integrate() - 1), 0, 5)
+        self.assertAlmostEqual(np.abs(data.position()[0]), 0, 5)
+        self.assertAlmostEqual(data.width(fwhm=True)[0], 0.5, 1)
 
         bounds = (data.h >= -1) & (data.h <= 1)
-        self.assertAlmostEqual(data.integrate(bounds=bounds)[0], 45.8424794006, 6)
-        self.assertTrue((data.position(bounds=bounds)[0] < 1e-15))
-        self.assertEqual(np.round(data.width(bounds=bounds)[0], 1), 0.3)
+        self.assertAlmostEqual(np.abs(data.integrate(bounds=bounds) - 1), 0, 5)
+        self.assertAlmostEqual(np.abs(data.position(bounds=bounds)[0]), 0, 5)
+        self.assertAlmostEqual(data.width(bounds=bounds, fwhm=True)[0], 0.5, 1)
 
         background = dict(type='constant', value=0.)
-        self.assertAlmostEqual(data.integrate(background=background), 45.8424794006, 6)
-        self.assertTrue((data.position(background=background)[0] < 1e-15))
-        self.assertEqual(np.round(data.width(background=background)[0], 1), 0.3)
+        self.assertAlmostEqual(np.abs(data.integrate(background=background) - 1), 0, 5)
+        self.assertAlmostEqual(np.abs(data.position(background=background)[0]), 0, 5)
+        self.assertAlmostEqual(data.width(background=background, fwhm=True)[0], 0.5, 1)
 
         background = dict(type='percent', value=2)
-        self.assertAlmostEqual(data.integrate(background=background), 5.6750023056707004, 6)
+        self.assertAlmostEqual(np.abs(data.integrate(background=background) - 1), 0, 5)
         background = dict(type='minimum')
-        self.assertAlmostEqual(data.integrate(background=background), 5.6750023056707004, 6)
+        self.assertAlmostEqual(np.abs(data.integrate(background=background) - 1), 0, 5)
         background = dict(type='blah')
-        self.assertAlmostEqual(data.integrate(background=background), 45.8424794006, 6)
+        self.assertAlmostEqual(np.abs(data.integrate(background=background) - 1), 0, 5)
 
     def test_init_cases(self):
         """Tests initialization cases
@@ -266,7 +271,7 @@ class DataTest(unittest.TestCase):
         kf = Energy(energy=14.7 - data.e).wavevector
 
         self.assertTrue(np.all(data.scattering_function(material, 14.7) == 4 * np.pi / (
-        material.total_scattering_cross_section) * ki / kf * data.detector))
+            material.total_scattering_cross_section) * ki / kf * data.detector))
 
     def test_dynamic_susceptibility(self):
         """Test dynamic susceptibility
@@ -289,7 +294,7 @@ class DataTest(unittest.TestCase):
         kf = Energy(energy=14.7 - data.e).wavevector
 
         self.assertTrue(np.all(data.dynamic_susceptibility(material, 14.7) == 4 * np.pi / (
-        material.total_scattering_cross_section) * ki / kf * data.detector * data.detailed_balance_factor))
+            material.total_scattering_cross_section) * ki / kf * data.detector * data.detailed_balance_factor))
 
     def test_background_subtraction(self):
         """Test background subtraction
