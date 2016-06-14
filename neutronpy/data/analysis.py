@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import numbers
 import numpy as np
 from ..constants import BOLTZMANN_IN_MEV_K
 from ..energy import Energy
@@ -21,6 +22,7 @@ class Analysis(object):
     estimate_background
 
     """
+
     @property
     def detailed_balance_factor(self):
         r"""Returns the detailed balance factor (sometimes called the Bose
@@ -48,6 +50,9 @@ class Analysis(object):
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
+        background : float or dict, optional
+            Default: None
+
         Returns
         -------
         result : float
@@ -55,21 +60,10 @@ class Analysis(object):
             specified boundaries
 
         """
-        if background is not None:
-            background = self.estimate_background(background)
-        else:
-            background = 0
-
         result = 0
-        if 'bounds' in kwargs:
-            to_fit = np.where(kwargs['bounds'])
-            for i in range(4):
-                result += np.trapz(self.intensity[to_fit] - background,
-                                   x=self.Q[to_fit, i])
-        else:
-            for i in range(4):
-                result += np.trapz(self.intensity - background,
-                                   x=self.Q[:, i])
+        for i in range(4):
+            result += np.trapz(self.intensity[self.get_bounds(kwargs)] - self.estimate_background(background),
+                               np.squeeze(self.Q[self.get_bounds(kwargs), i]))
 
         return result
 
@@ -82,6 +76,9 @@ class Analysis(object):
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
+        background : float or dict, optional
+            Default: None
+
         Returns
         -------
         result : tup
@@ -89,27 +86,15 @@ class Analysis(object):
             (h, k, l, e)
 
         """
-        if background is not None:
-            background = self.estimate_background(background)
-        else:
-            background = 0
-
         result = ()
-        if 'bounds' in kwargs:
-            to_fit = np.where(kwargs['bounds'])
-            for j in range(4):
-                _result = 0
-                for i in range(4):
-                    y = self.Q[to_fit, j] * (self.intensity[to_fit] - background)
-                    _result += np.trapz(y, x=self.Q[to_fit, i]) / self.integrate(**kwargs)
-                result += (_result,)
-        else:
-            for j in range(4):
-                _result = 0
-                for i in range(4):
-                    y = self.Q[:, j] * (self.intensity - background)
-                    _result += np.trapz(y, x=self.Q[:, i]) / self.integrate(**kwargs)
-                result += (_result,)
+        for j in range(4):
+            _result = 0
+            for i in range(4):
+                _result += np.trapz(self.Q[self.get_bounds(kwargs), j] *
+                                    (self.intensity[self.get_bounds(kwargs)] - self.estimate_background(background)),
+                                    np.squeeze(self.Q[self.get_bounds(kwargs), i])) / self.integrate(**kwargs)
+
+            result += (np.squeeze(_result),)
 
         return result
 
@@ -122,6 +107,9 @@ class Analysis(object):
             A boolean expression representing the bounds inside which the
             calculation will be performed
 
+        background : float or dict, optional
+            Default: None
+
         Returns
         -------
         result : tup
@@ -129,29 +117,15 @@ class Analysis(object):
             (h, k, l, e)
 
         """
-        if background is not None:
-            background = self.estimate_background(background)
-        else:
-            background = 0
-
         result = ()
-        if 'bounds' in kwargs:
-            to_fit = np.where(kwargs['bounds'])
-            for j in range(4):
-                _result = 0
-                for i in range(4):
-                    y = (self.Q[to_fit, j] - self.position(**kwargs)[j]) ** 2 * \
-                        (self.intensity[to_fit] - background)
-                    _result += np.trapz(y, x=self.Q[to_fit, i]) / self.integrate(**kwargs)
-                result += (_result,)
-        else:
-            for j in range(4):
-                _result = 0
-                for i in range(4):
-                    y = (self.Q[:, j] - self.position(**kwargs)[j]) ** 2 * \
-                        (self.intensity - background)
-                    _result += np.trapz(y, x=self.Q[:, i]) / self.integrate(**kwargs)
-                result += (_result,)
+        for j in range(4):
+            _result = 0
+            for i in range(4):
+                _result += np.trapz((self.Q[self.get_bounds(kwargs), j] - self.position(**kwargs)[j]) ** 2 *
+                                    (self.intensity[self.get_bounds(kwargs)] - self.estimate_background(background)),
+                                    self.Q[self.get_bounds(kwargs), i]) / self.integrate(**kwargs)
+
+            result += (_result,)
 
         return result
 
@@ -177,8 +151,7 @@ class Analysis(object):
         ki = Energy(energy=ei).wavevector
         kf = Energy(energy=ei - self.e).wavevector
 
-        return (4 * np.pi / (material.total_scattering_cross_section) * ki /
-                kf * self.detector)
+        return 4 * np.pi / material.total_scattering_cross_section * ki / kf * self.detector
 
     def dynamic_susceptibility(self, material, ei):
         r"""Returns the dynamic susceptibility
@@ -199,8 +172,7 @@ class Analysis(object):
             The detector counts turned into the scattering function multiplied
             by the detailed balance factor
         """
-        return (self.scattering_function(material, ei) *
-                self.detailed_balance_factor)
+        return self.scattering_function(material, ei) * self.detailed_balance_factor
 
     def estimate_background(self, bg_params):
         r"""Estimate the background according to ``type`` specified.
@@ -220,7 +192,13 @@ class Analysis(object):
             Value determined to be the background. Will return ndarray only if
             `'type'` is `'constant'` and `'value'` is an ndarray
         """
-        if bg_params['type'] == 'constant':
+        if isinstance(bg_params, type(None)):
+            return 0
+
+        elif isinstance(bg_params, numbers.Number):
+            return bg_params
+
+        elif bg_params['type'] == 'constant':
             return bg_params['value']
 
         elif bg_params['type'] == 'percent':
@@ -235,3 +213,22 @@ class Analysis(object):
 
         else:
             return 0
+
+    def get_bounds(self, kwargs):
+        r"""Generates a to_fit tuple if bounds is present in kwargs
+
+        Parameters
+        ----------
+        kwargs : dict
+
+        Returns
+        -------
+        to_fit : tuple
+            Tuple of indices
+        """
+        if 'bounds' in kwargs:
+            to_fit = np.where(kwargs['bounds'])
+        else:
+            to_fit = np.where(self.Q[:, 0])
+
+        return to_fit
