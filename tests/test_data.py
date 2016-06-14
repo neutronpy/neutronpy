@@ -115,6 +115,13 @@ class DataTest(unittest.TestCase):
         self.assertAlmostEqual(np.abs(data.position()[0]), 0, 5)
         self.assertAlmostEqual(data.width(fwhm=True)[0], 0.5, 1)
 
+        self.assertTrue(isinstance(data.position(hkle=False), dict))
+        self.assertTrue(isinstance(data.width(hkle=False), dict))
+
+        self.assertAlmostEqual(np.abs(data.integrate(hkle=False) - 1), 0, 5)
+        self.assertAlmostEqual(np.abs(data.position(hkle=False)['h']), 0, 5)
+        self.assertAlmostEqual(data.width(fwhm=True, hkle=False)['h'], 0.5, 1)
+
         bounds = (data.h >= -1) & (data.h <= 1)
         self.assertAlmostEqual(np.abs(data.integrate(bounds=bounds) - 1), 0, 5)
         self.assertAlmostEqual(np.abs(data.position(bounds=bounds)[0]), 0, 5)
