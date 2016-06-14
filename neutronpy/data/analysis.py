@@ -41,7 +41,7 @@ class Analysis(object):
 
         return 1. - np.exp(-self.Q[:, 3] / BOLTZMANN_IN_MEV_K / self.temp)
 
-    def integrate(self, background=None, **kwargs):
+    def integrate(self, bounds=None, background=None):
         r"""Returns the integrated intensity within given bounds
 
         Parameters
@@ -62,12 +62,12 @@ class Analysis(object):
         """
         result = 0
         for i in range(4):
-            result += np.trapz(self.intensity[self.get_bounds(kwargs)] - self.estimate_background(background),
-                               np.squeeze(self.Q[self.get_bounds(kwargs), i]))
+            result += np.trapz(self.intensity[self.get_bounds(bounds)] - self.estimate_background(background),
+                               np.squeeze(self.Q[self.get_bounds(bounds), i]))
 
         return result
 
-    def position(self, background=None, **kwargs):
+    def position(self, bounds=None, background=None):
         r"""Returns the position of a peak within the given bounds
 
         Parameters
@@ -90,15 +90,15 @@ class Analysis(object):
         for j in range(4):
             _result = 0
             for i in range(4):
-                _result += np.trapz(self.Q[self.get_bounds(kwargs), j] *
-                                    (self.intensity[self.get_bounds(kwargs)] - self.estimate_background(background)),
-                                    np.squeeze(self.Q[self.get_bounds(kwargs), i])) / self.integrate(**kwargs)
+                _result += np.trapz(self.Q[self.get_bounds(bounds), j] *
+                                    (self.intensity[self.get_bounds(bounds)] - self.estimate_background(background)),
+                                    np.squeeze(self.Q[self.get_bounds(bounds), i])) / self.integrate(bounds, background)
 
             result += (np.squeeze(_result),)
 
         return result
 
-    def width(self, background=None, fwhm=False, **kwargs):
+    def width(self, bounds=None, background=None, fwhm=False):
         r"""Returns the mean-squared width of a peak within the given bounds
 
         Parameters
@@ -125,9 +125,9 @@ class Analysis(object):
         for j in range(4):
             _result = 0
             for i in range(4):
-                _result += np.trapz((self.Q[self.get_bounds(kwargs), j] - self.position(**kwargs)[j]) ** 2 *
-                                    (self.intensity[self.get_bounds(kwargs)] - self.estimate_background(background)),
-                                    self.Q[self.get_bounds(kwargs), i]) / self.integrate(**kwargs)
+                _result += np.trapz((self.Q[self.get_bounds(bounds), j] - self.position(bounds, background)[j]) ** 2 *
+                                    (self.intensity[self.get_bounds(bounds)] - self.estimate_background(background)),
+                                    self.Q[self.get_bounds(bounds), i]) / self.integrate(bounds, background)
 
             if fwhm:
                 result += (np.sqrt(np.squeeze(_result)) * 2. * np.sqrt(2. * np.log(2.)),)
@@ -221,20 +221,20 @@ class Analysis(object):
         else:
             return 0
 
-    def get_bounds(self, kwargs):
+    def get_bounds(self, bounds):
         r"""Generates a to_fit tuple if bounds is present in kwargs
 
         Parameters
         ----------
-        kwargs : dict
+        bounds : dict
 
         Returns
         -------
         to_fit : tuple
             Tuple of indices
         """
-        if 'bounds' in kwargs:
-            to_fit = np.where(kwargs['bounds'])
+        if bounds is not None:
+            to_fit = np.where(bounds)
         else:
             to_fit = np.where(self.Q[:, 0])
 
