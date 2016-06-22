@@ -2,9 +2,20 @@ Installing NeutronPy
 ====================
 The following explains various methods for installing neutronpy on your system.
 
+
+Anaconda Cloud - conda -- **Recommended**
+-----------------------------------------
+One recommended method for installing `neutronpy <https://anaconda.org/neutronpy>`_ is using `Anaconda <http://branding-continuum-content.pantheonsite.io/downloads>`_. Once Anaconda is installed, from the command line::
+
+    conda config --add channels neutronpy
+    conda config --add channels mmcauliffe
+    conda install neutronpy pyqt5
+
+``pyqt5`` is an optional package, necessary for the neutronpy resolution gui executed from the command line with ``neutronpy``.
+
 Python Package Index - pip
 --------------------------
-The recommended method for installing `neutronpy <https://pypi.python.org/pypi/neutronpy>`_ is using `pip <https://pip.pypa.io/en/latest/installing.html>`_.
+The next method for installing `neutronpy <https://pypi.python.org/pypi/neutronpy>`_ is using `pip <https://pip.pypa.io/en/latest/installing.html>`_.
 
 If you do not already have ``pip``, to install it first download `get-pip.py <https://bootstrap.pypa.io/get-pip.py>`_ and run it with the following command::
 
@@ -16,7 +27,7 @@ With ``pip`` installed, you can install the latest version of neutronpy with the
 
 To install a specific version of neutronpy, append ``=={version}`` to the above command, *e.g.*::
 
-    pip install neutronpy==0.1.1
+    pip install neutronpy==1.0.1b0
 
 New releases will be pushed to the package index. If you wish to install the development version, you will need to follow the instructions for installation from source.
 
@@ -36,3 +47,4 @@ If you want to install the development version, you can either download the `dev
     git fetch
     git checkout develop
     python setup.py install
+
