@@ -4,7 +4,7 @@ from ..constants import periodic_table, scattering_lengths
 
 
 class Atom(object):
-    r'''Class for adding atoms to the Material class.
+    r"""Class for adding atoms to the Material class.
 
     Parameters
     ----------
@@ -31,7 +31,8 @@ class Atom(object):
         Atom object defining an individual atom in a unit cell of a single
         crystal
 
-    '''
+    """
+
     def __init__(self, ion, pos, occupancy=1., Mcell=None, massNorm=False, Uiso=0, Uaniso=np.zeros((3, 3))):
         self.ion = ion
         self.pos = np.array(pos)
@@ -40,11 +41,17 @@ class Atom(object):
         self.Uiso = Uiso
         self.Uaniso = np.matrix(Uaniso)
 
+        if isinstance(scattering_lengths()[ion]['Coh b'], list):
+            b = complex(*scattering_lengths()[ion]['Coh b'])
+        else:
+            b = scattering_lengths()[ion]['Coh b']
+
         if massNorm is True:
             self.mass = periodic_table()[ion]['mass']
-            self.b = (scattering_lengths()[ion]['Coh b'] * self.occupancy * self.Mcell / np.sqrt(self.mass))
+
+            self.b = (b * self.occupancy * self.Mcell / np.sqrt(self.mass))
         else:
-            self.b = scattering_lengths()[ion]['Coh b'] / 10.
+            self.b = b / 10.
 
         self.coh_xs = scattering_lengths()[ion]['Coh xs']
         self.inc_xs = scattering_lengths()[ion]['Inc xs']
@@ -52,7 +59,7 @@ class Atom(object):
 
 
 class MagneticAtom(object):
-    r'''Class for adding magnetic atoms to the Material class.
+    r"""Class for adding magnetic atoms to the Material class.
 
     Parameters
     ----------
@@ -67,7 +74,8 @@ class MagneticAtom(object):
     output : object
         MagneticAtom object defining an individual magnetic ion in a unit cell
 
-    '''
+    """
+
     def __init__(self, ion, pos, moment, occupancy):
         self.ion = ion
         self.pos = np.array(pos)
