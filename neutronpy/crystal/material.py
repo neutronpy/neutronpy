@@ -8,7 +8,7 @@ from .atom import Atom, MagneticAtom
 from .plot import PlotMaterial
 from .sample import Sample
 from .structure_factors import NuclearStructureFactor, MagneticStructureFactor
-from .symmetry import SpaceGroup
+from .symmetry import SpaceGroup, remove_equiv_positions
 
 
 # from ..scattering.pattern import HKLGenerator

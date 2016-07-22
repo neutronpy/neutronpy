@@ -34,8 +34,8 @@ def aluminum(energy=14.7):
     reflections = ([1, 1, 1], [2, 0, 0], [2, 2, 0], [3, 1, 1])
 
     struct_obj = Material(struct)
-    wavelengths = [e.wavelength / 3, e.wavelength / 2, e.wavelength]
-    print('(h, k, l)  2theta  |F|^2  wavelength')
+    wavelengths = [e.wavelength]
+    print('(h, k, l)  2theta  Intensity  wavelength')
     print('------------------------------------')
 
     hkl = []
@@ -43,19 +43,24 @@ def aluminum(energy=14.7):
     wavelength_fraction = []
     str_fac = []
     for wavelength in wavelengths:
-        for pos in reflections:
+        for pos, m in zip(reflections, [8, 6, 12, 24]):
             wavelength_fraction.append('lambda/{0:.0f}'.format(np.round(e.wavelength / wavelength)))
             hkl.append(str(pos))
             two_theta.append(struct_obj.get_two_theta(pos, wavelength))
-            str_fac.append(np.abs(struct_obj.calc_nuc_str_fac(pos)) ** 2)
+            str_fac.append(m * wavelength ** 3 *
+                           np.abs(struct_obj.calc_nuc_str_fac(pos)) ** 2 /
+                           struct_obj.volume ** 2 /
+                           np.sin(np.deg2rad(struct_obj.get_two_theta(pos, wavelength) / 2)) /
+                           np.sin(np.deg2rad(struct_obj.get_two_theta(pos, wavelength))))
     hkl = np.array(hkl)
     two_theta = np.array(two_theta)
     wavelength_fraction = np.array(wavelength_fraction)
     str_fac = np.array(str_fac)
+    str_fac *= 1000 / str_fac.max()
 
     ind = two_theta.argsort()
     for pos, tt, i0, lam in zip(hkl[ind], two_theta[ind], str_fac[ind], wavelength_fraction[ind]):
-        print(pos, '{0:.4f}'.format(tt), '{0:.0f}'.format(i0), lam)
+        print(pos, '{0:.2f}'.format(tt), '{0:.4f}'.format(i0), lam)
 
 
 def currat_axe_peaks(instrument, scan, bragg_positions, angle_tol=1):

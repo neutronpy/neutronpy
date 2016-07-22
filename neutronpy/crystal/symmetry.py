@@ -2,6 +2,7 @@
 r"""Symmetry operations
 
 """
+import copy
 import numpy as np
 from ..constants import symmetry
 
@@ -28,6 +29,7 @@ class SpaceGroup(object):
     symmetrize_position
 
     """
+
     def __init__(self, symbol='P1'):
         if isinstance(symbol, int):
             for key, value in space_groups.items():
@@ -41,7 +43,8 @@ class SpaceGroup(object):
                     if value['hermann-manguin_symbol'] == symbol or value['full_name'] == symbol:
                         self._symbol = key
         else:
-            raise KeyError('{0} is not a valid International symbol, Hermann–Mauguin symbol, or space group number'.format(symbol))
+            raise KeyError(
+                '{0} is not a valid International symbol, Hermann–Mauguin symbol, or space group number'.format(symbol))
 
         self.point_group = space_groups[self.symbol]['point_group']
         self.full_name = space_groups[self.symbol]['full_name']
@@ -102,7 +105,7 @@ class SpaceGroup(object):
         for op in self.symmetry_operations:
             positions.append(np.dot(get_rotation(op), np.array(vector)) + get_translation(op))
 
-        return positions
+        return remove_equiv_positions(positions)
 
 
 def get_formatted_operations(operations):
@@ -255,3 +258,18 @@ def get_str_from_generator(operations):
         generators.append(','.join(line))
 
     return generators
+
+
+def remove_equiv_positions(positions):
+    r"""Removes equivalent positions from
+
+    Parameters
+    ----------
+    positions
+
+    Returns
+    -------
+
+    """
+    new_positions = set(tuple(pos) for pos in positions)
+    return [list(pos) for pos in new_positions]

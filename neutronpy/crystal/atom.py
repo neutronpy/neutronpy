@@ -40,6 +40,7 @@ class Atom(object):
         self.Mcell = Mcell
         self.Uiso = Uiso
         self.Uaniso = np.matrix(Uaniso)
+        self.mass = periodic_table()[ion]['mass']
 
         if isinstance(scattering_lengths()[ion]['Coh b'], list):
             b = complex(*scattering_lengths()[ion]['Coh b'])
@@ -47,8 +48,6 @@ class Atom(object):
             b = scattering_lengths()[ion]['Coh b']
 
         if massNorm is True:
-            self.mass = periodic_table()[ion]['mass']
-
             self.b = (b * self.occupancy * self.Mcell / np.sqrt(self.mass))
         else:
             self.b = b / 10.
