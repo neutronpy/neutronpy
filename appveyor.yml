@@ -54,17 +54,16 @@ environment:
 
 install:
   - set PATH=C:\Miniconda3%ARCH%;C:\Miniconda3%ARCH%\Scripts;%PATH%
-  - conda create --yes -q -n test_environment python=%PYTHON_VERSION% pip
-    setuptools cython numpy=%NUMPY_VERSION% scipy=%SCIPY_VERSION% nose matplotlib=%MATPLOTLIB_VERSION%
-    six mock h5py pep8
+  - conda create --yes -q -n test_environment python=%PYTHON_VERSION% pip setuptools numpy=%NUMPY_VERSION%
+    scipy=%SCIPY_VERSION% matplotlib=%MATPLOTLIB_VERSION% mock h5py pep8
   - activate test_environment
-  - pip install coveralls codecov ordereddict lmfit==%LMFIT_VERSION%
+  - pip install coveralls codecov ordereddict pytest-cov pytest-pep8 lmfit==%LMFIT_VERSION%
   - pip install -e . --no-deps 
 
 build: off
 
 test_script:
-  - nosetests --with-coverage --cover-package=neutronpy --logging-level=INFO
+  - pytest -v --tb=short
 
 on_success:
   - echo [distutils]                                  > %USERPROFILE%\\.pypirc

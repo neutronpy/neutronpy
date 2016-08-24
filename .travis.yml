@@ -36,9 +36,9 @@ before_install:
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
 install:
-  - conda create --yes -q -n test_environment python=$PYTHON_VERSION nomkl pip setuptools cython numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION nose matplotlib=$MATPLOTLIB_VERSION six mock h5py pep8
+  - conda create --yes -q -n test_environment python=$PYTHON_VERSION nomkl pip setuptools numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION matplotlib=$MATPLOTLIB_VERSION mock h5py pep8
   - source activate test_environment
-  - if ! ( [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$PYTHON_VERSION" == "2.6" ] ); then pip install codeclimate-test-reporter ordereddict lmfit==$LMFIT_VERSION; else easy_install ordereddict codeclimate-test-reporter lmfit==$LMFIT_VERSION; fi
+  - if ! ( [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$PYTHON_VERSION" == "2.6" ] ); then pip install codeclimate-test-reporter ordereddict lmfit==$LMFIT_VERSION pytest-cov pytest-pep8; else easy_install ordereddict codeclimate-test-reporter pytest-cov pytest-pep8 lmfit==$LMFIT_VERSION; fi
   - pip install -e . -q --no-deps
 before_script:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then 
@@ -47,7 +47,7 @@ before_script:
     sleep 3;
     fi
 script:
-  - nosetests --with-coverage --cover-package=neutronpy --logging-level=INFO
+  - pytest --cov=neutronpy --tb=short
 after_success:
   - coverage run neutronpy
   - coveralls
