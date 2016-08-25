@@ -59,6 +59,10 @@ class Fitter(object):
     nofinitecheck : bool, optional
         Default: False
 
+    nan_policy : str, optional
+        Default: 'omit'. Determines how NaN values are handled: 'raise',
+        'propagate' or 'omit'.
+
     Notes
     -----
     Objects of this class are callable, returning the fitted parameters.
@@ -127,7 +131,7 @@ class Fitter(object):
 
     def __init__(self, residuals, derivatives=None, data=None, params0=None, parinfo=None, ftol=1e-10, xtol=1e-10,
                  gtol=1e-10, epsfcn=None, stepfactor=100.0, covtol=1e-14, maxiter=200, maxfev=None,
-                 nofinitecheck=False):
+                 nofinitecheck=False, nan_policy='omit'):
 
         self._m = 0
         self.result = namedtuple('result', [])
@@ -151,6 +155,7 @@ class Fitter(object):
         self.maxiter = maxiter
         self.maxfev = maxfev
         self.nofinitecheck = nofinitecheck
+        self.nan_policy = nan_policy
 
     def __call__(self, params0=None):
         if hasattr(self, 'params'):
@@ -365,6 +370,19 @@ class Fitter(object):
             raise ValueError
 
     @property
+    def nan_policy(self):
+        r"""Determines how NaN's are handled by minimizer. Default: 'omit'
+        """
+        return self._nan_policy
+
+    @nan_policy.setter
+    def nan_policy(self, value):
+        if isinstance(value, str):
+            self._nan_policy = value
+        else:
+            raise ValueError
+
+    @property
     def npar(self):
         r"""Number of parameters
         """
@@ -491,8 +509,8 @@ class Fitter(object):
         self.result.orignorm = np.sum(self.residuals(params0, self.data) ** 2)
 
         result = minimize(self.residuals, p, Dfun=self.deriv, method='leastsq', ftol=self.ftol, xtol=self.xtol,
-                          gtol=self.gtol,
-                          maxfev=self.maxfev, epsfcn=self.epsfcn, factor=self.stepfactor, args=(self.data,), kws=None)
+                          gtol=self.gtol, maxfev=self.maxfev, epsfcn=self.epsfcn, factor=self.stepfactor,
+                          args=(self.data,), nan_policy=self.nan_policy, kws=None)
 
         self.result.bestnorm = result.chisqr
         self.result.redchi = result.redchi
