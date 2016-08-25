@@ -25,7 +25,8 @@ try:
 except ImportError:
     warnings.warn('PyQt5 not found, cannot run Resolution GUI')
 
-__version__ = '1.0.1-beta'
+__version__ = '1.0.1-b2'
 
-if sys.version_info[:2] == (2, 6):
-    warnings.warn('Support for Python 2.6 is depreciated and will be dropped in neutronpy 1.1.0', DeprecationWarning)
+if sys.version_info[:2] == (2, 6) or sys.version_info[:2] == (3, 3):
+    warnings.warn('Support for Python 2.6 and Python 3.3 is depreciated and will be dropped in neutronpy 1.1.0',
+                  DeprecationWarning)
