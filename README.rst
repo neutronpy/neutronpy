@@ -72,15 +72,15 @@ The following packages are required to install this library:
 
 Installation
 ------------
-It is recommended that you use `anaconda <>`_ and ``pip`` to install NeutronPy::
+It is recommended that you use `anaconda <>`_ or ``pip`` to install NeutronPy::
 
-    conda config --add channels mmcauliffe
-    conda install python nomkl numpy scipy h5py matplotlib pyqt5
+    conda install -c neutronpy neutronpy
+
+or::
+
     pip install neutronpy
 
-Note: the added channel is for pyqt5.
-
-The resolution calculator gui can be used after installation by executing ``neutronpy`` from the command-line.
+Note: the channel ``mmcauliffe`` is required for pyqt5, so that the resolution calculator gui can be used after installation by executing ``neutronpy`` from the command-line. See Installation for more detailed instructions.
 
 Documentation
 -------------
