@@ -2,69 +2,50 @@ environment:
   PYPIPASSWORD:
     secure: AEQLjbsZ8WEiaWFK3eYbCQ==
   matrix:
-   - PYTHON_VERSION: "2.6"
-     NUMPY_VERSION: "1.9.2"
-     SCIPY_VERSION: "0.15.1"
-     MATPLOTLIB_VERSION: "1.4.3"
-     LMFIT_VERSION: "0.9.1"
-     ARCH: ""
-   - PYTHON_VERSION: "2.6"
-     NUMPY_VERSION: "1.9.2"
-     SCIPY_VERSION: "0.15.1"
-     MATPLOTLIB_VERSION: "1.4.3"
-     LMFIT_VERSION: "0.9.1"
-     ARCH: "-x64"
    - PYTHON_VERSION: "2.7"
      NUMPY_VERSION: "1.10.1"
      SCIPY_VERSION: "0.16.1"
      MATPLOTLIB_VERSION: "1.5.1"
-     LMFIT_VERSION: "0.9.3"
+     LMFIT_VERSION: "0.9.5"
      ARCH: ""
    - PYTHON_VERSION: "2.7"
      NUMPY_VERSION: "1.10.1"
      SCIPY_VERSION: "0.16.1"
      MATPLOTLIB_VERSION: "1.5.1"
-     LMFIT_VERSION: "0.9.3"
+     LMFIT_VERSION: "0.9.5"
      ARCH: "-x64"
-   - PYTHON_VERSION: "3.3"
-     NUMPY_VERSION: "1.9.2"
-     SCIPY_VERSION: "0.15.1"
-     MATPLOTLIB_VERSION: "1.4.3"
-     LMFIT_VERSION: "0.9.3"
-     ARCH: ""
    - PYTHON_VERSION: "3.4"
      NUMPY_VERSION: "1.10.1"
      SCIPY_VERSION: "0.16.1"
      MATPLOTLIB_VERSION: "1.5.1"
-     LMFIT_VERSION: "0.9.3"
+     LMFIT_VERSION: "0.9.5"
      ARCH: ""
    - PYTHON_VERSION: "3.5"
-     NUMPY_VERSION: "1.10.1"
-     SCIPY_VERSION: "0.16.1"
+     NUMPY_VERSION: "1.11.1"
+     SCIPY_VERSION: "0.18"
      MATPLOTLIB_VERSION: "1.5.1"
-     LMFIT_VERSION: "0.9.3"
+     LMFIT_VERSION: "0.9.5"
      ARCH: ""
    - PYTHON_VERSION: "3.5"
-     NUMPY_VERSION: "1.10.1"
-     SCIPY_VERSION: "0.16.1"
+     NUMPY_VERSION: "1.11.1"
+     SCIPY_VERSION: "0.18"
      MATPLOTLIB_VERSION: "1.5.1"
-     LMFIT_VERSION: "0.9.3"
+     LMFIT_VERSION: "0.9.5"
      ARCH: "-x64"
 
 
 install:
   - set PATH=C:\Miniconda3%ARCH%;C:\Miniconda3%ARCH%\Scripts;%PATH%
-  - conda create --yes -q -n test_environment python=%PYTHON_VERSION% pip
-    setuptools cython numpy=%NUMPY_VERSION% scipy=%SCIPY_VERSION% nose matplotlib=%MATPLOTLIB_VERSION%
-    six mock h5py pep8
+  - conda create --yes -q -n test_environment python=%PYTHON_VERSION% pip setuptools numpy=%NUMPY_VERSION%
+    scipy=%SCIPY_VERSION% matplotlib=%MATPLOTLIB_VERSION% mock h5py pep8
   - activate test_environment
-  - pip install coveralls codecov ordereddict lmfit==%LMFIT_VERSION%
+  - pip install pytest-cov pytest-pep8 lmfit==%LMFIT_VERSION%
   - pip install -e . --no-deps 
 
 build: off
 
 test_script:
-  - nosetests --with-coverage --cover-package=neutronpy --logging-level=INFO
+  - pytest -v --tb=short
 
 on_success:
   - echo [distutils]                                  > %USERPROFILE%\\.pypirc

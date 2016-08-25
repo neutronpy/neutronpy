@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 """Tests for FileIO
 
 """
 import os
-import unittest
+import pytest
 from mock import patch
 import numpy as np
 from neutronpy import functions
@@ -31,92 +32,93 @@ def build_data(clean=True):
     return output
 
 
-class IOTests(unittest.TestCase):
-    """Unit tests for fileIO
+@patch('sys.stdout')
+def test_load_data_files(mock_stdout):
+    """Tests file loading
     """
+    try:
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0001.dat'),
+                   os.path.join(os.path.dirname(__file__), 'filetypes/scan0002.dat')), load_instrument=True)
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0003.ng5')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0004.bt7')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0005')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0007.bt7')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/000000.nxs')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/000001.dat')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.iexy')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.spe')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.xyie')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.npy')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.hdf5')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_save_load_spice.npy')), load_instrument=True)
+    except:
+        pytest.fail('Data loading failed')
 
-    @patch('sys.stdout')
-    def test_load_data_files(self, mock_stdout):
-        """Tests file loading
-        """
-        try:
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0001.dat'),
-                       os.path.join(os.path.dirname(__file__), 'filetypes/scan0002.dat')), load_instrument=True)
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0003.ng5')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0004.bt7')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0005')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0007.bt7')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/000000.nxs')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/000001.dat')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.iexy')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.spe')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.xyie')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.npy')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.hdf5')))
-            load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_save_load_spice.npy')), load_instrument=True)
-        except:
-            self.fail('Data loading failed')
+    with pytest.raises(KeyError):
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0006.test')), filetype='blah')
 
-        self.assertRaises(KeyError, load_data, (os.path.join(os.path.dirname(__file__), 'filetypes/scan0006.test')),
-                          filetype='blah')
 
-    def test_save_data_file(self):
-        """Tests data object saving
-        """
-        data_out = build_data()
+def test_save_data_file():
+    """Tests data object saving
+    """
+    data_out = build_data()
 
-        try:
-            save_data(data_out, 'test.out', filetype='ascii', overwrite=True)
-            save_data(data_out, 'test.out', filetype='hdf5', overwrite=True)
-            save_data(data_out, 'test.out', filetype='pickle', overwrite=True)
-        except Exception:
-            self.fail('Data saving failed')
+    try:
+        save_data(data_out, 'test.out', filetype='ascii', overwrite=True)
+        save_data(data_out, 'test.out', filetype='hdf5', overwrite=True)
+        save_data(data_out, 'test.out', filetype='pickle', overwrite=True)
+    except Exception:
+        pytest.fail('Data saving failed')
 
-        self.assertRaises(ValueError, save_data, data_out, 'test.out', filetype='hdf5', overwrite=False)
-        self.assertRaises(ValueError, save_data, data_out, 'test.out', filetype='blah', overwrite=True)
+    with pytest.raises(ValueError):
+        save_data(data_out, 'test.out', filetype='hdf5', overwrite=False)
+        save_data(data_out, 'test.out', filetype='blah', overwrite=True)
 
-    def test_load_instrument_file(self):
-        """Tests instrument file loading
-        """
-        try:
-            load_instrument((os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.par'),
-                             os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.cfg')), filetype='parcfg')
-            load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.instr'),
-                            filetype='ascii')
-            load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.hdf5'), filetype='hdf5')
-            load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.taz'), filetype='taz')
-        except Exception:
-            self.fail('Instrument file loading failed')
 
-        self.assertRaises(ValueError, load_instrument,
-                          os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.instr'), filetype='blah')
+def test_load_instrument_file():
+    """Tests instrument file loading
+    """
+    try:
+        load_instrument((os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.par'),
+                         os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.cfg')), filetype='parcfg')
+        load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.instr'), filetype='ascii')
+        load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.hdf5'), filetype='hdf5')
+        load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.taz'), filetype='taz')
+    except Exception:
+        pytest.fail('Instrument file loading failed')
 
-    def test_save_instrument_file(self):
-        """Tests instrument object saving
-        """
-        instr = Instrument()
-        try:
-            save_instrument(instr, 'test.out', filetype='ascii', overwrite=True)
-            save_instrument(instr, 'test.out', filetype='hdf5', overwrite=True)
-            save_instrument(instr, 'test.out', filetype='taz', overwrite=True)
-        except Exception:
-            self.fail('Instrument saving failed')
+    with pytest.raises(ValueError):
+        load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.instr'), filetype='blah')
 
-        self.assertRaises(ValueError, save_instrument, instr, 'test.out', filetype='hdf5', overwrite=False)
 
-    def test_filetype_detection(self):
-        """Test filetype detection
-        """
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0001.dat')) == 'spice')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0003.ng5')) == 'icp')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0004.bt7')) == 'ice')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0005')) == 'mad')
-        self.assertTrue(
-            detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.iexy')) == 'dcs_mslice')
-        self.assertTrue(detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/000001.dat')) == 'grasp')
-        self.assertRaises(ValueError, detect_filetype,
-                          os.path.join(os.path.dirname(__file__), 'filetypes/scan0006.test'))
+def test_save_instrument_file():
+    """Tests instrument object saving
+    """
+    instr = Instrument()
+    try:
+        save_instrument(instr, 'test.out', filetype='ascii', overwrite=True)
+        save_instrument(instr, 'test.out', filetype='hdf5', overwrite=True)
+        save_instrument(instr, 'test.out', filetype='taz', overwrite=True)
+    except Exception:
+        pytest.fail('Instrument saving failed')
+
+    with pytest.raises(ValueError):
+        save_instrument(instr, 'test.out', filetype='hdf5', overwrite=False)
+
+
+def test_filetype_detection():
+    """Test filetype detection
+    """
+    assert (detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0001.dat')) == 'spice')
+    assert (detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0003.ng5')) == 'icp')
+    assert (detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0004.bt7')) == 'ice')
+    assert (detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0005')) == 'mad')
+    assert (
+        detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.iexy')) == 'dcs_mslice')
+    assert (detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/000001.dat')) == 'grasp')
+    with pytest.raises(ValueError):
+        detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0006.test'))
 
 
 if __name__ == '__main__':
-    unittest.main()
+    pytest.main()

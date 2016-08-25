@@ -2,33 +2,59 @@ install:
 	python2 setup.py install
 	python3 setup.py install
 
+install-two:
+	python2 setup.py install
+
+install-three:
+	python3 setup.py install
+
 clean:
-	find . | grep -E "(__pycache__|\.pyc|\.pyo|plot_test.pdf|test.out|.DS_Store$$)" | xargs rm -rf
+	find . | grep -E "(__pycache__|\.pyc|\.pyo|plot_test.pdf|.coverage|test.out|.DS_Store$$)" | xargs rm -rf
 	
 test:
-	python3 setup.py test
+	pytest --tb=short
 
 test-data:
-	nosetests -s -x tests.test_data
+	pytest -v -x tests/test_data.py
+
+test-energy:
+	pytest -v -x tests/test_energy.py
+
+test-fitting:
+	pytest -v -x tests/test_fitting.py
+
+test-functions:
+	pytest -v -x tests/test_functions.py
 
 test-io:
-	nosetests -s -x tests.test_io
-
-test-fit:
-	nosetests -s -x tests.test_fitting
-
-test-symmetry:
-	nosetests -s -x tests.test_symmetry
+	pytest -v -x tests/test_io.py
 
 test-lattice:
-	nosetests -s -x tests.test_lattice
+	pytest -v -x tests/test_lattice.py
+
+test-models:
+	pytest -v -x tests/test_models.py
+
+test-resolution:
+	pytest -v -x tests/test_resolution.py
 
 test-scattering:
-	nosetests -s -x tests.test_scattering
+	pytest -v -x tests/test_scattering.py
+
+test-spurion:
+	pytest -v -x tests/test_spurion.py
+
+test-structure-factors:
+	pytest -v -x tests/test_structure_factors.py
+
+test-symmetry:
+	pytest -v -x tests/test_symmetry.py
+
+test-coverage:
+	pytest --cov=neutronpy
 
 test-all:
-	python2 setup.py test
-	python3 setup.py test
+	pytest -v
 
 pypi:
 	python3 setup.py sdist upload -r pypi
