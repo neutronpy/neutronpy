@@ -23,7 +23,7 @@ matrix:
     - SCIPY_VERSION=0.18
     - MATPLOTLIB_VERSION=1.5.1
     - LMFIT_VERSION=0.9.5
-    - secure: WSnF0TUYz+M/VABRxQzdRIbCN2p3X8CTvgeJshChhz7xul6nYvBlGCUJ61iGqhyMD148JyElaRbQlUCjJ6U3EqJ7L8CTSxsJCaacPmoOgzf7HQYJLcGLkx2jTwAfr2dNzu30Klw59g6jRMjx+QPCwWxOk09Vaqlkgsmh7ZzYg2I=
+    - secure: Igr4jIHJB4jo9sCYTc4cXimNFJRs7A8RLamwBXZhf8dtIhJ0J5R0qsLXzvCyCI61P8lwJCYZG9gx9EzLT9q+C5OAqjuJt2v+UfWBRjfezid+19tS0Po/WrJxBBjl/CraBznO6NG4uyYeua1SyOweXBXZ1G8mfSteVrSwRnGfBx4=
   - os: osx
     env:
     - PYTHON_VERSION=2.7
