@@ -4,9 +4,10 @@ r"""Sample class for e.g. Instrument class
 """
 import numpy as np
 from .lattice import Lattice
+from ..scattering.geometry import ScatteringPlane
 
 
-class Sample(Lattice):
+class Sample(Lattice, ScatteringPlane):
     u"""Private class containing sample information.
 
     Parameters

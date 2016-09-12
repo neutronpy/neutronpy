@@ -31,5 +31,9 @@ def test_polarization_correction():
     scattering.polarization.polarization_correction(data, data, data, data)
 
 
+def test_geometry():
+    scattering_plane = scattering.geometry.ScatteringPlane()
+
+
 if __name__ == "__main__":
     pytest.main()
