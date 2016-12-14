@@ -10,7 +10,7 @@ install-three:
 
 clean:
 	find . | grep -E "(__pycache__|\.pyc|\.pyo|plot_test.pdf|.coverage|test.out|.DS_Store$$)" | xargs rm -rf
-	
+
 test:
 	pytest --tb=short
 
@@ -46,6 +46,9 @@ test-spurion:
 
 test-structure-factors:
 	pytest -v -x tests/test_structure_factors.py
+
+test-scans:
+	pytest -v -x tests/test_scans.py
 
 test-symmetry:
 	pytest -v -x tests/test_symmetry.py
