@@ -549,7 +549,7 @@ def save_instrument(obj, filename, filetype='ascii', overwrite=False):
         else:
             mode = 'a'
 
-        with h5py.File(filename + '.hdf5', mode) as f:
+        with h5py.File(filename + '.h5', mode) as f:
             instrument = f.create_group('instrument')
             mono = instrument.create_group('mono')
             ana = instrument.create_group('ana')

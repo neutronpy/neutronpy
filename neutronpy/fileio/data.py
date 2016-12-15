@@ -141,7 +141,7 @@ def save_data(obj, filename, filetype='ascii', save_instr=False, overwrite=False
         else:
             mode = 'a'
 
-        with h5py.File(filename + '.hdf5', mode) as f:
+        with h5py.File(filename + '.h5', mode) as f:
             data = f.create_group('data')
 
             try:
@@ -196,7 +196,7 @@ def detect_filetype(filename):
         return 'grasp'
     elif (filename[-4:].lower() == 'iexy') or (filename[-3:].lower() == 'spe') or (filename[-3:].lower() == 'xye') or (filename[-4:] == 'xyie'):
         return 'dcs_mslice'
-    elif filename[-4:].lower() == 'hdf5' or filename[-3].lower() == 'npy':
+    elif filename[-2:].lower() == 'h5' or filename[-3].lower() == 'npy':
         return 'neutronpy'
     else:
         with open(filename) as f:
