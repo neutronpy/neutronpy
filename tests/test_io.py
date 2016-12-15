@@ -49,7 +49,7 @@ def test_load_data_files(mock_stdout):
         load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.spe')))
         load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.xyie')))
         load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.npy')))
-        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.hdf5')))
+        load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.h5')))
         load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_save_load_spice.npy')), load_instrument=True)
     except:
         pytest.fail('Data loading failed')
@@ -82,7 +82,7 @@ def test_load_instrument_file():
         load_instrument((os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.par'),
                          os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.cfg')), filetype='parcfg')
         load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.instr'), filetype='ascii')
-        load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.hdf5'), filetype='hdf5')
+        load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.h5'), filetype='hdf5')
         load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.taz'), filetype='taz')
     except Exception:
         pytest.fail('Instrument file loading failed')

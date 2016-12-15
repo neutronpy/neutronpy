@@ -32,7 +32,7 @@ class Neutronpy(Data):
             Option to build Instrument from file header
 
         """
-        if filename[-4:].lower() == 'hdf5':
+        if filename[-2:].lower() == 'h5':
             self.load_hdf5(filename, build_hkl, load_instrument)
         else:
             with open(filename, 'r') as f:
