@@ -1,6 +1,6 @@
 package:
   name: neutronpy
-  version: "1.0.1b3"
+  version: "1.0.2"
 
 source:
   path: ../
