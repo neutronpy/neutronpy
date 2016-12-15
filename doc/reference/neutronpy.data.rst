@@ -8,3 +8,4 @@ neutronpy.data module
 
     Data
     Analysis
+    Scans

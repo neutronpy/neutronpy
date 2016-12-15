@@ -2,6 +2,9 @@
 Changelog
 =========
 
+* :release:`1.0.2 <2016-12-15>`
+* :feature:`92` Updated documentation and made bug fixes to :py:class:`.Fitter` and :py:meth:`.load_data`
+* :feature:`91` Added :py:class:`.Scans` class to build collections of Data objects for easier plotting
 * :feature:`90` Added automatic conda builds for tagged releases
 * :feature:`89` Depreciated support for py26 and py33, and changed to py.test from nose. Added ``nan_policy`` kwarg to :py:class:`.Fitter`
 * :feature:`86` Enhanced :py:meth:`.Data.integrate`, :py:meth:`.Data.position`, :py:meth:`.Data.width`
