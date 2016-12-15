@@ -6,7 +6,7 @@ import warnings
 from collections import namedtuple
 
 import numpy as np
-from lmfit import minimize, Parameters
+from lmfit import minimize, Parameters, Minimizer
 
 from .tools import residual_wrapper
 
@@ -506,11 +506,13 @@ class Fitter(object):
         if np.all([not value.vary for value in p.values()]):
             raise Exception('All parameters are fixed!')
 
+        self.lmfit_minimizer = Minimizer(self.residuals, p, nan_policy=self.nan_policy, fcn_args=(self.data,))
+
         self.result.orignorm = np.sum(self.residuals(params0, self.data) ** 2)
 
-        result = minimize(self.residuals, p, Dfun=self.deriv, method='leastsq', ftol=self.ftol, xtol=self.xtol,
-                          gtol=self.gtol, maxfev=self.maxfev, epsfcn=self.epsfcn, factor=self.stepfactor,
-                          args=(self.data,), nan_policy=self.nan_policy, kws=None)
+        result = self.lmfit_minimizer.minimize(Dfun=self.deriv, method='leastsq', ftol=self.ftol,
+                                               xtol=self.xtol, gtol=self.gtol, maxfev=self.maxfev, epsfcn=self.epsfcn,
+                                               factor=self.stepfactor)
 
         self.result.bestnorm = result.chisqr
         self.result.redchi = result.redchi
