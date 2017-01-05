@@ -5,7 +5,6 @@ TESTING ONLY FOR NOW
 """
 import os
 import sys
-import matplotlib
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import numpy as np
@@ -14,9 +13,6 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout,
 from .instrument import Instrument, GetTau
 from .energy import Energy
 from .instrument.plot import PlotInstrument
-
-matplotlib.rc('font', **{'family': 'serif', 'serif': 'Times New Roman', 'size': 9})
-matplotlib.rc('lines', markersize=2, linewidth=0.5)
 
 
 class MyMplCanvas(FigureCanvas):
