@@ -4,6 +4,7 @@ r"""NeutronPy: open source python library for neutron scattering data analysis
 from __future__ import absolute_import
 import sys
 import warnings
+import pkg_resources
 from . import constants
 from . import fileio
 from . import functions
@@ -25,7 +26,7 @@ try:
 except ImportError:
     warnings.warn('PyQt5 not found, cannot run Resolution GUI')
 
-__version__ = '1.0.2'
+__version__ = pkg_resources.require("neutronpy")[0].version
 
 if sys.version_info[:2] == (2, 6) or sys.version_info[:2] == (3, 3):
     warnings.warn('Support for Python 2.6 and Python 3.3 is depreciated and will be dropped in neutronpy 1.1.0',

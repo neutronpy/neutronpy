@@ -8,14 +8,8 @@ routines for Instrument resolution calculations.
 
 """
 
-import os
-import sys
-import re
-
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
+import subprocess
+from setuptools import setup
 
 CLASSIFIERS = """\
 Development Status :: 4 - Beta
@@ -43,21 +37,7 @@ DOCLINES = __doc__.split("\n")
 def setup_package():
     r"""Setup package function
     """
-    src_path = os.path.dirname(os.path.abspath(sys.argv[0]))
-    old_path = os.getcwd()
-    os.chdir(src_path)
-    sys.path.insert(0, src_path)
-
-    with open('neutronpy/__init__.py') as f:
-        __version__ = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", f.read(), re.M).group(1)
-
-    include_dirs = []
-
-    try:
-        import numpy
-        include_dirs.append(os.path.join(os.path.dirname(numpy.__file__), numpy.get_include()))
-    except ImportError:
-        raise
+    __version__ = subprocess.check_output(["git", "describe"]).rstrip().decode('ascii')
 
     metadata = dict(name='neutronpy',
                     version=__version__,
@@ -71,7 +51,8 @@ def setup_package():
                     platforms=["Windows", "Linux", "Mac OS X", "Unix"],
                     install_requires=['numpy', 'scipy', 'matplotlib', 'lmfit'],
                     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
-                    test_suite='nose.collector',
+                    setup_requires=['pytest-runner'],
+                    tests_require=['pytest'],
                     ext_package='neutronpy',
                     package_data={'neutronpy': ['database/*.json', 'ui/*.ui']},
                     packages=['neutronpy', 'neutronpy.crystal', 'neutronpy.data', 'neutronpy.fileio',
@@ -79,12 +60,7 @@ def setup_package():
                               'neutronpy.lsfit'],
                     entry_points={"console_scripts": ["neutronpy=neutronpy.gui:launch"]}, )
 
-    try:
-        setup(**metadata)
-    finally:
-        del sys.path[0]
-        os.chdir(old_path)
-    return
+    setup(**metadata)
 
 
 if __name__ == '__main__':
