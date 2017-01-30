@@ -5,6 +5,7 @@ r"""A class for handeling a collection of scans
 import matplotlib.pyplot as plt
 import matplotlib.colors as mpl_c
 import numpy as np
+from .exceptions import DataScansError
 
 
 class Scans(object):
@@ -51,12 +52,12 @@ class Scans(object):
 
         Raises
         ------
-        RuntimeError
+        DataScansError
              If there are no scans
 
         """
         if self.scans is None:
-            raise RuntimeError('There must be at lest one scan')
+            raise DataScansError('There must be at lest one scan')
 
     def waterfall(self, x='e', y='detector', label_column='h', offset=5, fmt='b-', legend=False):
         r"""Create a waterfall plot of all the scans in the collection

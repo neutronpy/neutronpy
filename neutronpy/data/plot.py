@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
 import numpy as np
+from .exceptions import DataPlottingError
 from ..lsfit import Fitter
-from ..lsfit.tools import convert_params
+from ..lsfit.exceptions import LeastSquaresError
 
 
 class PlotData(object):
@@ -85,13 +87,13 @@ class PlotData(object):
             try:
                 x = self.plot_default_x
             except AttributeError:
-                raise
+                raise DataPlottingError('Cannot find `plot_default_x`. `x` must be specified')
 
         if y is None:
             try:
                 y = self.plot_default_y
             except AttributeError:
-                raise
+                raise DataPlottingError('Cannot find `plot_default_y`. `y` must be specified')
 
         if w is not None:
             self.plot_volume(x, y, z, w, to_bin, plot_options, smooth_options,
@@ -112,7 +114,7 @@ class PlotData(object):
             from matplotlib import colors
             from mpl_toolkits.mplot3d import Axes3D
         except ImportError:
-            raise ImportError('Matplotlib >= 1.3.0 is necessary for plotting.')
+            raise DataPlottingError('Matplotlib >= 1.3.0 is necessary for plotting.')
 
         if to_bin:
             data_bin = self.bin(to_bin)
@@ -206,7 +208,7 @@ class PlotData(object):
         try:
             import matplotlib.pyplot as plt
         except ImportError:
-            raise
+            raise DataPlottingError('Matplotlib >= 1.3.0 is necessary for plotting.')
 
         if to_bin:
             data_bin = self.bin(to_bin)
@@ -266,7 +268,7 @@ class PlotData(object):
                              bbox=dict(alpha=0.75, facecolor='white', edgecolor='none'))
 
             except Exception as mes:  # pylint: disable=broad-except
-                raise Exception("Something wrong with fit: {0}".format(mes))
+                raise LeastSquaresError("Something wrong with fit: {0}".format(mes))
 
         if output_file:
             plt.savefig(output_file)

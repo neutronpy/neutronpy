@@ -5,6 +5,7 @@
 import pytest
 import numpy as np
 from neutronpy import Energy
+from neutronpy.exceptions import EnergyError
 
 
 def test_energy():
@@ -53,6 +54,12 @@ def test_energy_setters():
     e.wavelength = 1.9
     assert (np.round(e.energy, 1) == 22.7)
 
+
+def test_energy_error():
+    """Tests the EnergyError exception
+    """
+    with pytest.raises(EnergyError):
+        e = Energy()
 
 if __name__ == "__main__":
     pytest.main()

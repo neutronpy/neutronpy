@@ -9,6 +9,7 @@ import numpy as np
 from neutronpy import functions
 from neutronpy.fileio import load_data, save_data, detect_filetype, load_instrument, save_instrument
 from neutronpy import Data, Instrument
+from neutronpy.fileio.exceptions import DataIOError, InstrumentIOError
 
 
 def build_data(clean=True):
@@ -54,7 +55,7 @@ def test_load_data_files(mock_stdout):
     except:
         pytest.fail('Data loading failed')
 
-    with pytest.raises(KeyError):
+    with pytest.raises(DataIOError):
         load_data((os.path.join(os.path.dirname(__file__), 'filetypes/scan0006.test')), filetype='blah')
 
 
@@ -87,7 +88,7 @@ def test_load_instrument_file():
     except Exception:
         pytest.fail('Instrument file loading failed')
 
-    with pytest.raises(ValueError):
+    with pytest.raises(InstrumentIOError):
         load_instrument(os.path.join(os.path.dirname(__file__), 'filetypes/test_instr.instr'), filetype='blah')
 
 
@@ -116,7 +117,7 @@ def test_filetype_detection():
     assert (
         detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.iexy')) == 'dcs_mslice')
     assert (detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/000001.dat')) == 'grasp')
-    with pytest.raises(ValueError):
+    with pytest.raises(DataIOError):
         detect_filetype(os.path.join(os.path.dirname(__file__), 'filetypes/scan0006.test'))
 
 

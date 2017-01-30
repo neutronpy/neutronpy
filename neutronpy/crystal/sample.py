@@ -105,7 +105,6 @@ class Sample(Lattice):
     get_angle_between_planes
 
     """
-
     def __init__(self, a, b, c, alpha, beta, gamma, u=None, v=None, mosaic=None, vmosaic=None, direct=1,
                  width=None, height=None, depth=None, shape='rectangular'):
         super(Sample, self).__init__(a, b, c, alpha, beta, gamma)

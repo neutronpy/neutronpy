@@ -1,12 +1,9 @@
+from collections import OrderedDict
 import warnings
 import numpy as np
 from ...data import Data
 from ..instrument import load_instrument as load_instr
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
+from ..exceptions import DataIOError
 
 
 class Neutronpy(Data):
@@ -40,7 +37,7 @@ class Neutronpy(Data):
                 if 'NeutronPy' in first_line:
                     self.load_ascii(filename, build_hkl, load_instrument)
                 else:
-                    raise IOError
+                    raise DataIOError('Unable to determine file sub-type of {0}'.format(filename))
 
     def load_hdf5(self, filename, build_hkl=True, load_instrument=False):
         r"""Loads data from HDF5 format file

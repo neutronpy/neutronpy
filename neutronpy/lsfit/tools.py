@@ -2,7 +2,6 @@
 r"""Tools for Fitter class
 """
 from functools import wraps
-
 import numpy as np
 
 

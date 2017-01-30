@@ -3,6 +3,7 @@ r"""Handles lattice geometries to find rotations and transformations
 
 """
 import numpy as np
+from .exceptions import LatticeError
 
 
 class Lattice(object):
@@ -268,7 +269,7 @@ class Lattice(object):
         elif len(np.unique(self.abc)) == 1 and np.all(np.array(self.abg) == 90):
             return 'cubic'
         else:
-            raise ValueError('Provided lattice constants and angles do not resolve to a valid Bravais lattice')
+            raise LatticeError('Provided lattice constants and angles do not resolve to a valid Bravais lattice')
 
     @property
     def volume(self):

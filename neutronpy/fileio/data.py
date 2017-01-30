@@ -4,6 +4,7 @@ import numbers
 import numpy as np
 from .loaders import DcsMslice, Grasp, Icp, Ice, Mad, Spice, Neutronpy
 from .instrument import save_instrument
+from .exceptions import DataIOError
 
 
 def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument=False):
@@ -52,14 +53,14 @@ def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument
         if filetype == 'auto':
             try:
                 filetype = detect_filetype(filename)
-            except ValueError:
+            except DataIOError:
                 raise
 
         try:
             _data_object_temp = load_filetype[filetype.lower()]()
             _data_object_temp.load(filename, build_hkl=build_hkl, load_instrument=load_instrument)
         except KeyError:
-            raise KeyError('Filetype not supported.')
+            raise DataIOError('{0} filetype not supported'.format(filetype))
 
         if isinstance(tols, numbers.Number):
             tols = [tols for i in range(len(_data_object_temp._data) - len(_data_object_temp.data_keys))]
@@ -175,7 +176,7 @@ def save_data(obj, filename, filetype='ascii', save_instr=False, overwrite=False
         with open(filename, 'wb') as f:
             pickle.dump(obj, f)
     else:
-        raise ValueError("""Format not supported. Please use 'ascii', 'hdf5', or 'pickle'""")
+        raise DataIOError("{0} format not supported. Please use 'ascii', 'hdf5', or 'pickle'".format(filetype))
 
 
 def detect_filetype(filename):
@@ -215,4 +216,4 @@ def detect_filetype(filename):
             elif 'NeutronPy' in first_line:
                 return 'neutronpy'
             else:
-                raise ValueError('Unknown filetype.')
+                raise DataIOError('{0} has unknown filetype'.format(filename))

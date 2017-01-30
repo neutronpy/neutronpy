@@ -12,6 +12,7 @@ gaussian_ring   Solve linear least-squares problem
 
 
 """
+import warnings
 import numpy as np
 from scipy import special
 from scipy.special import erf
@@ -80,8 +81,13 @@ def gaussian(p, q):
     >>> plt.show()
 
     """
+    npar = len(p[2:])
+    if npar % 3 > 0:
+        warnings.warn(
+            '{0} unexpected parameters, only {1} Gaussians will be returned.'.format(npar % 3, npar // 3))
+
     funct = p[0] + p[1] * q
-    for i in range(int(len(p[2:]) / 3)):
+    for i in range(npar // 3):
         sigma = p[3 * i + 4] / (2. * np.sqrt(2. * np.log(2.)))
 
         funct += p[3 * i + 2] / (sigma * np.sqrt(2. * np.pi)) * np.exp(-(q - p[3 * i + 3]) ** 2 / (2 * sigma ** 2))
@@ -156,11 +162,16 @@ def gaussian2d(p, q):
     >>> plt.show()
 
     """
+    npar = len(p[2:])
+    if npar % 5 > 0:
+        warnings.warn(
+            '{0} unexpected parameters, only {1} Gaussians will be returned.'.format(npar % 5, npar // 5))
+
     x, y = q
 
     funct = p[0] + p[1] * (x + y)
 
-    for i in range(int(len(p[2:]) // 5)):
+    for i in range(npar // 5):
         sigma_x = p[5 * i + 5] / (2. * np.sqrt(2. * np.log(2.)))
         sigma_y = p[5 * i + 6] / (2. * np.sqrt(2. * np.log(2.)))
 
@@ -231,10 +242,14 @@ def lorentzian(p, q):
     >>> plt.show()
 
     """
+    npar = len(p[2:])
+    if npar % 3 > 0:
+        warnings.warn(
+            '{0} unexpected parameters, only {1} Lorentzians will be returned.'.format(npar % 3, npar // 3))
 
     funct = p[0] + p[1] * q
 
-    for i in range(int(len(p[2:]) / 3)):
+    for i in range(npar // 3):
         funct += p[3 * i + 2] / np.pi * 0.5 * p[3 * i + 4] / ((q - p[3 * i + 3]) ** 2 + (0.5 * p[3 * i + 4]) ** 2)
 
     return funct
@@ -301,8 +316,13 @@ def voigt(p, q):
     >>> plt.show()
 
     """
+    npar = len(p[2:])
+    if npar % 4 > 0:
+        warnings.warn(
+            '{0} unexpected parameters, only {1} Voigt profiles will be returned.'.format(npar % 4, npar // 4))
+
     funct = p[0] + p[1] * q
-    for i in range(int(len(p[2:]) / 4)):
+    for i in range(npar // 4):
         sigma = p[4 * i + 5] / (2. * np.sqrt(2. * np.log(2.)))
         gamma = p[4 * i + 4] / 2.
 
@@ -315,7 +335,7 @@ def voigt(p, q):
     return funct
 
 
-def resolution(p, q, mode='gaussian'):
+def resolution(p, q):
     r"""Returns a gaussian profile using a resolution matrix generated for a Triple Axis Spectrometer.
 
     Parameters
@@ -365,17 +385,21 @@ def resolution(p, q, mode='gaussian'):
     where RM is the resolution matrix.
 
     """
+    npar = len(p[2:])
+    if npar % 7 > 0:
+        warnings.warn(
+            '{0} unexpected parameters, only {1} resolution functions will be returned.'.format(npar % 7, npar // 7))
+
     funct = p[0] + p[1] * (q[0] + q[1])
 
-    if mode == 'gaussian':
-        for i in range(int(len(p[2:]) / 7)):
-            # Normalization pre-factor
-            N = (np.sqrt(p[7 * i + 6]) * np.sqrt(p[7 * i + 7] - p[7 * i + 8] ** 2 / p[7 * i + 6])) / (
-                2. * np.pi * p[7 * i + 5])
+    for i in range(npar // 7):
+        # Normalization pre-factor
+        N = (np.sqrt(p[7 * i + 6]) * np.sqrt(p[7 * i + 7] - p[7 * i + 8] ** 2 / p[7 * i + 6])) / (
+            2. * np.pi * p[7 * i + 5])
 
-            funct += p[7 * i + 2] * p[7 * i + 5] * N * np.exp(-1. / 2. * (p[7 * i + 6] * (q[0] - p[7 * i + 3]) ** 2 +
-                                                                          p[7 * i + 7] * (q[1] - p[7 * i + 4]) ** 2 +
-                                                                          2. * p[7 * i + 8] * (q[0] - p[7 * i + 3]) * (
+        funct += p[7 * i + 2] * p[7 * i + 5] * N * np.exp(-1. / 2. * (p[7 * i + 6] * (q[0] - p[7 * i + 3]) ** 2 +
+                                                                      p[7 * i + 7] * (q[1] - p[7 * i + 4]) ** 2 +
+                                                                      2. * p[7 * i + 8] * (q[0] - p[7 * i + 3]) * (
                                                                           q[1] - p[7 * i + 4])))
 
     return funct
@@ -430,11 +454,16 @@ def gaussian_ring(p, q):
     .. math::    N = \frac{2\pi}{\alpha} \left(\sigma^2 e^{-\frac{r_0^2}{2\sigma^2}} + \sqrt{\frac{\pi}{2}} r_0 \sigma \left(1 + \mathrm{Erf}\left(\frac{r_0}{\sqrt{2}\sigma}\right)\right)\right).
 
     """
+    npar = len(p[2:])
+    if npar % 6 > 0:
+        warnings.warn(
+            '{0} unexpected parameters, only {1} gaussian rings will be returned.'.format(npar % 6, npar // 6))
+
     x, y = q
 
     funct = p[0] + p[1] * (x + y)
 
-    for i in range(int(len(p[2:]) / 6)):
+    for i in range(npar // 6):
         # Normalization pre-factor
         sigma = p[6 * i + 7] / (2. * np.sqrt(2. * np.log(2.)))
         N = 2. * np.pi * (np.exp(-p[6 * i + 5] ** 2 / (2. * sigma ** 2)) *

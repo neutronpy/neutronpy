@@ -5,6 +5,7 @@ r"""Tests lattice math
 import pytest
 import numpy as np
 from neutronpy.crystal import lattice
+from neutronpy.crystal.exceptions import LatticeError
 
 unitcell = lattice.Lattice(4, 4, 4, 90, 90, 90)
 
@@ -87,7 +88,7 @@ def test_lattice_type():
     assert (test_cell.lattice_type == 'triclinic')
 
     test_cell = lattice.Lattice(1, 1, 2, 90, 90, 150)
-    with pytest.raises(ValueError):
+    with pytest.raises(LatticeError):
         getattr(test_cell, 'lattice_type')
 
 

@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 from .crystal import Material
 from .energy import Energy
+from .exceptions import SpurionCalculationError
 
 
 def aluminum(energy=14.7):

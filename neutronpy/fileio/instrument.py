@@ -3,6 +3,8 @@ import numpy as np
 from ..energy import Energy
 from ..instrument import Instrument
 from ..crystal import Sample
+from .exceptions import InstrumentIOError
+
 
 taz_keys = {'algo': 'method',
             'ana_d': 'ana.d',
@@ -478,7 +480,7 @@ def load_instrument(filename, filetype='ascii'):
         return setup
 
     else:
-        raise ValueError("Format not supported. Please use 'ascii', 'hdf5', or 'taz'")
+        raise InstrumentIOError("`{0}` format not supported. Please use 'ascii', 'hdf5', or 'taz'".format(filetype))
 
 
 def save_instrument(obj, filename, filetype='ascii', overwrite=False):
@@ -634,4 +636,4 @@ def save_instrument(obj, filename, filetype='ascii', overwrite=False):
             f.write(taz_pretty)
 
     else:
-        raise ValueError("""Format not supported. Please use 'ascii', 'hdf5', or 'taz'""")
+        raise InstrumentIOError("`{0}` format not supported. Please use 'ascii', 'hdf5', or 'taz'".format(filetype))
