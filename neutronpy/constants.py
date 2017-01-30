@@ -18,10 +18,6 @@ import os
 def magnetic_ion_j():
     r"""Loads j values for Magnetic ions.
 
-    Parameters
-    ----------
-    None
-
     Returns
     -------
     magnetic_ion_j : dict
@@ -36,10 +32,6 @@ def magnetic_ion_j():
 def periodic_table():
     r"""Loads periodic table database.
     mass, and long-form name.
-
-    Parameters
-    ----------
-    None
 
     Returns
     -------
@@ -56,10 +48,6 @@ def periodic_table():
 def scattering_lengths():
     r"""Loads neutron scattering lengths.
 
-    Parameters
-    ----------
-    None
-
     Returns
     -------
     scattering_lengths : dict
@@ -74,10 +62,6 @@ def scattering_lengths():
 
 def symmetry():
     r"""Loads crystal lattice space groups.
-
-    Parameters
-    ----------
-    None
 
     Returns
     -------

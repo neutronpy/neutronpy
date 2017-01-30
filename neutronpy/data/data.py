@@ -2,6 +2,7 @@
 r"""Data handling
 
 """
+from collections import OrderedDict
 import copy
 import numbers
 import warnings
@@ -9,8 +10,8 @@ import numpy as np
 from collections import OrderedDict
 from multiprocessing import cpu_count, Pool  # @UnresolvedImport
 from .analysis import Analysis
+from .exceptions import DataError, DataOperationError
 from .plot import PlotData
-
 
 
 def _call_bin_parallel(arg, **kwarg):
@@ -105,7 +106,7 @@ class Data(PlotData, Analysis):
                 try:
                     self._data[self.Q_keys[key]] = np.array(arg)
                 except (ValueError, KeyError):
-                    raise
+                    raise DataError('')
         else:
             self.Q = Q
             n_dim = Q.shape[1]
@@ -130,25 +131,29 @@ class Data(PlotData, Analysis):
         try:
             return self.combine_data(right, ret=True)
         except TypeError:
-            raise
+            raise DataOperationError(
+                'Incompatible data types cannot be combined: {0} with {1}'.format(type(self), type(right)))
 
     def __iadd__(self, right):
         try:
             self.combine_data(right, ret=False)
         except TypeError:
-            raise
+            raise DataOperationError(
+                'Incompatible data types cannot be combined: {0} with {1}'.format(type(self), type(right)))
 
     def __sub__(self, right):
         try:
             return self.subtract_background(right, ret=True)
         except (TypeError, ValueError):
-            raise
+            raise DataOperationError(
+                'Incompatible data types cannot be combined: {0} with {1}'.format(type(self), type(right)))
 
     def __isub__(self, right):
         try:
             self.subtract_background(right, ret=False)
         except (TypeError, ValueError):
-            raise
+            raise DataOperationError(
+                'Incompatible data types cannot be combined: {0} with {1}'.format(type(self), type(right)))
 
     def __mul__(self, right):
         temp_obj = copy.deepcopy(self)
@@ -179,7 +184,7 @@ class Data(PlotData, Analysis):
         temp_obj.detector = self.detector // right
         return temp_obj
 
-    def __ifloordiv__(self, other):
+    def __ifloordiv__(self, right):
         self.detector //= right
 
     def __pow__(self, right):
@@ -257,7 +262,7 @@ class Data(PlotData, Analysis):
             value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
         if value.shape != self.data[self.data_keys['detector']].shape:
-            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(
+            raise DataError("""Input value must have the shape ({0},) or be a float.""".format(
                 self.data[self.data_keys['detector']].shape))
 
         else:
@@ -279,7 +284,7 @@ class Data(PlotData, Analysis):
             value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
         if value.shape != self.data[self.data_keys['detector']].shape:
-            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(
+            raise DataError("""Input value must have the shape ({0},) or be a float.""".format(
                 self.data[self.data_keys['detector']].shape))
 
         else:
@@ -298,10 +303,10 @@ class Data(PlotData, Analysis):
         r"""Set l to appropriate column of Q
         """
         if isinstance(value, numbers.Number):
-            value = value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
+            value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
         if value.shape != self.data[self.data_keys['detector']].shape:
-            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(
+            raise DataError("""Input value must have the shape ({0},) or be a float.""".format(
                 self.data[self.data_keys['detector']].shape))
 
         else:
@@ -323,7 +328,7 @@ class Data(PlotData, Analysis):
             value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
         if value.shape != self.data[self.data_keys['detector']].shape:
-            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(
+            raise DataError("""Input value must have the shape ({0},) or be a float.""".format(
                 self.data[self.data_keys['detector']].shape))
 
         else:
@@ -345,7 +350,7 @@ class Data(PlotData, Analysis):
             value = np.array([value] * self.data[self.data_keys['detector']].shape[0])
 
         if value.shape != self.data[self.data_keys['detector']].shape:
-            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(
+            raise DataError("""Input value must have the shape ({0},) or be a float.""".format(
                 self.data[self.data_keys['detector']].shape))
 
         else:
@@ -397,7 +402,7 @@ class Data(PlotData, Analysis):
             value = np.array([value] * self.detector.shape[0])
 
         if value.shape != self.detector.shape:
-            raise ValueError("""Input value must have the shape ({0},) or be a float.""".format(self.detector.shape[0]))
+            raise DataError("""Input value must have the shape ({0},) or be a float.""".format(self.detector.shape[0]))
 
         self._err = value
 
@@ -433,7 +438,7 @@ class Data(PlotData, Analysis):
 
         """
         if not isinstance(obj, Data):
-            raise TypeError('You can only combine two Data objects: input object is the wrong format!')
+            raise ('Incompatible data types cannot be combined: {0} with {1}'.format(type(self), type(obj)))
 
         tols = np.array([5.e-4 for i in range(len(obj._data) - len(self.data_keys))])
         try:
@@ -495,7 +500,7 @@ class Data(PlotData, Analysis):
 
         """
         if not isinstance(background_data, Data):
-            raise TypeError('You can only combine two Data objects: input object is the wrong format!')
+            raise DataOperationError('You can only combine two Data objects: input object is the wrong format!')
 
         if self.time_norm != background_data.time_norm:
             warnings.warn(
@@ -507,7 +512,7 @@ class Data(PlotData, Analysis):
                 _new_error = np.sqrt(
                     np.array([np.max([err1 ** 2, err2 ** 2]) for err1, err2 in zip(self.error, background_data.error)]))
             except ValueError:
-                raise ValueError(
+                raise DataOperationError(
                     'Data objects are incompatible shapes: try subtract_background method for more options')
         else:
             try:
@@ -518,7 +523,7 @@ class Data(PlotData, Analysis):
                     bg_x = background_data.data[self.Q_keys[x]]
                     self_x = self.data[self.Q_keys[x]]
                 except (AttributeError, KeyError):
-                    raise KeyError('Invalid key for data_column.')
+                    raise DataError('Invalid key for data_column.')
 
             try:
                 from scipy.interpolate import griddata
@@ -635,7 +640,7 @@ class Data(PlotData, Analysis):
                 if key in self.Q_keys.values():
                     args += [self.data[key].min(), self.data[key].max(), 1],
                 else:
-                    raise KeyError
+                    raise DataError('Invalid creation parameters')
 
         q, qstep = tuple(), tuple()
         for arg in args:

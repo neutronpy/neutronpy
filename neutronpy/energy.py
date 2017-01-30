@@ -5,6 +5,7 @@ import numpy as np
 from scipy.constants import h, hbar, k, m_n
 
 from .constants import JOULES_TO_MEV
+from .exceptions import EnergyError
 
 
 class Energy(object):
@@ -85,9 +86,9 @@ class Energy(object):
             self.freq = (self.energy / JOULES_TO_MEV / hbar / 2. / np.pi / 1.e12)
 
         except AttributeError:
-            raise AttributeError("""You must define at least one of the \
-                                    following: energy, wavelength, velocity, \
-                                    wavevector, temperature, frequency""")
+            raise EnergyError("""You must define at least one of the \
+                                 following: energy, wavelength, velocity, \
+                                 wavevector, temperature, frequency""")
 
     @property
     def energy(self):

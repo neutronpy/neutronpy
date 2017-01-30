@@ -11,6 +11,7 @@ from lmfit import Minimizer, Parameters, minimize
 
 from .plot import PlotFit
 from .tools import residual_wrapper
+from .exceptions import LeastSquaresError
 
 
 class Fitter(PlotFit):
@@ -159,6 +160,14 @@ class Fitter(PlotFit):
         self.nofinitecheck = nofinitecheck
         self.nan_policy = nan_policy
 
+    def __repr__(self):
+        kwargs = ', '.join(['{0}={1}'.format(key, getattr(self, key)) for key in
+                            ['derivatives', 'data', 'params0', 'parinfo', 'ftol', 'xtol', 'gtol', 'epsfcn',
+                             'stepfactor',
+                             'covtol', 'maxiter', 'maxfev', 'nofinitecheck', 'nan_policy'] if
+                            getattr(self, key, None) is not None])
+        return "Fitter({0}, {1})".format(getattr(self, 'residuals'), kwargs)
+
     def __call__(self, params0=None):
         if hasattr(self, 'params'):
             return self.params
@@ -169,7 +178,7 @@ class Fitter(PlotFit):
             self.fit(params0)
             return self.params
         else:
-            raise ValueError('params0 is undefined, no fit can be performed')
+            raise LeastSquaresError('`params0` is undefined, no fit can be performed')
 
     @property
     def parinfo(self):
@@ -195,11 +204,13 @@ class Fitter(PlotFit):
             if np.all([isinstance(item, (type(None), dict)) for item in value]):
                 self._parinfo = value
             else:
-                raise ValueError
+                raise LeastSquaresError(
+                    'One or more of the elements in `parinfo` is not a valid type. Must be None or dict.'.format(value))
         elif value is None:
             self._parinfo = None
         else:
-            raise ValueError
+            raise LeastSquaresError(
+                '{0} is not a valid type for `parinfo`. Must be a list, tuple, or None'.format(type(value)))
 
     @property
     def params(self):
@@ -222,7 +233,7 @@ class Fitter(PlotFit):
         elif value is None:
             self._params0 = None
         else:
-            raise ValueError
+            raise LeastSquaresError('{0} is not a valid type for `params0`. Must be array-like.'.format(type(value)))
 
     @property
     def data(self):
@@ -236,7 +247,7 @@ class Fitter(PlotFit):
         if isinstance(value, tuple):
             self._data = value
         else:
-            ValueError
+            raise LeastSquaresError('{0} is not a valid type for `data`. Must be a tuple.'.format(type(value)))
 
     @property
     def deriv(self):
@@ -257,7 +268,7 @@ class Fitter(PlotFit):
         if isinstance(value, numbers.Number):
             self.config.ftol = value
         else:
-            raise ValueError
+            raise LeastSquaresError('{0} is not a valid type for `ftol`. Must be a number.'.format(type(value)))
 
     @property
     def xtol(self):
@@ -270,7 +281,7 @@ class Fitter(PlotFit):
         if isinstance(value, numbers.Number):
             self.config.xtol = value
         else:
-            raise ValueError
+            raise LeastSquaresError('{0} is not a valid type for `xtol`. Must be a number.'.format(type(value)))
 
     @property
     def gtol(self):
@@ -283,7 +294,7 @@ class Fitter(PlotFit):
         if isinstance(value, numbers.Number):
             self.config.gtol = value
         else:
-            raise ValueError
+            raise LeastSquaresError('{0} is not a valid type for `gtol`. Must be a number.'.format(type(value)))
 
     @property
     def epsfcn(self):
@@ -298,7 +309,8 @@ class Fitter(PlotFit):
         if isinstance(value, numbers.Number):
             self.config.epsfcn = value
         else:
-            raise ValueError
+            raise LeastSquaresError(
+                '{0} is not a valid type for `epsfcn`. Must be a number of None.'.format(type(value)))
 
     @property
     def stepfactor(self):
@@ -311,7 +323,7 @@ class Fitter(PlotFit):
         if isinstance(value, numbers.Number):
             self.config.stepfactor = value
         else:
-            raise ValueError
+            raise LeastSquaresError('{0} is not a valid type for `stepfactor`. Must be a number.'.format(type(value)))
 
     @property
     def covtol(self):
@@ -326,7 +338,7 @@ class Fitter(PlotFit):
         if isinstance(value, numbers.Number):
             self.config.covtol = value
         else:
-            raise ValueError
+            raise LeastSquaresError('{0} is not a valid type for `covtol`. Must be a number.'.format(type(value)))
 
     @property
     def maxiter(self):
@@ -340,7 +352,7 @@ class Fitter(PlotFit):
         if isinstance(value, int):
             self.config.maxiter = value
         else:
-            raise ValueError
+            raise LeastSquaresError('{0} is not a valid type for `maxiter`. Must be an int.'.format(type(value)))
 
     @property
     def maxfev(self):
@@ -355,7 +367,7 @@ class Fitter(PlotFit):
         elif value is None:
             self.config.maxfev = 0
         else:
-            raise ValueError
+            raise LeastSquaresError('{0} is not a valid type for `maxfev`. Must be an int.'.format(type(value)))
 
     @property
     def nofinitecheck(self):
@@ -369,7 +381,7 @@ class Fitter(PlotFit):
         if isinstance(value, bool):
             self.config.nofinitecheck = value
         else:
-            raise ValueError
+            raise LeastSquaresError('{0} is not a valid type for `nofinitecheck`. Must be a boolean.'.format(type(value)))
 
     @property
     def nan_policy(self):
@@ -382,7 +394,7 @@ class Fitter(PlotFit):
         if isinstance(value, str):
             self._nan_policy = value
         else:
-            raise ValueError
+            raise LeastSquaresError('{0} is not a valid type for `nan_policy`. Must be a str.'.format(type(value)))
 
     @property
     def npar(self):
@@ -508,7 +520,7 @@ class Fitter(PlotFit):
                     p['p{0}'.format(i)].set(vary=not parin['fixed'])
 
         if np.all([not value.vary for value in p.values()]):
-            raise Exception('All parameters are fixed!')
+            raise LeastSquaresError('All parameters are fixed! Check `parinfo`.')
 
         self.lmfit_minimizer = Minimizer(self.residuals, p, nan_policy=self.nan_policy, fcn_args=(self.data,))
 

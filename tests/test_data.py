@@ -7,12 +7,15 @@ from copy import deepcopy
 import numpy as np
 import pytest
 from matplotlib import use
+
+use('Agg')
+
 from mock import patch
 from neutronpy import Data, Energy, functions
 from neutronpy.constants import BOLTZMANN_IN_MEV_K
+from neutronpy.data.exceptions import (DataError, DataOperationError,
+                                       DataPlottingError)
 from scipy.integrate import simps
-
-use('Agg')
 
 
 def build_data(clean=True):
@@ -74,7 +77,7 @@ def test_combine_data():
     def _test():
         data1 + data3
 
-    with pytest.raises(TypeError):
+    with pytest.raises(DataOperationError):
         _test()
 
 
@@ -100,7 +103,7 @@ def test_rebin():
     def _test():
         data_bin = data.bin(dict(blah=[1, 2, 4]))
 
-    with pytest.raises(KeyError):
+    with pytest.raises((DataError, KeyError)):
         _test()
 
 
@@ -163,7 +166,7 @@ def test_add_sub_data():
         elif test == 'sub':
             data1 - data2
 
-    with pytest.raises(TypeError):
+    with pytest.raises(DataOperationError):
         _test('add')
         _test('sub')
 
@@ -205,7 +208,7 @@ def test_setters():
             data.temp = 3
             data.temp = np.zeros(5)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(DataError):
         _test('h')
         _test('k')
         _test('l')
@@ -259,7 +262,7 @@ def test_error():
         data.error = 10
         data.error = np.zeros(5)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(DataError):
         _test()
 
 
@@ -331,7 +334,7 @@ def test_background_subtraction():
     except:
         pytest.fail('background subtraction failed')
 
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, DataOperationError)):
         data.subtract_background(background_data2, ret=False)
 
 
@@ -340,7 +343,7 @@ def test_plotting(mock_show):
     """Test plotting
     """
     data = build_data()
-    with pytest.raises(AttributeError):
+    with pytest.raises((AttributeError, DataPlottingError)):
         data.plot()
     data.plot_default_x = 'h'
     data.plot_default_y = 'detector'
@@ -365,7 +368,7 @@ def test_plotting(mock_show):
     data3d.plot(x='h', y='k', z='intensity', to_bin=dict(h=[-1, 1, 41], k=[-1, 1, 41]))
     data3d.plot(x='h', y='k', z='detector', to_bin=dict(h=[-1, 1, 41], k=[-1, 1, 41]), smooth_options=dict(sigma=1),
                 output_file='plot_test.pdf')
-    with pytest.raises(KeyError):
+    with pytest.raises((KeyError, DataPlottingError)):
         data3d.plot('h', 'k', 'blah')
         data3d.plot('h', 'k', 'w', 'blah')
 

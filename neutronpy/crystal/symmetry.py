@@ -5,6 +5,7 @@ r"""Symmetry operations
 import numpy as np
 
 from ..constants import symmetry
+from .exceptions import SymmetryError
 
 space_groups = symmetry()['space_groups']
 
@@ -29,6 +30,7 @@ class SpaceGroup(object):
     symmetrize_position
 
     """
+
     def __init__(self, symbol='P1'):
         if isinstance(symbol, int):
             for key, value in space_groups.items():
@@ -42,7 +44,9 @@ class SpaceGroup(object):
                     if value['hermann-manguin_symbol'] == symbol or value['full_name'] == symbol:
                         self._symbol = key
         else:
-            raise KeyError('{0} is not a valid International symbol, Hermann–Mauguin symbol, or space group number'.format(symbol))
+            raise SymmetryError(
+                '`{0}` is not a valid International symbol, Hermann–Mauguin symbol, or space group number'.format(
+                    symbol))
 
         self.point_group = space_groups[self.symbol]['point_group']
         self.full_name = space_groups[self.symbol]['full_name']
@@ -170,7 +174,7 @@ def get_generator_from_str(operations):
     for gen in operations:
         components = gen.split(',')
         if len(components) > 3:
-            raise ValueError('Generator string {0} is in wrong format'.format(gen))
+            raise SymmetryError('Generator string `{0}` is in wrong format'.format(gen))
 
         rotation = np.zeros((3, 3))
         translation = np.zeros(3)

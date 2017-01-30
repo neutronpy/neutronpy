@@ -3,6 +3,7 @@ from collections import OrderedDict
 import numpy as np
 
 from ...data import Data
+from ..exceptions import DataIOError
 
 
 class DcsMslice(Data):
@@ -31,7 +32,8 @@ class DcsMslice(Data):
 
         load_file[self.determine_subtype(filename)](filename)
 
-    def determine_subtype(self, filename):
+    @staticmethod
+    def determine_subtype(filename):
         try:
             with open(filename) as f:
                 first_line = f.readline()
@@ -45,9 +47,9 @@ class DcsMslice(Data):
                 elif filename[-3:] == 'xye' or len(first_line.split()) == 3:
                     return 'xye'
                 else:
-                    raise IOError('Cannot determine filetype!')
-        except IOError:
-            raise
+                    raise DataIOError('Cannot determine file sub-type of {0}'.format(filename))
+        except (DataIOError, IOError) as mes:
+            raise DataIOError(mes)
 
     def load_iexy(self, filename):
         i, e, x, y = np.loadtxt(filename, unpack=True)

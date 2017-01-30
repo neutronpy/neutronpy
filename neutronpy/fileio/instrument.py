@@ -6,6 +6,7 @@ from ..energy import Energy
 from ..instrument import Instrument
 from ..instrument.tas_instrument import TripleAxisInstrument
 from ..instrument.tof_instrument import TimeOfFlightInstrument
+from .exceptions import InstrumentIOError
 
 taz_keys = {'algo': 'method',
             'ana_d': 'ana.d',
@@ -481,7 +482,7 @@ def load_instrument(filename, filetype='ascii'):
         return setup
 
     else:
-        raise ValueError("Format not supported. Please use 'ascii', 'hdf5', or 'taz'")
+        raise InstrumentIOError("`{0}` format not supported. Please use 'ascii', 'hdf5', or 'taz'".format(filetype))
 
 
 def save_instrument(obj, filename, filetype='ascii', overwrite=False):
@@ -715,4 +716,4 @@ def save_tof_instrument(obj, filename, filetype='ascii', overwrite=True):
                 'viol_det_sph': ['', 1]}
 
     else:
-        raise ValueError("""Format not supported. Please use 'ascii', 'hdf5', or 'taz'""")
+        raise InstrumentIOError("`{0}` format not supported. Please use 'ascii', 'hdf5', or 'taz'".format(filetype))

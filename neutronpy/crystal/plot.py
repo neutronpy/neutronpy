@@ -2,17 +2,17 @@ import numpy as np
 
 
 class PlotMaterial(object):
-    r'''Class containing plotting methods for Material object
+    r"""Class containing plotting methods for Material object
 
     Methods
     -------
     plot_unit_cell
 
-    '''
+    """
     def plot_unit_cell(self):
-        r'''Plots the unit cell and atoms of the material.
+        r"""Plots the unit cell and atoms of the material.
 
-        '''
+        """
 
         import matplotlib.pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D  # @UnresolvedImport

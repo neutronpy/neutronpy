@@ -83,7 +83,7 @@ class MagneticFormFactor(object):
             self.j2 = magnetic_ion_j()[self.ion]['j2']
             self.j4 = magnetic_ion_j()[self.ion]['j4']
         except ValueError:
-            raise ValueError('No such ion was found in database.')
+            raise IonError('`{0}` was not found in ion database'.format(ion))
 
     def __repr__(self):
         return "MagneticFormFactor('{0}')".format(self.ion)

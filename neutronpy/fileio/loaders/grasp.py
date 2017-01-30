@@ -3,6 +3,7 @@ from collections import OrderedDict
 import numpy as np
 
 from ...data import Data
+from ..exceptions import DataIOError
 
 
 class Grasp(Data):
@@ -32,7 +33,7 @@ class Grasp(Data):
             if filename[-3:].lower() == 'dat' or 'GRASP' in first_line:
                 self.load_dat(filename, **kwargs)
             else:
-                raise IOError
+                raise DataIOError('Cannot Detect Type of GRASP file {0}'.format(filename))
 
     def load_nxs(self, filename, **kwargs):
         import h5py
