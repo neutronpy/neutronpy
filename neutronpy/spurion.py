@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-r'''Calculates common spurions
+r"""Calculates common spurions
 
-'''
+"""
 import warnings
 import numpy as np
 from .crystal import Material
@@ -9,7 +9,7 @@ from .energy import Energy
 
 
 def aluminum(energy=14.7):
-    r'''Returns the positions of aluminum rings given a fixed energy
+    r"""Returns the positions of aluminum rings given a fixed energy
 
     Parameters
     ----------
@@ -20,7 +20,7 @@ def aluminum(energy=14.7):
     -------
     rings : str
         Prints a list of the positions in 2theta of the aluminum rings
-    '''
+    """
     e = Energy(energy=energy)
     struct = {'name': 'Al',
               'composition': [dict(ion='Al', pos=[0, 0, 0])],
@@ -59,7 +59,7 @@ def aluminum(energy=14.7):
 
 
 def currat_axe_peaks(instrument, scan, bragg_positions, angle_tol=1):
-    r'''Notifies if desired scan may contain Currat Axe spurious scattering
+    r"""Notifies if desired scan may contain Currat Axe spurious scattering
     given the instrument and position of nearby Bragg peaks
 
     Parameters
@@ -84,7 +84,7 @@ def currat_axe_peaks(instrument, scan, bragg_positions, angle_tol=1):
         How close in angle the motors should be to satistfy the scattering
         condition
 
-    '''
+    """
 
     hkl0 = list(instrument.sample.u * scan[0][0] + instrument.sample.v * scan[0][1])
     hkle0 = np.insert(hkl0, 3, scan[0][2])

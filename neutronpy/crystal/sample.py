@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-r'''Sample class for e.g. Instrument class
+r"""Sample class for e.g. Instrument class
 
-'''
+"""
 import numpy as np
 from .lattice import Lattice
 
 
 class Sample(Lattice):
-    u'''Private class containing sample information.
+    u"""Private class containing sample information.
 
     Parameters
     ----------
@@ -104,7 +104,8 @@ class Sample(Lattice):
     get_two_theta
     get_angle_between_planes
 
-    '''
+    """
+
     def __init__(self, a, b, c, alpha, beta, gamma, u=None, v=None, mosaic=None, vmosaic=None, direct=1,
                  width=None, height=None, depth=None, shape='rectangular'):
         super(Sample, self).__init__(a, b, c, alpha, beta, gamma)
@@ -117,9 +118,10 @@ class Sample(Lattice):
             self.mosaic = mosaic
         if vmosaic is not None:
             self.vmosaic = vmosaic
-        self.dir = direct
 
+        self.dir = direct
         self.shape_type = shape
+
         if width is not None:
             self.width = width
         if height is not None:
@@ -127,10 +129,17 @@ class Sample(Lattice):
         if depth is not None:
             self.depth = depth
 
+    def __repr__(self):
+        args = ', '.join([str(getattr(self, key)) for key in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']])
+        kwargs = ', '.join(['{0}={1}'.format(key, getattr(self, key)) for key in
+                            ['u', 'v', 'mosaic', 'vmosaic', 'direct', 'width', 'height', 'depth', 'shape'] if
+                            getattr(self, key, None) is not None])
+        return "Sample({0}, {1})".format(args, kwargs)
+
     @property
     def u(self):
-        r'''First orientation vector
-        '''
+        r"""First orientation vector
+        """
         return self._u
 
     @u.setter
@@ -139,10 +148,18 @@ class Sample(Lattice):
 
     @property
     def v(self):
-        r'''Second orientation vector
-        '''
+        r"""Second orientation vector
+        """
         return self._v
 
     @v.setter
     def v(self, vec):
         self._v = np.array(vec)
+
+    @property
+    def direct(self):
+        return self.dir
+
+    @direct.setter
+    def direct(self, value):
+        self.dir = value

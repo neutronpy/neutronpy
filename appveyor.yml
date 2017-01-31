@@ -32,14 +32,28 @@ environment:
      MATPLOTLIB_VERSION: "1.5.1"
      LMFIT_VERSION: "0.9.5"
      ARCH: "-x64"
+   - PYTHON_VERSION: "3.6"
+     NUMPY_VERSION: "1.11.3"
+     SCIPY_VERSION: "0.18.1"
+     MATPLOTLIB_VERSION: "2.0.0"
+     LMFIT_VERSION: "0.9.5"
+     ARCH: ""
+   - PYTHON_VERSION: "3.6"
+     NUMPY_VERSION: "1.11.3"
+     SCIPY_VERSION: "0.18.1"
+     MATPLOTLIB_VERSION: "2.0.0"
+     LMFIT_VERSION: "0.9.5"
+     ARCH: "-x64"
 
 
 install:
   - set PATH=C:\Miniconda3%ARCH%;C:\Miniconda3%ARCH%\Scripts;%PATH%
+  - conda update --yes -q conda
+  - conda config --add channels conda-forge
   - conda create --yes -q -n test_environment python=%PYTHON_VERSION% pip setuptools numpy=%NUMPY_VERSION%
-    scipy=%SCIPY_VERSION% matplotlib=%MATPLOTLIB_VERSION% mock h5py pep8
+    scipy=%SCIPY_VERSION% matplotlib=%MATPLOTLIB_VERSION% mock h5py pep8 pytest pytest-cov pytest-pep8
   - activate test_environment
-  - pip install pytest-cov pytest-pep8 lmfit==%LMFIT_VERSION%
+  - conda install --yes -q -c neutronpy lmfit==%LMFIT_VERSION%
   - pip install -e . --no-deps 
 
 build: off

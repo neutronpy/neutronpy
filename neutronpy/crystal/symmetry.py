@@ -53,6 +53,9 @@ class SpaceGroup(object):
         self.total_operations = space_groups[self.symbol]['total_operations']
         self.symmetry_operations = self._symmetry_operations_from_generators()
 
+    def __repr__(self):
+        return "SpaceGroup({0})".format(self.group_number)
+
     @property
     def symbol(self):
         r"""Space group symbol

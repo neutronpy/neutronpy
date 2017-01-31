@@ -20,6 +20,7 @@ def test_gauss_fit_of_gauss_rand():
     """
     p = np.array([0., 0., 3., 0., 0.3])
     x = np.linspace(-1, 1, 201)
+    np.random.seed(0)
     y = functions.gaussian(p, x) + np.random.normal(loc=0., scale=0.05, size=201)
     err = np.sqrt(np.abs(y))
 
@@ -35,6 +36,7 @@ def test_voigt_fit_of_gauss_rand():
     """
     p = np.array([0., 0., 3., 0., 0.3])
     x = np.linspace(-1, 1, 201)
+    np.random.seed(0)
     y = functions.gaussian(p, x) + np.random.normal(loc=0., scale=0.1, size=201)
     err = np.sqrt(np.abs(y))
 
@@ -50,6 +52,7 @@ def test_voigt_fit_of_voigt_rand():
     """
     p = np.array([0., 0., 3., 0., 0.3, 0.2])
     x = np.linspace(-1, 1, 201)
+    np.random.seed(0)
     y = functions.voigt(p, x) + np.random.normal(loc=0., scale=0.1, size=201)
     err = np.sqrt(np.abs(y))
 

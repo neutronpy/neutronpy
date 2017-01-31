@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
-r'''Structure Factors
+r"""Structure Factors
 
 NuclearStructureFactor
 MagneticStructureFactor
 MagneticFormFactor
 
-'''
+"""
 import numpy as np
 from ..constants import magnetic_ion_j
 
 
 class NuclearStructureFactor(object):
-    r'''Class containing nuclear structure factor calculator
+    r"""Class containing nuclear structure factor calculator
 
     Methods
     -------
     calc_nuc_str_fac
 
-    '''
+    """
     def calc_nuc_str_fac(self, hkl):
-        r'''Calculates the structural form factor of the material.
+        r"""Calculates the structural form factor of the material.
 
         Parameters
         ----------
@@ -35,7 +35,7 @@ class NuclearStructureFactor(object):
         Notes
         -----
 
-        '''
+        """
 
         h, k, l = hkl
 
@@ -58,7 +58,7 @@ class NuclearStructureFactor(object):
 
 
 class MagneticFormFactor(object):
-    r'''Class defining a magnetic ion.
+    r"""Class defining a magnetic ion.
 
     Parameters
     ----------
@@ -73,7 +73,7 @@ class MagneticFormFactor(object):
     Methods
     -------
     calc_mag_form_fac
-    '''
+    """
 
     def __init__(self, ion):
         self.ion = ion
@@ -84,8 +84,11 @@ class MagneticFormFactor(object):
         except ValueError:
             raise ValueError('No such ion was found in database.')
 
+    def __repr__(self):
+        return "MagneticFormFactor('{0}')".format(self.ion)
+
     def calc_mag_form_fac(self, q=None, g=None, qrange=None):
-        r'''Calculate the magnetic form factor of an ion.
+        r"""Calculate the magnetic form factor of an ion.
 
         Parameters
         ----------
@@ -115,7 +118,7 @@ class MagneticFormFactor(object):
         International Tables of Crystallography (by J. Brown)
 
 
-        '''
+        """
 
         if q is None:
             if qrange is None:
@@ -147,20 +150,20 @@ class MagneticFormFactor(object):
 
 
 class MagneticStructureFactor(object):
-    r'''Class containing magnetic structure factor calculator
+    r"""Class containing magnetic structure factor calculator
 
     Methods
     -------
     calc_mag_int_vec
     calc_mag_str_fac
 
-    '''
+    """
     def calc_mag_int_vec(self):
-        r'''Calculates magnetic interaction vector
-        '''
+        r"""Calculates magnetic interaction vector
+        """
         pass
 
     def calc_mag_str_fac(self):
-        r'''Calculates magnetic structure factor
-        '''
+        r"""Calculates magnetic structure factor
+        """
         pass

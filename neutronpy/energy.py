@@ -46,11 +46,13 @@ class Energy(object):
     """
 
     def __init__(self, energy=None, wavelength=None, velocity=None, wavevector=None, temperature=None, frequency=None):
-
         self._update_values(energy, wavelength, velocity, wavevector, temperature, frequency)
 
     def __str__(self):
         return self.values
+
+    def __repr__(self):
+        return "Energy({0})".format(self.energy)
 
     def __eq__(self, right):
         return abs(self.energy - right.energy) < 1e-6

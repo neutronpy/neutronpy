@@ -57,6 +57,9 @@ class Atom(object):
         self.inc_xs = scattering_lengths()[ion]['Inc xs']
         self.abs_xs = scattering_lengths()[ion]['Abs xs']
 
+    def __repr__(self):
+        return "Atom('{0}')".format(self.ion)
+
 
 class MagneticAtom(object):
     r"""Class for adding magnetic atoms to the Material class.
@@ -81,3 +84,6 @@ class MagneticAtom(object):
         self.pos = np.array(pos)
         self.moment = moment
         self.occupancy = occupancy
+
+    def __repr__(self):
+        return "MagneticAtom('{0}')".format(self.ion, self.pos, self.moment, self.occupancy)

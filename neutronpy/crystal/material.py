@@ -9,6 +9,8 @@ from .plot import PlotMaterial
 from .sample import Sample
 from .structure_factors import NuclearStructureFactor, MagneticStructureFactor
 from .symmetry import SpaceGroup
+
+
 # from ..scattering.pattern import HKLGenerator
 
 
@@ -44,6 +46,9 @@ class MagneticUnitCell(Sample):
         a, b, c = unit_cell['lattice']['abc']
         alpha, beta, gamma = unit_cell['lattice']['abg']
         super(MagneticUnitCell, self).__init__(a, b, c, alpha, beta, gamma)
+
+    def __repr__(self):
+        return "MagneticUnitCell('{0}')".format(self.propagation_vector)
 
 
 class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMaterial):
@@ -176,6 +181,8 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
     """
 
     def __init__(self, crystal):
+        self.name = crystal['name']
+
         if 'formulaUnits' not in crystal:
             crystal['formulaUnits'] = 1.
 
@@ -248,6 +255,9 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
 
         super(Material, self).__init__(a, b, c, alpha, beta, gamma, crystal['mosaic'], crystal['vmosaic'],
                                        crystal['dir'], crystal['u'], crystal['v'])
+
+    def __repr__(self):
+        return "Material('{0}')".format(self.name)
 
     @property
     def total_scattering_cross_section(self):
