@@ -51,6 +51,7 @@ def test_load_data_files(mock_stdout):
         load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.npy')))
         load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_filetypes.h5')))
         load_data((os.path.join(os.path.dirname(__file__), 'filetypes/test_save_load_spice.npy')), load_instrument=True)
+        load_data(os.path.join(os.path.dirname(__file__), u'filetypes/scan0001º£.dat'))
     except:
         pytest.fail('Data loading failed')
 

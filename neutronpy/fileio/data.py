@@ -45,7 +45,7 @@ def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument
                      'neutronpy': Neutronpy,
                      'spice': Spice}
 
-    if isinstance(files, str):
+    if not isinstance(files, (tuple, list)):
         files = (files,)
 
     for filename in files:
@@ -192,11 +192,11 @@ def detect_filetype(filename):
         The filetype of the given input file
 
     """
-    if filename[-3:] == 'nxs':
+    if filename[-3:].lower() == 'nxs':
         return 'grasp'
     elif (filename[-4:].lower() == 'iexy') or (filename[-3:].lower() == 'spe') or (filename[-3:].lower() == 'xye') or (filename[-4:] == 'xyie'):
         return 'dcs_mslice'
-    elif filename[-2:].lower() == 'h5' or filename[-3].lower() == 'npy':
+    elif filename[-2:].lower() == 'h5' or filename[-3:].lower() == 'npy':
         return 'neutronpy'
     else:
         with open(filename) as f:
