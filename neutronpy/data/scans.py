@@ -5,6 +5,7 @@ r"""A class for handeling a collection of scans
 import matplotlib.pyplot as plt
 import matplotlib.colors as mpl_c
 import numpy as np
+import collections
 
 
 class Scans(object):
@@ -12,7 +13,7 @@ class Scans(object):
 
     Attributes
     ----------
-    scans : dict
+    scans : Ordered dict
         A dictionary of scan objects
     num_scans : int
         The number of scans
@@ -25,9 +26,11 @@ class Scans(object):
     """
 
     def __init__(self, scans_dict=None):
-        self.scans = scans_dict
         if scans_dict is not None:
+            if not isinstance(scans_dict,collections.OrderedDict):
+                raise RuntimeError("the input dictionary must be of type OrderedDict")
             self.num_scans = len(scans_dict)
+        self.scans = scans_dict
 
     def update(self, scans_dict):
         r"""Update the scans_dict to include the dictionary scans_dict
@@ -40,6 +43,8 @@ class Scans(object):
               A dictionary of multiple scans to add to the collection.
 
         """
+        if not isinstance(scans_dict,collections.OrderedDict):
+            raise RuntimeError("the input dictionary must be of type OrderedDict")
         self.scans.update(scans_dict)
         self.num_scans = len(scans_dict)
 
