@@ -250,7 +250,7 @@ class Data(PlotData, Analysis):
 
         Equivalent to Q[:, 0]
         """
-        return self.Q[:, 0]
+        return self.data[self.Q_keys['h']]
 
     @h.setter
     def h(self, value):
@@ -272,7 +272,7 @@ class Data(PlotData, Analysis):
 
         Equivalent to Q[:, 1]
         """
-        return self.Q[:, 1]
+        return self.data[self.Q_keys['k']]
 
     @k.setter
     def k(self, value):
@@ -294,7 +294,7 @@ class Data(PlotData, Analysis):
 
         Equivalent to Q[:, 2]
         """
-        return self.Q[:, 2]
+        return self.data[self.Q_keys['l']]
 
     @l.setter
     def l(self, value):
@@ -316,7 +316,7 @@ class Data(PlotData, Analysis):
 
         Equivalent to Q[:, 3]
         """
-        return self.Q[:, 3]
+        return self.data[self.Q_keys['e']]
 
     @e.setter
     def e(self, value):
@@ -338,7 +338,7 @@ class Data(PlotData, Analysis):
 
         Equivalent to Q[:, 4]
         """
-        return self.Q[:, 4]
+        return self.data[self.Q_keys['temp']]
 
     @temp.setter
     def temp(self, value):
