@@ -2,7 +2,18 @@
 Changelog
 =========
 
-* :release:`1.0.2 <2016-12-15>`
+* :release:`1.0.3 <2016-02-17>` 93, 94, 95, 96, 98, 99, 100, 101, 103
+* :support:`103` Updated examples and docstring for :py:class:`.Material` to reflect proper usage of ``massNorm`` key
+* :bug:`101` Fixed ``KeyError`` when using :py:class:`.Data` attributes where one or more of the data columns is not defined
+* :support:`100` Updated examples documentation for the :py:class:`.Data`
+* :bug:`99` Changed input requirements of :py:class:`.Scans` to be an ``collections.OrderedDict``
+* :bug:`98` Fixed bug concerning loading files with unicode characters in the file name
+* :feature:`96` Added ``__repr__`` methods to :py:class:`.Data`, :py:class:`.Material`, :py:class:`.Atom`, :py:class:`.Lattice`, etc.
+* :support:`95` Refactor setup.py and automated package building by CI
+* :support:`94` Removed default matplotlib formatting, also fixes a import problem
+* :feature:`93` Added Ce3+ magnetic form factor
+
+* :release:`1.0.2 <2016-12-15>` 80, 81, 82, 83, 84, 86, 89, 90, 91, 92
 * :feature:`92` Updated documentation and made bug fixes to :py:class:`.Fitter` and :py:meth:`.load_data`
 * :feature:`91` Added :py:class:`.Scans` class to build collections of Data objects for easier plotting
 * :feature:`90` Added automatic conda builds for tagged releases
