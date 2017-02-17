@@ -17,10 +17,10 @@ def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument
 
     filetype : str, optional
         Default: `'auto'`. Specify file type; Currently supported file types
-        are SPICE (HFIR), ICE and ICP (NIST), MAD (ILL), DAVE exported ascii
-        formats, GRASP exported ascii and HDF5 formats, and neutronpy exported
-        formats. By default the function will attempt to determine the
-        filetype automatically.
+        are `'SPICE'` (HFIR), `'ICE'` and `'ICP'` (NIST), `'MAD'` (ILL),
+        `'dcs_mslice'` DAVE exported ascii formats, GRASP exported ascii and
+        HDF5 formats, and neutronpy exported formats. By default the function
+        will attempt to determine the filetype automatically.
 
     tols : float or array_like
         Default: `1e-4`. A float or array of shape `(5,)` giving tolerances

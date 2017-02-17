@@ -20,10 +20,13 @@ For this example we will use Fe\ :sub:`1.1`\ Te, a high-temperature tetragonal :
                                 {'ion': 'Fe', 'pos': [0.25, 0.25, 0.721], 'occupancy': 0.1},
                                 {'ion': 'Fe', 'pos': [0.75, 0.75, -0.721], 'occupancy': 0.1}],
                 'debye-waller': False,
-                'massNorm': True,
+                'massNorm': False,
                 'lattice': {'abc': [3.81, 3.81, 6.25],
                             'abg': [90, 90, 90]},
                }
+
+.. note::
+    The ``'massNorm'`` key should be set to ``False`` to return the structure factor in units of ``barns``. ``'massNorm'`` is used for calculation of the coherent one-phonon inelastic cross-section, which depends on a calculation of nuclear structure factor in which the coherent scattering lengths are normalized by the square-root of the atomic mass *i.e.* :math:`\bar{b}_d/\sqrt{M_d}` (see Eq. 4.88 in "Theory of neutron scattering from condensed matter, Volume 1" by Stephen W. Lovesey.
 
 Initializing the Material class
 -------------------------------
@@ -34,7 +37,8 @@ Once we have built our material in the above format we can initialize the class.
 
 Calculating the structure factor
 --------------------------------
-**Note**: The structure factor calculation method :py:meth:`.calc_nuc_str_fac` returns the full structure factor term :math:`F(q)`, including any imaginary parts, and not :math:`\left|F(q)\right|^2` which is typically used in other calculations.
+.. note::
+    The structure factor calculation method :py:meth:`.calc_nuc_str_fac` returns the full structure factor term :math:`F(q)`, including any imaginary parts, and not :math:`\left|F(q)\right|^2` which is typically used in other calculations.
 
 Now that our material is defined, we can calculate the structural form factor with :py:meth:`.calc_nuc_str_fac`. First, we will calculate it at a single point :math:`q`:
 
@@ -63,7 +67,7 @@ The resulting plot of this structure factor would look like the following figure
                                 {'ion': 'Fe', 'pos': [0.25, 0.25, 0.721], 'occupancy': 0.1},
                                 {'ion': 'Fe', 'pos': [0.75, 0.75, -0.721], 'occupancy': 0.1}],
                 'debye-waller': False,
-                'massNorm': True,
+                'massNorm': False,
                 'lattice': {'abc': [3.81, 3.81, 6.25],
                             'abg': [90, 90, 90]}}
     FeTe = Material(def_FeTe)
@@ -76,7 +80,8 @@ The resulting plot of this structure factor would look like the following figure
     plt.ylabel('k (r.l.u.)')
     plt.show()
 
-**Note**: The above picture will only be reproducible if the structure factor is partially symmetrized, *i.e.* in this case the calculation would be:
+.. note::
+    The above picture will only be reproducible if the structure factor is partially symmetrized, *i.e.* in this case the calculation would be:
 
 .. code-block:: python
 
@@ -84,6 +89,7 @@ The resulting plot of this structure factor would look like the following figure
                       np.abs(FeTe.calc_nuc_str_fac((-h, k, 0))) ** 2 +
                       np.abs(FeTe.calc_nuc_str_fac((h, -k, 0))) ** 2 +
                       np.abs(FeTe.calc_nuc_str_fac((-h, -k, 0))) ** 2)
+
 
 Using space group to properly symmetrize
 ----------------------------------------
@@ -109,7 +115,7 @@ Calculating the resulting Material object's structure factor as in the previous 
                                 {'ion': 'Fe', 'pos': [0.25, 0.25, 0.721], 'occupancy': 0.1},
                                 {'ion': 'Fe', 'pos': [0.75, 0.75, -0.721], 'occupancy': 0.1}],
                 'debye-waller': False,
-                'massNorm': True,
+                'massNorm': False,
                 'lattice': {'abc': [3.81, 3.81, 6.25],
                             'abg': [90, 90, 90]},
                 'space_group': 'P4/nmm'}
@@ -119,3 +125,6 @@ Calculating the resulting Material object's structure factor as in the previous 
     plt.xlabel('h (r.l.u.)')
     plt.ylabel('k (r.l.u.)')
     plt.show()
+
+.. warning::
+    This feature is currently broken in the sense the absolute values are incorrect due to a bug in the symmetrization routine.

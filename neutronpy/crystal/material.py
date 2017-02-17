@@ -106,7 +106,13 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
         Include Debye-Waller in calculation with anisotropic U
 
     'massNorm' : bool
-        Normalize calculations to mass of atoms
+        Normalize calculations to the square-root of the mass of atoms. This
+        is useful for the calculation of the coherent one-phonon inelastic
+        cross-section, which is dependent on a nuclear structure factor in
+        which the nuclear scattering length is normalized by the square-root
+        of the mass, *i.e.* :math:`\bar{b}_d/\sqrt{M_d}`, see Eq. 4.88 in
+        "Theory of neutron scattering from condensed matter, Volume 1" by
+        Stephen W. Lovesey.
 
     'formulaUnits' : float
         Number of formula units to use in the calculation

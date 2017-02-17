@@ -13,42 +13,41 @@ Load from file
 ^^^^^^^^^^^^^^
 First, let's assume that you have a data file, ``'scan.dat'`` from a HFIR instrument (SPICE format):
 
->>> from neutronpy.io import load_data
+>>> from neutronpy.fileio import load_data
 >>> data = load_data('scan.dat')
 
-This builds ``data`` automatically and loads the following information from the file:
+This builds ``data`` automatically and loads all of the data columns from the file.
 
-* detector counts
-* monitor counts
-* h, k, l
-* energy transfer
-* temperature
-* time
-* ei, ef (future feature)
+If you want to load more than one file at a time, simple add the file names as a list or a tuple of file names, *e.g.*
 
-Currently, other data from the files is not included, but some additional support will be added in the future.
+>>> data = load_data(('scan1.dat', 'scan2.dat'))
 
-.. note::
-    Note: The primary problem is there is no standard variable name set between different file formats, and documentation for the file formats are not complete in some cases. Additionally, instruments at the same facility often use different software, so formats are frequently incompatible.
-
-If you want to load more than one file at a time, simple add the file names as separate arguments, *e.g.*
-
->>> data = load('scan1.dat', 'scan2.dat')
-
-By default, :py:meth:`.load` attempts to determine the format of the input files automatically, but you can specify the ``filetype`` if desired. Valid filetypes are currently:
+By default, :py:meth:`.load_data` attempts to determine the format of the input files automatically, but you can specify the ``filetype`` if desired. Valid filetypes are currently:
 
 * ``'auto'`` - Default: attempt to automatically determine the file type
 * ``'SPICE'`` - HFIR files
 * ``'ICE'`` - NCNR files
 * ``'ICP'`` - NCNR files
-* ``'iexy'`` - plaintext files from *e.g.* DAVE (future support planned)
+* ``'DCS_MSLICE'`` - ASCII files exported from DCS MSLICE in Dave
+* ``'MAD'`` - ILL files
+* ``'GRASP'`` - ASCII and HDF5 files exported from GRASP
 
 Pass pre-loaded data
 ^^^^^^^^^^^^^^^^^^^^
-Assuming that your data is in a format that is not supported by :py:meth:`.Data.load_file` you will need to load the data yourself and pass it to the :py:class:`.Data` class and build ``Data.Q`` using :py:meth:`.Data.build_Q`. To build ``Data.Q`` you must have defined ``h``, ``k``, ``l``, ``e``, and ``temp``.
+If your data is not in a format supported by :py:meth:`.Data.load_data` you will need to load the data yourself and pass it to the :py:class:`.Data` class and build ``Data.Q`` using :py:meth:`.Data.build_Q`. To build ``Data.Q`` you must have defined ``h``, ``k``, ``l``, ``e``, and ``temp``.
 
 >>> data = Data(h=h, k=k, l=l, e=e, temp=temp, detector=detector,
                 monitor=monitor, time=time)
+
+However, if you do not need to build ``Data.Q``, and want to use some subset of the predefined columns (``h``, ``k``, ``l``, ``e``, ``temp``, ``monitor``, ``detector``, ``time``, the undefined columns will be fill by np.zeros, with the length of the data passed.
+
+>>> data = Data(h=np.arange(0, 1, 0.1))
+
+.. note::
+    In the future, it may be possible to pass arbitrary data to build a bare ``Data`` object with the ``Data.data`` attribute. It is already technically possible to do this by building an empty Data object, and reassigning the .data attribute.
+
+    >>> data = Data()
+    >>> data.data = dict(angle1=np.arange(47, 49, 0.25))
 
 ``Data`` properties
 -------------------
