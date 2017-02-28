@@ -8,10 +8,12 @@ from collections import namedtuple
 import numpy as np
 from lmfit import minimize, Parameters, Minimizer
 
+
 from .tools import residual_wrapper
+from .plot import PlotFit
 
 
-class Fitter(object):
+class Fitter(PlotFit):
     u"""Wrapper for LMFIT, which is a high-level extension for
     scipy.optimize.leastsq. Performs Non-Linear Least Squares fitting using
     the Levenberg-Marquardt method.
@@ -475,6 +477,8 @@ class Fitter(object):
         :math:`\sqrt{diag(covar) * \chi^{2}_{reduced}`
         """
         return np.sqrt(np.diagonal(self.covar) * self.rchi2_min)
+
+
 
     def fit(self, params0):
         r"""Perform a fit with the provided parameters.

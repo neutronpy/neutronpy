@@ -9,6 +9,7 @@ import os
 import pytest
 import collections
 from mock import patch
+import numpy as np
 
 
 
@@ -44,6 +45,19 @@ def test_scans_init():
       tst_obj.update(dict_scans)
   assert 'type OrderedDict' in str(excinfo.value)
 
+def test_min_col():
+    scansin=load_scans(222,243)
+    tst_obj=npysc.Scans(scans_dict=scansin)
+    mins=tst_obj.min_col('l')
+    jk=np.array([-0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04, -0.04])
+    assert np.all(mins==jk)
+
+def test_max_col():
+    scansin=load_scans(222,243)
+    tst_obj=npysc.Scans(scans_dict=scansin)
+    maxs=tst_obj.max_col('l')
+    jk=np.array([ 0.35  ,  0.35  ,  0.35  ,  0.3499,  0.35  ,  0.35  ,  0.35  , 0.3499,  0.3499,  0.35  ,  0.35  ,  0.35  ,  0.35  ,  0.35  , 0.35  ,  0.35  ,  0.35  ,  0.35  ,  0.35  ,  0.35  ,  0.35  ,  0.35  ])
+    assert np.all(maxs==jk)
 
 @patch('matplotlib.pyplot.show')
 def test_pcolor(mock_show):

@@ -22,6 +22,9 @@ class Scans(object):
     -------
     waterfall
     pcolor
+    func_col
+    min_col
+    max_col
 
     """
 
@@ -122,12 +125,60 @@ class Scans(object):
         array_like
             an array where each element is the average of the column of a specific
             scan in the collection
-        """
-        col_mean = np.zeros(self.num_scans)
-        for idx, scan_num in enumerate(self.scans.keys()):
-            col_mean[idx] = self.scans[scan_num].data[col].mean()
 
+        """
+        col_mean=self.func_col(col,np.mean)
         return col_mean
+
+    def func_col(self,col,func):
+        r""" apply a function to a column an return the value for each scan
+
+        Parameters
+        ----------
+        col : str
+            The name of the column for the mean
+
+        func: function
+            The function to apply
+        """
+        self.scans_check()
+        res=np.empty(self.num_scans)
+        for idx, scan_key in enumerate(self.scans.keys()):
+            res[idx]=func(self.scans[scan_key].data[col])
+        return res
+
+    def min_col(self,col):
+        r""" find the minimum of a given column in every scan of the collection
+
+        Parameters
+        ----------
+        col : str
+            The name of the column for the mean
+
+        Returns
+        -------
+        array_like
+                an array where each element is the minimum value of the column of a specific
+                scan in the collection
+        """
+        mins=self.func_col(col,np.min)
+        return mins
+
+    def max_col(self,col):
+        r""" find the minimum of a given collum in every scan of the collection
+        Parameters
+        ----------
+        col : str
+            The name of the column for the mean
+
+        Returns
+        -------
+        array_like
+                an array where each element is the minimum value of the column of a specific
+                scan in the collection
+        """
+        maxs=self.func_col(col,np.max)
+        return maxs
 
     def pcolor(self, x, y, z='detector', clims=None, color_norm='linear', cmap='jet'):
         r"""Create a false colormap for a coloction of scans.
