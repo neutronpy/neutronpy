@@ -66,7 +66,7 @@ class Scans(object):
         if self.scans is None:
             raise RuntimeError('There must be at lest one scan')
 
-    def waterfall(self, x='e', y='detector', label_column='h', offset=5, fmt='b-', legend=False):
+    def waterfall(self, x='e', y='detector', label_column='h', offset=5, fmt='b-', legend=False, show_plot=False):
         r"""Create a waterfall plot of all the scans in the collection
 
         Parameters
@@ -109,8 +109,9 @@ class Scans(object):
 
         if legend:
             plt.legend()
-
-        plt.show(block=False)
+        if show_plot:
+           plt.show(block=False)
+        return(fh)
 
     def mean_col(self, col):
         r"""Take the mean of a given column in every scan of the collection
@@ -180,7 +181,7 @@ class Scans(object):
         maxs=self.func_col(col,np.max)
         return maxs
 
-    def pcolor(self, x, y, z='detector', clims=None, color_norm='linear', cmap='jet'):
+    def pcolor(self, x, y, z='detector', clims=None, color_norm='linear', cmap='jet',show_plot=True):
         r"""Create a false colormap for a coloction of scans.
 
         The y-direction is always what varies between scans.
@@ -268,4 +269,6 @@ class Scans(object):
         plt.xlabel(x)
         plt.ylabel(y)
         plt.colorbar()
-        plt.show(block=False)
+        if show_plot:
+           plt.show(block=False)
+        return(fh)
