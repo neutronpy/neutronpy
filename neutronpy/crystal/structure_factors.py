@@ -112,7 +112,7 @@ class MagneticFormFactor(object):
         -----
         The magnetic form factor of an ion is given by:
 
-        .. math:: f(q) = <j_0(q)> + (1-\frac{2}{g})<j_2(q)> \mathrm{(Lovesey,1984)}
+        .. math:: f(q) = <j_0(q)> + (\frac{2}{g}-1)<j_2(q)> \mathrm{(Jensen and Mackintosh,1991)}
 
         using the 3-gaussian approximation to :math:`f(q)` from the
         International Tables of Crystallography (by J. Brown)
@@ -144,7 +144,7 @@ class MagneticFormFactor(object):
                        self.j4[4] * np.exp(-self.j4[5] * x ** 2) +
                        self.j4[6])
 
-        ff = j0 + (1. - 2. / g) * j2
+        ff = j0 + (2. / g - 1.) * j2
 
         return ff, q, j0, j2, j4
 
