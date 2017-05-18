@@ -26,6 +26,7 @@ MANIFEST
 generated
 *.pyc
 .eggs/
+.ipynb_checkpoints/
 
 # Virtual Env #
 ###############

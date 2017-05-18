@@ -8,7 +8,7 @@ Requirements
 ------------
 Contributors should keep these following requirements in mind while creating fixes or new functionality:
 
-    * Code is to be written in Python 3 and then made backwards compatible with py26 and py27.
+    * Code is to be written in Python 3 and then made backwards compatible with py27.
     * PEP8 conventions should be followed, with some exceptions
     * Documentation should always be included and/or updated
     * Changelog should be updated
@@ -20,11 +20,8 @@ All contributed code should be written for Python 3 first. While we support Pyth
 
 Some frequent issues you may encounter include:
 
-    * Dictionary comprehensions: ``{key: value for key, value in zip(keys, values)}`` style dictionary comprehensions are not supported in Python 2.6, so comprehensions should be in the style of ``dict((key, value) for key, value in zip(keys, values))``
     * File encoding: file should explicitly have the following encoding on the first line: ``# -*- coding: utf-8 -*-``. This is a problem with both 2.6 and 2.7
-    * Ordered dictionaries: Unfortunately OrderedDict was not introduced until Python 2.7, so ``try...except`` should be used in files where it is needed. See previous examples in the source code, e.g. in :py:class:`.Data`.
     * ``*args`` and ``**kwargs`` can only be used like ``function(*args, **kwargs)`` in Python 2, whereas in Python 3 you could for instance do ``function(*args keyword=None)``, explicitly naming a ``kwarg`` after ``*args``.
-    * When formatting strings, position must be explicitly specified in the placeholder, e.g. ``'{0:.1f}'``. If you use ``'{:.1f}'`` Python 2.6 will raise an exception.
 
 PEP8 Formatting
 ^^^^^^^^^^^^^^^

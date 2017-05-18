@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-r'''Sphinx Documentation builder
+r"""Sphinx Documentation builder
 
-'''
+"""
 from distutils.version import LooseVersion
 import glob
 import inspect
@@ -11,10 +11,12 @@ import os
 import sys
 import sphinx
 import neutronpy_sphinx_rtd_theme
+
 try:
     import neutronpy
 except ImportError:
-    raise RuntimeError('Cannot import neutronpy, it must be installed before building documentation. Please investigate.')
+    raise RuntimeError(
+        'Cannot import neutronpy, it must be installed before building documentation. Please investigate.')
 if LooseVersion(sphinx.__version__) < LooseVersion('1'):
     raise RuntimeError('Need sphinx >= 1 for numpydoc to work correctly')
 
@@ -41,11 +43,12 @@ sys.path.insert(1, os.path.abspath('sphinxext'))
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.coverage',
-              'sphinx.ext.imgmath',
+              'sphinx.ext.mathjax',
               'sphinx.ext.intersphinx',
               'matplotlib.sphinxext.plot_directive',
               'numpydoc',
-              'releases']
+              'releases',
+              'nbsphinx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -61,7 +64,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'neutronpy'
-copyright = '2016, David M Fobes'
+copyright = '2017, David M Fobes'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -80,7 +83,7 @@ today_fmt = '%B %d, %Y'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
 exclude_dirs = []
 
 # The reST default role (used for this markup: `text`) to use for all
@@ -192,7 +195,7 @@ _stdauthor = 'David M Fobes'
 latex_documents = [('reference/index', 'neutronpy-ref.tex', 'NeutronPy Reference', _stdauthor, 'manual')]
 
 # Additional stuff for the LaTeX preamble.
-latex_preamble = r'''
+latex_elements = {'preamble': r"""\
 \usepackage{amsmath}
 \DeclareUnicodeCharacter{00A0}{\nobreakspace}
 
@@ -212,14 +215,14 @@ latex_preamble = r'''
 % Fix footer/header
 \renewcommand{\chaptermark}[1]{\markboth{\MakeUppercase{\thechapter.\ #1}}{}}
 \renewcommand{\sectionmark}[1]{\markright{\MakeUppercase{\thesection.\ #1}}}
-'''
+"""
+                  }
 
 # Documents to append as an appendix to all manuals.
 # latex_appendices = []
 
 # If false, no module index is generated.
-latex_use_modindex = False
-
+latex_domain_indices = False
 
 # -- Options for manual page output ---------------------------------------
 
@@ -247,7 +250,6 @@ texinfo_documents = [("contents", 'numpy', 'Numpy Documentation', _stdauthor,
 # -----------------------------------------------------------------------------
 
 intersphinx_mapping = {'http://docs.python.org/dev': None}
-
 
 # -----------------------------------------------------------------------------
 # Autosummary

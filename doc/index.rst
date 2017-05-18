@@ -2,7 +2,8 @@
     :hidden:
 
     Reference <reference>
-    Examples <examples>
+    Tutorials <tutorials>
+    Notebook Examples <notebooks>
     FAQs <faq>
     Installation <installation>
     troubleshooting

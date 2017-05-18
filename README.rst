@@ -61,10 +61,10 @@ Requirements
 ------------
 The following packages are required to install this library:
 
-* ``Python >= 2.7 (incl. Python 3.4-3.5)``
+* ``Python >= 2.7 (incl. Python 3.4-3.6)``
 * ``numpy >= 1.8.0``
 * ``scipy >= 0.13.0``
-* ``lmfit >= 0.9.4`` (``==0.9.4`` for Python 2.6)
+* ``lmfit >= 0.9.4``
 * ``matplotlib >= 1.3.0`` (optional, plotting)
 * ``h5py`` (optional, file IO)
 * ``pyqt5 >= 5.4.1`` (optional, gui)
@@ -72,7 +72,7 @@ The following packages are required to install this library:
 
 Installation
 ------------
-It is recommended that you use `anaconda <>`_ or ``pip`` to install NeutronPy::
+It is recommended that you use `anaconda <https://www.continuum.io/downloads>`_ or ``pip`` to install NeutronPy::
 
     conda install -c neutronpy neutronpy
 
@@ -80,7 +80,7 @@ or::
 
     pip install neutronpy
 
-Note: the channel ``mmcauliffe`` is required for pyqt5, so that the resolution calculator gui can be used after installation by executing ``neutronpy`` from the command-line. See Installation for more detailed instructions.
+See Installation for more detailed instructions.
 
 Documentation
 -------------

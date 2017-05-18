@@ -2,7 +2,17 @@
 Changelog
 =========
 
-* :release:`1.0.3 <2016-02-17>` 93, 94, 95, 96, 98, 99, 100, 101, 103
+* :release:`1.0.4 <2017-05-18>` 102, 104, 105, 106, 107, 108, 109, 110
+* :support:`110` Added jupyter notebook examples to documentation
+* :bug:`109` Fixed Anaconda and PYPI automatic deployment
+* :bug:`108` Fixed continuous integration builds
+* :feature:`107` Exposed figure handles in :py:class:`.Scans`
+* :bug:`106` Fixed typo in calculation of Magnetic Form Factor in :py:class:`.MagneticFormFactor`
+* :feature:`105` Added methods to calculate statistics of data in :py:class:`.Scans`
+* :support:`104` Updated documentation for :py:class:`.Data` and :py:class:`.Material`
+* :bug:`102` Fixes problem with building of Q in :py:class:`.Data` when some data not available
+
+* :release:`1.0.3 <2017-02-17>` 93, 94, 95, 96, 98, 99, 100, 101, 103
 * :support:`103` Updated examples and docstring for :py:class:`.Material` to reflect proper usage of ``massNorm`` key
 * :bug:`101` Fixed ``KeyError`` when using :py:class:`.Data` attributes where one or more of the data columns is not defined
 * :support:`100` Updated examples documentation for the :py:class:`.Data`
