@@ -84,6 +84,7 @@ after_success:
 - codecov
 - source deactivate
 - conda config --add channels neutronpy
+- conda config --set anaconda_upload yes
 - if ( [ -n "$CONDA_TOKEN" ] && [ -n "$TRAVIS_TAG" ] ); then conda install -q --yes
   conda-build anaconda-client; fi
 - if ( [ -n "$CONDA_TOKEN" ] && [ -n "$TRAVIS_TAG" ] ); then conda build --user neutronpy

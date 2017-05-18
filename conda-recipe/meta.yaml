@@ -1,6 +1,7 @@
+{% set data = load_setup_py_data() %}
 package:
   name: neutronpy
-  version: {{ GIT_DESCRIBE_TAG }}
+  version: {{ data.get('version') }}
 
 source:
   path: ../
@@ -9,12 +10,11 @@ source:
    # - fix.patch
 
 build:
-  noarch_python: True
+  noarch: python
   # preserve_egg_dir: True
   entry_points:
-    - neutronpy=neutronpy.gui:launch
-  number: {{ GIT_DESCRIBE_NUMBER }}
-  string: {{ GIT_BUILD_STR }}
+    - neutronpy = neutronpy.gui:launch
+  number: {{ data.get('version') }}
 
   # If this is a new build for the same version, increment the build
   # number. If you do not include this key, it defaults to 0.
