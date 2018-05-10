@@ -27,7 +27,7 @@ script:
 
 after_success:
   - codecov
-  - git reset --hard HEAD
+  - if [ "$TRAVIS_TAG" ]; then git checkout -f $TRAVIS_TAG; fi
 
 deploy:
   - provider: pypi
