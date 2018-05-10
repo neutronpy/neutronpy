@@ -6,11 +6,11 @@ import warnings
 from collections import namedtuple
 
 import numpy as np
-from lmfit import minimize, Parameters, Minimizer
 
+from lmfit import Minimizer, Parameters, minimize
 
-from .tools import residual_wrapper
 from .plot import PlotFit
+from .tools import residual_wrapper
 
 
 class Fitter(PlotFit):

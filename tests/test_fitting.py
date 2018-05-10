@@ -2,13 +2,13 @@
 r"""Tests least-squares fitting
 
 """
-import pytest
-import numpy as np
-from neutronpy import Fitter
-from neutronpy import functions
-import neutronpy.fileio as npyio
-from mock import patch
 import os
+
+import neutronpy.fileio as npyio
+import numpy as np
+import pytest
+from mock import patch
+from neutronpy import Fitter, functions
 
 
 def residuals(params, data):

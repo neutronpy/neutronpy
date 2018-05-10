@@ -164,19 +164,19 @@ class Lattice(object):
     def astar(self):
         r"""First inverse lattice constant in inverse Angstrom
         """
-        return self.b * self.c * np.sin(self.alpha_rad) / self.volume
+        return self.b * self.c * np.sin(self.alpha_rad) / self.volume * 2 * np.pi
 
     @property
     def bstar(self):
         r"""Second inverse lattice constant in inverse Angstrom
         """
-        return self.a * self.c * np.sin(self.beta_rad) / self.volume
+        return self.a * self.c * np.sin(self.beta_rad) / self.volume * 2 * np.pi
 
     @property
     def cstar(self):
         r"""Third inverse lattice constant in inverse Angstrom
         """
-        return self.a * self.b * np.sin(self.gamma) / self.volume
+        return self.a * self.b * np.sin(self.gamma_rad) / self.volume * 2 * np.pi
 
     @property
     def alphastar_rad(self):
@@ -303,7 +303,7 @@ class Lattice(object):
 
         """
 
-        return np.linalg.inv(self.G)
+        return np.linalg.inv(self.G) * 4 * np.pi ** 2
 
     @property
     def Bmatrix(self):
@@ -312,10 +312,9 @@ class Lattice(object):
 
         """
 
-        return np.matrix([[self.astar, self.bstar * np.cos(self.gammastar_rad), self.cstar * np.cos(self.betastar_rad)],
-                          [0, self.bstar * np.sin(self.gammastar_rad),
-                           -self.cstar * np.sin(self.betastar_rad) * np.cos(self.alpha_rad)],
-                          [0, 0, 1. / self.c]], dtype=float)
+        return np.matrix([[self.astar, self.bstar * np.cos(self.gammastar_rad),  self.cstar * np.cos(self.betastar_rad)],
+                          [0, self.bstar * np.sin(self.gammastar_rad), -self.cstar * np.sin(self.betastar_rad) * np.cos(self.alpha_rad)],
+                          [0, 0, self.cstar * np.sin(self.betastar_rad) * np.sin(self.alphastar_rad)]], dtype=float)
 
     def get_d_spacing(self, hkl):
         u"""Returns the d-spacing of a given reciprocal lattice vector.
@@ -333,7 +332,7 @@ class Lattice(object):
         """
         hkl = np.array(hkl)
 
-        return float(1 / np.sqrt(np.dot(np.dot(hkl, self.Gstar), hkl)))
+        return float(1 / np.sqrt(np.dot(np.dot(hkl, self.Gstar / 4 / np.pi ** 2), hkl)))
 
     def get_angle_between_planes(self, v1, v2):
         r"""Returns the angle :math:`\phi` between two reciprocal lattice

@@ -3,15 +3,14 @@ r""" testing of a collection of scans
 
 """
 
+import collections
+import os
+
 import neutronpy.data as npysc
 import neutronpy.fileio as npyio
-import os
-import pytest
-import collections
-from mock import patch
 import numpy as np
-
-
+import pytest
+from mock import patch
 
 
 def load_scans(start,stop):

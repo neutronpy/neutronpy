@@ -1,6 +1,5 @@
 install:
-	python2 setup.py install
-	python3 setup.py install
+	python setup.py install &> /dev/null
 
 install-two:
 	python2 setup.py install
@@ -12,57 +11,83 @@ clean:
 	find . | grep -E "(__pycache__|\.pyc|\.pyo|plot_test.pdf|.coverage|test.out|.DS_Store$$)" | xargs rm -rf
 
 test:
-	pytest --tb=short
+	pytest -p no:warnings --tb=short
+	make clean
 
 test-data:
-	pytest -v -x tests/test_data.py
+	pytest -p no:warnings -v -x tests/test_data.py
+	make clean
 
 test-energy:
-	pytest -v -x tests/test_energy.py
+	pytest -p no:warnings -v -x tests/test_energy.py
+	make clean
 
 test-fitting:
-	pytest -v -x tests/test_fitting.py
+	pytest -p no:warnings -v -x tests/test_fitting.py
+	make clean
 
 test-functions:
-	pytest -v -x tests/test_functions.py
+	pytest -p no:warnings -v -x tests/test_functions.py
+	make clean
 
 test-io:
-	pytest -v -x tests/test_io.py
+	pytest -p no:warnings -v -x tests/test_io.py
+	make clean
 
 test-lattice:
-	pytest -v -x tests/test_lattice.py
+	pytest -p no:warnings -v -x tests/test_lattice.py
+	make clean
 
 test-models:
-	pytest -v -x tests/test_models.py
+	pytest -p no:warnings -v -x tests/test_models.py
+	make clean
+
+test-tof:
+	pytest -p no:warnings -v -x tests/test_resolution_tof.py
+	make clean
+
+test-tas:
+	pytest -p no:warnings -v -x tests/test_resolution_tas.py
+	make clean
 
 test-resolution:
-	pytest -v -x tests/test_resolution.py
+	pytest -p no:warnings -v -x tests/test_resolution_tas.py tests/test_resolution_tof
+	make clean
 
 test-scattering:
-	pytest -v -x tests/test_scattering.py
+	pytest -p no:warnings -v -x tests/test_scattering.py
+	make clean
 
 test-spurion:
-	pytest -v -x tests/test_spurion.py
+	pytest -p no:warnings -v -x tests/test_spurion.py
+	make clean
 
 test-structure-factors:
-	pytest -v -x tests/test_structure_factors.py
+	pytest -p no:warnings -v -x tests/test_structure_factors.py
+	make clean
 
 test-scans:
-	pytest -v -x tests/test_scans.py
+	pytest -p no:warnings -v -x tests/test_scans.py
+	make clean
 
 test-symmetry:
-	pytest -v -x tests/test_symmetry.py
+	pytest -p no:warnings -v -x tests/test_symmetry.py
+	make clean
 
 test-coverage:
 	pytest --cov=neutronpy
+	make clean
 
 test-all:
 	pytest -v
+	make clean
 
 pypi:
-	python3 setup.py sdist upload -r pypi
-	python3 setup.py bdist_wheel upload -r pypi
-	find . | grep -E "(plot_test.pdf|test.out$$)" | xargs rm -rf
+	find . | grep -E "(dist/|build/)" | xargs rm -rf
+	python setup.py sdist
+	python setup.py bdist_wheel
+	twine upload dist/*
+	find . | grep -E "(dist/|build/)" | xargs rm -rf
 
 test-docs:
 	@$(MAKE) $(MAKE_FLAGS) -C doc html

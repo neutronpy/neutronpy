@@ -2,11 +2,11 @@
 r"""Tests spurion search
 
 """
-import pytest
 import warnings
+
+import pytest
 from mock import patch
-from neutronpy import spurion
-from neutronpy import Instrument
+from neutronpy import Instrument, spurion
 
 
 @patch('sys.stdout')

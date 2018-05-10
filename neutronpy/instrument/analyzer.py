@@ -3,7 +3,7 @@ from .monochromator import Monochromator
 
 
 class Analyzer(Monochromator):
-    u'''Class containing analyzer information.
+    u"""Class containing analyzer information.
 
     Parameters
     ----------
@@ -60,11 +60,21 @@ class Analyzer(Monochromator):
     Q
     d
 
-    '''
-    def __init__(self, tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None, horifoc=-1, thickness=None, Q=None):
-        super(Analyzer, self).__init__(tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None)
+    """
+
+    def __init__(self, tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None,
+                 horifoc=-1, thickness=None, Q=None):
+        super(Analyzer, self).__init__(tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None,
+                                       rh=None, rv=None)
         if thickness is not None:
             self.thickness = thickness
         if Q is not None:
             self.Q = Q
         self.horifoc = horifoc
+
+    def __repr__(self):
+        args = ', '.join([str(getattr(self, key)) for key in ['tau', 'mosaic']])
+        kwargs = ', '.join(['{0}={1}'.format(key, getattr(self, key)) for key in
+                            ['direct', 'vmosaic', 'height', 'width', 'depth', 'rh', 'rv', 'horifoc', 'thickness', 'Q']
+                            if getattr(self, key, None) is not None])
+        return "Analyzer({0})".format(', '.join([args, kwargs]))

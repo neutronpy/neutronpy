@@ -242,6 +242,12 @@ To see a simple plot of the resolution ellipsoid in the :math:`Q_x Q_y W` zone t
 >>> EXP = Instrument()
 >>> EXP.plot_ellipsoid([1,1,0,0])
 
+.. plot::
+
+    from neutronpy import Instrument
+
+    EXP = Instrument()
+    EXP.plot_ellipsoid([1, 1, 0, 0])
 
 Plotting of the Instrument setup for a given (Q,W)
 --------------------------------------------------

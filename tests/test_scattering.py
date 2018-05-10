@@ -3,7 +3,7 @@ r"""Unit tests for scattering functions
 
 """
 import pytest
-from neutronpy import scattering, Data
+from neutronpy import Data, scattering
 
 
 def test_gen_hkl():

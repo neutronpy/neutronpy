@@ -2,10 +2,11 @@
 r"""A class for handeling a collection of scans
 
 """
-import matplotlib.pyplot as plt
-import matplotlib.colors as mpl_c
-import numpy as np
 import collections
+
+import matplotlib.colors as mpl_c
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Scans(object):

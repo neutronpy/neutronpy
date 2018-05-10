@@ -1,76 +1,28 @@
 environment:
-  PYPIPASSWORD:
-    secure: AEQLjbsZ8WEiaWFK3eYbCQ==
   matrix:
-   - PYTHON_VERSION: "2.7"
-     NUMPY_VERSION: "1.12.0"
-     SCIPY_VERSION: "0.18.1"
-     MATPLOTLIB_VERSION: "2.0.2"
-     LMFIT_VERSION: "0.9.5"
-     ARCH: ""
-   - PYTHON_VERSION: "2.7"
-     NUMPY_VERSION: "1.12.0"
-     SCIPY_VERSION: "0.18.1"
-     MATPLOTLIB_VERSION: "2.0.2"
-     LMFIT_VERSION: "0.9.5"
-     ARCH: "-x64"
-   - PYTHON_VERSION: "3.4"
-     NUMPY_VERSION: "1.10.1"
-     SCIPY_VERSION: "0.16.1"
-     MATPLOTLIB_VERSION: "1.5.1"
-     LMFIT_VERSION: "0.9.5"
-     ARCH: ""
-   - PYTHON_VERSION: "3.5"
-     NUMPY_VERSION: "1.12.0"
-     SCIPY_VERSION: "0.18.1"
-     MATPLOTLIB_VERSION: "2.0.2"
-     LMFIT_VERSION: "0.9.5"
-     ARCH: ""
-   - PYTHON_VERSION: "3.5"
-     NUMPY_VERSION: "1.12.0"
-     SCIPY_VERSION: "0.18.1"
-     MATPLOTLIB_VERSION: "2.0.2"
-     LMFIT_VERSION: "0.9.5"
-     ARCH: "-x64"
-   - PYTHON_VERSION: "3.6"
-     NUMPY_VERSION: "1.12.0"
-     SCIPY_VERSION: "0.18.1"
-     MATPLOTLIB_VERSION: "2.0.2"
-     LMFIT_VERSION: "0.9.5"
-     ARCH: ""
-   - PYTHON_VERSION: "3.6"
-     NUMPY_VERSION: "1.12.0"
-     SCIPY_VERSION: "0.18.1"
-     MATPLOTLIB_VERSION: "2.0.2"
-     LMFIT_VERSION: "0.9.5"
-     ARCH: "-x64"
+    - PYTHON: "C:\\Python27"
+    - PYTHON: "C:\\Python34"
+    - PYTHON: "C:\\Python35"
+    - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python27-x64"
+    - PYTHON: "C:\\Python34-x64"
+    - PYTHON: "C:\\Python35-x64"
+    - PYTHON: "C:\\Python36-x64"
 
+matrix:
+  fast_finish: true
+  allow_failures:
+    - PYTHON: "C:\\Python34"
+    - PYTHON: "C:\\Python34-x64"
 
 install:
-  - set PATH=C:\Miniconda3%ARCH%;C:\Miniconda3%ARCH%\Scripts;%PATH%
-  - conda update --yes -q conda
-  - conda config --add channels conda-forge
-  - conda create --yes -q -n test_environment python=%PYTHON_VERSION% pip setuptools numpy=%NUMPY_VERSION%
-    scipy=%SCIPY_VERSION% matplotlib=%MATPLOTLIB_VERSION% mock h5py pep8 pytest pytest-cov pytest-pep8
-  - activate test_environment
-  - conda install --yes -q -c neutronpy lmfit==%LMFIT_VERSION%
-  - pip install -e . --no-deps 
+  - "%PYTHON%\\python.exe -m pip install -U -q setuptools"
+  - "%PYTHON%\\python.exe -m pip install -q wheel pytest mock numpy scipy matplotlib h5py"
 
 build: off
 
 test_script:
-  - pytest -v --tb=short
-
-on_success:
-  - echo [distutils]                                  > %USERPROFILE%\\.pypirc
-  - echo index-servers =                             >> %USERPROFILE%\\.pypirc
-  - echo     pypi                                    >> %USERPROFILE%\\.pypirc
-  - echo [pypi]                                      >> %USERPROFILE%\\.pypirc
-  - echo repository=https://pypi.python.org/pypi     >> %USERPROFILE%\\.pypirc
-  - echo username=davidfobes                         >> %USERPROFILE%\\.pypirc
-  - echo password=%PYPIPASSWORD%                     >> %USERPROFILE%\\.pypirc
-  - set HOME=%USERPROFILE%
-  - if "%APPVEYOR_REPO_TAG%"=="true" if NOT "%PYTHON_VERSION%"=="2.6" ( python setup.py bdist_wheel upload ) else ( echo "Not deploying because not a tagged commit." )
+  - "%PYTHON%\\python.exe setup.py test"
 
 notifications:
   - provider: Slack

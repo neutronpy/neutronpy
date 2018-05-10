@@ -1,10 +1,8 @@
-import numpy as np
-from ...data import Data
+from collections import OrderedDict
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
+import numpy as np
+
+from ...data import Data
 
 
 class Grasp(Data):

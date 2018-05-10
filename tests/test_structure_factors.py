@@ -2,14 +2,16 @@
 r"""Test structure factor calculations
 
 """
-import pytest
 import numpy as np
-from mock import patch
+import pytest
 from matplotlib import use
 
 use('Agg')
+
+from mock import patch
 from neutronpy import Material
 from neutronpy.crystal.structure_factors import MagneticFormFactor
+
 
 input = {'name': 'FeTe',
          'composition': [{'ion': 'Fe', 'pos': [0.75, 0.25, 0.]},

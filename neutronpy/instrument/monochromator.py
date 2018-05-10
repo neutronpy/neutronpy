@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+
 from .tools import GetTau
 
 
 class Monochromator(object):
-    u'''Class containing monochromator information.
+    u"""Class containing monochromator information.
 
     Parameters
     ----------
@@ -46,7 +47,8 @@ class Monochromator(object):
     rh
     rv
     d
-    '''
+
+    """
 
     def __init__(self, tau, mosaic, direct=-1, vmosaic=None, height=None, width=None, depth=None, rh=None, rv=None):
         self._tau = tau
@@ -66,6 +68,30 @@ class Monochromator(object):
         if depth is not None:
             self.depth = depth
 
+    def __repr__(self):
+        args = ', '.join([str(getattr(self, key)) for key in ['tau', 'mosaic']])
+        kwargs = ', '.join(['{0}={1}'.format(key, getattr(self, key)) for key in
+                            ['direct', 'vmosaic', 'height', 'width', 'depth', 'rh', 'rv'] if
+                            getattr(self, key, None) is not None])
+        return "Monochromator({0})".format(', '.join([args, kwargs]))
+
+    def __eq__(self, right):
+        self_parent_keys = sorted(list(self.__dict__.keys()))
+        right_parent_keys = sorted(list(right.__dict__.keys()))
+
+        if not np.all(self_parent_keys == right_parent_keys):
+            return False
+
+        for key, value in self.__dict__.items():
+            right_parent_val = getattr(right, key)
+            if not np.all(value == right_parent_val):
+                return False
+
+        return True
+
+    def __ne__(self, right):
+        return not self.__eq__(right)
+
     @property
     def tau(self):
         return self._tau
@@ -74,3 +100,11 @@ class Monochromator(object):
     def tau(self, tau):
         self._tau = tau
         self.d = 2 * np.pi / GetTau(tau)
+
+    @property
+    def direct(self):
+        return self.dir
+
+    @direct.setter
+    def direct(self, value):
+        self.dir = value

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import numbers
+
 import numpy as np
+
 from ..constants import BOLTZMANN_IN_MEV_K
 from ..energy import Energy
 

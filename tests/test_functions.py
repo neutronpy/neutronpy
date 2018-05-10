@@ -2,10 +2,10 @@
 r"""Tests special functions
 
 """
-import pytest
 import numpy as np
-from scipy.integrate import simps
+import pytest
 from neutronpy import functions
+from scipy.integrate import simps
 
 
 def test_gauss_norm():

@@ -6,14 +6,14 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 FLEX  mcewen      09-Jul-15 23:23:37
 VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 INSTR: FLEX
-EXPNO: 
+EXPNO:
 USER_: mcewen
 LOCAL: Diana
 FILE_: 054323
 DATE_: 09-Jul-15 23:23:37
 TITLE: 20141683-ST_UPd3
 COMND: BS QH 0.5  0   3   1.8   DQH 0 0 0 -0.1  NP 9  MN 10000000
-POSQE: QH=  0.5000, QK=  0.0000, QL=  3.0000, EN=   1.8000, UN=meV 
+POSQE: QH=  0.5000, QK=  0.0000, QL=  3.0000, EN=   1.8000, UN=meV
 STEPS: QH      =  0.0000, QK      =  0.0000, QL      =  0.0000
 STEPS: EN      = -0.1000
 PARAM: DM=   3.35500, DA=   3.35500, SM=-1., SS= 1., SA=-1.
@@ -37,7 +37,7 @@ PARAM: MN=**********
 PARAM: TT=      1.88, RT=      1.90, TT2=      0.00, RT2=      0.00, MAG=      0.00
 FORMT: (I4,1X,F9.4,1X,F9.4,1X,F9.4,1X,F9.4,2(1X,F10.0),1X,F9.2,1x,,6(1X,F9.4))
 DATA_:
-  PNT      QH        QK        QL        EN        M1       M2      TIME     CNTS      A3        A4        KI        TT        TRT       MAG     
+  PNT      QH        QK        QL        EN        M1       M2      TIME     CNTS      A3        A4        KI        TT        TRT       MAG
    1    0.4997    0.0000    3.0002    1.8010  10000000.         0.   2948.94       238. -118.7900   75.2100    1.8087    1.8780    1.8982    0.0000
    2    0.5001    0.0000    2.9991    1.7025  10000000.         0.   1481.93       341. -118.8900   75.5800    1.7955    1.8775    1.8980    0.0000
    3    0.4999    0.0000    3.0001    1.6027  10000000.         0.    960.62       276. -119.0000   76.0100    1.7820    1.8782    1.8996    0.0000

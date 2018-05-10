@@ -1,4 +1,5 @@
 import numpy as np
+
 from ..lsfit import Fitter
 from ..lsfit.tools import convert_params
 

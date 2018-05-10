@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+
+from ..crystal import Sample
 from ..energy import Energy
 from ..instrument import Instrument
-from ..crystal import Sample
+from ..instrument.tas_instrument import TripleAxisInstrument
+from ..instrument.tof_instrument import TimeOfFlightInstrument
 
 taz_keys = {'algo': 'method',
             'ana_d': 'ana.d',
@@ -482,7 +485,33 @@ def load_instrument(filename, filetype='ascii'):
 
 
 def save_instrument(obj, filename, filetype='ascii', overwrite=False):
-    r"""Saves an instrument configuration into files for loading with
+    r"""Saves a TAS or TOF instrument configuration into files for loading
+    with :py:func:`.load_instrument`.
+
+    Parameters
+    ----------
+    obj : object
+        Instrument object
+
+    filename : str
+        Path to file (extension determined by filetype parameter).
+
+    filetype : str, optional
+        Default: `'ascii'`. Support for `'ascii'`, `'hdf5'`, or `'taz'`.
+
+    overwrite : bool, optional
+        Default: False. If True, overwrites the file, otherwise appends or
+        creates new files.
+
+    """
+    if isinstance(obj, TripleAxisInstrument):
+        save_tas_instrument(obj, filename, filetype, overwrite)
+    elif isinstance(obj, TimeOfFlightInstrument):
+        save_tof_instrument(obj, filename, filetype, overwrite)
+
+
+def save_tas_instrument(obj, filename, filetype='ascii', overwrite=False):
+    r"""Saves a TAS instrument configuration into files for loading with
     :py:func:`.load_instrument`.
 
     Parameters
@@ -632,6 +661,58 @@ def save_instrument(obj, filename, filetype='ascii', overwrite=False):
 
         with open(filename + '.taz', mode) as f:
             f.write(taz_pretty)
+
+    else:
+        raise ValueError("""Format not supported. Please use 'ascii', 'hdf5', or 'taz'""")
+
+
+def save_tof_instrument(obj, filename, filetype='ascii', overwrite=True):
+    r"""Saves a TOF instrument configuration into files for loading with
+    :py:func:`.load_instrument`.
+
+    Parameters
+    ----------
+    obj : object
+        Instrument object
+
+    filename : str
+        Path to file (extension determined by filetype parameter).
+
+    filetype : str, optional
+        Default: `'ascii'`. Support for `'ascii'`, `'hdf5'`, or `'taz'`.
+
+    overwrite : bool, optional
+        Default: False. If True, overwrites the file, otherwise appends or
+        creates new files.
+
+    """
+    instr_attrs = []
+
+    if filetype == 'ascii':
+        pass
+
+    elif filetype == 'hdf5':
+        pass
+
+    elif filetype == 'taz':
+
+        keys = {'viol_dist_pulse_mono': ['', 1000],
+                'viol_dist_mono_sample': ['', 100],
+                'viol_dist_sample_det': ['', 500],
+                'viol_dist_pulse_mono_sig': ['', 1],
+                'viol_dist_mono_sample_sig': ['', 1],
+                'viol_dist_sample_det_sig': ['', 1],
+                'viol_angle_ph_f': ['', 0],
+                'viol_angle_ph_f_sig': ['', 0.4],
+                'viol_angle_ph_i': ['', 0],
+                'viol_angle_ph_i_sig': ['', 0.4],
+                'viol_angle_tt_f_sig': ['', 0.4],
+                'viol_angle_tt_i': ['', 0],
+                'viol_angle_tt_i_sig': ['', 0.4],
+                'viol_time_det_sig': ['', 5],
+                'viol_time_mono_sig': ['', 5],
+                'viol_time_pulse_sig': ['', 50],
+                'viol_det_sph': ['', 1]}
 
     else:
         raise ValueError("""Format not supported. Please use 'ascii', 'hdf5', or 'taz'""")

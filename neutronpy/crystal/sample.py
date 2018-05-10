@@ -3,7 +3,9 @@ r"""Sample class for e.g. Instrument class
 
 """
 import numpy as np
+
 from .lattice import Lattice
+from .tools import gram_schmidt
 
 
 class Sample(Lattice):
@@ -57,6 +59,10 @@ class Sample(Lattice):
         Sample shape type. Accepts 'rectangular' or 'cylindrical'.
         Default: 'rectangular'
 
+    distance : float, optional
+        Distance from source (used for Time of Flight resolution
+        calculations). Default: None
+
     Attributes
     ----------
     a
@@ -107,7 +113,7 @@ class Sample(Lattice):
     """
 
     def __init__(self, a, b, c, alpha, beta, gamma, u=None, v=None, mosaic=None, vmosaic=None, direct=1,
-                 width=None, height=None, depth=None, shape='rectangular'):
+                 width=None, height=None, depth=None, shape='rectangular', distance=None):
         super(Sample, self).__init__(a, b, c, alpha, beta, gamma)
         if u is not None:
             self._u = np.array(u)
@@ -128,6 +134,8 @@ class Sample(Lattice):
             self.height = height
         if depth is not None:
             self.depth = depth
+        if distance is not None:
+            self.distance = distance
 
     def __repr__(self):
         args = ', '.join([str(getattr(self, key)) for key in ['a', 'b', 'c', 'alpha', 'beta', 'gamma']])
@@ -135,6 +143,24 @@ class Sample(Lattice):
                             ['u', 'v', 'mosaic', 'vmosaic', 'direct', 'width', 'height', 'depth', 'shape'] if
                             getattr(self, key, None) is not None])
         return "Sample({0}, {1})".format(args, kwargs)
+
+    def __eq__(self, right):
+        self_parent_keys = sorted(list(self.__dict__.keys()))
+        right_parent_keys = sorted(list(right.__dict__.keys()))
+
+        if not np.all(self_parent_keys == right_parent_keys):
+            return False
+
+        for key, value in self.__dict__.items():
+            right_parent_val = getattr(right, key)
+            if not np.all(value == right_parent_val):
+                print(value, right_parent_val)
+                return False
+
+        return True
+
+    def __ne__(self, right):
+        return not self.__eq__(right)
 
     @property
     def u(self):
@@ -163,3 +189,34 @@ class Sample(Lattice):
     @direct.setter
     def direct(self, value):
         self.dir = value
+
+    @property
+    def Umatrix(self):
+        u"""
+        """
+        ortho_basis = gram_schmidt(np.vstack((self.u, self.v)))
+
+        return np.vstack((ortho_basis, np.cross(ortho_basis[0], ortho_basis[1])))
+
+    @property
+    def UBmatrix(self):
+        u"""
+        """
+        return self.Umatrix * self.Bmatrix
+
+    def get_phi(self, Q):
+        u"""Get out-of-plane scattering angle.
+
+        Parameters
+        ----------
+        hkl: array_like
+
+        wavelength : float
+
+        Returns
+        -------
+        phi : float
+            The out-of-plane angle
+
+        """
+        return self.get_angle_between_planes(Q, np.cross(self.u, self.v))

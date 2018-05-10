@@ -8,10 +8,11 @@ r"""Useful constants for neutron scattering calculations, including:
 * ``JOULES_TO_MEV`` : Joules-to-meV conversion factor
 * ``BOLTZMANN_IN_MEV_K`` : Boltzmann constant in meV/K
 * ``N_A`` : Avogadro constant
+* ``neutron_mass`` : Mass of a neutron in grams
 
 """
-import os
 import json
+import os
 
 
 def magnetic_ion_j():
@@ -92,3 +93,6 @@ def symmetry():
 JOULES_TO_MEV = 1. / 1.6021766208e-19 * 1.e3  # Joules to meV
 BOLTZMANN_IN_MEV_K = 8.6173303e-05 * 1.e3  # Boltzmann constant in meV/K
 N_A = 6.022140857e+23
+neutron_mass = 1.674927211e-24  # mass of a neutron in grams
+hbar = 1.054571628e-34  # hbar in m2 kg / s
+e = 1.602176487e-19  # coulombs

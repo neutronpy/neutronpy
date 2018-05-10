@@ -1,17 +1,47 @@
 # -*- coding: utf-8 -*-
+import inspect
+from numbers import Number
+
 import numpy as np
+
+from ..constants import neutron_mass, hbar
 from ..crystal import Sample
+from .exceptions import AnalyzerError, MonochromatorError, ScatteringTriangleError
 
 
-class _dummy():
-    r'''Empty class for constructing empty objects monitor, guide, and detector
-    '''
-    def __init__(self, **kwargs):
+class _Dummy(object):
+    r"""Empty class for constructing empty objects monitor, guide, and detector
+    """
+
+    def __init__(self, name='Dummy', **kwargs):
+        self.name = name
         self.__dict__.update(kwargs)
+
+    def __eq__(self, right):
+        self_parent_keys = sorted(list(self.__dict__.keys()))
+        right_parent_keys = sorted(list(right.__dict__.keys()))
+
+        if not np.all(self_parent_keys == right_parent_keys):
+            return False
+
+        for key, value in self.__dict__.items():
+            right_parent_val = getattr(right, key)
+            if not np.all(value == right_parent_val):
+                return False
+
+        return True
+
+    def __ne__(self, right):
+        return not self.__eq__(right)
+
+    def __repr__(self):
+        return "{1}({0})".format(', '.join(
+            ['{0}={1}'.format(key, getattr(self, key)) for key in self.__dict__.keys() if
+             getattr(self, key, None) is not None and key != 'name']), self.name)
 
 
 def _scalar(v1, v2, lattice):
-    r'''Calculates the _scalar product of two vectors, defined by their
+    r"""Calculates the _scalar product of two vectors, defined by their
     fractional cell coordinates or Miller indexes.
 
     Parameters
@@ -35,7 +65,7 @@ def _scalar(v1, v2, lattice):
     -----
     Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
 
-    '''
+    """
 
     [x1, y1, z1] = v1
     [x2, y2, z2] = v2
@@ -49,7 +79,7 @@ def _scalar(v1, v2, lattice):
 
 
 def _star(lattice):
-    r'''Given lattice parametrs, calculate unit cell volume V, reciprocal
+    r"""Given lattice parametrs, calculate unit cell volume V, reciprocal
     volume Vstar, and reciprocal lattice parameters.
 
     Parameters
@@ -67,7 +97,7 @@ def _star(lattice):
     -----
     Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007, Oak Ridge National Laboratory
 
-    '''
+    """
     V = 2 * lattice.a * lattice.b * lattice.c * \
         np.sqrt(np.sin((lattice.alpha + lattice.beta + lattice.gamma) / 2) *
                 np.sin((-lattice.alpha + lattice.beta + lattice.gamma) / 2) *
@@ -91,7 +121,7 @@ def _star(lattice):
 
 
 def _modvec(v, lattice):
-    r'''Calculates the modulus of a vector, defined by its fractional cell
+    r"""Calculates the modulus of a vector, defined by its fractional cell
     coordinates or Miller indexes.
 
     Parameters
@@ -112,13 +142,13 @@ def _modvec(v, lattice):
     Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
     Oak Ridge National Laboratory
 
-    '''
+    """
 
     return np.sqrt(_scalar(v, v, lattice))
 
 
 def GetTau(x, getlabel=False):
-    u'''τ-values for common monochromator and analyzer crystals.
+    u"""τ-values for common monochromator and analyzer crystals.
 
     Parameters
     ----------
@@ -180,7 +210,7 @@ def GetTau(x, getlabel=False):
     Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
     Oak Ridge National Laboratory
 
-    '''
+    """
     choices = {'pg(002)'.lower(): 1.87325,
                'pg(004)'.lower(): 3.74650,
                'ge(111)'.lower(): 1.92366,
@@ -212,11 +242,15 @@ def GetTau(x, getlabel=False):
         try:
             return choices[x.lower()]
         except KeyError:
-            raise KeyError('Invalid monochromator crystal type.')
+            calling_class = repr(inspect.stack()[1][0].f_locals["self"])
+            if calling_class.startswith('Monochromator'):
+                raise MonochromatorError("Invalid Monochromator crystal type: {0}".format(repr(x)))
+            elif calling_class.startswith('Analyzer'):
+                raise AnalyzerError("Invalid Analyzer crystal type: {0}".format(repr(x)))
 
 
 def _CleanArgs(*varargin):
-    r'''Reshapes input arguments to be row-vectors. N is the length of the
+    r"""Reshapes input arguments to be row-vectors. N is the length of the
     longest input argument. If any input arguments are shorter than N, their
     first values are replicated to produce vectors of length N. In any case,
     output arguments are row-vectors of length N.
@@ -238,11 +272,11 @@ def _CleanArgs(*varargin):
     Translated from ResLib 3.4c, originally authored by A. Zheludev, 1999-2007,
     Oak Ridge National Laboratory
 
-    '''
+    """
     varargout = []
     lengths = np.array([], dtype=np.int32)
     for arg in varargin:
-        if type(arg) != list and not isinstance(arg, np.ndarray):
+        if not isinstance(arg, list) and not isinstance(arg, np.ndarray):
             arg = [arg]
         varargout.append(np.array(arg))
         lengths = np.concatenate((lengths, [len(arg)]))
@@ -255,7 +289,7 @@ def _CleanArgs(*varargin):
             lengths[i] = len(varargout[i])
 
     if len(np.where(lengths < length)[0]) > 0:
-        raise ValueError('Fatal error: All inputs must have the same lengths.')
+        raise ValueError('All inputs must have the same lengths: inputs had lengths {0}'.format(lengths))
 
     return [length] + varargout
 
@@ -268,12 +302,29 @@ def _voigt(x, a):
         return (t * (1.410474 + u * 0.5641896)) / (0.75 + (u * (3. + u)))
 
     def _approx3(t):
-        return (16.4955 + t * (20.20933 + t * (11.96482 + t * (3.778987 + 0.5642236 * t)))) \
-            / (16.4955 + t * (38.82363 + t * (39.27121 + t * (21.69274 + t * (6.699398 + t)))))
+        return (16.4955 + t *
+                (20.20933 + t *
+                 (11.96482 + t *
+                  (3.778987 + 0.5642236 * t)))) / (16.4955 + t *
+                                                   (38.82363 + t *
+                                                    (39.27121 + t *
+                                                     (21.69274 + t *
+                                                      (6.699398 + t)))))
 
     def _approx4(t, u):
-        return (t * (36183.31 - u * (3321.99 - u * (1540.787 - u * (219.031 - u * (35.7668 - u * (1.320522 - u * 0.56419)))))) /
-                (32066.6 - u * (24322.8 - u * (9022.23 - u * (2186.18 - u * (364.219 - u * (61.5704 - u * (1.84144 - u))))))))
+        return (t * (36183.31 - u *
+                     (3321.99 - u *
+                      (1540.787 - u *
+                       (219.031 - u *
+                        (35.7668 - u *
+                         (1.320522 - u *
+                          0.56419)))))) / (32066.6 - u *
+                                           (24322.8 - u *
+                                            (9022.23 - u *
+                                             (2186.18 - u *
+                                              (364.219 - u *
+                                               (61.5704 - u *
+                                                (1.84144 - u))))))))
 
     nx = x.size
     if len(a) == 1:
@@ -311,7 +362,7 @@ def _voigt(x, a):
 
 
 def project_into_plane(index, r0, rm):
-    r'''Projects out-of-plane resolution into a specified plane by performing
+    r"""Projects out-of-plane resolution into a specified plane by performing
     a gaussian integral over the third axis.
 
     Parameters
@@ -330,7 +381,7 @@ def project_into_plane(index, r0, rm):
     mp : ndarray
         Resolution matrix in a specified plane
 
-    '''
+    """
 
     r = np.sqrt(2 * np.pi / rm[index, index]) * r0
     mp = rm
@@ -347,7 +398,7 @@ def project_into_plane(index, r0, rm):
 
 
 def ellipse(saxis1, saxis2, phi=0, origin=None, npts=31):
-    r'''Returns an ellipse.
+    r"""Returns an ellipse.
 
     Parameters
     ----------
@@ -370,7 +421,7 @@ def ellipse(saxis1, saxis2, phi=0, origin=None, npts=31):
     -------
     [x, y] : list of ndarray
         Two one dimensional arrays representing an ellipse
-    '''
+    """
 
     if origin is None:
         origin = [0., 0.]
@@ -409,12 +460,15 @@ def fproject(mat, i):
     if i == 0:
         v = 2
         j = 1
-    if i == 1:
+    elif i == 1:
         v = 0
         j = 2
-    if i == 2:
+    elif i == 2:
         v = 0
         j = 1
+    else:
+        raise ValueError('i={0} is an invalid value!'.format(i))
+
     [a, b, c] = mat.shape
     proj = np.zeros((2, 2, c))
     proj[0, 0, :] = mat[i, i, :] - mat[i, v, :] ** 2 / mat[v, v, :]
@@ -425,3 +479,142 @@ def fproject(mat, i):
     hwhm = np.sqrt(2. * np.log(2.)) / np.sqrt(hwhm)
 
     return hwhm
+
+
+def calculate_projection_hwhm(MP):
+    r"""
+
+    Parameters
+    ----------
+    MP
+
+    Returns
+    -------
+
+    """
+    theta = 0.5 * np.arctan2(2 * MP[0, 1], (MP[0, 0] - MP[1, 1]))
+    S = [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
+
+    MP = np.matrix(S) * np.matrix(MP) * np.matrix(S).H
+
+    hwhm_xp = 1.17741 / np.sqrt(MP[0, 0])
+    hwhm_yp = 1.17741 / np.sqrt(MP[1, 1])
+
+    return hwhm_xp, hwhm_yp, theta
+
+
+def get_angle_ki_Q(ki, kf, Q, bPosSense=True, bAngleOutsideTriag=False):
+    u"""
+    Parameters
+    ----------
+    ki : float
+
+    kf : float
+
+    Q : float
+
+    bPosSense : bool, optional
+        Default: True
+
+    bAngleOutsideTriag : bool, optional
+        Default: False
+
+    Returns
+    -------
+    angle : float
+    """
+    if Q == 0:
+        angle = np.pi / 2.0
+    else:
+        c = (ki ** 2 - kf ** 2 + Q ** 2) / (2.0 * ki * Q)
+        if abs(c) > 1.0:
+            raise ScatteringTriangleError
+
+        angle = np.arccos(c)
+
+    if bAngleOutsideTriag:
+        angle = np.pi - angle
+
+    if ~bPosSense:
+        angle = -angle
+
+    return angle
+
+
+def get_kfree(W, kfixed, ki_fixed=True):
+    u"""
+
+    Parameters
+    ----------
+    W : float
+
+    kfixed : float
+
+    ki_fixed : bool, optional
+        Default: True
+
+    Returns
+    -------
+    k : float
+    """
+    kE_sq = W * 2.0 * neutron_mass / hbar ** 2
+    if ki_fixed:
+        kE_sq = -kE_sq
+
+    k_sq = kE_sq + kfixed ** 2
+
+    if k_sq < 0.0:
+        raise ScatteringTriangleError
+    else:
+        return np.sqrt(k_sq)
+
+
+def chop(matrix, tol=1e-12):
+    r"""Rounds values within `tol` of zero to zero
+
+    Parameters
+    ----------
+    matrix : array, number
+        The object to be chopped.
+
+    tol : float, optional
+        The tolerance under which values will be rounded. Default: 1e-12.
+
+    Returns
+    -------
+    out : same as input
+        Object with values chopped.
+    """
+    if isinstance(matrix, tuple):
+        return tuple(chop(item) for item in matrix)
+    elif isinstance(matrix, list):
+        return list(chop(item) for item in matrix)
+    elif isinstance(matrix, (np.ndarray, np.matrixlib.defmatrix.matrix)):
+        if np.iscomplexobj(matrix):
+            rmat = matrix.real.copy()
+            rmat[np.abs(rmat) < tol] = 0.0
+
+            imat = matrix.imag.copy()
+            imat[np.abs(imat) < tol] = 0.0
+
+            return rmat + 1j * imat
+        else:
+            matrix[np.abs(matrix) < tol] = 0.0
+            return matrix
+    elif isinstance(matrix, Number):
+        if np.iscomplex(matrix):
+            real = matrix.real
+            imag = matrix.imag
+            if real < tol:
+                real = 0.0
+            if imag < tol:
+                imag = 0.0
+            return real + imag * 1j
+        else:
+            if matrix < tol:
+                return 0.0
+            else:
+                return matrix
+    else:
+        print(type(matrix))
+        return matrix

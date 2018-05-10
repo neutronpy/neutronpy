@@ -7,6 +7,7 @@ MagneticFormFactor
 
 """
 import numpy as np
+
 from ..constants import magnetic_ion_j
 
 

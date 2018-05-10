@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import copy
 import numbers
+
 import numpy as np
-from .loaders import DcsMslice, Grasp, Icp, Ice, Mad, Spice, Neutronpy
+
 from .instrument import save_instrument
+from .loaders import DcsMslice, Grasp, Ice, Icp, Mad, Neutronpy, Spice
 
 
 def load_data(files, filetype='auto', tols=1e-4, build_hkl=True, load_instrument=False):

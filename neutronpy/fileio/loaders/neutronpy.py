@@ -1,12 +1,10 @@
 import warnings
+from collections import OrderedDict
+
 import numpy as np
+
 from ...data import Data
 from ..instrument import load_instrument as load_instr
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
 
 
 class Neutronpy(Data):

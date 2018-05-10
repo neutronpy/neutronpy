@@ -2,14 +2,14 @@
 r"""Material constructor
 
 """
-import numpy as np
 import neutronpy.constants as const
+import numpy as np
+
 from .atom import Atom, MagneticAtom
 from .plot import PlotMaterial
 from .sample import Sample
-from .structure_factors import NuclearStructureFactor, MagneticStructureFactor
+from .structure_factors import MagneticStructureFactor, NuclearStructureFactor
 from .symmetry import SpaceGroup
-
 
 # from ..scattering.pattern import HKLGenerator
 

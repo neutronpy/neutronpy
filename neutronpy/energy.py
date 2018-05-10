@@ -3,6 +3,7 @@ r""" Class to calculate the energy of a neutron in various common units
 """
 import numpy as np
 from scipy.constants import h, hbar, k, m_n
+
 from .constants import JOULES_TO_MEV
 
 

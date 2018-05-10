@@ -2,8 +2,8 @@
 r"""Tests lattice math
 
 """
-import pytest
 import numpy as np
+import pytest
 from neutronpy.crystal import lattice
 
 unitcell = lattice.Lattice(4, 4, 4, 90, 90, 90)
@@ -48,10 +48,10 @@ def test_constants():
     assert (np.all(unitcell.abg_rad == abg_rad))
     assert (np.all(unitcell.abg_rad == np.deg2rad(abg)))
     assert (np.round(unitcell.volume, 12) == 4 ** 3)
-    assert (np.round(unitcell.reciprocal_volume, 12) == 1. / (4 ** 3))
-    assert (unitcell.astar == unitcell.b * unitcell.c * np.sin(unitcell.alpha_rad) / unitcell.volume)
-    assert (unitcell.bstar == unitcell.a * unitcell.c * np.sin(unitcell.beta_rad) / unitcell.volume)
-    assert (unitcell.cstar == unitcell.a * unitcell.b * np.sin(unitcell.gamma) / unitcell.volume)
+    assert (np.round(unitcell.reciprocal_volume, 12) == np.round(8 * np.pi ** 3 / (4 ** 3), 12))
+    assert (unitcell.astar == unitcell.b * unitcell.c * np.sin(unitcell.alpha_rad) / unitcell.volume * 2 * np.pi)
+    assert (unitcell.bstar == unitcell.a * unitcell.c * np.sin(unitcell.beta_rad) / unitcell.volume * 2 * np.pi)
+    assert (unitcell.cstar == unitcell.a * unitcell.b * np.sin(unitcell.gamma_rad) / unitcell.volume * 2 * np.pi)
     assert (np.all(abgstar_rad == np.deg2rad(abgstar)))
     assert (np.all(unitcell.reciprocal_abc == abcstar))
     assert (np.all(unitcell.reciprocal_abg == abgstar))

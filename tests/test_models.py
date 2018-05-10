@@ -2,8 +2,8 @@
 r"""Tests special models
 
 """
-import pytest
 import numpy as np
+import pytest
 from neutronpy import models
 
 

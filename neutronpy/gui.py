@@ -5,14 +5,18 @@ TESTING ONLY FOR NOW
 """
 import os
 import sys
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+
 import numpy as np
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QTextEdit
-from .instrument import Instrument, GetTau
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QSizePolicy, QTextEdit,
+                             QVBoxLayout)
+
 from .energy import Energy
-from .instrument.plot import PlotInstrument
+from .instrument import GetTau, Instrument
+from .instrument.plot import PlotTasInstrument
 
 
 class MyMplCanvas(FigureCanvas):
@@ -36,7 +40,7 @@ class MyMplCanvas(FigureCanvas):
         pass
 
 
-class MyStaticMplCanvas(MyMplCanvas, PlotInstrument):
+class MyStaticMplCanvas(MyMplCanvas, PlotTasInstrument):
     def __init__(self, *args, **kwargs):
         super(MyStaticMplCanvas, self).__init__(*args, **kwargs)
 

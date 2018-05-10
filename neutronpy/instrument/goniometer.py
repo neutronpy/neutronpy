@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-r'''Define Triple Axis goniometer
+r"""Define Triple Axis goniometer
 
-'''
+"""
 import numpy as np
 
 
 class Goniometer(object):
-    r'''Defines a goniometer
+    r"""Defines a goniometer
 
-    '''
+    """
 
     def __init__(self, u, theta_u, v, theta_v, sgu, sgl, omega=0):
         self.u = u
@@ -20,7 +20,11 @@ class Goniometer(object):
         self.sgu = sgu
         self.sgl = sgl
 
-        self.omega = 0
+        self.omega = omega
+
+    def __repr__(self):
+        return "Goniometer({0})".format(
+            ', '.join([str(getattr(self, key)) for key in ['u', 'theta_u', 'v', 'theta_v', 'sgu', 'sgl', 'omega']]))
 
     @property
     def omega_rad(self):
@@ -82,9 +86,9 @@ class Goniometer(object):
 
     @property
     def U(self):
-        r'''Defines an orientation matrix based on supplied goniometer angles
+        r"""Defines an orientation matrix based on supplied goniometer angles
 
-        '''
+        """
         return self.T_phi * np.linalg.inv(self.T_c)
 
     def u_phi(self, omega, chi, phi):

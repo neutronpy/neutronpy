@@ -3,12 +3,13 @@
 
 """
 import os
+
+import numpy as np
 import pytest
 from mock import patch
-import numpy as np
-from neutronpy import functions
-from neutronpy.fileio import load_data, save_data, detect_filetype, load_instrument, save_instrument
-from neutronpy import Data, Instrument
+from neutronpy import Data, Instrument, functions
+from neutronpy.fileio import (detect_filetype, load_data, load_instrument,
+                              save_data, save_instrument)
 
 
 def build_data(clean=True):

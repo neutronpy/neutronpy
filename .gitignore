@@ -1,9 +1,11 @@
 # Editor files #
 ################
+.idea/
 .project
 .pydevproject
 .settings/
 .idea/
+.vscode/
 
 # OS FILES #
 ############
@@ -39,3 +41,4 @@ plot_test.pdf
 test.out*
 .coverage*
 .cache/*
+.pytest_cache/

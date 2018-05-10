@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-r"""Testing of the resolution library
+r"""Testing of the resolution library - TAS
 
 """
 from copy import deepcopy
+
+import numpy as np
 import pytest
-from mock import patch
 from matplotlib import use
+from mock import patch
+from neutronpy import Sample, instrument
+from neutronpy.instrument.exceptions import *
 
 use('Agg')
-import numpy as np
-from neutronpy import instrument
-from neutronpy import Sample
 
 
 def angle2(x, y, z, h, k, l, lattice):
@@ -141,8 +142,8 @@ def PrefDemo3(H, K, L, W, EXP, p):
     return
 
 
-sumIavg = 1654.37911333
-sumIstd = 0.5
+sumIavg = 1646.8109875866667
+sumIstd = 0.67288676280070814 * 2
 
 instr = instrument.Instrument(test=1)
 
@@ -250,9 +251,9 @@ def test_4d_conv():
 
     sumI11, sumI12, sumI13 = np.sum(I11), np.sum(I12), np.sum(I13)
 
-    #         assert (np.abs(sumIavg - sumI11) < sumIstd)
-    #         assert (np.abs(sumIavg - sumI12) < sumIstd)
-    #         assert (np.abs(sumIavg - sumI13) < sumIstd)
+    assert (np.abs(sumIavg - sumI11) < sumIstd)
+    assert (np.abs(sumIavg - sumI12) < sumIstd)
+    assert (np.abs(sumIavg - sumI13) < sumIstd)
 
     EXP.resolution_convolution(SqwDemo, PrefDemo2, 1, (H1, K1, L1, W1), 'fix', None, p)
     with pytest.raises(ValueError):
@@ -277,8 +278,8 @@ def test_sma_conv():
 
     sumI14, sumI15 = np.sum(I14), np.sum(I15)
 
-    #         assert (np.abs(sumIavg - sumI14) < sumIstd)
-    #         assert (np.abs(sumIavg - sumI15) < sumIstd)
+    assert (np.abs(sumIavg - sumI14) < sumIstd)
+    assert (np.abs(sumIavg - sumI15) < sumIstd)
 
     EXP.resolution_convolution_SMA(SMADemo, PrefDemo2, 1, (H1, K1, L1, W1), 'fix', None, p)
     with pytest.raises(ValueError):
@@ -290,9 +291,10 @@ def test_plotting(mock_show):
     """Test Plotting methods
     """
     EXP = instrument.Instrument()
+
     EXP.plot_instrument([1, 0, 0, 0])
     EXP.plot_projections([1, 0, 0, 0])
-    EXP.calc_resolution([[1, 2], 0, 0, 0])
+    EXP.calc_projections([[1, 2], 0, 0, 0])
     EXP.plot_projections([[1, 2], 0, 0, 0])
 
     EXP.guide.width = 1
@@ -307,6 +309,7 @@ def test_plotting(mock_show):
     EXP.detector.width = 1
     EXP.detector.height = 1
     EXP.arms = [10, 10, 10, 10]
+
     EXP.plot_instrument([1, 0, 0, 0])
 
 
@@ -324,7 +327,7 @@ def test_GetTau():
     assert (instrument.tools.GetTau(1.87325, getlabel=True) == 'pg(002)')
     assert (instrument.tools.GetTau(1.8, getlabel=True) == '')
     assert (instrument.tools.GetTau(10) == 10)
-    with pytest.raises(KeyError):
+    with pytest.raises((AnalyzerError, MonochromatorError, KeyError)):
         instrument.tools.GetTau('blah')
 
 
@@ -356,7 +359,7 @@ def test_errors():
     EXP = instrument.Instrument()
     EXP.sample.u = [1, 0, 0]
     EXP.sample.v = [2, 0, 0]
-    with pytest.raises(ValueError):
+    with pytest.raises(ScatteringTriangleError):
         EXP.calc_resolution([1, 1, 0, 0])
 
 
@@ -383,7 +386,7 @@ def test_calc_res_cases():
     EXP.ana.Q = 1.5
     EXP.calc_resolution([1, 0, 0, 0])
 
-    EXP.Smooth = instrument.tools._dummy()
+    EXP.Smooth = instrument.tools._Dummy('Smooth')
     EXP.Smooth.X = 1
     EXP.Smooth.Y = 1
     EXP.Smooth.Z = 1
@@ -398,7 +401,7 @@ def test_projection_calc():
     EXP.calc_resolution([1, 0, 0, 0])
     EXP.calc_projections([0, 1, 0, 0])
     EXP.get_resolution_params([0, 1, 0, 0], 'QxQy', 'slice')
-    with pytest.raises(ValueError):
+    with pytest.raises(InstrumentError):
         EXP.get_resolution_params([1, 1, 0, 0], 'QxQy', 'slice')
 
     EXP = instrument.Instrument()

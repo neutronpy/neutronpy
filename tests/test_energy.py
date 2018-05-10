@@ -2,8 +2,8 @@
 """Testing for Energy conversions
 
 """
-import pytest
 import numpy as np
+import pytest
 from neutronpy import Energy
 
 

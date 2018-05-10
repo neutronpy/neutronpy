@@ -1,113 +1,52 @@
 sudo: false
-language: generic
+language: python
+
+env:
+  global:
+    - secure: "CNtkJEHcZrfJ05ccGQdWu62u7YViADRiPskfCBcOaKvR90CmHvscsQLcipShVnM6NAkSw2A6w+BKHUq6qkXF/NjbnFPypUHfMDzSBtkdMstybHfhc32ReZ3dBjWNNzNHD+alCEm9AyoU7Shq0nM2/X0TNBFZHSLa2b1GHprdndA="
+
 matrix:
   include:
-  - os: linux
-    env:
-    - PYTHON_VERSION=2.7
-    - NUMPY_VERSION=1.11.3
-    - SCIPY_VERSION=0.18.1
-    - MATPLOTLIB_VERSION=1.5.3
-    - LMFIT_VERSION=0.9.5
-  - os: linux
-    env:
-    - PYTHON_VERSION=3.4
-    - NUMPY_VERSION=1.11.3
-    - SCIPY_VERSION=0.18.1
-    - MATPLOTLIB_VERSION=1.5.3
-    - LMFIT_VERSION=0.9.5
-  - os: linux
-    env:
-    - PYTHON_VERSION=3.5
-    - NUMPY_VERSION=1.11.3
-    - SCIPY_VERSION=0.18.1
-    - MATPLOTLIB_VERSION=2.0.0
-    - LMFIT_VERSION=0.9.5
-    - secure: Igr4jIHJB4jo9sCYTc4cXimNFJRs7A8RLamwBXZhf8dtIhJ0J5R0qsLXzvCyCI61P8lwJCYZG9gx9EzLT9q+C5OAqjuJt2v+UfWBRjfezid+19tS0Po/WrJxBBjl/CraBznO6NG4uyYeua1SyOweXBXZ1G8mfSteVrSwRnGfBx4=
-  - os: linux
-    env:
-    - PYTHON_VERSION=3.6
-    - NUMPY_VERSION=1.11.3
-    - SCIPY_VERSION=0.18.1
-    - MATPLOTLIB_VERSION=2.0.0
-    - LMFIT_VERSION=0.9.5
-  - os: osx
-    env:
-    - PYTHON_VERSION=2.7
-    - NUMPY_VERSION=1.11.3
-    - SCIPY_VERSION=0.18.1
-    - MATPLOTLIB_VERSION=1.5.1
-    - LMFIT_VERSION=0.9.5
-  - os: osx
-    env:
-    - PYTHON_VERSION=3.4
-    - NUMPY_VERSION=1.11.3
-    - SCIPY_VERSION=0.18.1
-    - MATPLOTLIB_VERSION=1.5.1
-    - LMFIT_VERSION=0.9.5
-  - os: osx
-    env:
-    - PYTHON_VERSION=3.5
-    - NUMPY_VERSION=1.11.3
-    - SCIPY_VERSION=0.18
-    - MATPLOTLIB_VERSION=1.5.1
-    - LMFIT_VERSION=0.9.5
-  - os: osx
-    env:
-    - PYTHON_VERSION=3.6
-    - NUMPY_VERSION=1.11.3
-    - SCIPY_VERSION=0.18.1
-    - MATPLOTLIB_VERSION=2.0.0
-    - LMFIT_VERSION=0.9.5
-before_install:
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then wget http://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
-  -O miniconda.sh; fi
-- if [ "$TRAVIS_OS_NAME" == "linux" ]; then wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
-  -O miniconda.sh; fi
-- bash miniconda.sh -b -p $HOME/miniconda
-- export PATH="$HOME/miniconda/bin:$PATH"
+    - python: "2.7"
+    - python: "3.4"
+    - python: "3.5"
+    - python: "3.6"
+  allow_failures:
+    - python: "3.7-dev"
+    - python: "3.8-dev"
+
 install:
-- conda update --yes -q conda
-- conda config --add channels conda-forge
-- conda create --yes -q -n test_environment python=$PYTHON_VERSION pip setuptools
-  numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION matplotlib=$MATPLOTLIB_VERSION mock h5py
-  pytest pytest-cov pytest-pep8
-- source activate test_environment
-- conda install --yes -q -c neutronpy lmfit==$LMFIT_VERSION
-- pip install codeclimate-test-reporter ordereddict codecov
-- pip install -e . -q --no-deps
+  - pip install pytest pytest-cov mock codecov
+  - pip install -e . -q
+
 before_script:
-- if [ "$TRAVIS_OS_NAME" == "linux" ]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; sleep 10; fi
+  - export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; sleep 10;
+
 script:
-- pytest --cov=neutronpy --tb=short
+  - pytest --cov=neutronpy --tb=short
+
 after_success:
-- codecov
-- source deactivate
-- conda config --add channels neutronpy
-- conda config --set anaconda_upload yes
-- if ( [ -n "$CONDA_TOKEN" ] && [ -n "$TRAVIS_TAG" ] ); then conda install -q --yes
-  conda-build anaconda-client; fi
-- if ( [ -n "$CONDA_TOKEN" ] && [ -n "$TRAVIS_TAG" ] ); then conda build --user neutronpy
-  --token $CONDA_TOKEN ./conda-recipe; fi
+  - codecov
+  - chmod +x ./.deploy_anaconda.sh
+
 deploy:
-- provider: pypi
-  user: davidfobes
-  password:
-    secure: DdjBSsRSENkuRtzzbCJMEwhO2RXkER1RrBqKLdH+2TeC0w+CiYqUf3x/h2yWs5IdNjf6Q5UWx68vau7ylJpESiQbiP++MGeKguEHQOiLcFhUDz/wxZCk20GsWNsox00ISALVF02nH1eq3mcVkKqCzt8WzNZ/Ioey+aHJI1KwrtU=
-  on:
-    tags: true
-    branch: master
-    condition: $TRAVIS_OS_NAME = "osx"
-  distributions: bdist_wheel
-- provider: pypi
-  user: davidfobes
-  password:
-    secure: DdjBSsRSENkuRtzzbCJMEwhO2RXkER1RrBqKLdH+2TeC0w+CiYqUf3x/h2yWs5IdNjf6Q5UWx68vau7ylJpESiQbiP++MGeKguEHQOiLcFhUDz/wxZCk20GsWNsox00ISALVF02nH1eq3mcVkKqCzt8WzNZ/Ioey+aHJI1KwrtU=
-  on:
-    tags: true
-    branch: master
-    condition: ($TRAVIS_OS_NAME = "osx") && ($PYTHON_VERSION = "3.5")
-  distributions: sdist
+  - provider: pypi
+    user: davidfobes
+    password:
+      secure: DdjBSsRSENkuRtzzbCJMEwhO2RXkER1RrBqKLdH+2TeC0w+CiYqUf3x/h2yWs5IdNjf6Q5UWx68vau7ylJpESiQbiP++MGeKguEHQOiLcFhUDz/wxZCk20GsWNsox00ISALVF02nH1eq3mcVkKqCzt8WzNZ/Ioey+aHJI1KwrtU=
+    distributions: "sdist bdist_wheel"
+    on:
+      tags: true
+      branch: master
+      condition: $TRAVIS_PYTHON_VERSION = '3.6'
+
+  - provider: script
+    script: ./.deploy_anaconda.sh
+    on:
+      tags: true
+      branch: master
+      condition: $TRAVIS_PYTHON_VERSION = '3.6'
+
 notifications:
   slack:
     secure: qsq1keqgpaE8P2uziBCorm27rLwUet0FHsf4CKo92faxL9q4FfBYkGFBgcTvKuDsImNz7P3cvLRNDkCxoklKNBtSJmS8DPDLINJikDDm0Tll7oX3pXox+I/x487AkiwyI/xjRKoH7pO+v/iVLVfznL228ABeactMj8OTsccwO0Q=

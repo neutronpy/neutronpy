@@ -12,18 +12,14 @@ import subprocess
 from setuptools import setup
 
 CLASSIFIERS = """\
-Development Status :: 4 - Beta
+Development Status :: 5 - Production/Stable
 Intended Audience :: Science/Research
 License :: OSI Approved :: MIT License
 Natural Language :: English
-Programming Language :: Python :: 2
-Programming Language :: Python :: 2.6
 Programming Language :: Python :: 2.7
-Programming Language :: Python :: 3
-Programming Language :: Python :: 3.3
 Programming Language :: Python :: 3.4
 Programming Language :: Python :: 3.5
-Programming Language :: Python :: Implementation :: CPython
+Programming Language :: Python :: 3.6
 Topic :: Scientific/Engineering :: Physics
 Operating System :: Microsoft :: Windows
 Operating System :: POSIX :: Linux
@@ -41,7 +37,7 @@ def setup_package():
     if '-' in v:
         v = v.split('.')
         __version__ = '.'.join(v[:2]) + '.{0:d}'.format(int(v[2].split('-')[0]) + 1)
-        __version__ += '.dev{0}'.format('.'.join(v[2].split('-')[1]))
+        __version__ += '.dev{0}'.format(v[2].split('-')[1])
     else:
         __version__ = v
 
@@ -50,15 +46,16 @@ def setup_package():
                     description=DOCLINES[0],
                     long_description="\n".join(DOCLINES[2:]),
                     author='David M Fobes',
+                    author_email='dfobes@lanl.gov',
                     maintainer='davidfobes',
                     download_url='https://github.com/neutronpy/neutronpy/releases',
                     url='https://github.com/neutronpy/neutronpy',
                     license='MIT',
                     platforms=["Windows", "Linux", "Mac OS X", "Unix"],
-                    install_requires=['numpy', 'scipy', 'matplotlib', 'lmfit'],
-                    classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
+                    install_requires=['numpy>=1.10', 'scipy>=1.0', 'matplotlib>=2.0', 'lmfit>=0.9.5', 'h5py'],
                     setup_requires=['pytest-runner'],
-                    tests_require=['pytest'],
+                    tests_require=['pytest','mock', 'codecov'],
+                    classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
                     ext_package='neutronpy',
                     package_data={'neutronpy': ['database/*.json', 'ui/*.ui']},
                     packages=['neutronpy', 'neutronpy.crystal', 'neutronpy.data', 'neutronpy.fileio',

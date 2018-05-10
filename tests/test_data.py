@@ -3,15 +3,16 @@ r"""Testing of core library
 
 """
 from copy import deepcopy
+
+import numpy as np
 import pytest
-from mock import patch
 from matplotlib import use
+from mock import patch
+from neutronpy import Data, Energy, functions
+from neutronpy.constants import BOLTZMANN_IN_MEV_K
+from scipy.integrate import simps
 
 use('Agg')
-import numpy as np
-from scipy.integrate import simps
-from neutronpy import Energy, Data, functions
-from neutronpy.constants import BOLTZMANN_IN_MEV_K
 
 
 def build_data(clean=True):

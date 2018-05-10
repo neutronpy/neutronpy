@@ -3,7 +3,9 @@ r"""Calculates common spurions
 
 """
 import warnings
+
 import numpy as np
+
 from .crystal import Material
 from .energy import Energy
 
