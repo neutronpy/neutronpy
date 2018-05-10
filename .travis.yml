@@ -28,6 +28,7 @@ script:
 after_success:
   - codecov
   - chmod +x ./.deploy_anaconda.sh
+  - git reset --hard HEAD
 
 deploy:
   - provider: pypi
@@ -35,6 +36,7 @@ deploy:
     password:
       secure: DdjBSsRSENkuRtzzbCJMEwhO2RXkER1RrBqKLdH+2TeC0w+CiYqUf3x/h2yWs5IdNjf6Q5UWx68vau7ylJpESiQbiP++MGeKguEHQOiLcFhUDz/wxZCk20GsWNsox00ISALVF02nH1eq3mcVkKqCzt8WzNZ/Ioey+aHJI1KwrtU=
     distributions: "sdist bdist_wheel"
+    skip_cleanup: true
     on:
       tags: true
       branch: master
@@ -42,6 +44,7 @@ deploy:
 
   - provider: script
     script: ./.deploy_anaconda.sh
+    skip_cleanup: true
     on:
       tags: true
       branch: master
