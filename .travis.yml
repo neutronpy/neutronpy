@@ -27,7 +27,6 @@ script:
 
 after_success:
   - codecov
-  - chmod +x ./.deploy_anaconda.sh
   - git reset --hard HEAD
 
 deploy:
