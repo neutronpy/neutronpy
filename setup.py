@@ -33,7 +33,7 @@ DOCLINES = __doc__.split("\n")
 def setup_package():
     r"""Setup package function
     """
-    v = subprocess.check_output(["git", "describe"]).rstrip().decode('ascii')
+    v = subprocess.check_output(["git", "describe", "--tags"]).rstrip().decode('ascii')
     if '-' in v:
         v = v.split('.')
         __version__ = '.'.join(v[:2]) + '.{0:d}'.format(int(v[2].split('-')[0]) + 1)
