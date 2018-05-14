@@ -8,7 +8,10 @@ routines for Instrument resolution calculations.
 
 """
 
+import re
 import subprocess
+from math import ceil, log10
+
 from setuptools import setup
 
 CLASSIFIERS = """\
@@ -34,10 +37,36 @@ def setup_package():
     r"""Setup package function
     """
     v = subprocess.check_output(["git", "describe", "--tags"]).rstrip().decode('ascii')
+    vpat = re.compile(r"^([1-9]\d*!)?(0|[1-9]\d*)(\.(0|[1-9]\d*))*((a|b|rc)(0|[1-9]\d*))?(\.post(0|[1-9]\d*))?(\.dev(0|[1-9]\d*))?$")
+
     if '-' in v:
-        v = v.split('.')
-        __version__ = '.'.join(v[:2]) + '.{0:d}'.format(int(v[2].split('-')[0]) + 1)
-        __version__ += '.dev{0}'.format(v[2].split('-')[1])
+        v, ntag = v.split('-')[0:2]
+        vmatch = vpat.match(v)
+
+        epoch, major, minor, patch, pre, pretype, prever, post, postver, dev, devver = vmatch.groups()
+
+        if post is not None:
+            post = "post{0}".format(int(postver + 1))
+        elif pre is not None:
+            pre = "{0}{1}".format(pretype, int(prever) + 1)
+        else:
+            patch = "{0}".format(int(patch) + 1)
+
+        if dev is not None:
+            devver = int(devver)
+            ntag_mag = ceil(log10(ntag))
+            dev = "dev{0}".format(int(devver) * 10 ** ntag_mag + ntag)
+        else:
+            dev = "dev{0}".format(ntag)
+
+        front_vers = [major, minor, patch]
+        back_vers = [pre, post, dev]
+
+        __version__ = '.'.join([item.strip('.') for item in front_vers if item is not None])
+        __version__ += '.'.join([item.strip('.') for item in back_vers if item is not None])
+
+        if epoch is not None:
+            __version__ = "{0}!{1}".format(epoch, __version__)
     else:
         __version__ = v
 
