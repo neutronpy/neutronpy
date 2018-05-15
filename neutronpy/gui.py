@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QSizePolicy, QTextEdit,
 
 from .energy import Energy
 from .instrument import GetTau, Instrument
-from .instrument.plot import PlotTasInstrument
+from .instrument.plot import PlotInstrument
 
 
 class MyMplCanvas(FigureCanvas):
@@ -40,7 +40,7 @@ class MyMplCanvas(FigureCanvas):
         pass
 
 
-class MyStaticMplCanvas(MyMplCanvas, PlotTasInstrument):
+class MyStaticMplCanvas(MyMplCanvas, PlotInstrument):
     def __init__(self, *args, **kwargs):
         super(MyStaticMplCanvas, self).__init__(*args, **kwargs)
 

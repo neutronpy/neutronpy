@@ -10,12 +10,13 @@ from ..energy import Energy
 from .chopper import Chopper
 from .detector import Detector
 from .exceptions import DetectorError
+from .general import GeneralInstrument
 from .guide import Guide
-from .plot import PlotTofInstrument
-from .tools import chop, get_angle_ki_Q, get_kfree
+from .plot import PlotInstrument
+from .tools import _CleanArgs, chop, get_angle_ki_Q, get_kfree
 
 
-class TimeOfFlightInstrument(PlotTofInstrument):
+class TimeOfFlightInstrument(GeneralInstrument, PlotInstrument):
     r"""An object representing a Time of Flight (TOF) instrument experimental
     configuration, including a sample.
 
@@ -58,7 +59,19 @@ class TimeOfFlightInstrument(PlotTofInstrument):
     sample
     detector
     guides
+    description_string
 
+    Methods
+    -------
+    calc_resolution
+    calc_resolution_in_Q_coords
+    calc_projections
+    get_resolution_params
+    get_resolution
+    plot_projections
+    plot_ellipsoid
+    plot_instrument
+    plot_slice
 
     """
 
@@ -112,21 +125,43 @@ class TimeOfFlightInstrument(PlotTofInstrument):
     def ei(self, value):
         self._ei = Energy(energy=value)
 
+    @property
+    def orient1(self):
+        return self.sample.u
+
+    @property
+    def orient2(self):
+        return self.sample.v
+
     def calc_resolution_in_Q_coords(self, Q, W):
-        r"""
+        r"""For a momentum transfer Q and energy transfers W, given experimental
+        conditions specified in EXP, calculates the Cooper-Nathans or Popovici
+        resolution matrix RM and resolution prefactor R0 in the Q coordinate
+        system (defined by the scattering vector and the scattering plane,
+        [Q_prep, Q_para, Qz, W]).
 
         Parameters
         ----------
-        Q : list
-            Position in Q-coords
+        Q : ndarray or list of ndarray
+            The Q vectors in reciprocal space at which resolution should be
+            calculated, in rlu
 
-        W : float
-            Energy transfer
+        W : float or list of floats
+            The energy transfers at which resolution should be calculated in meV
 
         Returns
         -------
-            R0, RM : tuple
-                R0 resolution prefactor and RM resolution matrix
+        [R0, RM] : list(float, ndarray)
+            Resolution pre-factor (R0) and resolution matrix (RM) at the given
+            reciprocal lattice vectors and energy transfers
+
+        Notes
+        -----
+            Translated from "A method to compute the covariance matrix of
+            wavevector-energy transfer for neutron time-of-flight spectrometers"
+            by Violini et al., Nuclear Instruments and Methods in Physics Research
+            A 736 (2014) 31-39. DOI: 10.1016/j.nima.2013.10.042
+
         """
         # Definitions
         tau_p = getattr(self, "tau_p", self.choppers[0].tau) / 1e6
@@ -281,6 +316,7 @@ class TimeOfFlightInstrument(PlotTofInstrument):
         # Congruent Transformation T' M T
         res = rot_ki_q.T * reso * rot_ki_q
 
+        print(res)
         # Eq 61 Violini :: resolution prefactor
         fwhm = 0
         X = np.append(Q, W)
@@ -294,46 +330,51 @@ class TimeOfFlightInstrument(PlotTofInstrument):
 
 
     def calc_resolution(self, hkle):
-        r"""
+        r"""For a scattering vector (H,K,L) and  energy transfers W, given
+        experimental conditions specified in the object, calculates the
+        resolution matrix RMS and Resolution prefactor R0 in a coordinate
+        system defined by the crystallographic axes of the sample,
+        (h, k, l, w) in reciprocal lattice units (rlu).
 
         Parameters
         ----------
-        hkle
+        hkle : list
+            Array of the scattering vector and energy transfer at which the
+            calculation should be performed
 
-        Returns
-        -------
-
-        """
-        # TODO: handle multiple points
-        r0, reso = self.calc_resolution_in_Q_coords(hkle[:3], hkle[3])
-
-        UBmat = np.eye(4)
-        UBmat[:3, :3] = self.sample.UBmatrix
-
-        vec = UBmat[:3, :3].dot(np.array(hkle[:3]))
-        ang0 = -np.arctan2(vec[1], vec[0])
-
-        Rot = np.matrix(np.eye(4))
-        Rot[:2, :2] = np.matrix([[np.cos(-ang0), -np.sin(-ang0)],
-                                 [np.sin(-ang0),  np.cos(-ang0)]])
-
-        res_hkl = (Rot * UBmat) * reso * (Rot * UBmat).T
-
-        self.R0, self.RMS, self.RM = chop(r0), chop(res_hkl), chop(reso)
-
-    def calc_projections(self, hkle):
-        r"""
-
-        Parameters
-        ----------
-        hkle
-
-        Returns
-        -------
+        Notes
+        -----
+            Translated from "A method to compute the covariance matrix of
+            wavevector-energy transfer for neutron time-of-flight spectrometers"
+            by Violini et al., Nuclear Instruments and Methods in Physics Research
+            A 736 (2014) 31-39. DOI: 10.1016/j.nima.2013.10.042
 
         """
-        # TODO: Calculate the projections (slice & project)
-        pass
+        self.HKLE = hkle
+        [length, self.H, self.K, self.L, self.W] = _CleanArgs(*self.HKLE)
 
-    def res_volume(self, res):
-        return 4 / 3 * np.pi * np.sqrt(1 / np.linalg.det(res))
+        r0_f = np.zeros(length)
+        rm_f = np.zeros((length, 4, 4))
+        rms_f = np.zeros((length, 4, 4))
+
+        for i in range(length):
+            print([self.H[i], self.K[i], self.L[i]], self.W[i])
+            r0, rm = self.calc_resolution_in_Q_coords([self.H[i], self.K[i], self.L[i]], self.W[i])
+
+            UBmat = np.eye(4)
+            UBmat[:3, :3] = self.sample.UBmatrix
+
+            vec = UBmat[:3, :3].dot(np.array([self.H[i], self.K[i], self.L[i]]))
+            ang0 = -np.arctan2(vec[1], vec[0])
+
+            Rot = np.matrix(np.eye(4))
+            Rot[:2, :2] = np.matrix([[np.cos(-ang0), -np.sin(-ang0)],
+                                     [np.sin(-ang0),  np.cos(-ang0)]])
+
+            rms = (Rot * UBmat) * rm * (Rot * UBmat).T
+
+            r0_f[i] = chop(r0)
+            rm_f[i] = chop(rm)
+            rms_f[i] = chop(rms)
+
+        self.R0, self.RM, self.RMS = [np.squeeze(item) for item in [r0_f, rm_f, rms_f]]

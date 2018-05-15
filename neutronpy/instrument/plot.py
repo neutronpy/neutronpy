@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime as dt
+from warnings import warn
 
 import numpy as np
 
@@ -7,8 +8,12 @@ from ..energy import Energy
 from .tools import _CleanArgs, fproject, get_bragg_widths
 
 
-class PlotTasInstrument(object):
+class PlotInstrument(object):
     r"""Class containing resolution plotting methods
+
+    Attributes
+    ----------
+    description_string
 
     Methods
     -------
@@ -16,7 +21,6 @@ class PlotTasInstrument(object):
     plot_ellipsoid
     plot_instrument
     plot_slice
-    description_string
 
     """
 
@@ -59,7 +63,7 @@ class PlotTasInstrument(object):
         ax1_lims, ax2_lims, ax3_lims = [[[0, 0], [0, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]]
 
         if len(self.RMS.shape) == 3:
-            length = self.RMS.shape[-1]
+            length = self.RMS.shape[0]
         else:
             length = 1
 
@@ -83,7 +87,7 @@ class PlotTasInstrument(object):
                 ax.set_ylim(lims[1])
 
         ax4.axis('off')
-        ax4.text(0, 1, self.description_string(), transform=ax4.transAxes, horizontalalignment='left',
+        ax4.text(0, 1, self.description_string, transform=ax4.transAxes, horizontalalignment='left',
                  verticalalignment='top')
 
         plt.show()
@@ -221,141 +225,145 @@ class PlotTasInstrument(object):
         fig = plt.figure(edgecolor='k', facecolor='w', figsize=plt.figaspect(0.4) * 1.25)
         ax = fig.gca(projection='3d')
 
-        measurements = {'guide.width': 1, 'guide.height': 1, 'mono.width': 1, 'mono.height': 1, 'sample.width': 1,
-                        'sample.height': 1, 'sample.depth': 1, 'ana.width': 1, 'ana.height': 1, 'detector.width': 1,
-                        'detector.height': 1, 'arms': [10, 10, 10, 10]}
+        if getattr(self, "instrument_type") == "tas":
+            measurements = {'guide.width': 1, 'guide.height': 1, 'mono.width': 1, 'mono.height': 1, 'sample.width': 1,
+                            'sample.height': 1, 'sample.depth': 1, 'ana.width': 1, 'ana.height': 1, 'detector.width': 1,
+                            'detector.height': 1, 'arms': [10, 10, 10, 10]}
 
-        for key, value in measurements.items():
-            if '.' in key:
-                if hasattr(getattr(self, key.split('.')[0]), key.split('.')[1]):
-                    measurements[key] = getattr(getattr(self, key.split('.')[0]), key.split('.')[1])
-            else:
-                if hasattr(self, key):
-                    measurements[key] = getattr(self, key)
+            for key, value in measurements.items():
+                if '.' in key:
+                    if hasattr(getattr(self, key.split('.')[0]), key.split('.')[1]):
+                        measurements[key] = getattr(getattr(self, key.split('.')[0]), key.split('.')[1])
+                else:
+                    if hasattr(self, key):
+                        measurements[key] = getattr(self, key)
 
-        angles = self.get_angles_and_Q(hkle)[0]
-        distances = measurements['arms']
+            angles = self.get_angles_and_Q(hkle)[0]
+            distances = measurements['arms']
 
-        angles = -np.deg2rad(angles)
-        x, y, direction = np.zeros(3)
+            angles = -np.deg2rad(angles)
+            x, y, direction = np.zeros(3)
 
-        # plot the Source -----------------------------------------------------
-        translate = 0
-        rotate = 0 * (np.pi / 180)
-        direction += rotate
-        x += translate * np.sin(direction)
-        y += translate * np.cos(direction)
+            # plot the Source -----------------------------------------------------
+            translate = 0
+            rotate = 0 * (np.pi / 180)
+            direction += rotate
+            x += translate * np.sin(direction)
+            y += translate * np.cos(direction)
 
-        # create a square source
-        X = np.array(
-            [-measurements['guide.width'] / 2, -measurements['guide.width'] / 2, measurements['guide.width'] / 2,
-             measurements['guide.width'] / 2, -measurements['guide.width'] / 2])
-        Z = np.array(
-            [measurements['guide.height'] / 2, -measurements['guide.height'] / 2, -measurements['guide.height'] / 2,
-             measurements['guide.height'] / 2, measurements['guide.height'] / 2])
-        Y = np.zeros(5)
-        l = ax.plot(X + x, Y + y, zs=Z, color='b')
-        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Beam/Source', color='b')
+            # create a square source
+            X = np.array(
+                [-measurements['guide.width'] / 2, -measurements['guide.width'] / 2, measurements['guide.width'] / 2,
+                measurements['guide.width'] / 2, -measurements['guide.width'] / 2])
+            Z = np.array(
+                [measurements['guide.height'] / 2, -measurements['guide.height'] / 2, -measurements['guide.height'] / 2,
+                measurements['guide.height'] / 2, measurements['guide.height'] / 2])
+            Y = np.zeros(5)
+            l = ax.plot(X + x, Y + y, zs=Z, color='b')
+            t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Beam/Source', color='b')
 
-        x0, y0 = x, y
+            x0, y0 = x, y
 
-        # plot the Monochromator ----------------------------------------------
-        translate = distances[0]
-        rotate = 0
-        direction += rotate
-        x += translate * np.sin(direction)
-        y += translate * np.cos(direction)
+            # plot the Monochromator ----------------------------------------------
+            translate = distances[0]
+            rotate = 0
+            direction += rotate
+            x += translate * np.sin(direction)
+            y += translate * np.cos(direction)
 
-        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+            l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
 
-        # create a square Monochromator
-        X = np.array([-measurements['mono.width'] / 2, -measurements['mono.width'] / 2, measurements['mono.width'] / 2,
-                      measurements['mono.width'] / 2, -measurements['mono.width'] / 2]) * np.sin(angles[0])
-        Z = np.array(
-            [measurements['mono.height'] / 2, -measurements['mono.height'] / 2, -measurements['mono.height'] / 2,
-             measurements['mono.height'] / 2, measurements['mono.height'] / 2])
-        Y = X * np.cos(angles[0])
-        l = ax.plot(X + x, Y + y, zs=Z, color='r')
-        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Monochromator', color='r')
+            # create a square Monochromator
+            X = np.array([-measurements['mono.width'] / 2, -measurements['mono.width'] / 2, measurements['mono.width'] / 2,
+                        measurements['mono.width'] / 2, -measurements['mono.width'] / 2]) * np.sin(angles[0])
+            Z = np.array(
+                [measurements['mono.height'] / 2, -measurements['mono.height'] / 2, -measurements['mono.height'] / 2,
+                measurements['mono.height'] / 2, measurements['mono.height'] / 2])
+            Y = X * np.cos(angles[0])
+            l = ax.plot(X + x, Y + y, zs=Z, color='r')
+            t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Monochromator', color='r')
 
-        x0, y0 = x, y
+            x0, y0 = x, y
 
-        # plot the Sample -----------------------------------------------------
-        translate = distances[1]
+            # plot the Sample -----------------------------------------------------
+            translate = distances[1]
 
-        rotate = angles[1]
-        direction += rotate
-        x += translate * np.sin(direction)
-        y += translate * np.cos(direction)
+            rotate = angles[1]
+            direction += rotate
+            x += translate * np.sin(direction)
+            y += translate * np.cos(direction)
 
-        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+            l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
 
-        # create a rotated square Sample
-        X = np.array(
-            [-measurements['sample.width'] / 2, -measurements['sample.width'] / 2, measurements['sample.width'] / 2,
-             measurements['sample.width'] / 2, -measurements['sample.width'] / 2]) * np.sin(angles[2])
-        Z = np.array(
-            [measurements['sample.height'] / 2, -measurements['sample.height'] / 2, -measurements['sample.height'] / 2,
-             measurements['sample.height'] / 2, measurements['sample.height'] / 2])
-        Y = X * np.cos(angles[2])
-        l1 = ax.plot(X + x, Y + y, zs=Z, color='g')
-        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Sample', color='g')
-        X = np.array(
-            [-measurements['sample.depth'] / 2, -measurements['sample.depth'] / 2, measurements['sample.depth'] / 2,
-             measurements['sample.depth'] / 2, -measurements['sample.depth'] / 2]) * np.sin(
-            angles[2] + np.pi / 2)
-        Z = np.array(
-            [measurements['sample.height'] / 2, -measurements['sample.height'] / 2, -measurements['sample.height'] / 2,
-             measurements['sample.height'] / 2, measurements['sample.height'] / 2])
-        Y = X * np.cos(angles[2] + np.pi / 2)
-        l2 = ax.plot(X + x, Y + y, zs=Z, color='g')
+            # create a rotated square Sample
+            X = np.array(
+                [-measurements['sample.width'] / 2, -measurements['sample.width'] / 2, measurements['sample.width'] / 2,
+                measurements['sample.width'] / 2, -measurements['sample.width'] / 2]) * np.sin(angles[2])
+            Z = np.array(
+                [measurements['sample.height'] / 2, -measurements['sample.height'] / 2, -measurements['sample.height'] / 2,
+                measurements['sample.height'] / 2, measurements['sample.height'] / 2])
+            Y = X * np.cos(angles[2])
+            l1 = ax.plot(X + x, Y + y, zs=Z, color='g')
+            t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Sample', color='g')
+            X = np.array(
+                [-measurements['sample.depth'] / 2, -measurements['sample.depth'] / 2, measurements['sample.depth'] / 2,
+                measurements['sample.depth'] / 2, -measurements['sample.depth'] / 2]) * np.sin(
+                angles[2] + np.pi / 2)
+            Z = np.array(
+                [measurements['sample.height'] / 2, -measurements['sample.height'] / 2, -measurements['sample.height'] / 2,
+                measurements['sample.height'] / 2, measurements['sample.height'] / 2])
+            Y = X * np.cos(angles[2] + np.pi / 2)
+            l2 = ax.plot(X + x, Y + y, zs=Z, color='g')
 
-        x0, y0 = x, y
+            x0, y0 = x, y
 
-        # plot the Analyzer ---------------------------------------------------
-        translate = distances[2]
+            # plot the Analyzer ---------------------------------------------------
+            translate = distances[2]
 
-        rotate = angles[3]
-        direction += rotate
+            rotate = angles[3]
+            direction += rotate
 
-        x += translate * np.sin(direction)
-        y += translate * np.cos(direction)
-        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+            x += translate * np.sin(direction)
+            y += translate * np.cos(direction)
+            l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
 
-        # create a square
-        X = np.array([-measurements['ana.width'] / 2, -measurements['ana.width'] / 2, measurements['ana.width'] / 2,
-                      measurements['ana.width'] / 2, -measurements['ana.width'] / 2]) * np.sin(angles[4])
-        Z = np.array([measurements['ana.height'] / 2, -measurements['ana.height'] / 2, -measurements['ana.height'] / 2,
-                      measurements['ana.height'] / 2, measurements['ana.height'] / 2])
-        Y = X * np.cos(angles[4])
-        l = ax.plot(X + x, Y + y, zs=Z, color='magenta')
-        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Analyzer', color='magenta')
+            # create a square
+            X = np.array([-measurements['ana.width'] / 2, -measurements['ana.width'] / 2, measurements['ana.width'] / 2,
+                        measurements['ana.width'] / 2, -measurements['ana.width'] / 2]) * np.sin(angles[4])
+            Z = np.array([measurements['ana.height'] / 2, -measurements['ana.height'] / 2, -measurements['ana.height'] / 2,
+                        measurements['ana.height'] / 2, measurements['ana.height'] / 2])
+            Y = X * np.cos(angles[4])
+            l = ax.plot(X + x, Y + y, zs=Z, color='magenta')
+            t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Analyzer', color='magenta')
 
-        x0, y0 = x, y
+            x0, y0 = x, y
 
-        # plot the Detector ---------------------------------------------------
-        translate = distances[3]
-        rotate = angles[5]
-        direction += rotate
+            # plot the Detector ---------------------------------------------------
+            translate = distances[3]
+            rotate = angles[5]
+            direction += rotate
 
-        x += translate * np.sin(direction)
-        y += translate * np.cos(direction)
-        l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
+            x += translate * np.sin(direction)
+            y += translate * np.cos(direction)
+            l = ax.plot([x, x0], [y, y0], zs=[0, 0], color='cyan', linestyle='--')
 
-        # create a square
-        X = np.array(
-            [-measurements['detector.width'] / 2, -measurements['detector.width'] / 2,
-             measurements['detector.width'] / 2, measurements['detector.width'] / 2,
-             -measurements['detector.width'] / 2])
-        Z = np.array(
-            [measurements['detector.height'] / 2, -measurements['detector.height'] / 2,
-             -measurements['detector.height'] / 2, measurements['detector.height'] / 2,
-             measurements['detector.height'] / 2])
-        Y = np.zeros(5)
-        l = ax.plot(X + x, Y + y, zs=Z, color='k')
-        t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Detector', color='k')
+            # create a square
+            X = np.array(
+                [-measurements['detector.width'] / 2, -measurements['detector.width'] / 2,
+                measurements['detector.width'] / 2, measurements['detector.width'] / 2,
+                -measurements['detector.width'] / 2])
+            Z = np.array(
+                [measurements['detector.height'] / 2, -measurements['detector.height'] / 2,
+                -measurements['detector.height'] / 2, measurements['detector.height'] / 2,
+                measurements['detector.height'] / 2])
+            Y = np.zeros(5)
+            l = ax.plot(X + x, Y + y, zs=Z, color='k')
+            t = ax.text(X[0] + x, Y[0] + y, Z[0], 'Detector', color='k')
 
-        ax.set_zlim3d(getattr(ax, 'get_zlim')()[0], getattr(ax, 'get_zlim')()[1] * 10)
+            ax.set_zlim3d(getattr(ax, 'get_zlim')()[0], getattr(ax, 'get_zlim')()[1] * 10)
+
+        elif getattr(self, "instrument_type") == "tof":
+            warn("Plotting of Time of Flight Instrument layout is not yet supported")
 
         plt.show()
 
@@ -388,15 +396,15 @@ class PlotTasInstrument(object):
         """
         dQ1, dQ2 = [], []
 
-        axis.fill(projections[qslice][0, :][:, num], projections[qslice][1, :][:, num], zorder=0, alpha=0.5,
+        axis.fill(projections[qslice][num, 0, :], projections[qslice][num, 1, :], zorder=0, alpha=0.5,
                   edgecolor='none')
-        axis.plot(projections[qslice + 'Slice'][0, :][:, num], projections[qslice + 'Slice'][1, :][:, num], zorder=1)
+        axis.plot(projections[qslice + 'Slice'][num, 0, :], projections[qslice + 'Slice'][num, 1, :], zorder=1)
 
-        dQ1.append(np.max(projections[qslice][0, :][:, num]) - np.min(projections[qslice][0, :][:, num]))
-        dQ2.append(np.max(projections[qslice][1, :][:, num]) - np.min(projections[qslice][1, :][:, num]))
+        dQ1.append(np.max(projections[qslice][num, 0, :]) - np.min(projections[qslice][num, 0, :]))
+        dQ2.append(np.max(projections[qslice][num, 1, :]) - np.min(projections[qslice][num, 1, :]))
 
-        axis.set_xlim(np.min(projections[qslice][0, :][:, num]), np.max(projections[qslice][0, :][:, num]))
-        axis.set_ylim(np.min(projections[qslice][1, :][:, num]), np.max(projections[qslice][1, :][:, num]))
+        axis.set_xlim(np.min(projections[qslice][num, 0, :]), np.max(projections[qslice][num, 0, :]))
+        axis.set_ylim(np.min(projections[qslice][num, 1, :]), np.max(projections[qslice][num, 1, :]))
 
         dQ1, dQ2 = [np.max(item) for item in [dQ1, dQ2]]
 
@@ -408,6 +416,7 @@ class PlotTasInstrument(object):
             axis.set_ylabel(r'$\mathbf{Q}_2$ (along ' + str(v) + r') (r.l.u.)' + r', $\delta Q_2={0:.3f}$'.format(dQ2),
                             fontsize=7)
 
+    @property
     def description_string(self):
         r"""Generates text string describing most recent resolution calculation
 
@@ -428,42 +437,99 @@ class PlotTasInstrument(object):
             R0 = float(self.R0)
             hkle = self.HKLE
         else:
-            NP = self.RMS[:, :, 0]
+            NP = self.RMS[0]
             R0 = self.R0[0]
             hkle = [self.H[0], self.K[0], self.L[0], self.W[0]]
 
         ResVol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(NP))
         bragg_widths = get_bragg_widths(NP)
-        angles = self.get_angles_and_Q(hkle)[0]
 
-        text_format = ['Method: {0}'.format(method),
-                       'Position HKLE [{0}]\n'.format(dt.datetime.now().strftime('%d-%b-%Y %H:%M:%S')),
-                       ' [Q_H, Q_K, Q_L, E] = {0} \n'.format(self.HKLE),
-                       'Resolution Matrix M in {0} (M/10^4):'.format(frame),
-                       '[[{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 0] / 1.0e4),
-                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 1] / 1.0e4),
-                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]'.format(*NP[:, 2] / 1.0e4),
-                       ' [{0:.4f}\t{1:.4f}\t{2:.4f}\t{3:.4f}]]\n'.format(*NP[:, 3] / 1.0e4),
-                       'Resolution volume:   V_0={0:.6f} meV/A^3'.format(2 * ResVol),
-                       'Intensity prefactor: R_0={0:.3f}'.format(R0),
-                       'Bragg width in [Q_1,Q_2,E] (FWHM):',
-                       ' dQ_1={0:.3f} dQ_2={1:.3f} [A-1] dE={2:.3f} [meV]'.format(bragg_widths[0], bragg_widths[1],
-                                                                                  bragg_widths[4]),
-                       ' dQ_z={0:.3f} Vanadium width V={1:.3f} [meV]'.format(*bragg_widths[2:4]),
-                       'Instrument parameters:',
-                       ' DM  =  {0:.3f} ETAM= {1:.3f} SM={2}'.format(self.mono.d, self.mono.mosaic, self.mono.dir),
-                       ' KFIX=  {0:.3f} FX  = {1} SS={2}'.format(Energy(energy=self.efixed).wavevector, FX,
-                                                                 self.sample.dir),
-                       ' DA  =  {0:.3f} ETAA= {1:.3f} SA={2}'.format(self.ana.d, self.ana.mosaic, self.ana.dir),
-                       ' A1= {0:.2f} A2={1:.2f} A3={2:.2f} A4={3:.2f} A5={4:.2f} A6={5:.2f} [deg]'.format(*angles),
-                       'Collimation [arcmin]:',
-                       ' Horizontal: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.hcol),
-                       ' Vertical: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.vcol),
-                       'Sample:',
-                       ' a, b, c  =  [{0}, {1}, {2}] [Angs]'.format(self.sample.a, self.sample.b, self.sample.c),
-                       ' Alpha, Beta, Gamma  =  [{0}, {1}, {2}] [deg]'.format(self.sample.alpha, self.sample.beta,
-                                                                              self.sample.gamma),
-                       ' U  =  {0} [rlu]\tV  =  {1} [rlu]'.format(self.orient1, self.orient2)]
+        if getattr(self, "instrument_type") == "tas":
+            angles = self.get_angles_and_Q(hkle)[0]
+
+            text_format = ['Method: {0}'.format(method),
+                           'Position HKLE [{0}]\n'.format(dt.datetime.now().strftime('%d-%b-%Y %H:%M:%S')),
+                           ' [Q_H, Q_K, Q_L, E] = {0} \n'.format(self.HKLE),
+                           'Resolution Matrix M in {0} (M/10^4):'.format(frame),
+                           '[[{0:.4f}   {1:.4f}   {2:.4f}   {3:.4f}]'.format(*NP[:, 0] / 1.0e4),
+                           ' [{0:.4f}   {1:.4f}   {2:.4f}   {3:.4f}]'.format(*NP[:, 1] / 1.0e4),
+                           ' [{0:.4f}   {1:.4f}   {2:.4f}   {3:.4f}]'.format(*NP[:, 2] / 1.0e4),
+                           ' [{0:.4f}   {1:.4f}   {2:.4f}   {3:.4f}]]\n'.format(*NP[:, 3] / 1.0e4),
+                           'Resolution volume:   V_0={0:.6f} meV/A^3'.format(2 * ResVol),
+                           'Intensity prefactor: R_0={0:.3f}'.format(R0),
+                           'Bragg width in [Q_1,Q_2,E] (FWHM):',
+                           ' dQ_1={0:.3f} dQ_2={1:.3f} [A-1] dE={2:.3f} [meV]'.format(bragg_widths[0], bragg_widths[1],
+                                                                                       bragg_widths[4]),
+                           ' dQ_z={0:.3f} Vanadium width V={1:.3f} [meV]'.format(*bragg_widths[2:4]),
+                           'Instrument parameters:',
+                           ' DM  =  {0:.3f} ETAM= {1:.3f} SM={2}'.format(self.mono.d, self.mono.mosaic, self.mono.dir),
+                           ' KFIX=  {0:.3f} FX  = {1} SS={2}'.format(Energy(energy=self.efixed).wavevector, FX,
+                                                                       self.sample.dir),
+                           ' DA  =  {0:.3f} ETAA= {1:.3f} SA={2}'.format(self.ana.d, self.ana.mosaic, self.ana.dir),
+                           ' A1= {0:.2f} A2={1:.2f} A3={2:.2f} A4={3:.2f} A5={4:.2f} A6={5:.2f} [deg]'.format(*angles),
+                           'Collimation [arcmin]:',
+                           ' Horizontal: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.hcol),
+                           ' Vertical: [{0:.0f}, {1:.0f}, {2:.0f}, {3:.0f}]'.format(*self.vcol),
+                           'Sample:',
+                           ' a, b, c  =  [{0}, {1}, {2}] [Angs]'.format(self.sample.a, self.sample.b, self.sample.c),
+                           ' Alpha, Beta, Gamma  =  [{0}, {1}, {2}] [deg]'.format(self.sample.alpha, self.sample.beta,
+                                                                                  self.sample.gamma),
+                           ' U  =  {0} [rlu]   V  =  {1} [rlu]'.format(self.orient1, self.orient2)]
+
+        elif getattr(self, "instrument_type") == "tof":
+            Q = self.HKLE[:3]
+            theta = self.sample.get_two_theta(Q, self.ei.wavelength)
+            phi = np.rad2deg(np.pi / 2.0 - np.deg2rad(self.sample.get_phi(Q)))
+
+            tau_p = getattr(self, "tau_p", self.choppers[0].tau)
+            tau_m = getattr(self, "tau_m", self.choppers[1].tau)
+            tau_d = getattr(self, "tau_d", self.detector.tau)
+
+            l_pm = getattr(self, "l_pm", np.abs(np.subtract(self.choppers[0].distance, self.choppers[1].distance)))
+            l_ms = getattr(self, "l_ms", self.sample.distance)
+            l_sd = getattr(self, "l_sd", self.detector.radius)
+
+            sigma_l_pm = getattr(self, "sigma_l_pm", self.guides[0].sigma_l)
+            sigma_l_ms = getattr(self, "sigma_l_ms", self.guides[1].sigma_l)
+            sigma_l_sd = getattr(self, "sigma_l_sd", self.detector.radius / np.cos(np.deg2rad(getattr(self.sample, "mosaic", 60) / 60)) - self.detector.radius)
+
+            sigma_theta_i = getattr(self, "sigma_theta_i", self.guides[1].sigma_theta * self.ei.wavelength)
+            sigma_phi_i = getattr(self, "sigma_phi_i", self.guides[1].sigma_phi * self.ei.wavelength)
+
+            sigma_theta = getattr(self, "sigma_theta", np.max([getattr(self.sample, "mosaic", 60.0) / 60.0, self.detector.hpixels]))
+            sigma_phi = getattr(self, "sigma_phi", np.max([getattr(self.sample, "vmosaic", 60.0) / 60.0, np.max(self.detector.height) / self.detector.vpixels]))
+
+            theta_i = getattr(self, "theta_i", 0.0)
+            phi_i = getattr(self, "phi_i", 0.0)
+
+            text_format = ["Method: Violini",
+                           'Position HKLE [{0}]\n'.format(dt.datetime.now().strftime('%d-%b-%Y %H:%M:%S')),
+                           ' [Q_H, Q_K, Q_L, E] = {0} \n'.format(self.HKLE),
+                           'Resolution Matrix M in {0} (M/10^4):'.format(frame),
+                           '[[{0:.4f}   {1:.4f}   {2:.4f}   {3:.4f}]'.format(*NP[:, 0] / 1.0e4),
+                           ' [{0:.4f}   {1:.4f}   {2:.4f}   {3:.4f}]'.format(*NP[:, 1] / 1.0e4),
+                           ' [{0:.4f}   {1:.4f}   {2:.4f}   {3:.4f}]'.format(*NP[:, 2] / 1.0e4),
+                           ' [{0:.4f}   {1:.4f}   {2:.4f}   {3:.4f}]]\n'.format(*NP[:, 3] / 1.0e4),
+                           'Resolution volume:   V_0={0:.6f} meV/A^3'.format(2 * ResVol),
+                           'Intensity prefactor: R_0={0:.3f}'.format(R0),
+                           'Bragg width in [Q_1,Q_2,E] (FWHM):',
+                           ' dQ_1={0:.3f} dQ_2={1:.3f} [A-1] dE={2:.3f} [meV]'.format(bragg_widths[0], bragg_widths[1],
+                                                                                       bragg_widths[4]),
+                           ' dQ_z={0:.3f} Vanadium width V={1:.3f} [meV]'.format(*bragg_widths[2:4]),
+                           'Instrument parameters:',
+                           ' taup =  {0:.1f} taum = {1:.1f} tamd = {2:.1f} [us]'.format(tau_p, tau_m, tau_d),
+                           ' l_pm =  {0:.1f} l_ms = {1:.1f} l_sd = {2:.1f} [cm]'.format(l_pm, l_ms, l_sd),
+                           ' sig_l_pm=  {0:.2f} sig_l_ms= {1:.2f} sig_l_sd= {2:.2f} [cm]'.format(sigma_l_pm, sigma_l_ms,
+                                                                                                 sigma_l_sd),
+                           ' theta_i = {0:.3f} phi_i = {1:.3f} [deg]'.format(theta_i, phi_i),
+                           " sig_theta_i = {0:.3f} sig_phi_i = {1:.3f} [deg]".format(sigma_theta_i, sigma_phi_i),
+                           " 2theta = {0:.3f} phi = {1:.3f} [deg]".format(theta, phi),
+                           " sig_theta = {0:.3f} sig_phi = {1:.3f} [deg]".format(sigma_theta, sigma_phi),
+                           'Sample:',
+                           ' a, b, c  =  [{0}, {1}, {2}] [angstrom]'.format(self.sample.a, self.sample.b, self.sample.c),
+                           ' alpha, beta, gamma  =  [{0}, {1}, {2}] [deg]'.format(self.sample.alpha, self.sample.beta,
+                                                                                  self.sample.gamma),
+                           ' U  =  {0} [rlu]   V  =  {1} [rlu]'.format(self.orient1, self.orient2)]
 
         return '\n'.join(text_format)
 

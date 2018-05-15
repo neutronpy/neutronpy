@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from warnings import warn
 from .takin import TakinTimeOfFlight, TakinTripleAxis
 from .tas_instrument import TripleAxisInstrument
 from .tof_instrument import TimeOfFlightInstrument
@@ -42,6 +43,7 @@ class Instrument(object):
                 self.__class__ = TripleAxisInstrument
                 self.__init__(*args, **kwargs)
             elif kwargs['engine'] == 'takin':
+                warn("Takin engine is not yet supported")
                 self.__class__ = TakinTripleAxis
                 self.__init__(*args, **kwargs)
 
@@ -51,6 +53,7 @@ class Instrument(object):
                 self.__init__(*args, **kwargs)
 
             elif kwargs['engine'] == 'takin':
+                warn("Takin engine is not yet supported")
                 self.__class__ = TakinTimeOfFlight
                 self.__init__(*args, **kwargs)
 

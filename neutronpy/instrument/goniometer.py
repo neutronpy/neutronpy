@@ -6,7 +6,27 @@ import numpy as np
 
 
 class Goniometer(object):
-    r"""Defines a goniometer
+    r"""Class for defining a goniometer.
+
+    Attributes
+    ----------
+    omega_rad
+    sgu_rad
+    sgl_rad
+    theta_rad
+    theta
+    N
+    M
+    Omega
+    Theta
+    T_c
+    T_Phi
+    R
+    U
+
+    Methods
+    -------
+    u_phi
 
     """
 
@@ -92,6 +112,24 @@ class Goniometer(object):
         return self.T_phi * np.linalg.inv(self.T_c)
 
     def u_phi(self, omega, chi, phi):
+        r"""Vector to help convert goniometer angles to lab reference frame orientation
+
+        Parameters
+        ----------
+        omega : float
+            Goniometer rotation axis in rad
+
+        chi : float
+            Goniometer upper tilt in rad
+
+        phi : float
+            Goniometer lower tilt angle in rad
+
+        Returns
+        -------
+        rot : array
+            Array to help convert between lab reference goniometer and sample reference
+        """
         return [np.cos(omega) * np.cos(chi) * np.cos(phi) - np.sin(omega) * np.sin(phi),
                 np.cos(omega) * np.cos(chi) * np.sin(phi) + np.sin(omega) * np.cos(phi),
                 np.cos(omega) * np.sin(chi)]

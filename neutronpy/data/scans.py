@@ -26,13 +26,17 @@ class Scans(object):
     func_col
     min_col
     max_col
+    mean_col
+    update
+    scans_check
 
     """
 
     def __init__(self, scans_dict=None):
         if scans_dict is not None:
-            if not isinstance(scans_dict,collections.OrderedDict):
-                raise RuntimeError("the input dictionary must be of type OrderedDict")
+            if not isinstance(scans_dict, collections.OrderedDict):
+                raise RuntimeError(
+                    "the input dictionary must be of type OrderedDict")
             self.num_scans = len(scans_dict)
         self.scans = scans_dict
 
@@ -47,13 +51,14 @@ class Scans(object):
               A dictionary of multiple scans to add to the collection.
 
         """
-        if not isinstance(scans_dict,collections.OrderedDict):
-            raise RuntimeError("the input dictionary must be of type OrderedDict")
+        if not isinstance(scans_dict, collections.OrderedDict):
+            raise RuntimeError(
+                "the input dictionary must be of type OrderedDict")
         self.scans.update(scans_dict)
         self.num_scans = len(scans_dict)
 
     def scans_check(self):
-        r"""Check to see if their are scans in the object
+        r"""Check to see if their are scans in the object.
 
         This should be used for other methods that work on individual scans in
         the collection.
@@ -110,9 +115,11 @@ class Scans(object):
 
         if legend:
             plt.legend()
+
         if show_plot:
-           plt.show(block=False)
-        return(fh)
+            plt.show(block=False)
+
+        return fh
 
     def mean_col(self, col):
         r"""Take the mean of a given column in every scan of the collection
@@ -129,10 +136,9 @@ class Scans(object):
             scan in the collection
 
         """
-        col_mean=self.func_col(col,np.mean)
-        return col_mean
+        return self.func_col(col, np.mean)
 
-    def func_col(self,col,func):
+    def func_col(self, col, func):
         r""" apply a function to a column an return the value for each scan
 
         Parameters
@@ -142,32 +148,36 @@ class Scans(object):
 
         func: function
             The function to apply
+
         """
         self.scans_check()
-        res=np.empty(self.num_scans)
+        res = np.empty(self.num_scans)
+
         for idx, scan_key in enumerate(self.scans.keys()):
-            res[idx]=func(self.scans[scan_key].data[col])
+            res[idx] = func(self.scans[scan_key].data[col])
+
         return res
 
-    def min_col(self,col):
+    def min_col(self, col):
         r""" find the minimum of a given column in every scan of the collection
 
         Parameters
         ----------
         col : str
-            The name of the column for the mean
+            The name of the column for the means
 
         Returns
         -------
         array_like
                 an array where each element is the minimum value of the column of a specific
                 scan in the collection
-        """
-        mins=self.func_col(col,np.min)
-        return mins
 
-    def max_col(self,col):
+        """
+        return self.func_col(col, np.min)
+
+    def max_col(self, col):
         r""" find the minimum of a given collum in every scan of the collection
+
         Parameters
         ----------
         col : str
@@ -178,11 +188,11 @@ class Scans(object):
         array_like
                 an array where each element is the minimum value of the column of a specific
                 scan in the collection
-        """
-        maxs=self.func_col(col,np.max)
-        return maxs
 
-    def pcolor(self, x, y, z='detector', clims=None, color_norm='linear', cmap='jet',show_plot=True):
+        """
+        return self.func_col(col, np.max)
+
+    def pcolor(self, x, y, z='detector', clims=None, color_norm='linear', cmap='jet', show_plot=True):
         r"""Create a false colormap for a coloction of scans.
 
         The y-direction is always what varies between scans.
@@ -263,13 +273,17 @@ class Scans(object):
             zmat = np.vstack((zvals, zvals))
 
             if color_norm == 'log':
-                plt.pcolor(xmat, ymat, zmat, norm=mpl_c.LogNorm(vmin=intens_min, vmax=intens_max), cmap=cmap)
+                plt.pcolor(xmat, ymat, zmat, norm=mpl_c.LogNorm(
+                    vmin=intens_min, vmax=intens_max), cmap=cmap)
             else:
-                plt.pcolor(xmat, ymat, zmat, vmin=intens_min, vmax=intens_max, cmap=cmap)
+                plt.pcolor(xmat, ymat, zmat, vmin=intens_min,
+                           vmax=intens_max, cmap=cmap)
 
         plt.xlabel(x)
         plt.ylabel(y)
         plt.colorbar()
+
         if show_plot:
-           plt.show(block=False)
-        return(fh)
+            plt.show(block=False)
+
+        return fh

@@ -8,7 +8,8 @@ from .exceptions import ChopperError
 
 
 class Chopper(object):
-    r"""
+    r"""Class defining a chopper object for using Time of Flight spectrometer
+    resolution calculations.
 
     Parameters
     ----------

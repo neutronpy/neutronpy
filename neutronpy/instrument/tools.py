@@ -6,6 +6,7 @@ import numpy as np
 
 from ..constants import neutron_mass, hbar
 from ..crystal import Sample
+from ..energy import Energy
 from .exceptions import AnalyzerError, MonochromatorError, ScatteringTriangleError
 
 
@@ -434,6 +435,20 @@ def ellipse(saxis1, saxis2, phi=0, origin=None, npts=31):
 
 
 def get_bragg_widths(RM):
+    r"""Returns the Bragg widths given a resolution matrix.
+
+    Parameters
+    ----------
+    RM : array
+        Resolution matrix, either in inverse angstroms or rlu
+
+    Returns
+    -------
+    bragg : array
+        Returns an array of bragg widths in the order [Qx, Qy, Qz, W], in the
+        units given by the input matrix.
+
+    """
     bragg = np.array([np.sqrt(8 * np.log(2)) / np.sqrt(RM[0, 0]),
                       np.sqrt(8 * np.log(2)) / np.sqrt(RM[1, 1]),
                       np.sqrt(8 * np.log(2)) / np.sqrt(RM[2, 2]),
@@ -503,20 +518,26 @@ def calculate_projection_hwhm(MP):
     return hwhm_xp, hwhm_yp, theta
 
 
-def get_angle_ki_Q(ki, kf, Q, bPosSense=True, bAngleOutsideTriag=False):
-    u"""
+def get_angle_ki_Q(ki, kf, Q, gonio_dir=-1, outside_scat_tri=False):
+    r"""Returns the angle between ki and Q for rotation from
+    `[ki, ki_perp, kz, w]` to `[q_perp, q_para, qz, w]` reference frame.
+
     Parameters
     ----------
     ki : float
+        Initial wavevector in inverse angstroms
 
     kf : float
+        Final wavevector in inverse angstroms
 
     Q : float
+        Q position in inverse angstroms.
 
-    bPosSense : bool, optional
-        Default: True
+    gonio_dir : bool, optional
+        If the goniometer direction is left-handed, set to -1. Default: 1
 
-    bAngleOutsideTriag : bool, optional
+    outside_scat_tri : bool, optional
+        Set to True if Q is outside the scattering triangle to fold back.
         Default: False
 
     Returns
@@ -532,32 +553,34 @@ def get_angle_ki_Q(ki, kf, Q, bPosSense=True, bAngleOutsideTriag=False):
 
         angle = np.arccos(c)
 
-    if bAngleOutsideTriag:
+    if outside_scat_tri:
         angle = np.pi - angle
 
-    if ~bPosSense:
-        angle = -angle
-
-    return angle
+    return angle * np.sign(gonio_dir)
 
 
 def get_kfree(W, kfixed, ki_fixed=True):
-    u"""
+    r"""Calculates the free wavevector, either ki or kf, as specified by
+    `ki_fixed`.
 
     Parameters
     ----------
     W : float
+        Energy transfer
 
     kfixed : float
+        Wavevector magnitude of the fixed k.
 
     ki_fixed : bool, optional
-        Default: True
+        If ki is fixed, set to True. Default: True
 
     Returns
     -------
     k : float
+        Returns initial or final wavevector magnitude.
+
     """
-    kE_sq = W * 2.0 * neutron_mass / hbar ** 2
+    kE_sq = Energy(energy=W).wavevector ** 2
     if ki_fixed:
         kE_sq = -kE_sq
 
@@ -570,7 +593,7 @@ def get_kfree(W, kfixed, ki_fixed=True):
 
 
 def chop(matrix, tol=1e-12):
-    r"""Rounds values within `tol` of zero to zero
+    r"""Rounds values within `tol` of zero down(up) to zero
 
     Parameters
     ----------
@@ -584,6 +607,7 @@ def chop(matrix, tol=1e-12):
     -------
     out : same as input
         Object with values chopped.
+
     """
     if isinstance(matrix, tuple):
         return tuple(chop(item) for item in matrix)

@@ -163,6 +163,8 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
     G
     Gstar
     Bmatrix
+    Umatrix
+    UBmatrix
     u
     v
 
@@ -178,6 +180,7 @@ class Material(Sample, NuclearStructureFactor, MagneticStructureFactor, PlotMate
     get_d_spacing
     get_q
     get_two_theta
+    get_phi
     N_atoms
     apply_scattering_rules
     find_equivalent_positions

@@ -106,8 +106,58 @@ class PlotData(object):
             self.plot_line(x, y, show_err, to_bin, plot_options, fit_options,
                            smooth_options, output_file, show_plot, **kwargs)
 
-    def plot_volume(self, x, y, z, w, to_bin=None, plot_options=None,
-                    smooth_options=None, output_file='', show_plot=True, **kwargs):
+    def plot_volume(self, x, y, z, w, to_bin=None, plot_options=None, smooth_options=None, output_file='', show_plot=True, **kwargs):
+        r"""Plots a 3D volume of 4D data
+
+        Parameters
+        ----------
+        x : str
+            `data_column` key defining the x-axis.
+            Default: :py:attr:`plot_default_x`.
+
+        y : str
+            `data_column` key defining the y-axis.
+            Default: :py:attr:`plot_default_y`.
+
+        z : str
+            `data_column` key defining the z-axis.
+            Default: None
+
+        w : str
+            `data_column` key defining the w-axis.
+            Default: None
+
+        bounds : dict, optional
+            If set, data will be rebinned to the specified parameters, in the
+            format `[min, max, num points]` for each `data_column` key. See
+            documentation for :py:meth:`.Data.bin`. Default: None
+
+        show_err : bool, optional
+            Plot error bars. Only applies to xy scatter plots. Default: True
+
+        show_plot : bool, optional
+            Execute `plt.show()` to show the plot. Incompatible with
+            `output_file` param. Default: True
+
+        output_file : str, optional
+            If set, the plot will be saved to the location given, in the format
+            specified, provided that the format is supported. Default: None
+
+        plot_options : dict, optional
+            Plot options to be passed to the the matplotlib plotting routine.
+            Default: None
+
+        fit_options : dict, optional
+            Fitting options to be passed to the Fitter routine. Default: None
+
+        smooth_otions : dict, optional
+            Smoothing options for Gaussian smoothing from
+            `scipy.ndimage.filters.gaussian_filter`. Default: None
+
+        kwargs : optional
+            Additional plotting keyword arguments passed to the plotting
+            function.
+        """
         try:
             import matplotlib.pyplot as plt
             from matplotlib import colors
@@ -155,8 +205,54 @@ class PlotData(object):
         else:
             pass
 
-    def plot_contour(self, x, y, z, to_bin=None, plot_options=None,
-                     smooth_options=None, output_file='', show_plot=True, **kwargs):
+    def plot_contour(self, x, y, z, to_bin=None, plot_options=None, smooth_options=None, output_file='', show_plot=True, **kwargs):
+        r"""Method for plotting a 2D contour plot of 3D data
+
+        Parameters
+        ----------
+        x : str
+            `data_column` key defining the x-axis.
+            Default: :py:attr:`plot_default_x`.
+
+        y : str
+            `data_column` key defining the y-axis.
+            Default: :py:attr:`plot_default_y`.
+
+        z : str
+            `data_column` key defining the z-axis.
+            Default: None
+
+        bounds : dict, optional
+            If set, data will be rebinned to the specified parameters, in the
+            format `[min, max, num points]` for each `data_column` key. See
+            documentation for :py:meth:`.Data.bin`. Default: None
+
+        show_err : bool, optional
+            Plot error bars. Only applies to xy scatter plots. Default: True
+
+        show_plot : bool, optional
+            Execute `plt.show()` to show the plot. Incompatible with
+            `output_file` param. Default: True
+
+        output_file : str, optional
+            If set, the plot will be saved to the location given, in the format
+            specified, provided that the format is supported. Default: None
+
+        plot_options : dict, optional
+            Plot options to be passed to the the matplotlib plotting routine.
+            Default: None
+
+        fit_options : dict, optional
+            Fitting options to be passed to the Fitter routine. Default: None
+
+        smooth_otions : dict, optional
+            Smoothing options for Gaussian smoothing from
+            `scipy.ndimage.filters.gaussian_filter`. Default: None
+
+        kwargs : optional
+            Additional plotting keyword arguments passed to the plotting
+            function.
+        """
         try:
             import matplotlib.pyplot as plt
         except ImportError:
@@ -182,10 +278,14 @@ class PlotData(object):
             from scipy.ndimage.filters import gaussian_filter
             _z = gaussian_filter(_z, **smooth_options)
 
-        x_step = np.around(np.abs(np.unique(_x) - np.roll(np.unique(_x), 1))[1], decimals=4)
-        y_step = np.around(np.abs(np.unique(_y) - np.roll(np.unique(_y), 1))[1], decimals=4)
-        x_sparse = np.linspace(_x.min(), _x.max(), (_x.max() - _x.min()) / x_step + 1)
-        y_sparse = np.linspace(_y.min(), _y.max(), (_y.max() - _y.min()) / y_step + 1)
+        x_step = np.around(
+            np.abs(np.unique(_x) - np.roll(np.unique(_x), 1))[1], decimals=4)
+        y_step = np.around(
+            np.abs(np.unique(_y) - np.roll(np.unique(_y), 1))[1], decimals=4)
+        x_sparse = np.linspace(
+            _x.min(), _x.max(), (_x.max() - _x.min()) / x_step + 1)
+        y_sparse = np.linspace(
+            _y.min(), _y.max(), (_y.max() - _y.min()) / y_step + 1)
         X, Y = np.meshgrid(x_sparse, y_sparse)
 
         from scipy.interpolate import griddata
@@ -201,9 +301,51 @@ class PlotData(object):
         else:
             pass
 
-    def plot_line(self, x, y, show_err=True, to_bin=None, plot_options=None,
-                  fit_options=None, smooth_options=None, output_file='',
-                  show_plot=True, **kwargs):
+    def plot_line(self, x, y, show_err=True, to_bin=None, plot_options=None, fit_options=None, smooth_options=None, output_file='', show_plot=True, **kwargs):
+        r"""Method to Plot a line of 2D data
+
+        Parameters
+        ----------
+        x : str
+            `data_column` key defining the x-axis.
+            Default: :py:attr:`plot_default_x`.
+
+        y : str
+            `data_column` key defining the y-axis.
+            Default: :py:attr:`plot_default_y`.
+
+        bounds : dict, optional
+            If set, data will be rebinned to the specified parameters, in the
+            format `[min, max, num points]` for each `data_column` key. See
+            documentation for :py:meth:`.Data.bin`. Default: None
+
+        show_err : bool, optional
+            Plot error bars. Only applies to xy scatter plots. Default: True
+
+        show_plot : bool, optional
+            Execute `plt.show()` to show the plot. Incompatible with
+            `output_file` param. Default: True
+
+        output_file : str, optional
+            If set, the plot will be saved to the location given, in the format
+            specified, provided that the format is supported. Default: None
+
+        plot_options : dict, optional
+            Plot options to be passed to the the matplotlib plotting routine.
+            Default: None
+
+        fit_options : dict, optional
+            Fitting options to be passed to the Fitter routine. Default: None
+
+        smooth_otions : dict, optional
+            Smoothing options for Gaussian smoothing from
+            `scipy.ndimage.filters.gaussian_filter`. Default: None
+
+        kwargs : optional
+            Additional plotting keyword arguments passed to the plotting
+            function.
+
+        """
         try:
             import matplotlib.pyplot as plt
         except ImportError:
@@ -249,9 +391,11 @@ class PlotData(object):
 
                 return (y - funct(params, x)) / err
 
-            fitobj = Fitter(residuals, data=(fit_options['function'], _x, _y, _err))
+            fitobj = Fitter(residuals, data=(
+                fit_options['function'], _x, _y, _err))
             if 'fixp' in fit_options:
-                fitobj.parinfo = [{'fixed': fix} for fix in fit_options['fixp']]
+                fitobj.parinfo = [{'fixed': fix}
+                                  for fix in fit_options['fixp']]
             try:
                 fitobj.fit(params0=fit_options['p'])
                 fit_x = np.linspace(min(_x), max(_x), len(_x) * 10)
@@ -260,7 +404,8 @@ class PlotData(object):
 
                 param_string = u'\n'.join(['p$_{{{0:d}}}$: {1:.3f}'.format(i, p)
                                            for i, p in enumerate(fitobj.params)])
-                chi2_params = u'$\chi^2$: {0:.3f}\n\n'.format(fitobj.chi2_min) + param_string
+                chi2_params = u'$\chi^2$: {0:.3f}\n\n'.format(
+                    fitobj.chi2_min) + param_string
 
                 plt.annotate(chi2_params, xy=(0.05, 0.95), xycoords='axes fraction',
                              horizontalalignment='left', verticalalignment='top',

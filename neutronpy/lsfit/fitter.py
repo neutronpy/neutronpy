@@ -129,6 +129,9 @@ class Fitter(PlotFit):
     Methods
     -------
     fit
+    plot
+    build_param_table
+    __call__
     """
 
     def __init__(self, residuals, derivatives=None, data=None, params0=None, parinfo=None, ftol=1e-10, xtol=1e-10,

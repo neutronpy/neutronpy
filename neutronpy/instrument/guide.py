@@ -1,7 +1,15 @@
 import numpy as np
 
 class Guide(object):
-    r"""
+    r"""Class for defining a neutron guide object for use with Time of Flight
+    spectrometer resolution calculations.
+
+    Attributes
+    ----------
+    sigma_l
+    sigma_theta
+    sigma_phi
+
     """
 
     def __init__(self, m, length, width, height):

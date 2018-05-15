@@ -22,6 +22,8 @@ class Analysis(object):
     scattering_function
     dynamic_susceptibility
     estimate_background
+    get_keys
+    get_bounds
 
     """
 
@@ -262,7 +264,7 @@ class Analysis(object):
             return np.where(self.Q[:, 0])
 
     def get_keys(self, hkle):
-        r"""
+        r"""Returns all of the Dictionary key names
 
         Parameters
         ----------

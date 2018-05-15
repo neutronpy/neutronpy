@@ -81,6 +81,11 @@ class Data(PlotData, Analysis):
     dynamic_susceptibility
     scattering_function
     plot
+    plot_volume
+    plot_contour
+    plot_line
+    get_keys
+    get_bounds
 
     """
 

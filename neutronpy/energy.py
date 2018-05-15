@@ -40,9 +40,6 @@ class Energy(object):
     velocity
     temperature
     frequency
-
-    Methods
-    -------
     values
     """
 
@@ -78,9 +75,21 @@ class Energy(object):
             else:
                 self.en = energy
 
-            self.wavelen = np.sqrt(h ** 2 / (2. * m_n * self.energy / JOULES_TO_MEV)) * 1.e10
+            if np.any(self.energy == 0.0):
+                if isinstance(self.energy, np.ndarray):
+                    self.wavelen = np.full(self.energy.shape, np.nan)
+                    self.wavevec = np.zeros(self.energy.shape)
+
+                    self.wavelen[self.energy != 0.0] = np.sqrt(h ** 2 / (2. * m_n * self.energy[self.energy !=0] / JOULES_TO_MEV)) * 1.e10
+                    self.wavevec[self.energy != 0.0] = 2. * np.pi / self.wavevec[self.energy != 0.0]
+                else:
+                    self.wavelen = np.nan
+                    self.wavevec = 0.0
+            else:
+                self.wavelen = np.sqrt(h ** 2 / (2. * m_n * self.energy / JOULES_TO_MEV)) * 1.e10
+                self.wavevec = 2. * np.pi / self.wavelength
+
             self.vel = np.sqrt(2. * self.energy / JOULES_TO_MEV / m_n)
-            self.wavevec = 2. * np.pi / self.wavelength
             self.temp = self.energy / k / JOULES_TO_MEV
             self.freq = (self.energy / JOULES_TO_MEV / hbar / 2. / np.pi / 1.e12)
 

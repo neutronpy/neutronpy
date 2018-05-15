@@ -4,7 +4,8 @@ r"""Defines Detector class for use in TimeOfFlightInstrument
 
 
 class Detector(object):
-    r"""Class defining a Time of Flight detector
+    r"""Class defining a neutron detector for Time of Flight spectrometer
+    resolution calculations.
 
     Parameters
     ----------

@@ -102,6 +102,8 @@ class Sample(Lattice):
     G
     Gstar
     Bmatrix
+    Umatrix
+    UBmatrix
 
     Methods
     -------
@@ -109,6 +111,7 @@ class Sample(Lattice):
     get_q
     get_two_theta
     get_angle_between_planes
+    get_phi
 
     """
 
@@ -192,7 +195,7 @@ class Sample(Lattice):
 
     @property
     def Umatrix(self):
-        u"""
+        r"""Rotation matrix that rotates the sample's reference frame into the spectrometer's
         """
         ortho_basis = gram_schmidt(np.vstack((self.u, self.v)))
 
@@ -200,7 +203,7 @@ class Sample(Lattice):
 
     @property
     def UBmatrix(self):
-        u"""
+        r"""Orientation matrix of the sample
         """
         return self.Umatrix * self.Bmatrix
 

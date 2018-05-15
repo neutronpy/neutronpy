@@ -24,14 +24,17 @@ NeutronPy is a python library with commonly used tools for neutron scattering me
     * Triple Axis Spectrometer resolution function calculation (Translated from ResLib), including
         * Resolution ellipses
         * Instrument visualization
-    * Time of Flight Spectrometer resolution function calculation (based on Violini et al. `doi:10.1016/j.nima.2013.10.042 <https://doi.org/10.1016/j.nima.2013.10.042>`_)
+        * Convolution
+    * Time of Flight Spectrometer resolution function calculation (based on Violini et al `doi:10.1016/j.nima.2013.10.042 <https://doi.org/10.1016/j.nima.2013.10.042>`_ ), including
+        * Resolution ellipses
     * Structure factor calculation, including
         * Structure factors with support for
             * Mass Normalization
             * Debye-Waller factor
             * Unit cell visualization
         * Single-ion magnetic form factor calculation
-    * Least-Squares fitting (custom interface for scipy.optimize.leastsq using lmfit features)
+    * Least-Squares fitting (custom interface for scipy.optimize.leastsq using lmfit features), including
+        * Built-in physical models
     * Basic data operations
         * Binning
         * Normalization (time/monitor)

@@ -3,16 +3,17 @@ r"""Testing of the resolution library - TOF
 """
 import numpy as np
 import pytest
+from matplotlib import use
+from mock import patch
 from neutronpy import instrument
 from neutronpy.instrument.exceptions import *
 
-# TODO: Add bragg width tests
-# TODO: Add resolution volume tests
+use("Agg")
 
-def test_calc_res():
-    """Test calculation of known problem
+
+def gen_std_instr():
+    """Generates a known instrument
     """
-
     instr = instrument.Instrument(instrument_type="tof")
 
     instr.l_pm = 1567
@@ -46,6 +47,15 @@ def test_calc_res():
 
     instr.ei.wavevector = 1.13333333
 
+    return instr
+
+
+def test_calc_res():
+    """Test calculation of known problem
+    """
+
+    instr = gen_std_instr()
+
     instr.calc_resolution([1, 1, 0, 0])
 
     RMS = np.matrix([[ 15863.63, -8809.27,  0,        1797.56],
@@ -64,6 +74,7 @@ def test_calc_res():
     assert (np.all(np.round(instr.RM, 2) == np.round(RM, 2)))
     assert (instr.R0 - R0 < 1e-8)
 
+
 def test_calc_res_cases():
     """Test calculation of various cases
     """
@@ -74,3 +85,47 @@ def test_calc_res_cases():
 
     instr = instrument.Instrument(instrument_type="tof")
     instr.calc_resolution([1, 0, 0, 0])
+
+
+def test_calc_res_multi_point():
+    """Tests calculation of cases with multiple point in `hkle`
+    """
+
+    instr = instrument.Instrument(instrument_type="tof")
+    instr.calc_resolution([1, [0, 1, 1], 0, [0, 1, 2]])
+
+    assert (instr.R0.size == 3)
+    print(instr.RM.shape)
+    assert (np.all(instr.RM.shape == (3, 4, 4)))
+    assert (np.all(instr.RMS.shape == (3, 4, 4)))
+
+
+def test_bragg_widths():
+    """Tests to check Bragg widths are correctly calculated
+    """
+
+    instr = gen_std_instr()
+
+    instr.calc_resolution([1, 1, 0, 0])
+    bragg = instrument.tools.get_bragg_widths(instr.RMS)
+
+    assert np.all(np.round(bragg, 3) == np.array([0.037, 0.021, 0.053, 0.353, 0.180]))
+
+
+@patch("matplotlib.pyplot.show")
+def test_plots(mock_show):
+    instr = gen_std_instr()
+
+    instr.plot_projections([1, 0, 0, 0])
+
+
+def test_resolution_volume():
+    """Tests to check resolution volume is correctly calculated
+    """
+
+    instr = gen_std_instr()
+    instr.calc_resolution([1, 1, 0, 0])
+
+    resvol = (2 * np.pi) ** 2 / np.sqrt(np.linalg.det(instr.RMS))
+
+    assert (np.round(resvol, 8) == 1.22e-6)

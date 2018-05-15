@@ -9,6 +9,7 @@ r"""Useful constants for neutron scattering calculations, including:
 * ``BOLTZMANN_IN_MEV_K`` : Boltzmann constant in meV/K
 * ``N_A`` : Avogadro constant
 * ``neutron_mass`` : Mass of a neutron in grams
+* ``e`` : Electric charge of an electron in Coulombs
 
 """
 import json

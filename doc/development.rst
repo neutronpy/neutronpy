@@ -44,7 +44,7 @@ Unit tests
 ^^^^^^^^^^
 In neutronpy, all unit tests are performed using the :py:mod:`unittest` Standard Python Library, and some using :py:mod:`mock` which was only added to the Standard Library in py33, but is available from pypi for earlier versions. See existing tests in the ``tests`` top-level directory for examples.
 
-Development should generally take a test-driven approach, i.e. expected behavior of new functions should be known in advance and tests should be written first. A basic introduction to test-driven development can be found `here <http://code.tutsplus.com/tutorials/beginning-test-driven-development-in-python--net-30137>`_.
+Development should generally take a test-driven approach, i.e. expected behavior of new functions should be known in advance and tests should be written first. A basic introduction to test-driven development can be found at `tutsplus.com <http://code.tutsplus.com/tutorials/beginning-test-driven-development-in-python--net-30137>`_.
 
 If you plan to make a significant contribution to neutronpy, I highly recommend making at least a `Travis-ci <https://travis-ci.org/>`_ account to run the tests on your commits before you submit a pull request. It will help you make changes before making them public.
 
@@ -105,7 +105,7 @@ Now you can begin your rebase by checking out your feature branch, and then reba
     git checkout feature-branch
     git rebase master
 
-If any of your changes conflict with the up-to-date master, then you will get some error messages during rebase about **conflicts**. It should give a list of files in conflict and you will need to go there to resolve the conflict. An in-depth guide to resolving rebase conflicts can be found `here <http://gitforteams.com/resources/rebasing.html>`_.
+If any of your changes conflict with the up-to-date master, then you will get some error messages during rebase about **conflicts**. It should give a list of files in conflict and you will need to go there to resolve the conflict. An in-depth guide to resolving rebase conflicts can be found at `gitforteam.com <http://gitforteams.com/resources/rebasing.html>`_.
 
 Create pull request
 ^^^^^^^^^^^^^^^^^^^
@@ -123,10 +123,10 @@ Once your PR has been accepted you can now delete the branches you created and u
 
 Development Environment
 -----------------------
-Often you will want to test your new features while still maintaining the stable version of neutronpy on your machine. In this case you should use a virtual environment, using either `virtualenv <https://virtualenv.pypa.io/en/stable/>`_ or `Anaconda <https://www.continuum.io/downloads>`_, which is probably easier. For example, using anaconda you can easily create a conda virtualenv with Python 3.4 called py34 and then activate it to install neutronpy (in linux or osx terminal) by::
+Often you will want to test your new features while still maintaining the stable version of neutronpy on your machine. In this case you should use a virtual environment, using either `virtualenv <https://virtualenv.pypa.io/en/stable/>`_ or `Anaconda <https://www.continuum.io/downloads>`_, which is probably easier. For example, using anaconda you can easily create a conda virtualenv with Python 3.6 called py36 and then activate it to install neutronpy (in linux or osx terminal) by::
 
     conda config --add channels mmcauliffe
-    conda create --yes -q -n py34 python=3.4 numpy scipy pqt5 h5py matplotlib
+    conda create --yes -q -n py36 python=3.6 numpy scipy pqt5 h5py matplotlib
     source activate py34
     pip install neutronpy
 
@@ -134,4 +134,4 @@ Coding can be done in any plaintext text editor, but if you want more features I
 
 Versions
 --------
-Version number incrementation should follow `Semantic Versioning 2.0.0 <http://semver.org/>`_. This means that the version numbers should follow the pattern ``X.Y.Z-beta``, where ``X`` is a major version number, indicating a break in backwards compatibility, ``Y`` is a minor version number indicating the addition of features which DO NOT break backwards compatibility, ``Z`` is a patch version number indicating patches which DO NOT add major features or break backwards compatibility, and ``beta`` indicates pre-release versions. ``X``, ``Y``, and ``Z`` must all be non-negative integer numbers and ``beta`` can contain ascii [a-Z,0-9].
+Version number incrementation should follow `Semantic Versioning 2.0.0 <http://semver.org/>`_. This means that the version numbers should follow the general pattern ``X.Y.Z``, where ``X`` is a major version number, indicating a break in backwards compatibility, ``Y`` is a minor version number indicating the addition of features which DO NOT break backwards compatibility, ``Z`` is a patch version number indicating patches which DO NOT add major features or break backwards compatibility. ``X``, ``Y``, and ``Z`` must all be non-negative integer numbers. The more general pattern that a version must match is ``[N!]N(.N)*[{a|b|rc}N][.postN][.devN]``. See `Python Public version identifiers <https://www.python.org/dev/peps/pep-0440/#public-version-identifiers>`_.

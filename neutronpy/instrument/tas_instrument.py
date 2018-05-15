@@ -8,15 +8,14 @@ from scipy.linalg import block_diag as blkdiag
 from ..crystal import Sample
 from ..energy import Energy
 from .analyzer import Analyzer
-from .exceptions import InstrumentError, ScatteringTriangleError
+from .exceptions import ScatteringTriangleError
+from .general import GeneralInstrument
 from .monochromator import Monochromator
-from .plot import PlotTasInstrument
-from .tools import (GetTau, _CleanArgs, _Dummy, _modvec, _scalar, _star,
-                    _voigt, calculate_projection_hwhm, ellipse,
-                    project_into_plane)
+from .plot import PlotInstrument
+from .tools import GetTau, _CleanArgs, _Dummy, _modvec, _scalar, _star, _voigt
 
 
-class TripleAxisInstrument(PlotTasInstrument):
+class TripleAxisInstrument(GeneralInstrument, PlotInstrument):
     u"""An object that represents a Triple Axis Spectrometer (TAS) instrument
     experimental configuration, including a sample.
 
@@ -75,6 +74,7 @@ class TripleAxisInstrument(PlotTasInstrument):
     monitor
     Smooth
     guide
+    description_string
 
     Methods
     -------
@@ -84,16 +84,15 @@ class TripleAxisInstrument(PlotTasInstrument):
     get_angles_and_Q
     get_lattice
     get_resolution_params
+    get_resolution
     plot_projections
     plot_ellipsoid
     plot_instrument
     resolution_convolution
     resolution_convolution_SMA
     plot_slice
-    description_string
 
     """
-
     def __init__(self, efixed=14.7, sample=None, hcol=None, vcol=None, mono='PG(002)',
                  mono_mosaic=25, ana='PG(002)', ana_mosaic=25, **kwargs):
 
@@ -523,9 +522,9 @@ class TripleAxisInstrument(PlotTasInstrument):
 
         y /= mody
 
-        z = np.array([x[1] * y[2] - y[1] * x[2],
-                      x[2] * y[0] - y[2] * x[0],
-                      - x[1] * y[0] + y[1] * x[0]], dtype=np.float64)
+        z = np.array([ x[1] * y[2] - y[1] * x[2],
+                       x[2] * y[0] - y[2] * x[0],
+                      -x[1] * y[0] + y[1] * x[0]], dtype=np.float64)
 
         proj = _scalar(z, x, rlattice)
 
@@ -573,7 +572,7 @@ class TripleAxisInstrument(PlotTasInstrument):
 
         [length, Q, W] = _CleanArgs(Q, W)
 
-        RM = np.zeros((4, 4, length), dtype=np.float64)
+        RM = np.zeros((length, 4, 4), dtype=np.float64)
         R0 = np.zeros(length, dtype=np.float64)
         RM_ = np.zeros((4, 4), dtype=np.float64)
 
@@ -925,7 +924,7 @@ class TripleAxisInstrument(PlotTasInstrument):
                 R0_ = R0_ * reflec
 
             R0[ind] = R0_
-            RM[:, :, ind] = RM_[:, :].copy()
+            RM[ind] = RM_.copy()
 
         return [R0, RM]
 
@@ -940,9 +939,6 @@ class TripleAxisInstrument(PlotTasInstrument):
         hkle : list
             Array of the scattering vector and energy transfer at which the
             calculation should be performed
-
-        npts : int, optional
-            Number of points in the ouput curves
 
         Notes
         -----
@@ -966,10 +962,9 @@ class TripleAxisInstrument(PlotTasInstrument):
         yq = _scalar(y, uq, rsample)
 
         tmat = np.array(
-            [np.array([[xq[i], yq[i], 0, 0], [-yq[i], xq[i], 0, 0], [0, 0, 1., 0], [0, 0, 0, 1.]], dtype=np.float64) for
-             i in range(len(xq))]).T
+            [np.array([[xq[i], yq[i], 0, 0], [-yq[i], xq[i], 0, 0], [0, 0, 1., 0], [0, 0, 0, 1.]], dtype=np.float64) for i in range(len(xq))])
 
-        RMS = np.zeros((4, 4, length), dtype=np.float64)
+        RMS = np.zeros((length, 4, 4), dtype=np.float64)
         rot = np.zeros((3, 3), dtype=np.float64)
 
         # Sample shape matrix in coordinate system defined by scattering vector
@@ -977,14 +972,14 @@ class TripleAxisInstrument(PlotTasInstrument):
         if hasattr(sample, 'shape'):
             samples = []
             for i in range(length):
-                rot = tmat[:3, :3, i]
+                rot = tmat[i, :3, :3]
                 samples.append(np.matrix(rot) * np.matrix(sample.shape) * np.matrix(rot).H)
             self.sample.shape = np.array(samples)
 
         [R0, RM] = self.calc_resolution_in_Q_coords(Q, W)
 
         for i in range(length):
-            RMS[:, :, i] = np.matrix(tmat[:, :, i]).H * np.matrix(RM[:, :, i]) * np.matrix(tmat[:, :, i])
+            RMS[i] = np.matrix(tmat[i]).H * np.matrix(RM[i]) * np.matrix(tmat[i])
 
         e = np.identity(4)
         for i in range(length):
@@ -994,155 +989,12 @@ class TripleAxisInstrument(PlotTasInstrument):
                                    1 / (self.Smooth.Y ** 2 / 8 / np.log(2)),
                                    1 / (self.Smooth.E ** 2 / 8 / np.log(2)),
                                    1 / (self.Smooth.Z ** 2 / 8 / np.log(2))])
-                    R0[i] = R0[i] / np.sqrt(np.linalg.det(np.matrix(e) / np.matrix(RMS[:, :, i]))) * np.sqrt(
-                        np.linalg.det(np.matrix(e) / np.matrix(mul) + np.matrix(e) / np.matrix(RMS[:, :, i])))
-                    RMS[:, :, i] = np.matrix(e) / (
-                        np.matrix(e) / np.matrix(mul) + np.matrix(e) / np.matrix(RMS[:, :, i]))
+                    R0[i] = R0[i] / np.sqrt(np.linalg.det(np.matrix(e) / np.matrix(RMS[i]))) * np.sqrt(
+                        np.linalg.det(np.matrix(e) / np.matrix(mul) + np.matrix(e) / np.matrix(RMS[i])))
+                    RMS[i] = np.matrix(e) / (
+                        np.matrix(e) / np.matrix(mul) + np.matrix(e) / np.matrix(RMS[i]))
 
         self.R0, self.RMS, self.RM = [np.squeeze(item) for item in (R0, RMS, RM)]
-
-    def calc_projections(self, hkle, npts=36):
-        r"""Calculates the resolution ellipses for projections and slices from
-        the resolution matrix.
-
-        Parameters
-        ----------
-        hkle : list
-            Positions at which projections should be calculated.
-
-        npts : int, optional
-            Number of points in the outputted ellipse curve
-
-        Returns
-        -------
-        projections : dictionary
-            A dictionary containing projections in the planes: QxQy, QxW, and
-            QyW, both projections and slices
-
-        """
-        R0, NP = self.get_resolution(hkle)
-
-        [H, K, L, W] = _CleanArgs(*hkle)[1:]
-        hkle = [H, K, L, W]
-
-        if len(NP.shape) == 2:
-            length = 1
-        else:
-            length = NP.shape[-1]
-
-        self.projections = {'QxQy': np.zeros((2, npts, length)),
-                            'QxQySlice': np.zeros((2, npts, length)),
-                            'QxW': np.zeros((2, npts, length)),
-                            'QxWSlice': np.zeros((2, npts, length)),
-                            'QyW': np.zeros((2, npts, length)),
-                            'QyWSlice': np.zeros((2, npts, length)),
-                            'QxQy_fwhm': np.zeros((2, length)),
-                            'QxQySlice_fwhm': np.zeros((2, length)),
-                            'QxW_fwhm': np.zeros((2, length)),
-                            'QxWSlice_fwhm': np.zeros((2, length)),
-                            'QyW_fwhm': np.zeros((2, length)),
-                            'QyWSlice_fwhm': np.zeros((2, length))}
-
-        [xvec, yvec, zvec, sample, rsample] = self._StandardSystem()
-        del xvec, zvec, sample
-
-        o1 = self.orient1.copy()
-        o2 = self.orient2.copy()
-        pr = _scalar(o2, yvec, rsample)
-        o2 = yvec * pr
-
-        o1[np.abs(o1) < 1e-5] = 0
-        o2[np.abs(o2) < 1e-5] = 0
-
-        A = NP.copy()
-
-        if A.shape == (4, 4):
-            A = A.reshape((4, 4, 1))
-            R0 = R0[np.newaxis]
-
-        for ind in range(A.shape[-1]):
-            # Remove the vertical component from the matrix.
-            Bmatrix = np.matrix([np.concatenate((A[0, 0:2, ind], [A[0, 3, ind]])),
-                                 np.concatenate((A[1, 0:2, ind], [A[1, 3, ind]])),
-                                 np.concatenate((A[3, 0:2, ind], [A[3, 3, ind]]))])
-
-            # Projection into Qx, Qy plane
-            hwhm_xp, hwhm_yp, theta = calculate_projection_hwhm(project_into_plane(2, R0[ind], Bmatrix)[-1])
-
-            self.projections['QxQy_fwhm'][0, ind] = 2 * hwhm_xp
-            self.projections['QxQy_fwhm'][1, ind] = 2 * hwhm_yp
-
-            self.projections['QxQy'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
-                                                          [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]],
-                                                                  self.orient1 / np.linalg.norm(self.orient1) ** 2),
-                                                           np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]],
-                                                                  self.orient2 / np.linalg.norm(self.orient2) ** 2)],
-                                                          npts=npts)
-
-            # Slice through Qx,Qy plane
-            hwhm_xp, hwhm_yp, theta = calculate_projection_hwhm(A[:2, :2, ind])
-
-            self.projections['QxQySlice_fwhm'][0, ind] = 2 * hwhm_xp
-            self.projections['QxQySlice_fwhm'][1, ind] = 2 * hwhm_yp
-
-            self.projections['QxQySlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
-                                                               [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]],
-                                                                       self.orient1 /
-                                                                       np.linalg.norm(self.orient1) ** 2),
-                                                                np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]],
-                                                                       self.orient2 /
-                                                                       np.linalg.norm(self.orient2) ** 2)],
-                                                               npts=npts)
-
-            # Projection into Qx, W plane
-            hwhm_xp, hwhm_yp, theta = calculate_projection_hwhm(project_into_plane(1, R0, Bmatrix)[-1])
-
-            self.projections['QxW_fwhm'][0, ind] = 2 * hwhm_xp
-            self.projections['QxW_fwhm'][1, ind] = 2 * hwhm_yp
-
-            self.projections['QxW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
-                                                         [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]],
-                                                                 self.orient1 / np.linalg.norm(self.orient1) ** 2),
-                                                          hkle[3][ind]],
-                                                         npts=npts)
-
-            # Slice through Qx,W plane
-            hwhm_xp, hwhm_yp, theta = calculate_projection_hwhm(
-                np.array([[A[0, 0, ind], A[0, 3, ind]], [A[3, 0, ind], A[3, 3, ind]]]))
-
-            self.projections['QxWSlice_fwhm'][0, ind] = 2 * hwhm_xp
-            self.projections['QxWSlice_fwhm'][1, ind] = 2 * hwhm_yp
-
-            self.projections['QxWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
-                                                              [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]],
-                                                                      self.orient1 / np.linalg.norm(self.orient1) ** 2),
-                                                               hkle[3][ind]],
-                                                              npts=npts)
-
-            # Projections into Qy, W plane
-            hwhm_xp, hwhm_yp, theta = calculate_projection_hwhm(project_into_plane(0, R0, Bmatrix)[-1])
-
-            self.projections['QyW_fwhm'][0, ind] = 2 * hwhm_xp
-            self.projections['QyW_fwhm'][1, ind] = 2 * hwhm_yp
-
-            self.projections['QyW'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
-                                                         [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]],
-                                                                 self.orient2 / np.linalg.norm(self.orient2) ** 2),
-                                                          hkle[3][ind]],
-                                                         npts=npts)
-
-            # Slice through Qy,W plane
-            hwhm_xp, hwhm_yp, theta = calculate_projection_hwhm(
-                np.array([[A[1, 1, ind], A[1, 3, ind]], [A[3, 1, ind], A[3, 3, ind]]]))
-
-            self.projections['QyWSlice_fwhm'][0, ind] = 2 * hwhm_xp
-            self.projections['QyWSlice_fwhm'][1, ind] = 2 * hwhm_yp
-
-            self.projections['QyWSlice'][:, :, ind] = ellipse(hwhm_xp, hwhm_yp, theta,
-                                                              [np.dot([hkle[0][ind], hkle[1][ind], hkle[2][ind]],
-                                                                      self.orient2 / np.linalg.norm(self.orient2) ** 2),
-                                                               hkle[3][ind]],
-                                                              npts=npts)
 
     def get_angles_and_Q(self, hkle):
         r"""Returns the Triple Axis Spectrometer angles and Q-vector given
@@ -1238,80 +1090,6 @@ class TripleAxisInstrument(PlotTasInstrument):
 
         return [A, Q]
 
-    def get_resolution_params(self, hkle, plane, mode='project'):
-        r"""Returns parameters for the resolution gaussian.
-
-        Parameters
-        ----------
-        hkle : list of floats
-            Position and energy for which parameters should be returned
-
-        plane : 'QxQy' | 'QxQySlice' | 'QxW' | 'QxWSlice' | 'QyW' | 'QyWSlice'
-            Two dimensional plane for which parameters should be returned
-
-        mode : 'project' | 'slice'
-            Return the projection into or slice through the chosen plane
-
-        Returns
-        -------
-        tuple : R0, RMxx, RMyy, RMxy
-            Parameters for the resolution gaussian
-
-        """
-
-        try:
-            A = self.RMS
-        except:
-            self.calc_resolution(hkle)
-            A = self.RMS
-
-        ind = np.where((self.H == hkle[0]) & (self.K == hkle[1]) & (self.L == hkle[2]) & (self.W == hkle[3]))
-        if len(ind[0]) == 0:
-            raise InstrumentError('Resolution at provided HKLE has not been calculated.')
-
-        ind = ind[0][0]
-
-        if len(A.shape) != 3:
-            A = A.reshape((A.shape[0], A.shape[1], 1))
-            selfR0 = self.R0[np.newaxis]
-
-        # Remove the vertical component from the matrix
-        Bmatrix = np.vstack((np.hstack((A[0, :2:1, ind], A[0, 3, ind])),
-                             np.hstack((A[1, :2:1, ind], A[1, 3, ind])),
-                             np.hstack((A[3, :2:1, ind], A[3, 3, ind]))))
-
-        if plane == 'QxQy':
-            R0 = np.sqrt(2 * np.pi / Bmatrix[2, 2]) * selfR0[ind]
-            if mode == 'project':
-                # Projection into Qx, Qy plane
-                R0, MP = project_into_plane(2, R0, Bmatrix)
-                return R0, MP[0, 0], MP[1, 1], MP[0, 1]
-            if mode == 'slice':
-                # Slice through Qx,Qy plane
-                MP = np.array(A[:2:1, :2:1, ind])
-                return R0, MP[0, 0], MP[1, 1], MP[0, 1]
-
-        if plane == 'QxW':
-            R0 = np.sqrt(2 * np.pi / Bmatrix[1, 1]) * selfR0[ind]
-            if mode == 'project':
-                # Projection into Qx, W plane
-                R0, MP = project_into_plane(1, R0, Bmatrix)
-                return R0, MP[0, 0], MP[1, 1], MP[0, 1]
-            if mode == 'slice':
-                # Slice through Qx,W plane
-                MP = np.array([[A[0, 0, ind], A[0, 3, ind]], [A[3, 0, ind], A[3, 3, ind]]])
-                return R0, MP[0, 0], MP[1, 1], MP[0, 1]
-
-        if plane == 'QyW':
-            R0 = np.sqrt(2 * np.pi / Bmatrix[0, 0]) * selfR0[ind]
-            if mode == 'project':
-                # Projections into Qy, W plane
-                R0, MP = project_into_plane(0, R0, Bmatrix)
-                return R0, MP[0, 0], MP[1, 1], MP[0, 1]
-            if mode == 'slice':
-                # Slice through Qy,W plane
-                MP = np.array([[A[1, 1, ind], A[1, 3, ind]], [A[3, 1, ind], A[3, 3, ind]]])
-                return R0, MP[0, 0], MP[1, 1], MP[0, 1]
 
     def resolution_convolution(self, sqw, pref, nargout, hkle, METHOD='fix', ACCURACY=None, p=None, seed=None):
         r"""Numerically calculate the convolution of a user-defined
@@ -1373,13 +1151,13 @@ class TripleAxisInstrument(PlotTasInstrument):
         [length, H, K, L, W] = _CleanArgs(H, K, L, W)
         [xvec, yvec, zvec] = self._StandardSystem()[:3]
 
-        Mxx = RMS[0, 0, :]
-        Mxy = RMS[0, 1, :]
-        Mxw = RMS[0, 3, :]
-        Myy = RMS[1, 1, :]
-        Myw = RMS[1, 3, :]
-        Mzz = RMS[2, 2, :]
-        Mww = RMS[3, 3, :]
+        Mxx = RMS[:, 0, 0]
+        Mxy = RMS[:, 0, 1]
+        Mxw = RMS[:, 0, 3]
+        Myy = RMS[:, 1, 1]
+        Myw = RMS[:, 1, 3]
+        Mzz = RMS[:, 2, 2]
+        Mww = RMS[:, 3, 3]
 
         Mxx -= Mxw ** 2. / Mww
         Mxy -= Mxw * Myw / Mww
@@ -1565,20 +1343,20 @@ class TripleAxisInstrument(PlotTasInstrument):
 
         [xvec, yvec, zvec] = self._StandardSystem()[:3]
 
-        Mww = RMS[3, 3, :]
-        Mxw = RMS[0, 3, :]
-        Myw = RMS[1, 3, :]
+        Mww = RMS[:, 3, 3]
+        Mxw = RMS[:, 0, 3]
+        Myw = RMS[:, 1, 3]
 
         GammaFactor = np.sqrt(Mww / 2)
         OmegaFactorx = Mxw / np.sqrt(2 * Mww)
         OmegaFactory = Myw / np.sqrt(2 * Mww)
 
-        Mzz = RMS[2, 2, :]
-        Mxx = RMS[0, 0, :]
+        Mzz = RMS[:, 2, 2]
+        Mxx = RMS[:, 0, 0]
         Mxx -= Mxw ** 2 / Mww
-        Myy = RMS[1, 1, :]
+        Myy = RMS[:, 1, 1]
         Myy -= Myw ** 2 / Mww
-        Mxy = RMS[0, 1, :]
+        Mxy = RMS[:, 0, 1]
         Mxy -= Mxw * Myw / Mww
 
         detxy = np.sqrt(Mxx * Myy - Mxy ** 2)
@@ -1692,30 +1470,3 @@ class TripleAxisInstrument(PlotTasInstrument):
         conv = conv + bgr
 
         return conv
-
-    def get_resolution(self, hkle):
-        r"""
-
-        Parameters
-        ----------
-        hkle
-
-        Returns
-        -------
-
-        """
-        [H, K, L, W] = hkle
-        try:
-            if np.all(H == self.H) and np.all(K == self.K) and np.all(L == self.L) and np.all(W == self.W):
-                NP = np.array(self.RMS)
-                R0 = self.R0
-            else:
-                self.calc_resolution(hkle)
-                NP = np.array(self.RMS)
-                R0 = self.R0
-        except AttributeError:
-            self.calc_resolution(hkle)
-            NP = np.array(self.RMS)
-            R0 = self.R0
-
-        return R0, NP

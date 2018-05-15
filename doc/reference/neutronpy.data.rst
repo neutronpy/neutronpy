@@ -8,4 +8,5 @@ neutronpy.data module
 
     Data
     Analysis
+    PlotData
     Scans

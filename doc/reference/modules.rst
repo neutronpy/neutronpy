@@ -7,10 +7,11 @@ neutronpy
    neutronpy
    neutronpy.constants
    neutronpy.crystal
+   neutronpy.data
+   neutronpy.fileio
    neutronpy.functions
    neutronpy.gui
    neutronpy.instrument
    neutronpy.lsfit
-   neutronpy.fileio
    neutronpy.models
    neutronpy.spurion
