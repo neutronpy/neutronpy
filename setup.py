@@ -8,8 +8,10 @@ routines for Instrument resolution calculations.
 
 """
 
+import os
 import re
 import subprocess
+import warnings
 from math import ceil, log10
 
 from setuptools import setup
@@ -33,11 +35,22 @@ Operating System :: MacOS :: MacOS X
 DOCLINES = __doc__.split("\n")
 
 
-def setup_package():
-    r"""Setup package function
+def get_version():
+    r"""Determines version of package using either git describe or via the
+        folder name. Defaults to 0.0.0 if none is found, and warns user to
+        use a supported install method.
     """
-    v = subprocess.check_output(["git", "describe", "--tags"]).rstrip().decode('ascii')
     vpat = re.compile(r"^([1-9]\d*!)?(0|[1-9]\d*)(\.(0|[1-9]\d*))*((a|b|rc)(0|[1-9]\d*))?(\.post(0|[1-9]\d*))?(\.dev(0|[1-9]\d*))?$")
+    try:
+        v = subprocess.check_output(["git", "describe", "--tags"]).rstrip().decode('ascii')
+    except subprocess.CalledProcessError:
+        ospat = re.compile(r".*neutronpy-(.+)")
+        osmatch = ospat.match(os.path.dirname(os.path.realpath(__file__)))
+        if osmatch is not None:
+            v = osmatch.groups()[0]
+        else:
+            warnings.warn("Cannot find current version of neutronpy, please use supported install method.")
+            v = "0.0.0"
 
     if '-' in v:
         v, ntag = v.split('-')[0:2]
@@ -70,8 +83,15 @@ def setup_package():
     else:
         __version__ = v
 
+    return __version__
+
+
+def setup_package():
+    r"""Setup package function
+    """
+
     metadata = dict(name='neutronpy',
-                    version=__version__,
+                    version=get_version(),
                     description=DOCLINES[0],
                     long_description="\n".join(DOCLINES[2:]),
                     author='David M Fobes',
