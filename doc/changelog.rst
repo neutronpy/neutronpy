@@ -2,12 +2,13 @@
 Changelog
 =========
 
+* :release:`1.1.1 <2018-06-25>` 77, 74, 111
 * :feature:`77` Added Violini resolution calculation to :py:class:`.Instrument`
 * :feature:`111` Added calculation of UB matrix to :py:class:`.Sample` via :py:meth:`.Sample.UBmatrix`
 * :feature:`111` Added custom exceptions to be more descriptive
 * :support:`111` Refactored :py:class:`.Instrument` to support creation of ToF and TAS type instruments
 * :support:`111` Added example jupyter notebooks to documentation
-* :bug:`111` Added factors of 2pi in :py:class`.Lattice`
+* :support:`111` Added factors of 2pi in :py:class`.Lattice`
 * :support:`74` Rewrote method for generating 3D plot of resolution ellipsoid
 
 * :release:`1.0.4 <2017-05-18>` 102, 104, 105, 106, 107, 108, 109, 110
