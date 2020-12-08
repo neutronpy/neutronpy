@@ -283,9 +283,9 @@ class PlotData(object):
         y_step = np.around(
             np.abs(np.unique(_y) - np.roll(np.unique(_y), 1))[1], decimals=4)
         x_sparse = np.linspace(
-            _x.min(), _x.max(), (_x.max() - _x.min()) / x_step + 1)
+            _x.min(), _x.max(), int(_x.max() - _x.min() / x_step) + 1)
         y_sparse = np.linspace(
-            _y.min(), _y.max(), (_y.max() - _y.min()) / y_step + 1)
+            _y.min(), _y.max(), int(_y.max() - _y.min() / y_step) + 1)
         X, Y = np.meshgrid(x_sparse, y_sparse)
 
         from scipy.interpolate import griddata

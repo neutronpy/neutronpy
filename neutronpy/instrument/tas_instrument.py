@@ -1086,7 +1086,7 @@ class TripleAxisInstrument(GeneralInstrument, PlotInstrument):
         A5 = thetaa
         A6 = 2 * A5
 
-        A = np.squeeze(np.rad2deg([A1, A2, A3, A4, A5, A6]))
+        A = np.rad2deg([np.squeeze(a) for a in [A1, A2, A3, A4, A5, A6]])
 
         return [A, Q]
 

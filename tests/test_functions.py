@@ -12,7 +12,7 @@ def test_gauss_norm():
     """Test 1d gaussian
     """
     p = np.array([0., 0., 1., -30., 3., 1., 30., 3.])
-    x = np.linspace(-1e6, 1e6, 8e6 + 1)
+    x = np.linspace(-1e6, 1e6, int(8e6) + 1)
     y = functions.gaussian(p, x)
     integ = simps(y, x)
     assert (abs(integ - 2.) < 1e-5)
@@ -33,7 +33,7 @@ def test_lorent_norm():
     """Test 1d lorentzian
     """
     p = np.array([0., 0., 1., -30., 3., 1., 30., 3.])
-    x = np.linspace(-1e6, 1e6, 8e6 + 1)
+    x = np.linspace(-1e6, 1e6, int(8e6) + 1)
     y = functions.lorentzian(p, x)
     integ = simps(y, x)
     assert (abs(integ - 2.) < 1e-5)
@@ -43,7 +43,7 @@ def test_voigt_norm():
     """Tests voigt function
     """
     p = np.array([0., 0., 1., -30., 2., 3., 1., 30., 2., 3.])
-    x = np.linspace(-1e6, 1e6, 8e6 + 1)
+    x = np.linspace(-1e6, 1e6, int(8e6) + 1)
     y = functions.voigt(p, x)
     integ = simps(y, x)
     assert (abs(integ - 2.) < 1e-5)

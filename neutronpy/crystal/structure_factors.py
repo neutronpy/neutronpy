@@ -123,9 +123,9 @@ class MagneticFormFactor(object):
 
         if q is None:
             if qrange is None:
-                q = np.linspace(0., 2., 2. / 0.025 + 1)
+                q = np.linspace(0., 2., int(2. / 0.025) + 1)
             else:
-                q = np.linspace(qrange[0], qrange[1], (qrange[1] - qrange[0]) / 0.025 + 1)
+                q = np.linspace(qrange[0], qrange[1], int((qrange[1] - qrange[0]) / 0.025) + 1)
         if g is None:
             g = 2.
 

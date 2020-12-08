@@ -33,6 +33,8 @@ generated
 # Virtual Env #
 ###############
 venv*/*
+poetry.lock
+.python-version
 
 # Quick Tests #
 ###############

@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "neutronpy"
+version = "2.0.0"
+description = "NeutronPy is a collection of commonly used tools aimed at facilitating the analysis of neutron scattering data. NeutronPy is built primarily using the numpy and scipy python libraries, with a translation of ResLib 3.4c (MatLab) routines for Instrument resolution calculations."
+authors = ["David M Fobes <dfobes@lanl.gov>"]
+readme = 'README.rst'
+license = "MIT"
+packages = [
+    { include = 'neutronpy' },
+    { include = 'neutronpy/crystal' },
+    { include = 'neutronpy/data' },
+    { include = 'neutronpy/fileio' },
+    { include = 'neutronpy/fileio/loaders' },
+    { include = 'neutronpy/instrument' },
+    { include = 'neutronpy/scattering' },
+    { include = 'neutronpy/lsfit' },
+]
+include = [
+    { path = 'neutronpy/database/*.json', format = 'sdist' },
+    { path = 'neutronpy/database/*.json', format = 'wheel' },
+    { path = 'neutronpy/ui/*.ui', format = 'sdist' },
+    { path = 'neutronpy/ui/*.ui', format = 'wheel' },
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+numpy = "^1.10"
+scipy = "^1.0"
+matplotlib = "^2.0"
+lmfit = "^0.9.5"
+h5py = "^3.1.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.1.2"
+mock = "^4.0.2"
+codecov = "^2.1.10"
+pytest-cov = "^2.10.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--verbose -p no:warnings"
+testpaths = [
+    "tests",
+]
+
+[tool.poetry.plugins."console_scripts"]
+neutronpy = "neutronpy.gui:launch"
